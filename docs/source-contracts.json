@@ -23,9 +23,9 @@
             "review_note": "Reviewed Blog direct-route gating, sitemap module filtering, canonical URL and optional brand image defaults. Profile story is published as bounded plain paragraphs."
         },
         "foundation": {
-            "source_sha256": "db1bed98b17f46cf6de486e0d612db3ecc2892cc747d6266b7897fde9c0c4f25",
+            "source_sha256": "db67d6140929d72b239e7fc977e9ca87befeb50cf85529e5ff6f20162108b8a2",
             "references_sha256": "5e72734d9a12aeaba4d4bdc192b0b9de3199d6590ba2e7c1b1482350e5cb0bd5",
-            "review_note": "Cross-checked the hosting and backend procedure with canonical MySQL queue ownership and runtime paths. Both modes use the existing per-record transition and preserve the existing collection schema."
+            "review_note": "Inspected the Users route and unchanged owner authorization/data store. New status filtering uses the canonical order enum and the existing checkout-email history."
         },
         "google-tags": {
             "source_sha256": "187c8971da4cad73fccba340fb2f7424e60c4cb704bed864594f6c2dd3308c72",
@@ -38,14 +38,14 @@
             "review_note": "Reviewed the new hosting instructions against existing request-failure guidance. A transport receipt remains distinct from a rendering response, and the worker preserves the canonical queue before reporting an outcome."
         },
         "interface": {
-            "source_sha256": "4c0d0dcc4cd6108c95c62276feeccb70acc0e390bb209ccf0dd49f879f9dec99",
-            "references_sha256": "ad5c5a93ef91df9fea2b55f10ee68971c2a37ce2d1faaebee283cb48c89e80e4",
-            "review_note": "Reviewed the native timing selector and scheduled evidence card in desktop and 375px Chromium. The existing admin layout, labels, focus path and private owner boundary stay consistent with the design."
+            "source_sha256": "25393cb154f0931b213817c4eb6b4bb6fa6c6ab3a7f8a83fe3c642c27ae51a45",
+            "references_sha256": "139f72bba26766664206c32f9fe17b7877d720474dd548fd2a830f7b4765d6c3",
+            "review_note": "Compared the admin guide and Design with the account list toolbar, compact help link, icon visibility and filter/result hierarchy on desktop and mobile."
         },
         "mail": {
-            "source_sha256": "76c821847f5750ac8bd563b6147870a757e229e0462a8f77564f3f3fa17805ef",
+            "source_sha256": "d65891f4bf22f894979a68c9c51b4fdfcaf067c0f1564dbd86052227f91cc26c",
             "references_sha256": "e67f0fbc67954b174b852d9fc84ad03d27a8d6b4923528018c622f0097e1a262",
-            "review_note": "Cross-checked the native timing option, queue reference, atomic claim guard, 30-minute expiry and separate inbox proof in the source and mail runbook."
+            "review_note": "Reviewed the AdminController change to its Users method. Email recording, inbox and send forms are unaffected."
         },
         "mcp-clients": {
             "source_sha256": "78b45576da2d1ffc37e26fdf5701db6321d7df0b22488288b1879d91472778f1",
@@ -54,13 +54,13 @@
         },
         "media": {
             "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
-            "references_sha256": "1ccf99d785a7062137f394c4ad80f80202b7c23afa712b0ee4490002d22b30c8",
-            "review_note": "Reviewed the shared admin skill addition against the existing media guidance. Its new directions concern only the native email sample form and leave media actions and retention claims accurate."
+            "references_sha256": "e67787f676acefb2ce698978923eaf78e64361ab1183308f91bcabec0d50c67a",
+            "review_note": "Compared the revised admin UI skill to preserved media review and deletion controls. Latest-order filtering applies to the Users directory only."
         },
         "operator-help": {
-            "source_sha256": "3afb56ffc0386005694b56ab7985bc5a3fed8a13e3adcdc080d15892a140af45",
-            "references_sha256": "f54a60ce8958c6bb4e94d572222578c9c393c9400df93f080364945cba519688",
-            "review_note": "Compared the Email operator guide with the existing owner form, one-use confirmation, native timing control and Outbox summary. The guide uses the current labels and describes the eligibility window."
+            "source_sha256": "a33dfe2c5347b75259d3f1a454735d52a8a581310b7cce7b635130334ac57ec4",
+            "references_sha256": "d9be60de971188f1b6df2884fccf1091ad82b13a44da0b385f1f9cd6aa39d642",
+            "review_note": "Compared the Users guide route, advanced filters, status date scope and invoice links with the directory controller, layout and native form."
         },
         "public-mcp": {
             "source_sha256": "e5d2bb67604d7b9c3588dba3d04e75ad9925c1c686f3a4d13dffd1dc8dd99325",
@@ -69,8 +69,8 @@
         },
         "remote-commerce": {
             "source_sha256": "e57f1d5e32c8a297bb085291e48e2f4fd3574c39841b0fe2444b2223d3ac59da",
-            "references_sha256": "2722fecd4543a78e924d2c1d07b1d0c18c0a08ce844a75a39999f4ebac0e7ac5",
-            "review_note": "Compared the shared backend skill with cart and checkout documentation. The sample-only mode applies to diagnostics, and checkout order verification retains the ordinary queue and existing idempotency path."
+            "references_sha256": "59f19e7af9b3e46cbc5f364c95d6ef3a3fd7ffc448ab38ca1b073b56f359bbd2",
+            "review_note": "Reviewed the Design update to private directory layout. Storefront checkout and public commerce presentation guidance remain accurate."
         },
         "sales-channels": {
             "source_sha256": "6e5ee7b44dd92cc4dadec7a3c02f4bb9da797ba98d4e541e9f956687db236142",
@@ -78,9 +78,9 @@
             "review_note": "Confirmed the existing catalogue optimiser and filename handling remain the default. Only brand uploads retain the original raster type."
         },
         "workflow": {
-            "source_sha256": "b1f5c93e2983f37b08182492951e5afe71e8ca812b52a2e59df555a2ff57c5fe",
+            "source_sha256": "f04d9a35611c321cbef13582bbf9ab54fbb9f9a42281247553e866031efa504c",
             "references_sha256": "7770887213db03241a85f7bbee17bf25b2c58350058ebc59e25fd76b29ad80df",
-            "review_note": "Compared the added Chromium CI step, argument validation and test fixtures with the issue-first workflow. The native form test and disposable worker tests supply different evidence before live acceptance."
+            "review_note": "Compared the admin UI skill with the development workflow, including native filter regression and browser checks at 375px."
         }
     }
 }

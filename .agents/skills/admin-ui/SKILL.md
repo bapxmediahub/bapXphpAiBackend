@@ -27,7 +27,8 @@ separately from filtered result totals. Keep name/email search visible and
 secondary controls in the native More filters disclosure. Keep the active-count
 badge and reset visible when the disclosure closes. Verify combined criteria
 and pagination without JavaScript, native keyboard expansion, IST dates and
-stacked order history at 375px with synthetic accounts.
+stacked order history at 375px with synthetic accounts. Latest-order status uses
+the most recent dated match. Keep older and undated orders in history.
 
 The Public Site Profile is a native Site Settings form for published fields.
 Keep its save and validation independent of SMTP, credentials, appearance and

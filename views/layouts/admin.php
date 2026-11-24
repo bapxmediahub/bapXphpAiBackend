@@ -10,6 +10,7 @@ $__adminLogo = ($__settings['logo_url'] ?? '') ?: ($siteProfile->isReference() ?
 // The sidebar supplies only literal icon names from this private set.
 $navIcon = static function (string $name): string {
     $path = match ($name) {
+        'home' => 'm3 10 9-7 9 7v11H3zM9 21v-7h6v7',
         'page' => 'M6 3h9l4 4v14H6zM14 3v5h5M9 12h7m-7 4h7',
         'chat' => 'M4 5h16v11H9l-5 4zM8 9h8m-8 3h5',
         'pulse' => 'M3 12h4l3-7 4 14 3-7h4',
@@ -91,6 +92,8 @@ $navIcon = static function (string $name): string {
 .admin-topbar h1 { font-family: var(--font-serif); font-size: 1.25rem; margin: 0; color: var(--color-ink); }
 .admin-topbar__actions { display: flex; align-items: center; gap: var(--space-sm); }
 .admin-body { padding: var(--space-xl); }
+.admin-breadcrumb__home { display: inline-flex; align-items: center; gap: .35rem; color: var(--color-text-muted); }
+.admin-breadcrumb__home svg { flex: none; }
 @media (max-width: 768px) {
     .admin-shell { grid-template-columns: 1fr; }
     .admin-sidebar { display: none; position: fixed; top: 0; left: 0; bottom: 0; width: 260px; z-index: 1000; }
@@ -240,7 +243,7 @@ $navIcon = static function (string $name): string {
             </div>
         </div>
         <div class="admin-breadcrumb" style="padding:var(--space-xs) var(--space-xl); font-size:0.78rem; color:var(--color-text-muted); background:var(--color-white); border-bottom:1px solid var(--color-border); display:flex; gap:var(--space-xs); align-items:center;">
-            <a href="/admin" style="color:var(--color-text-muted);">Dashboard</a>
+            <a href="/admin" class="admin-breadcrumb__home"><?= $navIcon('home') ?>Dashboard</a>
             <?php
             $__path = parse_url($_SERVER['REQUEST_URI'] ?? '/admin', PHP_URL_PATH);
             $__segments = array_values(array_filter(explode('/', $__path)));
@@ -283,7 +286,7 @@ $navIcon = static function (string $name): string {
         <script>document.addEventListener('DOMContentLoaded',function(){showToast(<?= json_encode($__msg) ?>,<?= json_encode($__type) ?>);});</script>
         <?php endif; ?>
         <?php $helpContext=\App\Services\AdminHelpService::adminContext($_SERVER['REQUEST_URI']??'/admin'); ?>
-        <?php if($helpPath!=='/admin/docs'&&!str_starts_with($helpPath,'/admin/docs/')): ?>
+        <?php if($helpPath!=='/admin/users'&&$helpPath!=='/admin/docs'&&!str_starts_with($helpPath,'/admin/docs/')): ?>
         <details class="section-help" data-admin-context-help>
             <summary>Help for this page <span><?= e($helpContext['title']) ?></span></summary>
             <p><?= e($helpContext['summary']) ?></p>

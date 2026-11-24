@@ -21,8 +21,12 @@ test('Users keeps secondary filters collapsed and preserves them through native 
             const id = String(index + 1).padStart(2, '0');
             return {id, name: 'Fixture Account ' + id, email: 'account-' + id + '@example.test', role: 'customer'};
         }),
-        orders: [{id:'FIXTURE-ORDER', customer_email:'account-01@example.test', created_at: new Date().toISOString(),
-            status:'delivered', total:100, invoice_number:'FIXTURE-INVOICE'}],
+        orders: [
+            {id:'FIXTURE-ORDER', customer_email:'account-01@example.test', created_at:new Date().toISOString(),
+                status:'delivered', total:100, invoice_number:'FIXTURE-INVOICE'},
+            {id:'OLDER-ORDER', customer_email:'account-01@example.test', created_at:'2020-01-01T00:00:00Z', status:'pending'},
+            {id:'UNDATED-ORDER', customer_email:'account-02@example.test', status:'delivered'},
+        ],
     };
     const bridge = createServer(async (request, response) => {
         const chunks = [];
@@ -93,10 +97,17 @@ test('Users keeps secondary filters collapsed and preserves them through native 
             assert.ok(action.iconWidth >= 14 && action.scrollWidth <= action.clientWidth + 1,
                 'Top-bar icon and label fit at ' + width + 'px ' + JSON.stringify(action));
         }
-        if (width === 375) {
-            const y = (await rows.first().boundingBox()).y;
-            assert.ok(y < 760, 'First account starts inside the initial viewport at y=' + y);
+        for (const action of ['.users-workspace .report-head .btn', '.admin-breadcrumb__home']) {
+            assert.ok((await page.locator(action + ' svg[aria-hidden=true]').boundingBox()).width >= 14);
         }
+        if (width === 375) {
+            const first = await rows.first().locator('summary').boundingBox();
+            assert.ok(first.y + first.height <= 760, 'First account fits in the initial viewport at y=' + first.y);
+            assert.ok((await search.boundingBox()).width >= 150, 'Name or email fits inside the mobile search field');
+        }
+        assert.equal(await page.getByRole('link', {name:'Users guide'}).getAttribute('href'), '/admin/docs/customers');
+        assert.equal(await rows.first().locator('.users-latest-status').innerText(), 'Delivered');
+        assert.match(await rows.nth(1).locator('.users-latest').innerText(), /Order date unavailable/);
         await optionsToggle.press('Space');
         assert.ok(await role.isVisible());
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
@@ -128,19 +139,50 @@ test('Users keeps secondary filters collapsed and preserves them through native 
     await pointer.addCookies([{name:'PHPSESSID', value:sessionId, url:origin}]);
     const mobile = await pointer.newPage();
     await mobile.goto(url);
+    const navigation = mobile.getByRole('button', {name:'Open navigation'});
+    await navigation.press('Enter');
+    const sidebar = mobile.locator('#admin-sidebar');
+    assert.equal(await sidebar.getByRole('link', {name:'Users', exact:true}).getAttribute('aria-current'), 'page');
+    for (const menu of await sidebar.locator('.admin-nav-toggle').all()) {
+        await menu.press('Space');
+        assert.equal(await menu.getAttribute('aria-expanded'), 'true');
+    }
+    await sidebar.locator('.admin-agent-nav summary').press('Space');
+    assert.ok(await sidebar.getByRole('link', {name:'Products', exact:true}).isVisible());
+    const navIcons = await sidebar.locator('nav :is(a, button, summary)').evaluateAll(items =>
+        items.filter(item => item.getClientRects().length > 0).map(item => ({
+            label:item.textContent.trim(), width:item.querySelector('svg')?.getBoundingClientRect().width ?? 0
+        }))
+    );
+    assert.ok(navIcons.length > 10);
+    assert.ok(navIcons.every(icon => icon.width >= 14), JSON.stringify(navIcons));
+    await mobile.keyboard.press('Escape');
+    assert.equal(await navigation.getAttribute('aria-expanded'), 'false');
+    assert.ok(await navigation.evaluate(button => button === document.activeElement));
+
     await mobile.locator('.users-filter-options > summary').click();
-    await mobile.getByLabel('Order activity').selectOption('one_order');
-    await mobile.getByLabel('Latest order').selectOption('30');
+    await mobile.getByLabel('Order activity').selectOption('repeat');
+    await mobile.getByLabel('Latest order', {exact:true}).selectOption('30');
+    await mobile.getByLabel('Latest order status').selectOption('delivered');
     await mobile.getByRole('button', {name:'Apply filters'}).click();
     assert.equal(await mobile.locator('.users-entry').count(), 1);
     assert.match(await mobile.locator('.users-result-count').innerText(), /of 1 account/);
     await mobile.getByRole('link', {name:'Remove latest order filter: Last 30 days'}).click();
     const retained = new URL(mobile.url()).searchParams;
-    assert.equal(retained.get('activity'), 'one_order');
+    assert.equal(retained.get('activity'), 'repeat');
+    assert.equal(retained.get('status'), 'delivered');
     assert.ok(!retained.has('period'));
-    assert.ok(await mobile.getByRole('link', {name:'Remove order activity filter: One order'}).isVisible());
-    assert.equal(await mobile.locator('.users-entry').count(), 1);
+    await mobile.getByRole('link', {name:'Remove latest order status filter: Delivered'}).click();
+    assert.equal(new URL(mobile.url()).searchParams.get('activity'), 'repeat');
+    assert.ok(!new URL(mobile.url()).searchParams.has('status'));
+    await mobile.locator('.users-entry summary').click();
+    assert.ok(await mobile.getByRole('link', {name:'OLDER-ORDER'}).isVisible());
+    assert.ok(await mobile.getByRole('link', {name:'FIXTURE-INVOICE'}).isVisible());
 
+    await page.goto(url + '?status=pending');
+    assert.equal(await rows.count(), 0, 'Older status does not qualify an account');
+    await page.goto(url + '?status=delivered');
+    assert.equal(await rows.count(), 1, 'An undated order cannot qualify as latest');
     await page.goto(url + '?role=customer&sort=order_count&per_page=10&page=2');
     await page.getByRole('link', {name:'Remove sort filter: Most orders'}).press('Enter');
     const updated = new URL(page.url()).searchParams;
@@ -156,4 +198,11 @@ test('Users keeps secondary filters collapsed and preserves them through native 
     await page.getByRole('link', {name:/Remove search filter/}).press('Enter');
     assert.ok(!new URL(page.url()).searchParams.has('q'));
     assert.equal(await rows.count(), 13);
+
+    fixtures.settings = [{id:'app_settings', module_shop:'0', module_blog:'0'}];
+    await mobile.goto(url);
+    await navigation.press('Enter');
+    await sidebar.getByRole('button', {name:'Commerce'}).press('Space');
+    assert.ok(await sidebar.getByRole('link', {name:'Orders', exact:true}).isVisible());
+    assert.equal(await sidebar.locator('a[href="/admin/products"],a[href="/admin/blog"]').count(), 0);
 });
