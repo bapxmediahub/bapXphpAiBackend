@@ -277,6 +277,14 @@ read-only live acceptance after releases; never deploy an intentional crash prob
 
 Hostinger hPanel's **Advanced → Git → Auto Deployment** is asynchronous. After a green `main` run, the separate SHA-verification workflow now waits **60 seconds** before its bounded polling of `/is-sha-valid?sha=<merge_sha>`; a mismatch/503 stays unverified, not a deployment success. Run independent mobile cart acceptance only after the SHA gate passes. For A2UI releases, confirm the live `GET /api/knowledge/a2ui?view=products&limit=1` JSON envelope, `assets/a2ui-public-renderer.js` and `assets/public-a2ui-webmcp.js`, and then the official WebMCP browser-tool discovery/execution. A2UI access from an unrelated ChatGPT chat requires a separate connector, not the website's WebMCP script. See [A2UI contract](a2ui.md).
 
+The live Homepage and About Chromium suites run serially. Each verifies the
+running Git HEAD before its browser scenarios and again after them. The
+read-only revision probe makes up to three attempts within 16 seconds, honours
+`Retry-After` when it fits that budget, and logs recoverable transport or HTTP
+failures. An exact-SHA mismatch, malformed response or exhausted probe fails
+the job. Navigation and UI assertions never use revision-probe retries.
+[Node test concurrency](https://nodejs.org/download/release/v22.21.0/docs/api/cli.html#--test-concurrency)
+
 After the A2UI release's post-merge SHA verification, the `webmcp_acceptance` job independently checks the live landing page for `search_public_products`, `search_public_articles`, `get_public_contact`, `list_public_services` and `present_public_knowledge`, then verifies the additional `list_shop_results` tool on `/shop`. Separate official-polyfill and native headed-Chrome runs check discovery, read-only execution and safe A2UI rendering. Native Chrome before 159 may omit discovered output schemas; actual output is still validated. The native run requires the real browser API, so it cannot silently pass using the polyfill. Record that browser evidence separately from a direct ChatGPT MCP connector (not installed by WebMCP alone).
 
 The separate `public_mcp_acceptance` job also depends on the verified live SHA.

@@ -24,8 +24,8 @@
         },
         "foundation": {
             "source_sha256": "2be135cc13e6c54384371b407646b276a5026e42ec3b44eb75e1d9f179da7db7",
-            "references_sha256": "c2067088cbcfaf8b1b72f6e313c2783c60fb4dc43dd3b986bf911743d9883cfe",
-            "review_note": "Checked the existing private route and email-matched read-only data flow against shared hosting, architecture and storage guidance; no schema, routing or persistence contract changed."
+            "references_sha256": "f2e5f483a05240c3512534f5ff25d322be814ccde451c0f5d421adcd10641f94",
+            "review_note": "Compared the documented deployment checks with the actual workflow and native application boundaries. The changes run in tests and GitHub Actions and introduce no application server, data or hosting mutation."
         },
         "google-tags": {
             "source_sha256": "7edbdefed03dedb366ca2201e7af5423ce0e41c37e60de4ad0e9912f27f10e22",
@@ -34,8 +34,8 @@
         },
         "http-errors": {
             "source_sha256": "913844884b7e734bcaf0c0f66f3ae88e18441ae4c9d5755a16a27a343909e9b3",
-            "references_sha256": "b86e6c1c25007ee7892d587ab2ca1bf71bdb634bbe40d2b1043989989e509ac0",
-            "review_note": "Checked the common layout and controller feedback against the HTTP response boundary. The appearance redirect reports failed writes without provider details."
+            "references_sha256": "d0ac623d4a8592163e32c117ddd7f3e054c3a4257b3d80344559a796ae54eb9c",
+            "review_note": "Reviewed request-failure and hosting guidance against the probe error handling. Retry is bounded to the read-only revision GET, honors server guidance and does not assert deployment on network or HTTP failure."
         },
         "interface": {
             "source_sha256": "77b65056a8c380b2f2ce9552b1e570c7403a9017023b52b4e0b4baaa79b40e91",
@@ -78,9 +78,9 @@
             "review_note": "Confirmed the existing catalogue optimiser and filename handling remain the default. Only brand uploads retain the original raster type."
         },
         "workflow": {
-            "source_sha256": "f29fd017b20cde6b35871e1eeeff24e5f2ebf6736122476f417cf7639c88fd23",
+            "source_sha256": "060ec1eedc633b6b9351f466d4275f4bc377cb4689ffc21957416548ade6a282",
             "references_sha256": "e34bc6f1ebc75679c05889ba2d5c65285603a62a53ccb61f230877a7eac24340",
-            "review_note": "Verified the existing About Chromium suite reproduces the 3.28 contrast defect with the page CSS blocked and passes after the shared style fix. Normal layout checks explicitly require the editorial stylesheet."
+            "review_note": "Checked exact HEAD verification before and after both unchanged browser suites, serial release execution, fixture checks in CI and the independent deployment gate."
         }
     }
 }

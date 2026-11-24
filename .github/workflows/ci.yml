@@ -54,7 +54,7 @@ jobs:
       - name: Verify current checkout SHA and safe failure on untrusted references
         run: |
           php tests/deployment-revision.php
-          node --test tests/deployment-revision.test.cjs
+          node --test tests/deployment-revision.test.cjs tests/live-browser-revision.test.cjs
       - name: Validate mixed storefront search results and module visibility
         run: php tests/storefront-search.php
       - name: Gate published public knowledge and hidden Markdown isolation
