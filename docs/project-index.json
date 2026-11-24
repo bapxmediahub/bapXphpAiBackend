@@ -191,7 +191,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1188
+            "line": 1165
         },
         {
             "from": "controller:AdminController",
@@ -199,7 +199,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1433
+            "line": 1410
         },
         {
             "from": "controller:AdminController",
@@ -271,7 +271,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1408
+            "line": 1385
         },
         {
             "from": "controller:AdminController",
@@ -343,7 +343,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1657
+            "line": 1634
         },
         {
             "from": "controller:AdminController",
@@ -360,14 +360,6 @@
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
             "line": 40
-        },
-        {
-            "from": "controller:AdminController",
-            "to": "service:SmtpMailer",
-            "relation": "constructs",
-            "provenance": "source_token",
-            "source": "app/Controllers/AdminController.php",
-            "line": 1164
         },
         {
             "from": "controller:AdminController",
@@ -455,7 +447,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1459
+            "line": 1436
         },
         {
             "from": "controller:AdminController",
@@ -471,7 +463,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1484
+            "line": 1461
         },
         {
             "from": "controller:AdminController",
@@ -511,7 +503,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1586
+            "line": 1563
         },
         {
             "from": "controller:AdminController",
@@ -751,7 +743,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AuthController.php",
-            "line": 86
+            "line": 92
         },
         {
             "from": "controller:AuthController",
@@ -767,7 +759,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AuthController.php",
-            "line": 101
+            "line": 107
         },
         {
             "from": "controller:AuthController",
@@ -783,7 +775,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AuthController.php",
-            "line": 138
+            "line": 152
         },
         {
             "from": "controller:AuthController",
@@ -800,6 +792,14 @@
             "provenance": "source_token",
             "source": "app/Controllers/AuthController.php",
             "line": 5
+        },
+        {
+            "from": "controller:AuthController",
+            "to": "service:RateLimiter",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AuthController.php",
+            "line": 82
         },
         {
             "from": "controller:AuthController",
@@ -4266,9 +4266,6 @@
             "response": null,
             "provenance": "route_registry",
             "services": [
-                "SecretService",
-                "SmtpMailer",
-                "AuditLogService",
                 "AuthService"
             ]
         },
@@ -5311,7 +5308,9 @@
             "response": null,
             "provenance": "route_registry",
             "services": [
-                "PasswordResetService"
+                "PasswordResetService",
+                "RateLimiter",
+                "MailQueueService"
             ]
         },
         {
@@ -5484,7 +5483,9 @@
             "response": null,
             "provenance": "route_registry",
             "services": [
-                "DatabaseService"
+                "DatabaseService",
+                "RateLimiter",
+                "MailQueueService"
             ]
         },
         {
@@ -5962,6 +5963,16 @@
                     "MailTemplateService",
                     "MailQueueService",
                     "SecretService",
+                    "AuthService"
+                ]
+            },
+            {
+                "method": "POST",
+                "path": "/admin/integrations/test-email",
+                "name": "admin.integrations.test-email",
+                "page": "admin/integrations",
+                "controller": "AdminController@testEmail",
+                "services": [
                     "AuthService"
                 ]
             },

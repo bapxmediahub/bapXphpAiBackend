@@ -1156,33 +1156,10 @@ final class AdminController extends BaseController {
     }
 
     public function testEmail(): void{
-        $to = trim((string)($_POST['test_email'] ?? ''));
-        if ($to === '' || !filter_var($to, FILTER_VALIDATE_EMAIL)) {
-            $_SESSION['mail_test_result'] = ['ok'=>false,'transport'=>'','message'=>'Enter a valid email address.'];
-            $this->redirect('/admin/integrations');
-        }
-        $mailer = new \App\Services\SmtpMailer((new SecretService())->all());
-        if (!$mailer->configured()) {
-            $_SESSION['mail_test_result'] = ['ok'=>false,'transport'=>'','message'=>'SMTP is not fully configured. Save the host, port, mailbox username, password and From Email above first.'];
-            $this->redirect('/admin/integrations');
-        }
-        $transport = $mailer->transport();
-        $sentAt = date('c');
-        try {
-            $mailer->send(
-                $to,
-                'Test email from Sri Panchami Spiritual',
-                '<p>This is a test message sent from Admin &rarr; Integrations.</p>'
-                . '<p>Transport: <strong>' . e($transport) . '</strong><br>From: <strong>' . e($mailer->fromEmail()) . '</strong><br>Sent: ' . e($sentAt) . '</p>'
-                . '<p>If you received this, transactional email is working.</p>'
-            );
-            $_SESSION['mail_test_result'] = ['ok'=>true,'transport'=>$transport,'message'=>'Test email sent to ' . $to . ' from ' . $mailer->fromEmail() . '. Check the inbox, and the spam folder.'];
-            (new AuditLogService())->record('test','email',$to,['transport'=>$transport,'result'=>'sent']);
-        } catch (\Throwable $e) {
-            $_SESSION['mail_test_result'] = ['ok'=>false,'transport'=>$transport,'message'=>$e->getMessage()];
-            (new AuditLogService())->record('test','email',$to,['transport'=>$transport,'result'=>'failed','error'=>$e->getMessage()]);
-        }
-        $this->redirect('/admin/integrations');
+        // Legacy endpoint: use the existing explicit, idempotent, queued sample flow.
+        // A stale form must never send or replay a diagnostic email.
+        $this->flash('Choose a test template and explicitly confirm one sample. No email was sent by this request.','info');
+        $this->redirect('/admin/email-templates?template=welcome');
     }
     public function pages(): void {
         $service = new \App\Services\AuthoredPageService();

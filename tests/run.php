@@ -1320,6 +1320,21 @@ $tests['welcome notification is a new customer event not every OAuth sign in'] =
     assertTrue(str_contains($source,'MailTemplateService'),'Preview and delivery use the real render contract');
 };
 
+$tests['public account mail admission precedes mutations and legacy diagnostic cannot send'] = static function (): void {
+    $auth=fileRead('app/Controllers/AuthController.php');
+    $register=substr($auth,strpos($auth,'public function registerPost'),strpos($auth,'public function loginPost')-strpos($auth,'public function registerPost'));
+    assertTrue(strpos($register,"consumeAccountMail('register'")<strpos($register,"upsert('users'"),'Registration admission precedes account and welcome creation');
+    assertTrue(str_contains($register,'strcasecmp'),'Case-insensitive duplicate check');
+    $recovery=substr($auth,strpos($auth,'public function forgotPasswordPost'),strpos($auth,'public function resetPassword()')-strpos($auth,'public function forgotPasswordPost'));
+    assertTrue(strpos($recovery,"consumeAccountMail('recovery'")<strpos($recovery,'->createToken('),'Denied recovery must not rotate token');
+    assertTrue(!str_contains($recovery,'a reset link has been sent'),'Recovery response never promises SMTP delivery');
+    $admin=fileRead('app/Controllers/AdminController.php');
+    $legacy=substr($admin,strpos($admin,'public function testEmail():',0),strpos($admin,'public function pages():')-strpos($admin,'public function testEmail():'));
+    assertTrue(!str_contains($legacy,'->send(')&&str_contains($legacy,'/admin/email-templates?template=welcome'),'Legacy SMTP diagnostic redirects without sending');
+    assertTrue(str_contains(fileRead('views/admin/integrations.php'),'Open email test templates'),'Existing queued sample workspace is reachable');
+    assertTrue(!str_contains(fileRead('views/admin/email-templates.php'),'owner contact notifications, security'),'Templates no longer claim held contact triggers are active');
+};
+
 $tests['mail template preview and sending are admin scoped and clearly separated'] = static function (): void {
     $routes=\App\Services\ProjectMapService::registry()['routes'];
     foreach(['GET /admin/email-templates','POST /admin/email-templates/test'] as $path){[$method,$url]=explode(' ',$path,2);assertSame(1,count(array_filter($routes,fn($r)=>$r['path']===$url&&$r['method']===$method)),'Actual endpoint exists: '.$path);}

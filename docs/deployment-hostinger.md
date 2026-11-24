@@ -246,7 +246,7 @@ This application is built for normal PHP hosting, not Vercel. Vercel's official 
 - Admin blocked: verify the admin account in remote MySQL and the current Admin -> Settings configuration.
 - Razorpay disabled: add live key ID and secret in admin integrations.
 - Google login not working: verify the Google Cloud Console has the correct callback URL (`https://sripanchamispiritual.com/auth/google/callback`).
-- Emails not sending: check Admin → Integrations → Send a Test Email. It reports the exact SMTP error. For Hostinger use `smtp.hostinger.com`, port 465 (SSL) or 587 (TLS), the full email address as username, and a From Email matching that mailbox.
+- Emails not sending: check Admin → Integrations → Verify email delivery, then explicitly send one labelled sample in Email Templates. Inspect the queue status and actual mailbox receipt separately. For Hostinger use `smtp.hostinger.com`, port 465 (SSL) or 587 (TLS), the full email address as username, and a From Email matching that mailbox.
 
 ## Runtime readiness
 

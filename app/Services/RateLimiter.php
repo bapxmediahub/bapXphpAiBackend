@@ -38,27 +38,49 @@ final class RateLimiter {
             hash('sha256', 'contact:site:hour') => [20, 3600],
             hash('sha256', 'contact:site:day') => [60, 86400],
         ];
+        return self::consumeAtomic($limits,$path,$now);
+    }
+
+    /** Independent budgets for public account-triggered mail, never for paid-order or admin mail. */
+    public static function consumeAccountMail(string $event,string $ip,string $email,?string $path=null,?int $now=null): bool {
+        if(!in_array($event,['register','recovery'],true) || !filter_var($email,FILTER_VALIDATE_EMAIL))
+            throw new \InvalidArgumentException('Invalid account mail admission.');
+        $path ??= storage_path('logs/account-mail-admission.json');
+        $key = 'account-mail:'.$event.':';
+        $email = strtolower(trim($email));
+        // Recovery has its own budget so a signup flood cannot consume it.
+        $limits = [
+            hash('sha256',$key.'ip:'.$ip) => $event==='register'?[3,300]:[3,120],
+            hash('sha256',$key.'recipient:'.$email) => [1,900],
+            hash('sha256',$key.'recipient:day:'.$email) => $event==='register'?[2,86400]:[4,86400],
+            hash('sha256',$key.'site:hour') => $event==='register'?[12,3600]:[20,3600],
+            hash('sha256',$key.'site:day') => $event==='register'?[30,86400]:[80,86400],
+        ];
+        return self::consumeAtomic($limits,$path,$now);
+    }
+
+    private static function consumeAtomic(array $limits,string $path,?int $now): bool {
         $dir = dirname($path);
         if (!is_dir($dir) && !@mkdir($dir, 0700, true) && !is_dir($dir))
-            throw new \RuntimeException('Contact admission storage unavailable.');
+            throw new \RuntimeException('Admission storage unavailable.');
         $lock = @fopen($path.'.lock', 'c');
-        if ($lock === false) throw new \RuntimeException('Contact admission lock unavailable.');
+        if ($lock === false) throw new \RuntimeException('Admission lock unavailable.');
         try {
-            if (!flock($lock, LOCK_EX)) throw new \RuntimeException('Contact admission lock failed.');
+            if (!flock($lock, LOCK_EX)) throw new \RuntimeException('Admission lock failed.');
             $now ??= time();
             $data = [];
             if (is_file($path)) {
                 $raw = @file_get_contents($path, false, null, 0, 262145);
                 if ($raw === false || strlen($raw) > 262144)
-                    throw new \RuntimeException('Contact admission state unavailable.');
+                    throw new \RuntimeException('Admission state unavailable.');
                 $data = json_decode($raw, true, 32, JSON_THROW_ON_ERROR);
-                if (!is_array($data)) throw new \RuntimeException('Invalid contact admission state.');
+                if (!is_array($data)) throw new \RuntimeException('Invalid admission state.');
             }
             foreach ($data as $key => $times) {
                 if (!is_string($key) || !preg_match('/^[a-f0-9]{64}$/D', $key) || !is_array($times) || !array_is_list($times))
-                    throw new \RuntimeException('Invalid contact admission bucket.');
+                    throw new \RuntimeException('Invalid admission bucket.');
                 foreach ($times as $ts) {
-                    if (!is_int($ts) || $ts > $now) throw new \RuntimeException('Invalid contact admission timestamp.');
+                    if (!is_int($ts) || $ts > $now) throw new \RuntimeException('Invalid admission timestamp.');
                 }
                 $data[$key] = array_values(array_filter($times, static fn(int $ts): bool => $ts > $now-86400));
                 if ($data[$key] === []) unset($data[$key]);
@@ -70,10 +92,10 @@ final class RateLimiter {
             foreach ($limits as $key => $_) $data[$key][] = $now;
             $encoded = json_encode($data, JSON_THROW_ON_ERROR);
             $tmp = @tempnam($dir, '.contact-admission-');
-            if ($tmp === false) throw new \RuntimeException('Contact admission write unavailable.');
+            if ($tmp === false) throw new \RuntimeException('Admission write unavailable.');
             try {
                 if (!@chmod($tmp, 0600) || @file_put_contents($tmp, $encoded) !== strlen($encoded) || !@rename($tmp, $path))
-                    throw new \RuntimeException('Contact admission write failed.');
+                    throw new \RuntimeException('Admission write failed.');
             } finally {
                 if (is_file($tmp)) @unlink($tmp);
             }

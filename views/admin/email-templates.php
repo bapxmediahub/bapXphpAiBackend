@@ -45,7 +45,7 @@
     </form>
 </section>
 <section class="admin-card" style="margin-top:24px"><h3>Other current lifecycle messages</h3>
-    <p>Contact acknowledgements, owner contact notifications, security sign-in notices and explicitly selected newsletters keep their existing triggers. A delayed product-review message is only scheduled in the queue; the due-pending processor must run to send it. Opening this page never processes a backlog.</p>
+    <p>Contact enquiries are saved in Contacts and Email Inbox; automatic visitor and owner contact mail remains held. Security sign-in notices and explicitly selected newsletters keep their existing triggers. A delayed product-review message is only scheduled in the queue; the due-pending processor must run to send it. Opening this page never processes a backlog.</p>
     <p>Refund/cancellation email automation and PDF attachments are not implied by an order status or this preview menu. Confirm the actual implemented trigger before promising a message. Consult <a href="/admin/docs/email">Email help</a> and <a href="/admin/integrations">SMTP configuration</a>.</p>
 </section>
 </section>

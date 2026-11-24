@@ -61,24 +61,30 @@ final class AuthController extends BaseController {
   }
   public function registerPost(): void {
     $this->validateCsrf();
-    $this->checkRateLimit('register', 3, 300);
-    $email = trim($_POST['email'] ?? '');
-    $name = trim($_POST['name'] ?? '');
-    $password = $_POST['password'] ?? '';
-    $confirm = $_POST['password_confirm'] ?? '';
-    $phone = trim($_POST['phone'] ?? '');
-    $address = trim($_POST['address'] ?? '');
-    $city = trim($_POST['city'] ?? '');
-    $pincode = trim($_POST['pincode'] ?? '');
-    $state = \App\Services\TaxService::normaliseState((string)($_POST['state'] ?? ''));
+    $field=static fn(string $key):string=>is_string($_POST[$key]??null)?$_POST[$key]:'';
+    $email = trim($field('email'));
+    $name = trim($field('name'));
+    $password = $field('password');
+    $confirm = $field('password_confirm');
+    $phone = trim($field('phone'));
+    $address = trim($field('address'));
+    $city = trim($field('city'));
+    $pincode = trim($field('pincode'));
+    $state = \App\Services\TaxService::normaliseState($field('state'));
     if ($password === '' || $email === '' || $name === '' || $phone === '' || $address === '' || $city === '' || $pincode === '') { $this->flash('Account and delivery address fields are required.','error'); $this->redirect('/register'); }
     if ($state === null) { $this->flash('Select a valid delivery state.','error'); $this->redirect('/register'); }
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) { $this->flash('Invalid email address.','error'); $this->redirect('/register'); }
     if ($password !== $confirm) { $this->flash('Passwords do not match.','error'); $this->redirect('/register'); }
     if (empty($_POST['accept_terms'])) { $this->flash('You must accept the Terms of Service and Privacy Policy to register.','error'); $this->redirect('/register'); }
+    // Reserve mail/registration admission atomically before any account or welcome mutation.
+    // A fresh Google-verified account uses its own existing authenticated OAuth path.
+    try {
+        $admitted=\App\Services\RateLimiter::consumeAccountMail('register',(string)($_SERVER['REMOTE_ADDR']??'unknown'),$email);
+    } catch (\Throwable) { $admitted=false; error_log('Registration admission unavailable.'); }
+    if(!$admitted){$this->flash('Registration is temporarily limited. Please try later or sign in with Google if configured.','error');$this->redirect('/register');}
     $store = new DatabaseService();
     $users = $store->read('users');
-    foreach ($users as $u) { if (($u['email'] ?? '') === $email) { $this->flash('Email already registered.','error'); $this->redirect('/login'); } }
+    foreach ($users as $u) { if (strcasecmp((string)($u['email'] ?? ''), $email)===0) { $this->flash('Email already registered.','error'); $this->redirect('/login'); } }
     $id = bin2hex(random_bytes(8));
     $role = 'customer';
     $record = ['id'=>$id,'email'=>$email,'name'=>$name,'role'=>$role,'password_hash'=>password_hash($password,PASSWORD_DEFAULT),'accepted_terms_at'=>date('c')];
@@ -132,22 +138,25 @@ final class AuthController extends BaseController {
   }
   public function forgotPasswordPost(): void {
     $this->validateCsrf();
-    $this->checkRateLimit('forgot-password', 3, 120);
-    $email = trim($_POST['email'] ?? '');
-    if ($email !== '') {
-        $token = (new PasswordResetService())->createToken($email);
-        if ($token) {
-            // The link is emailed, never rendered. Showing it would hand any visitor a
-            // working reset for an address they do not control.
-            $link = $this->siteUrl('/reset-password?token=' . urlencode($token));
-            try {
-                (new MailQueueService())->enqueueTemplate('password_reset',['reset_url'=>$link],$email);
-            } catch (\Throwable) {}
-        }
+    $email = is_string($_POST['email']??null)?trim($_POST['email']):'';
+    // Identical public response for unknown addresses, rate limits, transport failures
+    // and admitted requests. Never rotate a reset token on a denied request.
+    $admitted=false;
+    if(filter_var($email,FILTER_VALIDATE_EMAIL)) {
+        try {
+            $admitted=\App\Services\RateLimiter::consumeAccountMail('recovery',(string)($_SERVER['REMOTE_ADDR']??'unknown'),$email);
+        } catch (\Throwable) { error_log('Recovery admission unavailable.'); }
     }
-    // Identical response either way, so the form cannot be used to discover which
-    // addresses are registered.
-    $this->flash('If this email is registered, a reset link has been sent.','info');
+    if ($admitted) {
+        try {
+            $token = (new PasswordResetService())->createToken($email);
+            if ($token) {
+                $link = $this->siteUrl('/reset-password?token=' . urlencode($token));
+                (new MailQueueService())->enqueueTemplate('password_reset',['reset_url'=>$link],$email);
+            }
+        } catch (\Throwable) { error_log('Password recovery delivery could not be confirmed.'); }
+    }
+    $this->flash('If the address is registered and recovery is available, check your inbox for a reset link. If no email arrives, wait before requesting another.','info');
     $this->redirect('/forgot-password');
   }
   public function resetPassword(): void {
