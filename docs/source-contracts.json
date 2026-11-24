@@ -38,9 +38,9 @@
             "review_note": "Reviewed mail rendering through the guarded admin preview. Existing error, rejection and claim handling are preserved."
         },
         "interface": {
-            "source_sha256": "f56ca06ffd258d526a1f79fb42dda0c57f2635f801cdcdc241f6ce90403217a9",
+            "source_sha256": "4c0d0dcc4cd6108c95c62276feeccb70acc0e390bb209ccf0dd49f879f9dec99",
             "references_sha256": "1b0f6d645882eaf1aee6efc0a77dc06d71928517c70e7419e4644541561f00bd",
-            "review_note": "Compared the toolbar and top-bar controls with the current Design and admin guide. Applied filters preserve other criteria, and narrow top-bar actions size around their icon and label so fallback fonts remain readable."
+            "review_note": "Compared the directory and navigation with the admin guide and Design. Native filter removal retains other criteria, top-bar actions fit fallback fonts, and the compact overview and collapsed toolbar bring the first account into view."
         },
         "mail": {
             "source_sha256": "478194235d65cf0c290fe1e7e5df9db5459e299eb36c538ae09340d2abd8b4aa",

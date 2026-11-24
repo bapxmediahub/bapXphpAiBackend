@@ -93,7 +93,10 @@ test('Users keeps secondary filters collapsed and preserves them through native 
             assert.ok(action.iconWidth >= 14 && action.scrollWidth <= action.clientWidth + 1,
                 'Top-bar icon and label fit at ' + width + 'px ' + JSON.stringify(action));
         }
-        if (width === 375) assert.ok((await rows.first().boundingBox()).y < 760);
+        if (width === 375) {
+            const y = (await rows.first().boundingBox()).y;
+            assert.ok(y < 760, 'First account starts inside the initial viewport at y=' + y);
+        }
         await optionsToggle.press('Space');
         assert.ok(await role.isVisible());
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));

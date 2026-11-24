@@ -251,6 +251,18 @@
     .users-history td small { display: block; color: var(--color-text-muted); font-weight: 650; font-size: .75rem; }
     .users-history td a { display: inline-block; padding-block: .25rem; text-decoration: underline; }
 }
+@media (min-width: 375px) and (max-width: 640px) {
+    .users-metrics { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .35rem; }
+    .users-metrics a {
+        grid-template-columns: minmax(0, 1fr); align-content: space-between;
+        min-height: 66px; padding: .4rem .45rem;
+    }
+    .users-metrics span { font-size: .74rem; line-height: 1.2; }
+    .users-metrics strong { font-size: 1.2rem; overflow-wrap: anywhere; }
+    .users-filters:not(:has(.users-filter-options[open], .users-filter-count)) {
+        grid-template-columns: minmax(0, 1fr) auto; align-items: end;
+    }
+}
 
 /* Long uploaded filenames must wrap inside their grid track, not widen the page. */
 .admin-media-tile { min-width: 0; grid-template-columns: minmax(0, 1fr); }
