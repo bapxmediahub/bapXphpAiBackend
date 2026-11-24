@@ -1119,6 +1119,55 @@ final class AdminController extends BaseController {
         $this->redirect('/admin/media');
     }
 
+    public function deleteMediaSelection(): void {
+        $this->validateCsrf();
+        $media = new MediaService();
+        $step = $_POST['step'] ?? null;
+        if ($step === 'preview') {
+            unset($_SESSION['media_delete_review']);
+            try {
+                $uploads = $media->reviewDeletionSelection($_POST['ids'] ?? null);
+            } catch (\InvalidArgumentException $error) {
+                $this->flash($error->getMessage(), 'error');
+                $this->redirect('/admin/media#media-library');
+            } catch (\RuntimeException) {
+                $this->flash('The selected uploads could not be loaded. Refresh the library and try again.', 'error');
+                $this->redirect('/admin/media#media-library');
+            }
+            $token = bin2hex(random_bytes(16));
+            $_SESSION['media_delete_review'] = ['token' => $token, 'uploads' => $uploads, 'expires_at' => time() + 600];
+            $this->render('admin/media-delete-selection', ['pageTitle' => 'Review media deletion', 'uploads' => $uploads, 'token' => $token]);
+            return;
+        }
+
+        $review = $_SESSION['media_delete_review'] ?? null;
+        $token = $_POST['review_token'] ?? null;
+        if (!in_array($step, ['confirm', 'cancel'], true) || !is_string($token) || !is_array($review)
+            || $review['expires_at'] <= time() || !hash_equals($review['token'], $token)) {
+            $this->flash('This review is no longer active. Select the uploads again.', 'error');
+            $this->redirect('/admin/media#media-library');
+        }
+        unset($_SESSION['media_delete_review']);
+        if ($step === 'cancel') {
+            $this->redirect('/admin/media#media-library');
+        }
+        $results = [];
+        $audit = new AuditLogService();
+        foreach ($review['uploads'] as $upload) {
+            $blocked = null;
+            try {
+                $media->delete($upload['id']);
+                $audit->record('delete', 'media', $upload['id'], ['source' => 'media_library_bulk']);
+            } catch (\InvalidArgumentException $error) {
+                $blocked = $error->getMessage();
+            } catch (\RuntimeException) {
+                $blocked = 'The upload could not be removed. Check the library before retrying.';
+            }
+            $results[] = $upload + ['blocked' => $blocked];
+        }
+        $this->render('admin/media-delete-selection', ['pageTitle' => 'Media deletion results', 'results' => $results]);
+    }
+
     public function fixPermissions(): void{(new StoragePermissionService())->fix(); (new AuditLogService())->record('fix','permissions','storage'); $this->flash('Storage permissions checked and updated where PHP is allowed.','success'); $this->redirect('/admin/settings');}
     /**
      * Ask the configured model one real question and report exactly what came back.

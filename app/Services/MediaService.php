@@ -380,6 +380,28 @@ final class MediaService {
             );
     }
 
+    public const MAX_DELETE_SELECTION = 10;
+
+    /** @return list<array{id:string, name:string}> */
+    public function reviewDeletionSelection(mixed $selection): array {
+        if (!is_array($selection) || !array_is_list($selection) || $selection === []
+            || count($selection) > self::MAX_DELETE_SELECTION) {
+            throw new \InvalidArgumentException('Select between 1 and ' . self::MAX_DELETE_SELECTION . ' uploads.');
+        }
+        $uploads = [];
+        foreach ($selection as $id) {
+            if (!is_string($id) || !preg_match('/^[a-f0-9]{16}$/D', $id) || isset($uploads[$id])) {
+                throw new \InvalidArgumentException('Review a selection of distinct uploaded images.');
+            }
+            $record = $this->store->find('media_files', $id);
+            if ($record === null || !self::canDeleteRecord($record)) {
+                throw new \InvalidArgumentException('A selected upload is no longer available for deletion. Refresh the library and select again.');
+            }
+            $uploads[$id] = ['id' => $id, 'name' => $record['original_name'] ?? $record['filename'] ?? 'Uploaded image'];
+        }
+        return array_values($uploads);
+    }
+
     /** Identify links before a destructive operation; stale used_in is insufficient. */
     public static function referencesToUrl(string $url, array $recordsByType): array {
         $references = [];

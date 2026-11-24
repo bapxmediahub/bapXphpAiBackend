@@ -60,6 +60,21 @@ try {
     if(!$connected)throw new RuntimeException('Isolated bridge not listening');
     $media=new MediaService(store:new DatabaseService());
 
+    $review = $media->reviewDeletionSelection([$ids[0], $ids[1]]);
+    if (array_column($review, 'id') !== [$ids[0], $ids[1]]
+        || array_column($review, 'name') !== [$names[0], $names[1]]
+        || !is_file($files[0]) || !is_file($files[1])) {
+        throw new RuntimeException('Selection review must show the exact uploads without deleting them');
+    }
+    foreach ([[], 'invalid', [[$ids[0]]], array_fill(0, 11, $ids[0]), [$ids[0], $ids[0]], ['file:/assets/images/bundled.png'], [bin2hex(random_bytes(8))]] as $selection) {
+        try {
+            $media->reviewDeletionSelection($selection);
+            throw new RuntimeException('Malformed or stale selections must be rejected before deletion');
+        } catch (InvalidArgumentException) {
+            // The same primary keys and file bytes remain available after a rejected preview.
+        }
+    }
+
     $html = (static function (array $items): string {
         $csrf = 'fixture-csrf';
         ob_start();
@@ -71,6 +86,8 @@ try {
     $forms = new DOMXPath($doc);
     $actionId = $forms->evaluate('string(//form[@action="/admin/media/delete"]/input[@name="id"]/@value)');
     if ($actionId !== $ids[1]) throw new RuntimeException('Historical upload must retain its owner deletion form');
+    $selectedId = $forms->evaluate('string(//input[@form="media-delete-selection"]/@value)');
+    if ($selectedId !== $ids[1]) throw new RuntimeException('Selection checkbox must target only its upload');
 
     try {
         $media->delete($ids[0]);

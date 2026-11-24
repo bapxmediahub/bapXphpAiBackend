@@ -46,15 +46,15 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 499
-  relationships: 447
+  concepts: 500
+  relationships: 448
   by_type:
     blog: 16
     controller: 18
     doc: 55
     image: 89
     operator_guide: 12
-    route: 181
+    route: 182
     runtime_instruction: 6
     schema: 24
     service: 86
@@ -4574,6 +4574,24 @@ concepts:
     view: "admin/media"
     response: null
     provenance: "route_registry"
+  - id: "route:post__admin_media_delete_selection"
+    type: "route"
+    title: "POST /admin/media/delete-selection"
+    description: "admin.media.delete-selection"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "POST"
+    path: "/admin/media/delete-selection"
+    controller: "AdminController@deleteMediaSelection"
+    services:
+      - "MediaService"
+      - "AuditLogService"
+      - "AuthService"
+    view: "admin/media-delete-selection"
+    response: null
+    provenance: "route_registry"
   - id: "route:post__admin_media_metadata"
     type: "route"
     title: "POST /admin/media/metadata"
@@ -7380,6 +7398,9 @@ relationships:
     to: "controller:AdminMcpClientController"
     relation: "handled_by"
   - from: "route:post__admin_media_delete"
+    to: "controller:AdminController"
+    relation: "handled_by"
+  - from: "route:post__admin_media_delete_selection"
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:post__admin_media_metadata"

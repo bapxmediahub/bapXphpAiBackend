@@ -17,6 +17,13 @@ successful consultant lookup. An owner can delete an image after replacing it or
 deleting its product. Unknown or malformed historical references prevent deletion. Metadata deletion failure restores quarantined files.
 A successful operation is recorded through the existing admin audit service.
 
+`POST /admin/media/delete-selection` uses the same owner and CSRF checks. The
+review resolves up to ten distinct uploaded IDs and lists their filenames. The
+session holds that selection for ten minutes or until it is replaced, canceled
+or used. Confirming consumes the token and calls the guarded deletion method for
+each upload, with an audit record for each removal. A referenced file is kept
+even when another selection succeeds.
+
 These guards are not an atomic cross-collection reference-lock protocol.
 Concurrent content edits and media deletion should be serialized operationally;
 do not claim a no-race guarantee across arbitrary independently edited records.

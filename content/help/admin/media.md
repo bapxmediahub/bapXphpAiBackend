@@ -14,6 +14,8 @@ Review the image's **Used in** details and the content that refers to it. Only e
 
 ## Confirm a safe removal
 
+To remove several uploads, choose **Select for removal** on up to 10 images, then choose **Review selected uploads**. Check the file names before confirming permanent deletion. The results list which uploads were removed and why any were kept.
+
 Delete only an upload you are authorized to remove. Read the confirmation and check the result; do not repeatedly click on a slow response. The application checks references again and can reject removal. Do not use the library to delete live customer assets merely for testing.
 
 For the site's identity images, use **Logo & Favicon**. Replacing a logo or article picture is different from deleting its original binary.
