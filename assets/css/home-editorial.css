@@ -1,6 +1,38 @@
 /* Homepage-only editorial treatment; commerce controls remain shared components. */
 /* The full editorial card, rather than nested photos or text, is the transition. */
+/* Persistent navigation is a layout feature, not an animation preference. */
+body:has(main.home-main) { overflow-x: clip; }
+body:has(main.home-main) > #site-header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: var(--color-bg);
+    backdrop-filter: none;
+}
+body:has(main.home-main) main.home-main { padding-block-end: 0; }
 .home-editorial-stack { position: relative; isolation: isolate; --home-bottom: 0px; }
+@media (max-width: 860px) {
+    body:has(main.home-main) > #site-header {
+        display: grid;
+        grid-template-columns: 44px minmax(0,1fr) 44px;
+        gap: 8px;
+    }
+    body:has(main.home-main) > #site-header .menu-toggle,
+    body:has(main.home-main) > #site-header > noscript { grid-column: 1; grid-row: 1; order: 0; }
+    body:has(main.home-main) > #site-header .brand {
+        grid-column: 2; grid-row: 1; margin: 0; justify-content: center; gap: 6px;
+    }
+    body:has(main.home-main) > #site-header .brand img { width: 40px; height: 40px; flex: 0 0 40px; object-fit: contain; }
+    body:has(main.home-main) > #site-header .brand span { font-size: clamp(.72rem,2.7vw,.95rem); }
+    body:has(main.home-main) > #site-header .header-actions { grid-column: 3; grid-row: 1; justify-self: end; }
+    body:has(main.home-main) > #site-header #primary-nav {
+        max-height: calc(100dvh - 88px);
+        overflow-y: auto;
+        overscroll-behavior-y: contain;
+        background: var(--color-bg);
+        backdrop-filter: none;
+    }
+}
 .home-editorial-stack > :is(.home-opening,.home-bestsellers,.home-collection,.home-chapter,.home-faq) {
     position: relative;
     min-height: max(0px,calc(100svh - var(--home-header-height, 80px) - var(--home-bottom)));
@@ -14,20 +46,15 @@
 .home-editorial-stack > :is(.home-bestsellers,.home-collection,.home-faq) > .container,
 .home-chapter > section > .container { width: 100%; min-width: 0; }
 @media screen and (prefers-reduced-motion: no-preference) {
-    html[data-sps-motion="enabled"] body:has([data-stack-ready]) { overflow-x: clip; }
-    html[data-sps-motion="enabled"] [data-stack-ready]:not(:has(:focus-visible,:target)) > :is(.home-opening,.home-bestsellers,.home-collection,.home-chapter) {
+    html[data-sps-motion="enabled"] [data-stack-ready]:not(:has(:focus-visible,:target)) > :is(.home-opening,.home-bestsellers,.home-collection,.home-chapter,.home-faq) {
         position: sticky;
         top: min(var(--home-header-height,80px),calc(100svh - var(--home-bottom) - var(--home-card-height,100svh)));
         z-index: 1;
     }
-    html[data-sps-motion="enabled"] [data-stack-ready] > .home-faq { z-index: 2; }
+    html[data-sps-motion="enabled"] [data-stack-ready] > .site-footer { position: relative; z-index: 2; }
 }
 @media (max-width: 767px) {
     body:has(#bottom-nav) .home-editorial-stack { --home-bottom: calc(68px + env(safe-area-inset-bottom)); }
-    body:has(#mobile-cart-tray:not([hidden])) .home-editorial-stack { --home-bottom: calc(136px + env(safe-area-inset-bottom)); }
-}
-@media (min-width: 768px) {
-    body:has(#mobile-cart-tray:not([hidden])) .home-editorial-stack { --home-bottom: 80px; }
 }
 
 .home-hero {
@@ -356,4 +383,147 @@
     .home-opening .home-hero .deity-frame, .home-opening .home-hero .hero-deity[data-current-slide="guruji"] .deity-frame {
         width: min(56vw, 25svh, 240px);
     }
+}
+
+/* Editorial composition: reserve the floating action area inside each panel,
+   rather than shortening the opaque surface or letting the buttons cover it. */
+.home-editorial-stack { --home-action-clearance: 88px; }
+.home-editorial-stack > :is(.home-bestsellers,.home-collection,.home-faq),
+.home-editorial-stack > .home-chapter > section {
+    padding-block-start: clamp(20px, 3svh, 36px);
+    padding-block-end: calc(var(--home-action-clearance) + env(safe-area-inset-bottom, 0px));
+}
+.home-editorial-stack .section-title { font-family: var(--font-serif); }
+.home-bestsellers__heading h2 {
+    font: 600 clamp(1.5rem, 3vw, 2.65rem)/1.1 var(--font-serif);
+    text-wrap: balance;
+}
+.home-editorial-stack .home-bestsellers__heading { margin-block-end: 12px; }
+.home-editorial-stack .page-sections { margin-block-end: 8px; }
+.home-editorial-stack .home-rail-controls:not([hidden]) { margin-block-end: 10px; }
+.home-editorial-stack .home-product-rail .product-card__image {
+    aspect-ratio: 4 / 3;
+    flex: 0 0 auto;
+}
+.home-editorial-stack .home-product-card { border-radius: 12px; }
+.home-editorial-stack .home-product-card .product-card__body {
+    padding: 14px;
+    gap: 8px;
+}
+.home-editorial-stack .home-product-card h3 {
+    margin: 0;
+    font-size: clamp(1rem, 1.5vw, 1.2rem);
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+.home-editorial-stack .home-product-card .product-card__title {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+}
+.home-editorial-stack .home-product-card .product-card__desc {
+    flex: 0 0 auto;
+    min-height: 0;
+    margin: 0;
+    line-height: 1.45;
+    -webkit-line-clamp: 2;
+}
+.home-editorial-stack .home-product-card .product-card__price-row {
+    padding: 0;
+    margin: auto 0 0;
+}
+.home-editorial-stack .home-product-card .product-card__actions { margin: 0; }
+.home-editorial-stack .home-product-card .product-purchase .btn { min-height: 44px; }
+.home-editorial-stack .home-collection__lead {
+    padding: clamp(24px, 4vw, 48px);
+    background: linear-gradient(145deg, var(--color-bg-warm), var(--color-white));
+}
+.home-editorial-stack .home-collection__lead h2 { font-size: clamp(1.6rem, 3vw, 2.5rem); }
+.home-editorial-stack .value-strip { gap: 16px; margin-block-start: 16px; }
+.home-editorial-stack .value-card,
+.home-editorial-stack .page-cta-card { transition: none; }
+.home-editorial-stack .value-card:hover,
+.home-editorial-stack .page-cta-card:hover { transform: none; }
+.home-editorial-stack .page-cta-card { margin-block-start: 20px; }
+@media (max-width: 744px) {
+    .home-editorial-stack { --home-action-clearance: 76px; }
+    .home-editorial-stack > :is(.home-bestsellers,.home-collection,.home-faq),
+    .home-editorial-stack > .home-chapter > section {
+        padding-inline: 16px;
+    }
+    .home-editorial-stack > :is(.home-bestsellers,.home-collection,.home-faq) > .container,
+    .home-editorial-stack > .home-chapter > section > .container { padding-inline: 0; }
+    .home-editorial-stack .home-bestsellers__heading h2 { font-size: clamp(1.45rem,5.3vw,1.9rem); }
+    .home-editorial-stack .home-product-card .product-card__body { padding: 12px; gap: 7px; }
+    .home-editorial-stack .value-card {
+        display: grid;
+        grid-template-columns: 40px minmax(0,1fr);
+        column-gap: 12px;
+        padding: 14px;
+        text-align: start;
+    }
+    .home-editorial-stack .value-card__icon {
+        grid-row: 1 / 3;
+        width: 40px;
+        height: 40px;
+        margin: 0;
+    }
+    .home-editorial-stack .value-card__icon svg { width: 22px; height: 22px; }
+    .home-editorial-stack .value-card h3 { grid-column: 2; font-size: 1.05rem; margin: 0 0 4px; }
+    .home-editorial-stack .value-card p { grid-column: 2; font-size: .85rem; line-height: 1.5; }
+    .home-editorial-stack .page-cta-card { padding: 16px; gap: 12px; }
+    .home-editorial-stack .trust-bar { padding-inline-end: 76px; }
+    .home-editorial-stack .trust-bar__inner { gap: 4px; }
+    .home-editorial-stack .trust-item { font-size: .72rem; }
+    body:has(main.home-main):has(#mobile-cart-tray:not([hidden])) .home-editorial-stack {
+        --home-action-clearance: 136px;
+    }
+    body:has(main.home-main):has(#mobile-cart-tray:not([hidden])) .sps-return-top {
+        bottom: calc(82px + env(safe-area-inset-bottom,0px));
+    }
+}
+@media (max-height: 650px) {
+    .home-editorial-stack .home-product-rail .product-card__image { aspect-ratio: 16 / 9; }
+}
+
+/* Cart and support share their existing fixed row; the trust labels sit above it. */
+body:has(#mobile-cart-tray:not([hidden])) .home-editorial-stack .trust-bar {
+    padding-block-end: calc(88px + env(safe-area-inset-bottom, 0px));
+    padding-inline: 16px;
+}
+
+/* The actual footer is the last opaque slide, not an extra strip below it.
+   Without JS it remains the ordinary document footer with the same contrast. */
+body:has(main.home-main) .site-footer {
+    margin: 0;
+    min-height: max(0px,calc(100svh - var(--home-header-height,80px)));
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(28px,5svh,64px) 0 calc(88px + env(safe-area-inset-bottom,0px));
+    border-radius: clamp(18px,3vw,38px) clamp(18px,3vw,38px) 0 0;
+    background: var(--color-maroon);
+    color: #f3e8c9;
+}
+body:has(main.home-main) .site-footer > .container { width: 100%; min-width: 0; }
+body:has(main.home-main) .site-footer :is(.footer-desc,.footer-links a,.footer-bottom,.footer-bottom a) {
+    color: #f3e8c9;
+    opacity: 1;
+    overflow-wrap: anywhere;
+}
+body:has(main.home-main) .site-footer a:hover,
+body:has(main.home-main) .site-footer a:focus-visible { color: #fff; text-decoration: underline; }
+body:has(main.home-main) .site-footer a:focus-visible { outline: 2px solid #f3e8c9; outline-offset: 3px; }
+.home-editorial-stack .home-order-guide__panel { max-width: 1120px; }
+.home-editorial-stack .home-order-guide__steps li { padding: clamp(14px,2vw,26px); }
+.home-editorial-stack .home-order-guide .section-title { margin-block-end: 16px; }
+.home-editorial-stack .home-faq { align-items: flex-start; }
+.home-editorial-stack .home-faq > .container { padding-block-start: clamp(12px,4svh,48px); }
+@media (max-width: 744px) {
+    body:has(main.home-main) .site-footer { justify-content: flex-start; }
+    body:has(main.home-main) .site-footer .footer-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px 14px; }
+    body:has(main.home-main) .site-footer .footer-grid > :first-child,
+    body:has(main.home-main) .site-footer .footer-grid > :last-child { grid-column: 1 / -1; }
+    body:has(main.home-main):has(#mobile-cart-tray:not([hidden])) .site-footer { padding-block-end: 136px; }
 }

@@ -159,9 +159,16 @@
 
         var header = doc.querySelector(surface === 'admin' ? '.admin-topbar' : '#site-header');
         var stack = doc.querySelector('[data-home-stack]');
+        // Keep a single footer, with the same navigation and contentinfo landmark.
+        // Move only when the native sticky stack can actually be enhanced.
+        var footer = stack ? doc.querySelector('body > .site-footer') : null;
         if (stack && typeof win.ResizeObserver === 'function' && win.CSS?.supports('overflow-x', 'clip')) {
+            if (footer) {
+                footer.setAttribute('role', 'contentinfo');
+                stack.append(footer);
+            }
             var cards = Array.from(stack.children).filter(function (card) {
-                return card.matches('.home-opening,.home-bestsellers,.home-collection,.home-chapter,.home-faq');
+                return card.matches('.home-opening,.home-bestsellers,.home-collection,.home-chapter,.home-faq,.site-footer');
             });
             function measureCard(card, height) {
                 var value = Math.ceil(height) + 'px';
@@ -170,6 +177,7 @@
             function measureHeader(height) {
                 var value = Math.ceil(height) + 'px';
                 if (stack.style.getPropertyValue('--home-header-height') !== value) stack.style.setProperty('--home-header-height', value);
+                updateHeaderOffset(height);
             }
             measureHeader(header ? header.offsetHeight : 0);
             cards.forEach(function (card) { measureCard(card, card.offsetHeight); });
@@ -184,13 +192,17 @@
             cards.forEach(function (card) { resize.observe(card, { box: 'border-box' }); });
             stack.dataset.stackReady = 'true';
         }
-        function updateHeaderOffset() {
-            var height = header ? Math.ceil(header.getBoundingClientRect().height) : 0;
-            doc.documentElement.style.setProperty('--sps-scroll-offset', (height + 16) + 'px');
+        function updateHeaderOffset(measured) {
+            var height = typeof measured === 'number' ? Math.ceil(measured) : (header ? Math.ceil(header.getBoundingClientRect().height) : 0);
+            var value = (height + 16) + 'px';
+            if (doc.documentElement.style.getPropertyValue('--sps-scroll-offset') !== value) doc.documentElement.style.setProperty('--sps-scroll-offset', value);
         }
-        updateHeaderOffset();
-        if (header && typeof win.ResizeObserver === 'function') new win.ResizeObserver(updateHeaderOffset).observe(header);
-        else win.addEventListener('resize', updateHeaderOffset, { passive: true });
+        // The stack's observer already owns header measurements on the homepage.
+        if (!stack || !stack.dataset.stackReady) {
+            updateHeaderOffset();
+            if (header && typeof win.ResizeObserver === 'function') new win.ResizeObserver(updateHeaderOffset).observe(header);
+            else win.addEventListener('resize', updateHeaderOffset, { passive: true });
+        }
         var returnButton = doc.createElement('button');
         returnButton.type = 'button'; returnButton.className = 'sps-return-top'; returnButton.hidden = true;
         returnButton.setAttribute('aria-label', 'Return to top'); returnButton.title = 'Return to top';

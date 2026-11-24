@@ -169,7 +169,7 @@ main{padding-bottom:0}
 .site-footer{background:var(--color-maroon);color:var(--color-gold-light);padding:var(--space-2xl) 0 var(--space-md);font-size:0.85rem;border-top:1px solid var(--color-gold)}
 .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:var(--space-xl);margin-bottom:var(--space-xl)}
 .footer-brand{font-family:Inter,system-ui,sans-serif;font-size:1.2rem;color:var(--color-gold);font-weight:600;display:block;margin-bottom:var(--space-xs)}
-.footer-desc{font-size:0.85rem;line-height:1.6;opacity:0.7}
+.footer-desc{font-size:0.85rem;line-height:1.6;color:var(--color-gold-light);opacity:1}
 .footer-heading{font-size:0.75rem;text-transform:uppercase;letter-spacing:0;color:var(--color-gold);margin:0 0 var(--space-sm)}
 .footer-links{list-style:none;padding:0;margin:0}
 .footer-links li{margin-bottom:var(--space-xs)}
@@ -499,7 +499,7 @@ if ($__flash):
 <?php endif; ?>
 
 <?php if (!in_array($currentPath, ['/login', '/register'])): ?>
-<footer class="site-footer">
+<footer class="site-footer" role="contentinfo">
     <div class="container">
         <div class="footer-grid">
             <div>

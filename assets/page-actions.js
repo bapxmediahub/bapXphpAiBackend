@@ -86,7 +86,8 @@
             next.disabled = track.scrollLeft >= max-2;
             const first = stepSize ? Math.round(track.scrollLeft/stepSize)+1 : 1;
             const visible = stepSize ? Math.max(1,Math.round(track.clientWidth/stepSize)) : 1;
-            const label = first + '–' + Math.min(cards.length,first+visible-1) + ' of ' + cards.length;
+            const last = Math.min(cards.length,first+visible-1);
+            const label = (first === last ? String(first) : first + '–' + last) + ' of ' + cards.length;
             if(position.textContent !== label) position.textContent=label;
             controls.hidden=max<2;
         }
