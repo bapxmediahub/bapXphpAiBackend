@@ -36,7 +36,7 @@ final class RuntimeAgentToolRegistry
         AgentTraceService::observeInstructionManifest($this->bundle['manifest']);
         // The model sees a compact role-filtered catalogue even if lexical seeding
         // misses a paraphrase or another language. Only active declarations execute.
-        $catalogue="\n\nAuthorized business capability catalogue (metadata, activate via tool_search):\n";
+        $catalogue="\n\nAuthorized business capability catalogue (call advertised functions directly; use tool_search only for capabilities not yet advertised):\n";
         foreach($this->available as $name=>$tool)$catalogue.='- '.$name.': '.$tool['description']."\n";
         return $this->bundle['text'].$catalogue;
     }

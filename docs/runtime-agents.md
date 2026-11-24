@@ -224,7 +224,7 @@ For each recoverable inference failure, send the identical payload up to three
 times on the same model, with 1s then 2s backoff plus jitter; after the third failure wait 4s plus jitter before advancing. If all eligible
 models fail, restart from the first eligible model for a second cycle. Stop
 immediately on successful inference. Explicit authentication, invalid-request,
-missing-model, TLS, quota without a short retry hint, and long Retry-After failures do not get blind
+missing-model, TLS, explicit daily/zero quota, quota without a short retry hint, and long Retry-After failures do not get blind
 retries. Each request has a 110-second inference deadline and at most 32
 transfers; both browsers wait up to 120 seconds. The trace enforces a
 115-second total execution limit and the existing observed-token budget.
@@ -257,3 +257,20 @@ References: https://prismphp.com/core-concepts/tools-function-calling/ ,
 https://docs.neuron-ai.dev/agent/tools ,
 https://github.com/agentskills/agentskills/blob/main/docs/client-implementation/adding-skills-support.mdx .
 These patterns are implemented natively; no external PHP package is installed.
+
+### Provider error evidence and retry timing
+
+Google REST responses may include typed google.rpc.RetryInfo and QuotaFailure
+details. Decode the documented ProtoJSON duration, rounding up to milliseconds,
+and use the larger of the body delay and Retry-After header. A known daily or
+explicit zero quota is not retried within the same turn. A short positive
+provider delay (up to the existing eight-second inline policy) can be retried
+inside the bounded loop. Longer delays hold that model; other eligible models
+retain their saved order. Explicit cooldown hints are retained for up to 24 hours,
+rather than truncated to two minutes. Do not invent a daily reset timestamp.
+Provider/model holds are deployment-local and explicit diagnostics can bypass
+them. Already advertised functions may be called directly; tool_search remains
+available for non-advertised authorized functions. No deterministic answer path.
+
+Sources: https://github.com/googleapis/googleapis/blob/master/google/rpc/error_details.proto
+and https://protobuf.dev/programming-guides/json/ .

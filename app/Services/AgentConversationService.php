@@ -594,7 +594,7 @@ final class AgentConversationService
                 if (!is_array($span)) continue;
                 $traceSteps[] = array_intersect_key($span, array_flip([
                     'sequence','type','name','status','duration_ms','started_at','ended_at','http_status','result_count','curl_error','timeout_ms','first_byte_ms'
-                ]));
+                ])) + AgentTraceService::attemptTimings($span);
             }
             $recent[] = [
                 'id' => $document['id'] ?? '',

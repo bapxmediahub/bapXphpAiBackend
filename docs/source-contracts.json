@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "aec91ae70f3ae5b52e55fedb60689f863dddf722d8eecef2f6ef9617a3ae2824",
-            "references_sha256": "1b60d182cc56dff28e9a580e6e8ac30abcd785d291926835a551417bd90d8d5d",
-            "review_note": "Compared Google REST retry guide, OpenAI SDK retry defaults, Vercel AI SDK settings and OpenRouter Retry-After contract against direct PHP fallback loop; measured waits and model order verified through loopback fixtures."
+            "source_sha256": "f01ea27859f68dba70d2a25b18331c54b8e1cf3ee66fdbb24490e9a37aa0d8b6",
+            "references_sha256": "ed9de2d0bea74b94666b5c68aba7e505be756c7ff480c9822df7df67f50911df",
+            "review_note": "Reviewed official Google typed RetryInfo and QuotaFailure, Vercel AI SDK step telemetry and OpenTelemetry error conventions; native bounded metadata, exact delay and tool-continuation tests; direct advertised-tool prompt guidance."
         },
         "auth": {
             "source_sha256": "6087ca0af2055001f252583a6e14e380aace2bdf067c0e472cb9c63d3f5ade0e",
@@ -23,9 +23,9 @@
             "review_note": "Reviewed browser snapshot bounds, per-owner and page key, revision conflict, explicit save token cleanup and unchanged MySQL CAS and publication status."
         },
         "foundation": {
-            "source_sha256": "a11323b69f293254827cb10907d0220c32a428fd7c28a2737dfaacf0281a6f11",
+            "source_sha256": "e711e2abb2e188942fb8e33b8679e14caaa5fc29165c9f8d64ddd80981687d7f",
             "references_sha256": "946576ecf5f70c6584261be1035171a23570581935217c3eca527a4368e2256c",
-            "review_note": "Reviewed encrypted credential storage merge, blank input preservation, provider order and scoped identity matching; no live schema migration."
+            "review_note": "Reviewed preserved configured provider order, provider hold timing and fixture-only general regression entrypoint; no new dependencies or schema mutations."
         },
         "google-tags": {
             "source_sha256": "8b68da9256999202a6f234001498211abfad52ce744837490e58ebfd580d3115",
@@ -48,9 +48,9 @@
             "review_note": "Reviewed configured username authentication and unchanged login-notification behavior; no mail writes during production diagnostics."
         },
         "mcp-clients": {
-            "source_sha256": "84aaa151bd387557657560a31b137ee6238c2cd5cfc4b80f0d9726c5477bbc15",
+            "source_sha256": "78b45576da2d1ffc37e26fdf5701db6321d7df0b22488288b1879d91472778f1",
             "references_sha256": "4b2800bedc35741c04a12a19ebbfeb7da0ea8c464170df72ef62067b01c35018",
-            "review_note": "Reviewed shared inference waits; no changes to public/authorized MCP tool schemas or execution."
+            "review_note": "Reviewed shared provider transport telemetry; authorized MCP protocols and business tool permissions unchanged."
         },
         "media": {
             "source_sha256": "c99bf5f35495fb29a3025b39dc32c1fbd2f20640fbacd2784598a53cd3a8584f",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed upload eligibility, revision hash, bounded UTF-8 metadata, row lock, exact patch, no row creation, and view/search/isolated DB tests."
         },
         "operator-help": {
-            "source_sha256": "7933cd4dbbc447f32070452ae82adacd8639d7deecee2735a37330b8fcc3e58d",
+            "source_sha256": "ac9b2bcee71290eddbf89e20f441865bc2293ffd1446901a42967110f4f007f2",
             "references_sha256": "d71ae7fc3cc07db2645077d32f54f7d871609ec9c82f93b55c10e862dda9c49c",
-            "review_note": "Reviewed synchronous documented provider backoff and owner integration text; unchanged authentication and explicit commands."
+            "review_note": "Reviewed Admin Monitoring provider reliability and failure-stage display; no change to owner access or help commands."
         },
         "public-mcp": {
             "source_sha256": "94ad00c333b2b9949bcea73134458139ef52bb87a788c5e5a980273a2b66057d",

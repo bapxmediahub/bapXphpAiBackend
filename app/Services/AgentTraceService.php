@@ -367,6 +367,20 @@ final class AgentTraceService
     /** Measured transport metadata and a fixed request-rejection hint; no provider content. */
     public static function attemptTimings(array $attempt): array {
         $timings = [];
+        foreach(['quota_kind'=>['zero','daily','minute','other'],'inference_phase'=>['initial','continuation'],
+            'response_kind'=>['tool_calls','text_or_empty','invalid'],
+            'finish_reason'=>['STOP','MAX_TOKENS','SAFETY','RECITATION','OTHER','MALFORMED_FUNCTION_CALL','stop','length','tool_calls','content_filter','function_call','error']] as $key=>$allowed)
+            if(in_array($attempt[$key]??null,$allowed,true))$timings[$key]=$attempt[$key];
+        foreach(['retry_after_ms'=>86400000,'inference_round'=>16,'requested_tool_count'=>100] as $key=>$max)
+            if(is_int($attempt[$key]??null)&&$attempt[$key]>=0&&$attempt[$key]<=$max)$timings[$key]=$attempt[$key];
+        if(is_string($attempt['response_model']??null)&&SecretService::validModelId($attempt['response_model'])&&!preg_match('/^(?:sk-|AIza)/i',$attempt['response_model']))$timings['response_model']=$attempt['response_model'];
+        if(is_array($attempt['usage']??null)){
+            $timings['usage']=[];
+            foreach(['input_tokens','output_tokens','total_tokens','cached_input_tokens'] as $key){
+                $v=$attempt['usage'][$key]??null;
+                $timings['usage'][$key]=is_int($v)&&$v>=0&&$v<=1000000000?$v:null;
+            }
+        }
         if(in_array($attempt['provider']??null,['google','openrouter','openai_compatible'],true))$timings['provider']=$attempt['provider'];
         foreach(['cycle'=>AiClient::MAX_PROVIDER_CYCLES,'attempt_in_model'=>AiClient::ATTEMPTS_PER_MODEL] as $key=>$max)
             if(is_int($attempt[$key]??null)&&$attempt[$key]>=1&&$attempt[$key]<=$max)$timings[$key]=$attempt[$key];

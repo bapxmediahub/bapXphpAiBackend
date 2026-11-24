@@ -20,6 +20,22 @@
             <?php endforeach; ?></tbody>
         </table></div>
         <p style="font-size:0.8rem;color:var(--color-text-muted);">Monitoring records timing, outcomes, failure categories and provider attempt metadata. It omits questions, answers, provider messages, customer identities and secrets.</p>
+        <h3>Provider and model reliability</h3>
+        <p>HTTP success is not the same as a completed answer. Counts use observed transfers in recorded runs over the last 24 hours. Older records may lack provider, phase or token data.</p>
+        <div class="table-wrap"><table>
+        <thead><tr><th>Agent</th><th>Provider / requested model</th><th>Transfers</th><th>HTTP success</th><th>Transfer errors</th><th>Accepted answers</th><th>Mean transfer time</th><th>Observed tokens</th><th>Failure evidence</th></tr></thead>
+        <tbody><?php foreach($agentMonitoring as $surface=>$metrics): foreach(($metrics['provider_models']??[]) as $m): ?>
+        <tr><th><?= $surface==='support'?'Support':'Enterprise' ?></th><td><?= e($m['provider']) ?> · <?= e($m['model']) ?></td>
+            <td><?= (int)$m['attempts'] ?></td><td><?= (int)$m['http_success'] ?></td><td><?= (int)$m['errors'] ?></td>
+            <td><?= (int)$m['accepted_answers'] ?></td><td><?= e(number_format($m['duration_ms']/max(1,$m['attempts'])/1000,2)) ?> s</td>
+            <td><?= $m['usage_reported']?e(number_format($m['observed_tokens'])):'Not reported' ?><br><small><?= (int)$m['usage_reported'] ?>/<?= (int)$m['attempts'] ?> transfers reported usage</small></td>
+            <td><?php foreach($m['diagnoses'] as $key=>$count): if($key==='http_success')continue; ?><?= e(AuditLogService::DIAGNOSTICS[$key][0]) ?>: <?= (int)$count ?><br><?php endforeach; ?></td></tr>
+        <?php endforeach; endforeach; ?></tbody></table></div>
+        <?php foreach($agentMonitoring as $surface=>$metrics): ?>
+            <p><strong><?= $surface==='support'?'Support':'Enterprise' ?> recovery and failure stages:</strong>
+            <?= (int)($metrics['recovered_model_runs']??0) ?> accepted answers after transfer errors.
+            <?php foreach(($metrics['failure_stages']??[]) as $stage=>$count): ?><?= e(str_replace('_',' ',$stage)) ?>: <?= (int)$count ?>; <?php endforeach; ?></p>
+        <?php endforeach; ?>
         <?php foreach ($agentMonitoring as $surface => $metrics): ?>
             <p><strong><?= $surface === 'support' ? 'Customer support' : 'Enterprise Agent' ?> failure reasons:</strong>
             <?php if (empty($metrics['reasons'])): ?>No categorized failures recorded.<?php else: ?>
@@ -62,6 +78,8 @@
                 ?>
                     <p><strong><?= e($reason[0]) ?></strong> <?= e($reason[1]) ?></p>
                 <?php endif; ?>
+                <?php if(!empty($run['failure_stage'])): ?><p><strong>Observed failure stage:</strong> <?= e(str_replace('_',' ',$run['failure_stage'])) ?></p><?php endif; ?>
+                <?php if(is_array($run['execution_counts']??null)): ?><p>Measured backoff: <?= e(number_format(($run['execution_counts']['backoff_ms']??0)/1000,2)) ?> s · Tool searches: <?= (int)($run['execution_counts']['tool_searches']??0) ?> · Explicit instruction reads: <?= (int)($run['execution_counts']['instruction_reads']??0) ?></p><?php endif; ?>
                 <?php if ($run['attempts']): $guidance = []; ?>
                     <ol aria-label="Provider attempts">
                         <?php foreach ($run['attempts'] as $attempt):
@@ -72,6 +90,14 @@
                                 · <?= $attempt['status'] ? 'HTTP ' . (int)$attempt['status'] : 'No HTTP status' ?>
                                 <?= $attempt['curl_error'] ? ' · cURL ' . (int)$attempt['curl_error'] : '' ?>
                                 · <?= (int)$attempt['total_ms'] ?> ms elapsed
+                                <?php if(isset($attempt['provider'])): ?> · <?= e($attempt['provider']) ?><?php endif; ?>
+                                <?php if(isset($attempt['cycle'],$attempt['attempt_in_model'])): ?> · cycle <?= (int)$attempt['cycle'] ?>, try <?= (int)$attempt['attempt_in_model'] ?><?php endif; ?>
+                                <?php if(isset($attempt['inference_round'])): ?> · inference round <?= (int)$attempt['inference_round'] ?> (<?= e($attempt['inference_phase']??'unknown') ?>)<?php endif; ?>
+                                <?php if(isset($attempt['response_kind'])): ?> · <?= e(str_replace('_',' ',$attempt['response_kind'])) ?><?php endif; ?>
+                                <?php if(isset($attempt['response_model'])): ?> · responding model <?= e($attempt['response_model']) ?><?php endif; ?>
+                                <?php if(isset($attempt['finish_reason'])): ?> · finish <?= e($attempt['finish_reason']) ?><?php endif; ?>
+                                <?php if(isset($attempt['retry_after_ms'])): ?> · provider retry delay <?= e(number_format($attempt['retry_after_ms']/1000,3)) ?> s<?php endif; ?>
+                                <?php if(isset($attempt['usage']['total_tokens'])): ?> · <?= (int)$attempt['usage']['total_tokens'] ?> tokens reported<?php endif; ?>
                                 <?php if (isset($attempt['timeout_ms'])): ?> · <?= (int)$attempt['timeout_ms'] ?> ms timeout<?php endif; ?>
                                 <?php if (isset($attempt['first_byte_ms'])): ?> · first byte at <?= e(number_format($attempt['first_byte_ms'], 1)) ?> ms<?php endif; ?>
                             </li>
@@ -233,6 +259,12 @@
                             <?php if(isset($step['http_status'])): ?> · <?= $step['http_status'] ? 'HTTP '.(int)$step['http_status'] : 'No HTTP status' ?><?php endif; ?>
                             <?php if(!empty($step['curl_error'])): ?> · cURL <?= (int)$step['curl_error'] ?><?php endif; ?>
                             <?php if(isset($step['result_count'])): ?> · <?= (int)$step['result_count'] ?> results<?php endif; ?>
+                            <?php if(isset($step['inference_round'])): ?> · inference round <?= (int)$step['inference_round'] ?> · <?= e($step['inference_phase']??'unknown') ?><?php endif; ?>
+                            <?php if(isset($step['response_kind'])): ?> · <?= e(str_replace('_',' ',$step['response_kind'])) ?><?php endif; ?>
+                            <?php if(isset($step['quota_kind'])): ?> · quota <?= e($step['quota_kind']) ?><?php endif; ?>
+                            <?php if(isset($step['retry_after_ms'])): ?> · retry after <?= e(number_format($step['retry_after_ms']/1000,3)) ?> s<?php endif; ?>
+                            <?php if(isset($step['finish_reason'])): ?> · finish <?= e($step['finish_reason']) ?><?php endif; ?>
+
                         </li>
                     <?php endforeach; ?>
                     </ol>
