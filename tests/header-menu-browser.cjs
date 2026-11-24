@@ -159,7 +159,7 @@ test('owner edits the public header through remotedb with native controls and co
         assert(await visitor.locator('footer a[href^="/blog/category/"]').count()>0);
         const audit = direct("echo count(array_filter($store->read('audit_events'),fn($e)=>$e['resource_id']==='header_menu' && $e['actor_email']==='header-menu-fixture@example.test'));");
         assert.equal(audit,'2');
-        assert.equal(direct("$store->delete('settings','app_settings'); $settings=new App\\Services\\SettingsService($store); echo json_encode([$settings->public()['shipping_mode'],$settings->headerMenu()['items']]);"),'["free",[]]');
+        assert.equal(direct("$store->delete('settings','app_settings'); $store->delete('settings','legacy_fixture'); $settings=new App\\Services\\SettingsService($store); echo json_encode([$settings->public()['shipping_mode'],$settings->headerMenu()['items']]);"),'["free",[]]');
     } finally {
         await browser?.close();
         for (const server of servers) server.kill();
