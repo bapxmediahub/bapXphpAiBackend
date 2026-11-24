@@ -2,7 +2,7 @@ format: "bapx-project-knowledge-index"
 version: "1.0"
 generated_by: "cli/generate-okf-bundle.php"
 authoritative_sources:
-  runtime_data: "https://sripanchamispiritual.com/remotedb"
+  runtime_data: "Hosted MySQL via DatabaseService; config/database.php selects direct PDO or configured BAPX_REMOTE_DB_URL (default APP_URL/remotedb)"
   schema: "storage/schema/collections.php"
   blogs: "content/blog/posts/*.md"
   operator_help: "content/help/admin/*.md through AdminHelpService allowlists"
@@ -13,7 +13,8 @@ authoritative_sources:
   documentation_map: "docs/map.mmd"
 rules:
   - "Concepts are original project resources; this index never copies blog bodies or runtime records."
-  - "Products, categories, consultants, temples and other editable records are queried from remotedb."
+  - "Editable business records come from the configured client database through DatabaseService; the remote bridge is a conditional transport."
+  - "Generated developer knowledge is deployment-neutral; never embed resolved client configuration or runtime records."
   - "Blog Markdown and image binaries remain local files."
   - "Read discovery first; query only the relevant section or resource. Do not load this entire index into agent context."
   - "Use at most three discovery hops: entry instructions, exact index match, original source. Avoid broad listings and recursive scans unless the target is absent."
@@ -26,7 +27,7 @@ discovery:
   - question: "How are routes, controllers, services and collections connected?"
     use: "map.mmd"
   - question: "What is the live product, category, consultant, temple or admin-editable value?"
-    use: "https://sripanchamispiritual.com/remotedb"
+    use: "DatabaseService and deployment-local config/database.php; authorized direct or configured /remotedb access"
   - question: "Where is a blog article and what frontmatter does it declare?"
     use: "concepts filtered by type=blog, then read its resource"
   - question: "Where is an image and which source files reference it?"
@@ -46,7 +47,7 @@ query_examples:
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
   concepts: 497
-  relationships: 442
+  relationships: 444
   by_type:
     blog: 16
     controller: 18
@@ -5292,7 +5293,7 @@ concepts:
     resource: "storage/schema/collections.php"
     tags:
       - "schema"
-    data_source: "remotedb"
+    data_source: "DatabaseService (direct or configured remote transport)"
     collection: "addresses"
     schema_file: "storage/schema/collections.php"
   - id: "schema:agent_carts"
@@ -5302,7 +5303,7 @@ concepts:
     resource: "storage/schema/collections.php"
     tags:
       - "schema"
-    data_source: "remotedb"
+    data_source: "DatabaseService (direct or configured remote transport)"
     collection: "agent_carts"
     schema_file: "storage/schema/collections.php"
   - id: "schema:appointments"
@@ -5312,7 +5313,7 @@ concepts:
     resource: "storage/schema/collections.php"
     tags:
       - "schema"
-    data_source: "remotedb"
+    data_source: "DatabaseService (direct or configured remote transport)"
     collection: "appointments"
     schema_file: "storage/schema/collections.php"
   - id: "schema:astrologers"
@@ -5322,7 +5323,7 @@ concepts:
     resource: "storage/schema/collections.php"
     tags:
       - "schema"
-    data_source: "remotedb"
+    data_source: "DatabaseService (direct or configured remote transport)"
     collection: "astrologers"
     schema_file: "storage/schema/collections.php"
   - id: "schema:audit_events"
@@ -5332,7 +5333,7 @@ concepts:
     resource: "storage/schema/collections.php"
     tags:
       - "schema"
-    data_source: "remotedb"
+    data_source: "DatabaseService (direct or configured remote transport)"
     collection: "audit_events"
     schema_file: "storage/schema/collections.php"
   - id: "schema:categories"
@@ -5342,7 +5343,7 @@ concepts:
     resource: "storage/schema/collections.php"
     tags:
       - "schema"
-    data_source: "remotedb"
+    data_source: "DatabaseService (direct or configured remote transport)"
     collection: "categories"
     schema_file: "storage/schema/collections.php"
   - id: "schema:checkout_attempts"
@@ -5352,7 +5353,7 @@ concepts:
     resource: "storage/schema/collections.php"
     tags:
       - "schema"
-    data_source: "remotedb"
+    data_source: "DatabaseService (direct or configured remote transport)"
     collection: "checkout_attempts"
     schema_file: "storage/schema/collections.php"
   - id: "schema:consultation_messages"
@@ -5362,7 +5363,7 @@ concepts:
     resource: "storage/schema/collections.php"
     tags:
       - "schema"
-    data_source: "remotedb"
+    data_source: "DatabaseService (direct or configured remote transport)"
     collection: "consultation_messages"
     schema_file: "storage/schema/collections.php"
   - id: "schema:consultation_signals"
@@ -5372,7 +5373,7 @@ concepts:
     resource: "storage/schema/collections.php"
     tags:
       - "schema"
-    data_source: "remotedb"
+    data_source: "DatabaseService (direct or configured remote transport)"
     collection: "consultation_signals"
     schema_file: "storage/schema/collections.php"
   - id: "schema:contact_submissions"
@@ -5382,7 +5383,7 @@ concepts:
     resource: "storage/schema/collections.php"
     tags:
       - "schema"
-    data_source: "remotedb"
+    data_source: "DatabaseService (direct or configured remote transport)"
     collection: "contact_submissions"
     schema_file: "storage/schema/collections.php"
   - id: "schema:coupons"
@@ -5392,7 +5393,7 @@ concepts:
     resource: "storage/schema/collections.php"
     tags:
       - "schema"
-    data_source: "remotedb"
+    data_source: "DatabaseService (direct or configured remote transport)"
     collection: "coupons"
     schema_file: "storage/schema/collections.php"
   - id: "schema:mail_inbox"
@@ -5402,7 +5403,7 @@ concepts:
     resource: "storage/schema/collections.php"
     tags:
       - "schema"
-    data_source: "remotedb"
+    data_source: "DatabaseService (direct or configured remote transport)"
     collection: "mail_inbox"
     schema_file: "storage/schema/collections.php"
   - id: "schema:mail_outbox"
@@ -5412,7 +5413,7 @@ concepts:
     resource: "storage/schema/collections.php"
     tags:
       - "schema"
-    data_source: "remotedb"
+    data_source: "DatabaseService (direct or configured remote transport)"
     collection: "mail_outbox"
     schema_file: "storage/schema/collections.php"
   - id: "schema:mail_queue"
@@ -5422,7 +5423,7 @@ concepts:
     resource: "storage/schema/collections.php"
     tags:
       - "schema"
-    data_source: "remotedb"
+    data_source: "DatabaseService (direct or configured remote transport)"
     collection: "mail_queue"
     schema_file: "storage/schema/collections.php"
   - id: "schema:media_files"
@@ -5432,7 +5433,7 @@ concepts:
     resource: "storage/schema/collections.php"
     tags:
       - "schema"
-    data_source: "remotedb"
+    data_source: "DatabaseService (direct or configured remote transport)"
     collection: "media_files"
     schema_file: "storage/schema/collections.php"
   - id: "schema:orders"
@@ -5442,7 +5443,7 @@ concepts:
     resource: "storage/schema/collections.php"
     tags:
       - "schema"
-    data_source: "remotedb"
+    data_source: "DatabaseService (direct or configured remote transport)"
     collection: "orders"
     schema_file: "storage/schema/collections.php"
   - id: "schema:products"
@@ -5452,7 +5453,7 @@ concepts:
     resource: "storage/schema/collections.php"
     tags:
       - "schema"
-    data_source: "remotedb"
+    data_source: "DatabaseService (direct or configured remote transport)"
     collection: "products"
     schema_file: "storage/schema/collections.php"
   - id: "schema:reviews"
@@ -5462,7 +5463,7 @@ concepts:
     resource: "storage/schema/collections.php"
     tags:
       - "schema"
-    data_source: "remotedb"
+    data_source: "DatabaseService (direct or configured remote transport)"
     collection: "reviews"
     schema_file: "storage/schema/collections.php"
   - id: "schema:secrets"
@@ -5472,7 +5473,7 @@ concepts:
     resource: "storage/schema/collections.php"
     tags:
       - "schema"
-    data_source: "remotedb"
+    data_source: "DatabaseService (direct or configured remote transport)"
     collection: "secrets"
     schema_file: "storage/schema/collections.php"
   - id: "schema:settings"
@@ -5482,7 +5483,7 @@ concepts:
     resource: "storage/schema/collections.php"
     tags:
       - "schema"
-    data_source: "remotedb"
+    data_source: "DatabaseService (direct or configured remote transport)"
     collection: "settings"
     schema_file: "storage/schema/collections.php"
   - id: "schema:support_tickets"
@@ -5492,7 +5493,7 @@ concepts:
     resource: "storage/schema/collections.php"
     tags:
       - "schema"
-    data_source: "remotedb"
+    data_source: "DatabaseService (direct or configured remote transport)"
     collection: "support_tickets"
     schema_file: "storage/schema/collections.php"
   - id: "schema:temples"
@@ -5502,7 +5503,7 @@ concepts:
     resource: "storage/schema/collections.php"
     tags:
       - "schema"
-    data_source: "remotedb"
+    data_source: "DatabaseService (direct or configured remote transport)"
     collection: "temples"
     schema_file: "storage/schema/collections.php"
   - id: "schema:users"
@@ -5512,7 +5513,7 @@ concepts:
     resource: "storage/schema/collections.php"
     tags:
       - "schema"
-    data_source: "remotedb"
+    data_source: "DatabaseService (direct or configured remote transport)"
     collection: "users"
     schema_file: "storage/schema/collections.php"
   - id: "schema:wallet_transactions"
@@ -5522,7 +5523,7 @@ concepts:
     resource: "storage/schema/collections.php"
     tags:
       - "schema"
-    data_source: "remotedb"
+    data_source: "DatabaseService (direct or configured remote transport)"
     collection: "wallet_transactions"
     schema_file: "storage/schema/collections.php"
   - id: "service:AddressService"
@@ -6734,6 +6735,9 @@ relationships:
   - from: "doc:deployment-hostinger"
     to: "doc:a2ui"
     relation: "references"
+  - from: "doc:development-workflow"
+    to: "doc:client-runtime-adaptation"
+    relation: "references"
   - from: "doc:public-mcp"
     to: "doc:a2ui"
     relation: "references"
@@ -6748,6 +6752,9 @@ relationships:
     relation: "references"
   - from: "doc:runtime-agents"
     to: "doc:client-runtime-adaptation"
+    relation: "references"
+  - from: "doc:runtime-agents"
+    to: "doc:integrations"
     relation: "references"
   - from: "doc:shop"
     to: "doc:a2ui"

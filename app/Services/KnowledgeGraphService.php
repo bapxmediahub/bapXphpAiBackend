@@ -47,13 +47,13 @@ final class KnowledgeGraphService {
         $edges = array_values($this->edges);
         usort($edges, fn(array $a, array $b): int => [$a['from'], $a['relation'], $a['to']] <=> [$b['from'], $b['relation'], $b['to']]);
 
-        $appUrl = rtrim((string)((require $this->root . '/config/database.php')['app_url'] ?? ''), '/');
+        // Committed developer metadata must not depend on deployment origin or credentials.
         $index = [
             'format' => 'bapx-project-knowledge-index',
             'version' => '1.0',
             'generated_by' => 'cli/generate-okf-bundle.php',
             'authoritative_sources' => [
-                'runtime_data' => $appUrl . '/remotedb',
+                'runtime_data' => 'Hosted MySQL via DatabaseService; config/database.php selects direct PDO or configured BAPX_REMOTE_DB_URL (default APP_URL/remotedb)',
                 'schema' => 'storage/schema/collections.php',
                 'blogs' => 'content/blog/posts/*.md',
                 'operator_help' => 'content/help/admin/*.md through AdminHelpService allowlists',
@@ -65,7 +65,8 @@ final class KnowledgeGraphService {
             ],
             'rules' => [
                 'Concepts are original project resources; this index never copies blog bodies or runtime records.',
-                'Products, categories, consultants, temples and other editable records are queried from remotedb.',
+                'Editable business records come from the configured client database through DatabaseService; the remote bridge is a conditional transport.',
+                'Generated developer knowledge is deployment-neutral; never embed resolved client configuration or runtime records.',
                 'Blog Markdown and image binaries remain local files.',
                 'Read discovery first; query only the relevant section or resource. Do not load this entire index into agent context.',
                 'Use at most three discovery hops: entry instructions, exact index match, original source. Avoid broad listings and recursive scans unless the target is absent.',
@@ -75,7 +76,7 @@ final class KnowledgeGraphService {
                 ['question' => 'Which controller, view and services handle a route?', 'use' => 'docs/project-index.json: select by HTTP method and exact route pattern'],
                 ['question' => 'Does a controller, service, view or collection exist?', 'use' => 'docs/project-index.json'],
                 ['question' => 'How are routes, controllers, services and collections connected?', 'use' => 'map.mmd'],
-                ['question' => 'What is the live product, category, consultant, temple or admin-editable value?', 'use' => $appUrl . '/remotedb'],
+                ['question' => 'What is the live product, category, consultant, temple or admin-editable value?', 'use' => 'DatabaseService and deployment-local config/database.php; authorized direct or configured /remotedb access'],
                 ['question' => 'Where is a blog article and what frontmatter does it declare?', 'use' => 'concepts filtered by type=blog, then read its resource'],
                 ['question' => 'Where is an image and which source files reference it?', 'use' => 'concepts filtered by type=image; query by filename or resource'],
                 ['question' => 'What repository instructions or skill apply?', 'use' => 'AGENTS.md, then the matching .agents/skills/<name>/SKILL.md'],
@@ -400,7 +401,7 @@ final class KnowledgeGraphService {
             $this->addConcept('schema:' . $name, [
                 'type' => 'schema', 'title' => $name,
                 'description' => 'Schema collection: ' . $name, 'filePath' => 'storage/schema/collections.php',
-                'data_source' => 'remotedb', 'collection' => $name, 'schema_file' => 'storage/schema/collections.php',
+                'data_source' => 'DatabaseService (direct or configured remote transport)', 'collection' => $name, 'schema_file' => 'storage/schema/collections.php',
                 'tags' => ['schema'], 'body' => '',
             ]);
         }

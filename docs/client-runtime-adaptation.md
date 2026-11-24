@@ -12,6 +12,31 @@ the current PHP code, not a claim that the application already offers automatic
 multi-tenant provisioning. No next-client name, domain or approved business
 policy was supplied; none has been invented or provisioned.
 
+## Product contract and authority boundaries
+
+The target is a separately installable and upgradeable white-label product.
+Use the existing native owner controls before introducing configuration stores.
+The current contract is not an installer or a claim of full portability.
+Future /install will bootstrap DB access, unique owner credentials, identity,
+logo/favicon, colors, SMTP, AI, Google OAuth and enabled integrations only
+after core acceptance. Supported settings must remain editable by an authorized
+owner after setup.
+
+| Authority | Present source | Required reuse boundary |
+|---|---|---|
+| Deployment connection | Ignored .env and config/database.php | Separate origin, DB access and remote transport; never embed resolved deployment values in generated code knowledge |
+| Non-secret owner settings | SettingsService app_settings/header_menu, authored pg: rows, canonical collections.php | Existing logo/favicon/palette, modules, navigation, shipping/tax and pages; consolidate identity/content and validate fields |
+| Integration credentials | SecretService encrypted app_secrets and scoped grants | Never copy client keys, SMTP/OAuth secrets or hashes into a package, fixture, public tool or index |
+| Public identity/content | PublicKnowledgeService, SeoService, layouts, config/about.php, published Markdown and media | Migrate remaining hardcoded business facts to approved client values and one authorized public projection |
+| Agent guidance | .bapX, AgentInstructionService, scoped PHP registries | Keep business instructions, tool authorization and facts distinct; no arbitrary file/SQL tools |
+| Storage | Client MySQL, private JSON conversations, blog Markdown, domain-local media | No shared customer records, private files or reference-deployment secrets |
+| Developer contract | AGENTS.md, .agents, canonical schema, generated map.mmd, index.yaml and project-index.json | Shared implementation/source references, not prompt-body or runtime-data mirrors |
+
+Reference: [WordPress global settings and styles](https://developer.wordpress.org/themes/core-concepts/global-settings-and-styles/)
+separates core defaults, theme configuration and user overrides. Adapt that
+hierarchy and owner-controlled settings to native PHP, not the WordPress plugin
+runtime. Current migration gaps are tracked in GitHub.
+
 ## What can be reused
 
 Keep external coding-harness contracts in `.agents/` and `AGENTS.md`. Preserve
