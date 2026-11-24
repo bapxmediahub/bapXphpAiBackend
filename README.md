@@ -1,14 +1,48 @@
 ---
-title: Sri Panchami Spiritual Web Application
-description: PHP/MySQL storefront, customer enquiries, blog, customer account, and owner administration for shared hosting.
+title: bapX Native PHP Business Platform
+description: Reusable native PHP/MySQL CMS, commerce, business agents and integrations for separately deployed customer websites.
 category: root
 ---
 
-# Sri Panchami Spiritual
+# bapX Native PHP Business Platform
 
 Native PHP application for small PHP hosting (including single-site shared hosting) with a `public_html` deployment; target PHP 8.3+ and MySQL 8.4+ (verify the deployed environment). It uses
 server-rendered PHP templates, hosted MySQL as the primary runtime store, Markdown
 blog posts, and file-based images. There is no SPA or frontend build step.
+
+## Product direction and current boundaries
+
+One maintainable framework for bapX Media Hub customer deployments. Sri
+Panchami Spiritual is the production reference; Nebo Wellness is a separately
+maintained derivative with shared Git ancestry. The target is verified native
+CMS, commerce, payments, SEO/analytics, marketing, Support and Enterprise
+agents, and external MCP capabilities on basic shared hosting. WordPress,
+WooCommerce and Site Kit are feature references, not plugin/runtime dependencies.
+
+Separate framework code from each client's identity, palette, assets, policies,
+published content, catalogue and credentials. Owner settings must be editable
+through validated admin controls. Existing controls are not yet a complete
+white-label implementation; client-specific literals remain migration gaps.
+The future `/install` wizard and package distribution are explicitly deferred
+until current defects, core capabilities and cross-client acceptance are resolved.
+
+```mermaid
+flowchart TB
+  Core["Shared native PHP core: CMS / commerce / agents / integrations"]
+  Core --> Schema["Canonical schema and capability contracts"]
+  Core --> A["Client A: reference deployment"]
+  Core --> B["Client B: independent deployment"]
+  A --> AP["Own approved identity, theme, content and policies"]
+  B --> BP["Own approved identity, theme, content and policies"]
+  A --> AD[("Own MySQL, private files and credentials")]
+  B --> BD[("Own MySQL, private files and credentials")]
+```
+
+This is the required deployment separation, not a claim that every field is
+already configurable or that a shared-tenant runtime exists. See
+[client runtime adaptation](docs/client-runtime-adaptation.md),
+[development workflow](docs/development-workflow.md) and
+[architecture](docs/architecture.md).
 
 ## Start here
 
@@ -215,60 +249,48 @@ The sequence groups `ProductService`, `SettingsService`, `SecretService` and `Da
 
 ### 3. Support and Enterprise: context, tools, provider and saved evidence
 
-The two PHP agents have different orchestration. **Support selects context and handles several intents in PHP; Enterprise can run a provider function-call loop.** Neither path receives developer indexes or `.agents/` as runtime instructions.
-
-**Support: PHP selects the context and the intent.**
+Both PHP model paths use the same bounded `AiClient::completeWithTools`
+execution loop. Their role policies, data tools and deterministic local paths
+remain distinct. Provider text cannot grant capabilities.
 
 ```mermaid
 flowchart TB
-  HTTP["SupportController"] <-->|"message + owned history / answer"| Bot["SupportBotService"]
-  Bot <-->|"facts / scoped lookups"| Context["AgentContextService + SupportToolRegistry"]
-  Context <-->|"services + DatabaseService"| DB[("Public / own MySQL records")]
-  Context <-->|"BlogService: published only"| Posts[("Article Markdown")]
-  Bot <-->|"optional prompt / text"| AI["AiClient.completeOrNull"]
-  AI <-->|"request / response"| Provider["Model provider"]
-  Rules[".bapX Support role files"] -.->|"AgentInstructionService; model branch"| Bot
-  Bot -->|"signed-in escalation"| Ticket["SupportTicketService"]
-  Ticket -->|"idempotent ticket write"| DB
-  HTTP -->|"authorized answer"| Present["AgentAnswerPresentationService"]
-  Present -->|"text + optional A2UI"| Widget["Support widget"]
-  classDef store fill:#fff7ed,stroke:#c2410c,color:#431407
-  classDef external fill:#f3e8ff,stroke:#7e22ce,color:#3b0764
-  class DB,Posts store
-  class Provider external
+  S["Support: guest or own account"] --> Scope
+  E["Enterprise: authenticated owner and CSRF"] --> Scope
+  Scope["Save pending actor-owned turn; request budgets"] --> Local{"Authorized local answer or draft?"}
+  Local -->|yes| Trusted["PHP lookup / report / owner-reviewed draft"]
+  Local -->|no| K["Knowledge RAG: scoped current records, published documents, owned history"]
+  K --> I["Instruction RAG: role constitution, shared guidance and skill metadata"]
+  I --> T["Tool RAG: role-filtered lexical discovery; initial up to 3 business tools"]
+  T --> M["AiClient: enabled configured provider / model"]
+  M --> Q{"Declared tool request?"}
+  Q -->|yes| Gate["RuntimeAgentToolRegistry: check role, active declaration and arguments"]
+  Gate -->|read_runtime_skill| Skill["Allowed .bapX document and actual hash"]
+  Gate -->|tool_search| Discover["Up to 4 matches per search; maximum 8 active business tools"]
+  Gate -->|business call| Business["Existing scoped registries and PHP services"]
+  Business --> Facts[("MySQL via DatabaseService / approved Markdown")]
+  Facts --> Result["Actual result or safe failure; scoped guidance"]
+  Skill --> Result
+  Discover --> Result
+  Result -->|correlated result; bounded next round| M
+  Q -->|final response| Finish["Validate and present authorized answer"]
+  Trusted --> Finish
+  Finish --> Saved["One private JSON chat; observed traces and evaluation"]
+  Finish --> UI["Native text / scoped A2UI"]
 ```
 
-**Enterprise: the provider can request declared PHP tools.** The local report branch can return without a provider call; the model branch loops through validated tool calls and returns their results to the provider.
+| RAG layer | Implemented in this revision | Remaining boundary |
+|---|---|---|
+| Knowledge | `AgentContextService`, `PublicKnowledgeService`, `BlogService`, scoped tool results and owned JSON history | General authorized MD/JSON excerpt search and flexible schema-aware queries are not yet implemented |
+| Instruction | `AgentInstructionService` and `RuntimeAgentToolRegistry` load the role constitution and shared contract, then activate fixed skills on demand or with related tools | No arbitrary paths or developer prompts; authorized external MCP instruction projection remains incomplete |
+| Tool | `RuntimeAgentToolRegistry` ranks authorized metadata lexically, exposes `tool_search` and refreshes declarations in both provider loops | No unrestricted SQL or new permissions; actual provider availability and task resolution require live evidence |
 
-```mermaid
-sequenceDiagram
-  participant Admin as AdminController
-  participant AI as AiClient
-  participant Model as Model provider
-  participant Tools as Enterprise tools
-
-  Note over Admin: Owner + CSRF, saved turn
-  alt Local help or aggregate report
-    Admin->>Tools: Recognized local query
-    Tools-->>Admin: Scoped answer / report data
-  else Model branch
-    Note over Admin: Load Enterprise role rules
-    Admin->>AI: completeWithTools
-    AI->>Model: Prompt + tool declarations
-    loop Bounded tool rounds
-      Model-->>AI: Function name + arguments
-      AI->>Tools: Validate + scope call
-      Note over Tools: Scoped service reads
-      Tools-->>AI: Structured tool result
-      AI->>Model: Paired function result
-    end
-    Model-->>AI: Final answer
-    AI-->>Admin: Answer + execution evidence
-  end
-  Note over Admin: Save answer, render for owner
-```
-
-Enterprise reads use `AgentToolRegistry` and `AgentCapabilityPolicy` before the relevant business service, `DatabaseService` or `BlogService`. Explicit `/create-blog` and `/add-product` commands take a separate `AgentDraftService` branch: generated fields fill the existing admin form, and **the owner must press Save** before the normal product/Markdown persistence path runs.
+The two meta-tools, `read_runtime_skill` and `tool_search`, are model-adapter
+operations, not public MCP tools. Business execution continues through the
+existing scoped registries and services. Local reports and owner-reviewed
+drafts can bypass the model; a draft is not a persisted business mutation.
+Provider fallback is bounded and never replays a started tool exchange on
+another provider.
 
 **Both chats share this persistence and response boundary:**
 
@@ -290,7 +312,11 @@ flowchart TB
 
 Support checks its rate limit and requires CSRF for signed-in requests; the admin controller requires the admin role and POST CSRF. Both controllers persist the actor-owned pending request **before** provider/tool work. `AgentTraceService` checkpoints actual retrieval, provider and tool spans into that same conversation JSON. The controller then records the sanitized answer/evaluation. `AuditLogService` separately writes operational metadata to MySQL `audit_events`; a failed audit does not undo successful business work.
 
-Support's public/policy/catalogue answers can finish locally. Its model branch uses `completeOrNull()` with PHP-built context, without provider tool declarations. A signed-in escalation may create a support ticket, so the whole Support flow must not be described as read-only. Enterprise's model loop executes only declared tools with actor, argument and scope checks; tool results return to the provider for the next round. Local aggregate answers and draft commands are separate branches. Drafts do not save products/articles until the owner submits the existing admin form.
+Support's public/policy/catalogue answers can finish locally; its model branch
+now uses the shared role-filtered tool loop. A signed-in escalation may create
+a support ticket, so the complete Support flow is not read-only. Enterprise
+reports retain owner authorization. Drafts do not save products/articles until
+the owner submits the existing admin form.
 
 `AgentAnswerPresentationService` structures an already authorized answer; it does not retrieve records. Optional public reference cards come from `PublicA2uiService`. Native chat uses `BapxA2ui` with the appropriate Support/Admin scope and retains the complete text fallback. Public MCP never receives the private answer surface.
 
@@ -305,7 +331,7 @@ flowchart TB
   Browser["Browser agent + WebMCP scripts"] <-->|"GET / JSON; credentials omitted"| API["ApiController: /api/knowledge/*"]
   Host["External MCP host"] <-->|"JSON-RPC: /api/mcp"| MCP["PublicMcpController + PublicMcpService"]
   API <-->|"public lookup / records"| Knowledge["PublicKnowledgeService"]
-  MCP <-->|"four public tools / records"| Knowledge
+  MCP <-->|"published lookups / records"| Knowledge
   Knowledge <-->|"ProductService + DatabaseService"| DB[("Visible MySQL catalogue")]
   Knowledge <-->|"BlogService: published only"| Posts[("Article Markdown")]
   Facts["Allowlisted contact / enquiry facts"] -->|"public projection"| Knowledge
@@ -340,7 +366,7 @@ sequenceDiagram
 ```
 
 
-The HTTP MCP path deliberately avoids PHP browser sessions. Products/articles are checked against publication and module visibility; contact/services are explicit public projections. The browser `present_public_knowledge` tool returns validated surface data. Whether that becomes an interactive card depends on the connected host; registering WebMCP on a website does not install a connector into an unrelated chat. `list_shop_results` reads the current shop DOM rather than querying the backend again.
+The public HTTP MCP path deliberately avoids PHP browser sessions; scoped cart/checkout operations have their own capability boundaries. An authorized shared .bapX instruction projection for external transports is a target, not an existing grant to read private runtime files. Products/articles are checked against publication and module visibility; contact/services are explicit public projections. The browser `present_public_knowledge` tool returns validated surface data. Whether that becomes an interactive card depends on the connected host; registering WebMCP on a website does not install a connector into an unrelated chat. `list_shop_results` reads the current shop DOM rather than querying the backend again.
 
 **Source trail:** [HTTP/session boundary](api/index.php), [MCP validation](app/Controllers/PublicMcpController.php), [tool/resource dispatch](app/Services/PublicMcpService.php), [public JSON endpoints](app/Controllers/ApiController.php), [public projections](app/Services/PublicKnowledgeService.php), [public surfaces](app/Services/PublicA2uiService.php), [WebMCP callbacks](assets/public-knowledge-webmcp.js), [public products callback](assets/public-products-webmcp.js), [A2UI callback](assets/public-a2ui-webmcp.js), [shop DOM tool](assets/shop-webmcp.js), [MCP App bridge](assets/public-mcp-app.js).
 

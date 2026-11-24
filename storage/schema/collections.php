@@ -443,6 +443,17 @@
             'primary_key' => null,
             'admin_managed' => true,
             'fields' => [
+                // Existing persisted owner controls; descriptors do not grant new permissions.
+                'id' => ['type' => 'string'],
+                'module_shop' => ['type' => 'enum', 'values' => ['0', '1']],
+                'module_blog' => ['type' => 'enum', 'values' => ['0', '1']],
+                'logo_url' => ['type' => 'string'],
+                'favicon_url' => ['type' => 'string'],
+                'palette_primary' => ['type' => 'string'],
+                'palette_secondary' => ['type' => 'string'],
+                'palette_canvas' => ['type' => 'string'],
+                'palette_text' => ['type' => 'string'],
+                'palette_link' => ['type' => 'string'],
                 // Owner-authored pages occupy pg:<slug> rows in the existing JSON-backed table.
                 'slug' => ['type' => 'string'], 'title' => ['type' => 'string'], 'content' => ['type' => 'text'],
                 'status' => ['type' => 'enum', 'values' => ['draft', 'published']], 'revision' => ['type' => 'string'],

@@ -419,6 +419,35 @@ $tests['Tamil named festive retrieval matches English collection without guessin
     assertSame(null,\App\Services\AgentContextService::requestedCollection('பண்டிகை பொருட்கள்',$collections),'Generic Tamil festival query requires clarification');
 };
 
+$tests['developer index remains portable across client deployment configuration'] = static function (): void {
+    $names=['APP_URL','BAPX_REMOTE_DB_URL'];$saved=[];
+    foreach($names as $name)$saved[$name]=getenv($name);
+    $server=$_SERVER;$env=$_ENV;
+    $tmp=tempnam(sys_get_temp_dir(),'bapx-index-');
+    try {
+        $graph=new \App\Services\KnowledgeGraphService();$graph->build();
+        $outputs=[];
+        foreach(['https://client-one.example','https://client-two.example'] as $url) {
+            $_SERVER['APP_URL']=$_ENV['APP_URL']=$url;putenv('APP_URL='.$url);
+            $_SERVER['BAPX_REMOTE_DB_URL']=$_ENV['BAPX_REMOTE_DB_URL']=$url.'/remotedb';
+            putenv('BAPX_REMOTE_DB_URL='.$url.'/remotedb');
+            $graph->writeYamlIndex($tmp);
+            $outputs[]=file_get_contents($tmp);
+        }
+        assertSame($outputs[0],$outputs[1],'Developer index must not change across client configurations');
+        assertTrue(!str_contains($outputs[0],'client-one.example')&&!str_contains($outputs[0],'client-two.example'),'No configured runtime origin embedded');
+        assertTrue(str_contains($outputs[0],'BAPX_REMOTE_DB_URL'),'Actual configurable transport is discoverable');
+        $schema=(new \App\Services\SchemaService())->collection('settings');
+        foreach(['id','module_shop','module_blog','logo_url','favicon_url','palette_primary','palette_secondary','palette_canvas','palette_text','palette_link'] as $field)
+            assertTrue(isset($schema['fields'][$field]),'Existing owner setting represented in schema: '.$field);
+        assertSame([], $schema['agent_context']??[], 'Settings descriptors grant no new agent access');
+    } finally {
+        $_SERVER=$server;$_ENV=$env;
+        foreach($saved as $name=>$value)putenv($value===false?$name:$name.'='.$value);
+        @unlink($tmp);
+    }
+};
+
 $tests['developer knowledge index distinguishes runtime instructions without copying prompt bodies'] = static function (): void {
     $graph=(new \App\Services\KnowledgeGraphService())->build();
     $runtime=array_values(array_filter($graph['concepts'],static fn(array $row):bool=>($row['type']??'')==='runtime_instruction'));
