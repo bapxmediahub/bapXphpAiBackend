@@ -1,5 +1,6 @@
 <link rel="stylesheet" href="/assets/css/home-editorial.css?v=<?= filemtime(__DIR__ . '/../../assets/css/home-editorial.css') ?>">
-<div class="home-opening"<?= module_on('shop') ? ' data-home-opening' : '' ?>>
+<div class="home-editorial-stack" data-home-stack>
+<div class="home-opening">
 <section class="home-hero">
     <div class="container home-hero-inner">
         <div class="hero-copy">
@@ -59,6 +60,7 @@
         </li>
     </ul>
 </div>
+</div>
 
 <?php if (module_on('shop')): ?>
 <section class="section home-bestsellers">
@@ -77,16 +79,20 @@
             </a>
         </div>
         <div data-section-index hidden></div>
-        <div class="product-grid">
+        <div data-home-rail>
+        <?php if (count($bestSellers ?? []) > 1): ?>
+            <?php $railId = 'home-bestseller-rail'; require __DIR__ . '/home-rail-controls.php'; ?>
+        <?php endif; ?>
+        <div class="product-grid home-product-rail" id="home-bestseller-rail" data-home-track tabindex="0" role="region" aria-label="Top selling products">
         <?php foreach(($bestSellers ?? []) as $item): ?>
             <?php require __DIR__ . '/home-product-card.php'; ?>
         <?php endforeach; ?>
         <?php if (empty($bestSellers)): ?><p>Our top sellers will appear here as orders are completed. <a href="/shop">Browse all products</a>.</p><?php endif; ?>
     </div>
+        </div>
     </div>
 </section>
 <?php endif; ?>
-</div>
 
 <?php if (module_on('shop')): ?>
 <?php require __DIR__ . '/home-collections.php'; ?>
@@ -259,6 +265,7 @@
         </div>
     </div>
 </section>
+</div>
 <script type="application/ld+json"><?= json_encode([
     '@context' => 'https://schema.org',
     '@type' => 'FAQPage',
