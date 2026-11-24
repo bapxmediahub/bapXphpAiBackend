@@ -2542,6 +2542,11 @@ $tests['admin integrations explain api setup and support bot keys'] = function (
     }
 };
 
+$tests['provider route and Google wire schema regression'] = static function():void {
+    $output=[];$status=1;
+    exec(escapeshellarg(PHP_BINARY).' '.escapeshellarg(app_path('tests/provider-config-regression.php')).' 2>&1',$output,$status);
+    assertSame(0,$status,implode("\n",$output));
+};
 $tests['compatible provider normalizes a shared URL and ordered model IDs'] = function (): void {
     $settings = [
         'ai_compatible_url' => 'https://example.com/v1/chat/completions/',

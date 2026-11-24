@@ -12,7 +12,7 @@ const origin='http://router-settings.example.test';
 const fakeKey='sk-or-v1-'+('b'.repeat(64));
 const render=enabled=>execFileSync(process.env.PHP_BINARY||'php',['-r',[
     "putenv('BAPX_TEST_MODE=1'); require 'app/bootstrap.php';",
-    "$csrf='fixture-only'; $comparisonModels=[];",
+    "$csrf='fixture-only'; $comparisonModels=[['target'=>'google|shared-model','provider'=>'google','model'=>'shared-model'],['target'=>'openai_compatible|shared-model','provider'=>'openai_compatible','model'=>'shared-model']];",
     "$secrets=['ai_provider'=>'google','ai_api_key'=>'fixture-google-key',",
     "'ai_openrouter_enabled'=>'"+(enabled?'1':'0')+"','ai_openrouter_key'=>'"+fakeKey+"'];",
     "$fixture=new class extends \\App\\Controllers\\BaseController { public function show($secrets,$csrf,$comparisonModels){ include 'views/admin/integrations.php'; } };",
@@ -30,19 +30,28 @@ for(const width of [1280,375]) test('owner OpenRouter toggle and masked save at 
     const context=await browser.newContext({viewport:{width,height:850}});
     const page=await context.newPage();
     const errors=[];page.on('pageerror',error=>errors.push(error.message));
-    const sent=[];
+    const sent=[], probes=[], submissions=[];
     try{
         await page.route(origin+'/**',route=>{
             const req=route.request(),url=new URL(req.url());
             assert.equal(url.origin,origin,'No real network request is permitted.');
+            if(url.pathname==='/admin/integrations/test-ai'){
+                const params=new URLSearchParams(req.postData());
+                probes.push({target:params.get('probe'),mode:params.get('probe_mode'),csrf:params.get('_csrf')});
+                return route.fulfill({status:200,contentType:'text/html',body:renderPage(false)});
+            }
             if(url.pathname==='/admin/integrations/save'){
                 const params=new URLSearchParams(req.postData());
+                submissions.push({aiOnly:params.get('save_ai_only'),smtpHost:params.get('smtp_host')});
                 sent.push({
                     enabled:params.getAll('ai_openrouter_enabled').at(-1), // PHP uses the last value after the hidden off sentinel
                     keyMatches:params.get('ai_openrouter_key')===fakeKey,
                     keyEmpty:params.get('ai_openrouter_key')==='',
                     csrf:params.get('_csrf')==='fixture-only',
                     provider:params.get('ai_provider'),
+                    googleModel:params.getAll('ai_google_model_switches[gemma-4-31b-it]').at(-1),
+                    googleIds:params.get('ai_google_models').replace(/\r/g,''),
+                    routerIds:params.get('ai_openrouter_models').replace(/\r/g,''),
                 });
                 return route.fulfill({status:200,contentType:'text/html',body:renderPage(true)});
             }
@@ -61,10 +70,15 @@ for(const width of [1280,375]) test('owner OpenRouter toggle and masked save at 
         assert.equal(await enabled.isChecked(),false,'Provider must default off.');
         assert.equal(await key.getAttribute('type'),'password');
         assert.equal(await key.inputValue(),'','Stored key may never render as a password value.');
+        const google=page.getByRole('checkbox',{name:'Enable Google models'});
+        assert.equal(await google.isChecked(),true);
+        await page.getByRole('checkbox',{name:'gemma-4-31b-it',exact:true}).uncheck();
+        await page.getByLabel('Google model IDs in fallback order').fill('gemma-4-31b-it\ngemma-4-26b-a4b-it\ncustom-google-model');
+        await page.getByLabel('OpenRouter model IDs in fallback order').fill('openrouter/free\nvendor/model:free');
         await enabled.check();
         await key.fill(fakeKey);
         await page.getByRole('button',{name:'Save Integrations'}).click();
-        assert.deepEqual(sent,[{enabled:'1',keyMatches:true,keyEmpty:false,csrf:true,provider:'google'}]);
+        assert.deepEqual(sent,[{enabled:'1',keyMatches:true,keyEmpty:false,csrf:true,provider:'google',googleModel:'0',googleIds:'gemma-4-31b-it\ngemma-4-26b-a4b-it\ncustom-google-model',routerIds:'openrouter/free\nvendor/model:free'}]);
         assert.equal(await page.getByRole('checkbox',{name:'Enable OpenRouter Free'}).isChecked(),true);
         assert.equal(await page.getByLabel('OpenRouter API Key',{exact:true}).inputValue(),'');
         await page.getByRole('checkbox',{name:'Enable OpenRouter Free'}).uncheck();
@@ -73,6 +87,11 @@ for(const width of [1280,375]) test('owner OpenRouter toggle and masked save at 
         assert.equal(sent[1].enabled,'0');
         assert.equal(sent[1].keyEmpty,true,'Blank input preserves the saved key in the backend.');
         assert.equal(sent[1].csrf,true);
+        await page.getByLabel('SMTP Host',{exact:true}).fill('smtp.fixture.example');
+        await page.getByLabel('SMTP Host',{exact:true}).press('Enter');
+        assert.deepEqual(submissions[2],{aiOnly:null,smtpHost:'smtp.fixture.example'},'Implicit keyboard submit must save the full integration form.');
+        await page.getByRole('button',{name:'Save AI Provider Settings'}).click();
+        assert.equal(submissions[3].aiOnly,'1','Explicit AI-only action retains its scoped submission.');
         const overflow=await page.evaluate(()=>({
             viewport:innerWidth,
             width:document.documentElement.scrollWidth,
@@ -84,6 +103,10 @@ for(const width of [1280,375]) test('owner OpenRouter toggle and masked save at 
         }));
         assert.equal(overflow.width<=overflow.viewport+1,true,
             'Integrations must fit the phone viewport: '+JSON.stringify(overflow));
+        await page.getByLabel('Connection to test').selectOption('openai_compatible|shared-model');
+        await page.getByLabel('Diagnostic',{exact:true}).selectOption('tools');
+        await page.getByRole('button',{name:'Test AI Connection'}).click();
+        assert.deepEqual(probes,[{target:'openai_compatible|shared-model',mode:'tools',csrf:'fixture-only'}]);
         assert.deepEqual(errors,[]);
     }finally{await context.close();await browser.close();}
 });
