@@ -165,6 +165,44 @@ $tests['public catalogue summary and bestseller projection never expose private 
     assertSame(null,\App\Services\SupportBotService::aggregateToolForQuestion('How many products are in my order?'),'Never substitute store totals for private orders');
 };
 
+$tests['exact support aggregates execute locally and filtered requests are not misrouted'] = static function (): void {
+    $service=\App\Services\SupportBotService::class;
+    assertSame('public_catalogue_summary',$service::aggregateToolForQuestion('How many published products do you have and which categories are listed?'),'Live aggregate reproduction');
+    foreach(['How many products have copper?', 'How many products are in the pendant collection?', 'Which categories have discounts?', 'What is the best selling pendant?', 'How many products are in my order?'] as $question)
+        assertSame(null,$service::aggregateToolForQuestion($question),'Do not answer a filtered question with a store-wide figure');
+    \App\Services\AgentTraceService::begin(bin2hex(random_bytes(8)));
+    try {
+        $result=(new $service())->answer('How many published products do you have and which categories are listed?',null);
+        assertSame('local',$result['run']['outcome'],'Fixture catalogue tool succeeds locally');
+        assertSame([], $result['run']['attempts'],'Exact fact does not call a model');
+        assertSame('public_catalogue_summary',$result['run']['tools'][0]['name'],'Canonical tool used');
+        assertSame('local_tool_lookup',$result['run']['retrieval'][0]['reason'],'Local retrieval not mislabelled as model-selected');
+        assertTrue(is_int($result['run']['tools'][0]['evidence']['facts']['total']),'Catalogue total is preserved in tool evidence');
+    } finally { \App\Services\AgentTraceService::reset(); }
+};
+
+$tests['both native agents share the published article contract and redacted source identities'] = static function (): void {
+    $support=new \App\Services\SupportToolRegistry(null);
+    $owner=new \App\Services\AgentToolRegistry();
+    $decl=\App\Services\PublicKnowledgeService::agentArticleDeclaration();
+    assertSame($decl,array_column($support->declarations(),null,'name')['search_articles'],'Support declaration');
+    assertSame($decl,array_column($owner->declarations(),null,'name')['search_articles'],'Enterprise declaration');
+    foreach([[],['query'=>[]],['query'=>str_repeat('a',121)],['query'=>'help','path'=>'../private.md']] as $args) {
+        assertTrue(isset($support->run('search_articles',$args)['error']),'Invalid Support args rejected');
+        assertTrue(isset($owner->run('search_articles',$args)['error']),'Invalid Enterprise args rejected');
+    }
+    $e=\App\Services\AgentTraceService::toolEvidence('search_articles',['query'=>'private@example.invalid'],['found'=>2,'articles'=>[
+        ['path'=>'/blog/delivery-guide','title'=>'Delivery guide'],
+        ['path'=>'/admin/private','title'=>'not public']]]);
+    $safe=\App\Services\AgentTraceService::safeTool(['name'=>'search_articles','status'=>'complete','evidence'=>$e]);
+    assertSame([['id'=>'article:delivery-guide','last_updated'=>null]],$safe['evidence']['sources'],'Only bounded public article identity retained');
+    assertSame(2,$safe['evidence']['facts']['found'],'Observed match count retained');
+    assertTrue(!str_contains(json_encode($safe),'private@example.invalid'),'Never log raw search query');
+    $runtime=new \App\Services\RuntimeAgentToolRegistry('support',null,$support,'find published articles about delivery');
+    assertTrue($runtime->has('search_articles'),'Relevant published-article tool discoverable');
+    assertTrue(!$runtime->has('operator_guide'),'Guest cannot activate owner guide');
+};
+
 $tests['trace evidence uses executed scope rather than contradictory requested dates'] = static function (): void {
     $e = \App\Services\AgentTraceService::toolEvidence('sales_summary',
         ['from'=>'2026-01-01','to'=>'2026-01-31'],

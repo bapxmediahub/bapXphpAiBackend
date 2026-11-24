@@ -11,7 +11,7 @@ final class AgentCapabilityPolicy {
 
     private const SUPPORT_TOOLS = [
         'public_catalog', 'public_policy', 'get_public_contact', 'list_public_services', 'own_ticket_status',
-        'public_catalogue_summary', 'public_best_sellers',
+        'public_catalogue_summary', 'public_best_sellers', 'search_articles',
     ];
     private const ENTERPRISE_TOOLS = [
         'find_order', 'product_status', 'sales_summary', 'commerce_report', 'gst_register_summary',

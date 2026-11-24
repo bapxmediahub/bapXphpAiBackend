@@ -22,12 +22,12 @@ Source: `app/Services/SupportToolRegistry.php`; instruction version 2.
 
 Private runtime Markdown is not duplicated into developer documentation.
 
-- `.bapX/supportagent.md` — SHA-256 `a64c9cff83ad19a01ee9da90d2afe8f3845f87c4146d5cdd5c704ccaedb8c9f1`
+- `.bapX/supportagent.md` — SHA-256 `1c2430d764c8528b50cbc41932068bcddc9caa27d282c889080b222053e87380`
 - `.bapX/bapXcl/skill.md` — SHA-256 `300793ad430a1aba904aea06e51665187af5d299502a0e21d3bdae0ea442f354`
 - `.bapX/bapXcl/support/catalog.md` — SHA-256 `0b85f5605a1eee35dcb09a147d8905059508151be9d46465d226a9b0816cc9a6`
-- `.bapX/bapXcl/support/policy-and-tickets.md` — SHA-256 `4d7cefdc76d5f24b56be31848b568147bb2ce3af8bfcbd65081a93c5a9740892`
+- `.bapX/bapXcl/support/policy-and-tickets.md` — SHA-256 `ed732c56f5da36ac3524940e5170aab9a348c8a68babe7f9d4a55b464abf9138`
 
-Bundle SHA-256: `9777bfe8e3afb388cb7e1ef4c5a64c5d7109ac1b73cce91093e30bc93be9a4b1`.
+Bundle SHA-256: `4474e56cdf30936d4670802e368b4b8bf68dc1c8f07d2eb6b3a7c329af6b761f`.
 
 ### `public_catalog`
 
@@ -191,6 +191,28 @@ Get up to four currently visible storefront best sellers by recorded paid, non-c
 }
 ```
 
+### `search_articles`
+
+Search published blog and customer help articles by keyword. Returns real titles and paths; never private documents or article bodies.
+
+**Access:** Guest or authenticated customer; published/public data only.
+
+```json
+{
+    "type": "object",
+    "properties": {
+        "query": {
+            "type": "string",
+            "maxLength": 120
+        }
+    },
+    "required": [
+        "query"
+    ],
+    "additionalProperties": false
+}
+```
+
 ## Enterprise Admin
 
 Source: `app/Services/EnterpriseToolRegistry.php`; instruction version 2.
@@ -202,10 +224,10 @@ Private runtime Markdown is not duplicated into developer documentation.
 - `.bapX/enterpriseagent.md` — SHA-256 `488b908267cc25cf98136655a21c6b58b33fbbf0047a880cd3123f9ec876f198`
 - `.bapX/bapXcl/skill.md` — SHA-256 `300793ad430a1aba904aea06e51665187af5d299502a0e21d3bdae0ea442f354`
 - `.bapX/bapXcl/support/catalog.md` — SHA-256 `0b85f5605a1eee35dcb09a147d8905059508151be9d46465d226a9b0816cc9a6`
-- `.bapX/bapXcl/support/policy-and-tickets.md` — SHA-256 `4d7cefdc76d5f24b56be31848b568147bb2ce3af8bfcbd65081a93c5a9740892`
+- `.bapX/bapXcl/support/policy-and-tickets.md` — SHA-256 `ed732c56f5da36ac3524940e5170aab9a348c8a68babe7f9d4a55b464abf9138`
 - `.bapX/bapXcl/enterprise/reporting.md` — SHA-256 `432827fa7c6fa1d5bc7a57d6a3c77bd4f29832d35fa3dd07df6a09ab55f7f942`
 
-Bundle SHA-256: `c0bdf3447cdd684c64a912583b2fe9134d0a8dd236f59a87ade8ff7b3a12754b`.
+Bundle SHA-256: `e088f79eb9235700e9b90a42cde4e51aa391deca9dd6d6f24ec303a6241cc2a5`.
 
 ### `find_order`
 
@@ -411,7 +433,7 @@ Count recorded users, products or appointments. Returns a total without record d
 
 ### `search_articles`
 
-Search published blog and help articles by keyword. Returns titles and their paths so an answer can point at real published content.
+Search published blog and customer help articles by keyword. Returns real titles and paths; never private documents or article bodies.
 
 **Access:** Authenticated admin, enforced server-side.
 
@@ -421,12 +443,13 @@ Search published blog and help articles by keyword. Returns titles and their pat
     "properties": {
         "query": {
             "type": "string",
-            "description": "Words to search for."
+            "maxLength": 120
         }
     },
     "required": [
         "query"
-    ]
+    ],
+    "additionalProperties": false
 }
 ```
 

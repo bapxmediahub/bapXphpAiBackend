@@ -436,7 +436,24 @@ final class PublicKnowledgeService
         return ['articles'=>array_slice($scored,$offset,$limit),'total'=>$total,'nextOffset'=>$end<$total?$end:null];
     }
 
-    /** Preserve the existing Enterprise agent tool response while reusing one retriever. */
+    /** Both authenticated Enterprise and public Support use this exact declaration. */
+    public static function agentArticleDeclaration(): array
+    {
+        return ['name'=>'search_articles',
+            'description'=>'Search published blog and customer help articles by keyword. Returns real titles and paths; never private documents or article bodies.',
+            'parameters'=>['type'=>'object','properties'=>['query'=>['type'=>'string','maxLength'=>120]],
+                'required'=>['query'],'additionalProperties'=>false]];
+    }
+
+    public function searchArticlesForAgent(array $args): array
+    {
+        if (array_keys($args)!==['query'] || !is_string($args['query']) ||
+            !mb_check_encoding($args['query'],'UTF-8') || mb_strlen($args['query'])>120)
+            return ['error'=>'Invalid lookup parameters.'];
+        return $this->articlesForAgent($args['query']);
+    }
+
+    /** Preserve the existing agent tool response while reusing one retriever. */
     public function articlesForAgent(string $query): array
     {
         if(trim($query)==='')return ['error'=>'Give something to search for.'];

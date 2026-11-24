@@ -4,7 +4,7 @@ namespace App\Services;
 final class AuditLogService {
     private const RUN_REASONS = ['not_configured', 'timeout', 'transport', 'authentication', 'rate_limit',
         'provider_server', 'provider_request', 'provider_response', 'empty_response', 'rejected_response',
-        'internal_error', 'request_deadline', 'provider_budget', 'trace_step_budget'];
+        'internal_error', 'lookup_unavailable', 'request_deadline', 'provider_budget', 'trace_step_budget'];
 
     public const DIAGNOSTICS = [
         'transfer_timeout' => ['Transfer timed out', 'Check the recorded HTTP status and first-byte timing. A timeout alone cannot identify where the delay occurred.'],

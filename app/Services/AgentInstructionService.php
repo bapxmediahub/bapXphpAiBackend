@@ -24,7 +24,7 @@ final class AgentInstructionService
         'catalogue'=>['path'=>'bapXcl/support/catalog.md','description'=>'Published products, categories, collections, comparison, pricing and availability.',
             'tools'=>['public_catalog','public_catalogue_summary','public_best_sellers','product_status']],
         'customer-policy'=>['path'=>'bapXcl/support/policy-and-tickets.md','description'=>'Public policies, customer-owned account facts, tickets and confirmed human handoff.',
-            'tools'=>['public_policy','own_ticket_status','find_order','support_enquiries','get_public_contact','list_public_services']],
+            'tools'=>['public_policy','own_ticket_status','find_order','support_enquiries','get_public_contact','list_public_services','search_articles']],
         'reporting'=>['path'=>'bapXcl/enterprise/reporting.md','description'=>'Owner reporting scope, paid orders, GST, inventory status, coupons and date windows.',
             'tools'=>['sales_summary','commerce_report','gst_register_summary','store_count','coupon_status','support_enquiries']],
     ];

@@ -39,7 +39,7 @@ grant. Business mutations remain explicit admin forms/drafts with CSRF and audit
 ## Request and tool lifecycle
 
 **Support:** server-identify guest/customer → rate limit → recognize ticket,
-public policy, contact/services, named product/collection, or other request → retrieve only
+public policy, contact/services, exact unfiltered catalogue totals and best sellers, named product/collection, or other request → retrieve only
 public visible records or the authenticated customer's own tickets → optionally
 use bounded model synthesis → save one redacted turn and its trace → return
 the produced answer → wait for explicit customer feedback. A named Ayyappa festive collection
@@ -385,5 +385,4 @@ manifest. No instruction body or raw provider argument is added to operational
 telemetry. Model-selected Support reads record their own tool spans, evidence
 and public product-source identities. Public catalogue counts and bestseller
 ranking are business reads, not customer or owner-wide private records.
-A deterministic aggregate answer can include provider attempts and tool
-activity; a successful local answer is not proof that the provider recovered.
+Recognised unfiltered catalogue totals and all-time best sellers bypass model inference. The local business tool and its result evidence are still recorded; lookup failures do not become zero counts. Both agent surfaces use the same published-article declaration and retriever. Article tool evidence records bounded public article source identities, without raw query text or private documents. A successful local answer is not proof that the provider recovered.

@@ -1671,7 +1671,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/AgentToolRegistry.php",
-            "line": 302
+            "line": 291
         },
         {
             "from": "service:AgentToolRegistry",
@@ -1679,7 +1679,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/AgentToolRegistry.php",
-            "line": 298
+            "line": 287
         },
         {
             "from": "service:AgentToolRegistry",
@@ -1687,7 +1687,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/AgentToolRegistry.php",
-            "line": 972
+            "line": 961
         },
         {
             "from": "service:AgentToolRegistry",
@@ -1719,7 +1719,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/AgentToolRegistry.php",
-            "line": 303
+            "line": 292
         },
         {
             "from": "service:AgentToolRegistry",
@@ -1727,7 +1727,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/AgentToolRegistry.php",
-            "line": 876
+            "line": 865
         },
         {
             "from": "service:AgentToolRegistry",
@@ -1735,7 +1735,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/AgentToolRegistry.php",
-            "line": 902
+            "line": 891
         },
         {
             "from": "service:AgentToolRegistry",
@@ -1743,7 +1743,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AgentToolRegistry.php",
-            "line": 211
+            "line": 200
         },
         {
             "from": "service:AgentToolRegistry",
@@ -1759,7 +1759,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AgentToolRegistry.php",
-            "line": 290
+            "line": 279
         },
         {
             "from": "service:AgentToolRegistry",
@@ -1767,7 +1767,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AgentToolRegistry.php",
-            "line": 875
+            "line": 864
         },
         {
             "from": "service:AgentToolRegistry",
@@ -1775,7 +1775,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AgentToolRegistry.php",
-            "line": 232
+            "line": 193
         },
         {
             "from": "service:AgentToolRegistry",
@@ -1783,7 +1783,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AgentToolRegistry.php",
-            "line": 610
+            "line": 599
         },
         {
             "from": "service:AgentTraceService",
@@ -1791,7 +1791,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/AgentTraceService.php",
-            "line": 320
+            "line": 330
         },
         {
             "from": "service:AgentTraceService",
@@ -1799,7 +1799,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AgentTraceService.php",
-            "line": 63
+            "line": 65
         },
         {
             "from": "service:AgentTraceService",
@@ -1807,7 +1807,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AgentTraceService.php",
-            "line": 121
+            "line": 128
         },
         {
             "from": "service:AgentTraceService",
@@ -1815,7 +1815,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AgentTraceService.php",
-            "line": 301
+            "line": 311
         },
         {
             "from": "service:AiClient",
@@ -2855,7 +2855,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/RuntimeAgentToolRegistry.php",
-            "line": 160
+            "line": 166
         },
         {
             "from": "service:RuntimeHealthService",
@@ -2975,7 +2975,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SupportBotService.php",
-            "line": 490
+            "line": 501
         },
         {
             "from": "service:SupportBotService",
@@ -2983,7 +2983,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SupportBotService.php",
-            "line": 498
+            "line": 509
         },
         {
             "from": "service:SupportBotService",
@@ -2999,7 +2999,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SupportBotService.php",
-            "line": 569
+            "line": 580
         },
         {
             "from": "service:SupportBotService",
@@ -3015,7 +3015,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SupportBotService.php",
-            "line": 72
+            "line": 75
         },
         {
             "from": "service:SupportBotService",
@@ -3023,7 +3023,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SupportBotService.php",
-            "line": 106
+            "line": 109
         },
         {
             "from": "service:SupportBotService",
@@ -3039,7 +3039,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SupportBotService.php",
-            "line": 144
+            "line": 130
         },
         {
             "from": "service:SupportBotService",
@@ -3047,7 +3047,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SupportBotService.php",
-            "line": 106
+            "line": 109
         },
         {
             "from": "service:SupportBotService",
@@ -3055,7 +3055,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/SupportBotService.php",
-            "line": 75
+            "line": 78
         },
         {
             "from": "service:SupportBotService",
@@ -3063,7 +3063,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/SupportBotService.php",
-            "line": 113
+            "line": 116
         },
         {
             "from": "service:SupportBotService",
@@ -3079,7 +3079,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/SupportBotService.php",
-            "line": 494
+            "line": 505
         },
         {
             "from": "service:SupportBotService",
@@ -3087,7 +3087,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/SupportBotService.php",
-            "line": 556
+            "line": 567
         },
         {
             "from": "service:SupportTicketService",
@@ -3127,7 +3127,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SupportToolRegistry.php",
-            "line": 97
+            "line": 99
         },
         {
             "from": "service:SupportToolRegistry",
@@ -3143,7 +3143,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SupportToolRegistry.php",
-            "line": 95
+            "line": 97
         },
         {
             "from": "service:SupportToolRegistry",
@@ -3151,7 +3151,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SupportToolRegistry.php",
-            "line": 111
+            "line": 93
         },
         {
             "from": "service:SupportToolRegistry",
@@ -3159,7 +3159,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SupportToolRegistry.php",
-            "line": 94
+            "line": 96
         },
         {
             "from": "service:SupportToolRegistry",
@@ -3167,7 +3167,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/SupportToolRegistry.php",
-            "line": 89
+            "line": 90
         },
         {
             "from": "service:SupportToolRegistry",
