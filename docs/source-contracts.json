@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "f82e6811e4e72d390c373f0b79a2c6fb044d8c320234351b2214e92ef2581492",
+            "source_sha256": "494146be882f7ac9d51e5aa97a4730b14234eec7b85f3c1fd9bf5b7f934bb640",
             "references_sha256": "4db8c915776e898bd080ad21d7b88500ee584a1f02134bc05f2751fd0db4084c",
-            "review_note": "Compared Support deterministic retired-booking path, Enterprise grounded answers, shared OpenRouter/Gemma failover, tool result replay guard and role policy against current source; existing private chat JSON location remains unchanged."
+            "review_note": "Verified provider request-schema defect against Google API and model selection against Open WebUI/LiteLLM; documented reference-driven discovery, role-filtered runtime instructions, exact tool probe requirements and PHP 8.5 date format."
         },
         "auth": {
             "source_sha256": "9937a949946eef2a4e1fb7b77ed23efe780bef2d81f3ec56e85dc218692122bf",
@@ -23,14 +23,14 @@
             "review_note": "Reviewed the Docs skill provenance guidance against the unchanged BlogService and authored-content guide boundary. Static map references are discovery evidence only; publication visibility, Markdown storage, rendering and private-help exclusion remain the existing source contracts."
         },
         "foundation": {
-            "source_sha256": "d0bac5d94dca18432bfb88b24cfef3e82a92c17a7b2d53bb42041b4025aab5c4",
+            "source_sha256": "d9ae2a02eee1dc22ec30d5edc2cd517006e9c365cce3601581763013ac3a32dd",
             "references_sha256": "44504ddbd485f9ab5d6c71a6443726f531f7e0d7ed34ec16215741902635cc0e",
-            "review_note": "Cross-checked merged Support/Enterprise/WebMCP/OpenRouter source against architecture maps and docs. No separate chatbot app, SQL schema, external chat plugin or production browser engine is introduced."
+            "review_note": "Existing SecretService and database boundary retained, no new storage or runtime dependency."
         },
         "google-tags": {
-            "source_sha256": "9931f2724eec9875f4be1105fee72b70167373d61e7ecf95888dae86b1cdbd40",
-            "references_sha256": "1bc780fef929af6855d54ec574f50f3ed194f65ebd66ddb6bdbbcf4952a51081",
-            "review_note": "Reviewed shared layout footer/description changes; Google tags, consent and script configuration unchanged."
+            "source_sha256": "dd767cb1bb15f6696e8a8c4159712ffbdceaca9d07637e6fe0ac9d45974dab9b",
+            "references_sha256": "2d2f47b66a753ff821f0dfe5b30c7d965cfe5e77e7393df0d35714630f15bb50",
+            "review_note": "Google model credentials remain separate from reporting grant, Analytics and tags; updated integrations guide."
         },
         "http-errors": {
             "source_sha256": "913844884b7e734bcaf0c0f66f3ae88e18441ae4c9d5755a16a27a343909e9b3",
@@ -38,19 +38,19 @@
             "review_note": "Cross-checked the explicit Stripe namespace fallback against the existing canonical client and checkout call sites. RequestFailureService registration, CLI failure handling and exact MCP/webhook session bypass remain unchanged. The regression captures the real bootstrap before any fixture preload."
         },
         "interface": {
-            "source_sha256": "42209d1cd026c69769edd045bf59e56afd7dfa9e63d0c12fd7e225c0da1c9c6a",
+            "source_sha256": "d884d3ae4350cadc9ea4c4da3cd5071018daedf4d2e9b2a817fd63b3fa12b895",
             "references_sha256": "f1fc313dfc585e3dc0569dd2c52ac2b412aa8924f154978be71464130fe13375",
-            "review_note": "Compared requested controls and square slide edges with actual CSS, PHP, motion code and updated design guidance; any manual selection stops autoplay."
+            "review_note": "Reviewed responsive native provider cards and accessible controls at 375px and desktop."
         },
         "mail": {
-            "source_sha256": "064a2db84e324ad8cdf377ad2d9ee07289391409e44d5bfd92a0dba85586993a",
+            "source_sha256": "9bc672aa7f059c2451d279523dac429522f423b62ba265436a2e25b9f00ab49c",
             "references_sha256": "6d6153ae2fed6f1aebbf9fa93225d6cc74b6c098d9a34deffce7bc4f3c6e9273",
-            "review_note": "Reviewed the in-panel reuse of original /contact form with existing ContactService persistence and SMTP mail queue; no automatic real contact submission, mass retry or new email notification route was introduced."
+            "review_note": "AI-specific save filters posted fields; existing encrypted SMTP configuration and mail behavior unchanged."
         },
         "mcp-clients": {
-            "source_sha256": "8b2e7629876c1e5facae0a92e30f91e7e11ba59bd979a528022807b0193be7bc",
-            "references_sha256": "912c2decd557b138de9c5ca0f72cd5aab0f94d8430c46bd5c442c73d6cdccde8",
-            "review_note": "Compared existing MCP client grants and owner-only tool restrictions against merged WebMCP annotations and OpenRouter model routing; the changes do not issue an owner grant or promote browser agent capabilities."
+            "source_sha256": "ffb43129fe7e2633e2b790587a52729a82486fc1e08a692607623632c17756ad",
+            "references_sha256": "fbf4586231a8a57c147f12670d6aa1ff5db8c9720a3c01ab9de63e0223cc722e",
+            "review_note": "Provider configuration docs updated; MCP transport authorization and schemas unchanged."
         },
         "media": {
             "source_sha256": "7b9d3d9aa746f16f1441148550d143e7094388b247c423b90c310ed5441db99d",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed product image paths and the bounded A2UI gallery against current media hosting paths; styling does not move uploads, delete media or expose private asset directories."
         },
         "operator-help": {
-            "source_sha256": "c0bbd2ed684a6fccf607e6f88dffaac5f70d9694abf21c9cc29a81a02b1110cb",
+            "source_sha256": "cc0769f139496fb647681fbb5898d26a9a2b0f22d39ed2a36951d58978181521",
             "references_sha256": "2201c0efbcc49c20384beab8cbef25fa6bcd6928e2928d7fd8474d6522cdf6bf",
-            "review_note": "Reviewed shared public footer landmark and styling changes; operator help behavior and routes unchanged."
+            "review_note": "Reviewed owner-only provider form, masked fields, explicit saves and current model-test controls."
         },
         "public-mcp": {
             "source_sha256": "63c58fcaa8f86f54433c86067579355c9632622a41e732eb14b29ce7509d5af9",
@@ -68,9 +68,9 @@
             "review_note": "Shared view registration adds only native homepage rail controls; public MCP registry, schemas and actions unchanged."
         },
         "remote-commerce": {
-            "source_sha256": "4158663ee0618880bed2832d4e0c789789f46c71af15cd68796652a3e2e272d8",
+            "source_sha256": "fc0f3595df50e982963b63d00e9da7c54abe395b79928bf79e44266c5205e9ac",
             "references_sha256": "e00aba6f254f3552728ebcf0e7cd24d757eceb2ffa55060db99dd42562b481e9",
-            "review_note": "Reviewed native hero controls and outer slide corners; existing product, checkout, and cart forms unchanged."
+            "review_note": "Shared SecretService preserves existing unrelated payment records; scoped AI save leaves commerce settings untouched."
         },
         "sales-channels": {
             "source_sha256": "8c5c90482420e68151224e3b2f78bd9bee2c0330137ecc3f559b867d26c7d180",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed the sales-channel CLI references and catalogue guidance. This change only fixes generic PHP lint argument forwarding and failure propagation; feed, channel and catalogue operations are unchanged."
         },
         "workflow": {
-            "source_sha256": "577be12d6a184fce315aa9210624c579feb21a6450dd3d54f4835dafa8ad7ef4",
-            "references_sha256": "6bddcf08be3819fe8ec98d7f78e96b359a9571f9043255f5ce207927e4732284",
-            "review_note": "Actual layout acceptance checks one-row controls, touch targets, square section edges and existing navigation at four viewports; coverage regression retained."
+            "source_sha256": "b1d3421ca1e04a8e2c84c1ad7a9c52e314065d9a8ede5e2d98586b25ab4b63a7",
+            "references_sha256": "a242b3bec435e5f0b0b1191b95c4d0a8fe98fec35e78981816b1bd71023ecf27",
+            "review_note": "Updated binding agent and development instructions for external source/skill comparison, evidence-backed issue discovery, independent progress during CI and exact deployed agent acceptance."
         }
     }
 }
