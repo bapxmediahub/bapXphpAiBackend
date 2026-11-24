@@ -21,12 +21,12 @@ stop offscreen/hidden activity, respect reduced motion dynamically, and keep
 keyboard/focus/anchor behavior native. Shared public/admin layouts own the
 assets; do not copy a different engine into every page.
 
-Use the pinned Nebo reference for a bounded editorial handoff. Keep the
-incoming surface in native flow and let a tall outgoing surface scroll far
-enough to expose its action before holding. Release the hero when it receives
-keyboard focus. Rehearse short-height mobile viewports and navigation back into the
-opening. For photos inside a horizontal rail, use the rail's document position
-to drive entrance motion.
+Use the pinned Nebo reference for full-card editorial handoff. Each opaque
+section fills the available stable viewport or grows naturally. Tall cards
+scroll until their final controls are exposed. Release the stack for keyboard
+focus and fragment navigation. Avoid per-item entrance animations inside the
+homepage stack. Native horizontal scroll snap advances whole cards; preserve
+purchase forms, short viewport layout and reduced/no-JS behavior.
 
 Run `node --test tests/site-motion.test.cjs`, PHP/repository CI, then real
 Playwright desktop/375px and reduced/no-JS checks. Inspect intermediate frames at distinct scroll positions and after scrolling back,

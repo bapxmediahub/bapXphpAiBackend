@@ -1,23 +1,33 @@
 /* Homepage-only editorial treatment; commerce controls remain shared components. */
+/* The full editorial card, rather than nested photos or text, is the transition. */
+.home-editorial-stack { position: relative; isolation: isolate; --home-bottom: 0px; }
+.home-editorial-stack > :is(.home-opening,.home-bestsellers,.home-collection,.home-chapter,.home-faq) {
+    position: relative;
+    min-height: max(0px,calc(100svh - var(--home-header-height, 80px) - var(--home-bottom)));
+    background: var(--color-bg);
+}
+.home-opening { display: flex; flex-direction: column; }
+.home-opening > .home-hero { flex: 1; display: flex; align-items: center; }
+.home-opening > .home-hero > .container { width: 100%; }
+.home-chapter > section { min-height: inherit; display: flex; align-items: center; }
+.home-editorial-stack > :is(.home-bestsellers,.home-collection,.home-faq) { display: flex; align-items: center; }
+.home-editorial-stack > :is(.home-bestsellers,.home-collection,.home-faq) > .container,
+.home-chapter > section > .container { width: 100%; min-width: 0; }
 @media screen and (prefers-reduced-motion: no-preference) {
-    /* Each incoming surface remains in flow and covers the hero in paint order. */
-    html[data-sps-motion="enabled"] body:has([data-home-layer="ready"]) { overflow-x: clip; }
-    html[data-sps-motion="enabled"] [data-home-layer="ready"] { isolation: isolate; }
-    html[data-sps-motion="enabled"] [data-home-layer="ready"] > .home-hero:not(:has(:focus-visible)) {
+    html[data-sps-motion="enabled"] body:has([data-stack-ready]) { overflow-x: clip; }
+    html[data-sps-motion="enabled"] [data-stack-ready]:not(:has(:focus-visible,:target)) > :is(.home-opening,.home-bestsellers,.home-collection,.home-chapter) {
         position: sticky;
-        top: min(0px, calc(100svh - var(--home-hero-height) - var(--home-opening-bottom, 0px)));
-        z-index: 0;
-    }
-    html[data-sps-motion="enabled"] [data-home-layer="ready"] > :is(.trust-bar, .home-bestsellers) {
-        position: relative;
+        top: min(var(--home-header-height,80px),calc(100svh - var(--home-bottom) - var(--home-card-height,100svh)));
         z-index: 1;
     }
+    html[data-sps-motion="enabled"] [data-stack-ready] > .home-faq { z-index: 2; }
 }
 @media (max-width: 767px) {
-    body:has(#bottom-nav) .home-opening { --home-opening-bottom: calc(68px + env(safe-area-inset-bottom)); }
+    body:has(#bottom-nav) .home-editorial-stack { --home-bottom: calc(68px + env(safe-area-inset-bottom)); }
+    body:has(#mobile-cart-tray:not([hidden])) .home-editorial-stack { --home-bottom: calc(136px + env(safe-area-inset-bottom)); }
 }
-@media (min-width: 701px) {
-    body:has(#mobile-cart-tray:not([hidden])) .home-opening { --home-opening-bottom: 80px; }
+@media (min-width: 768px) {
+    body:has(#mobile-cart-tray:not([hidden])) .home-editorial-stack { --home-bottom: 80px; }
 }
 
 .home-hero {
@@ -203,33 +213,6 @@
 .home-faq__item summary span::after { transform: translate(-50%, -50%) rotate(90deg); }
 .home-faq__item[open] summary span::after { display: none; }
 
-@media screen and (prefers-reduced-motion: no-preference) {
-    @supports (animation-timeline: view(block 0px)) and (animation-range: entry 0% cover 38%) {
-        @keyframes home-photo-entry { from { transform: scale(1.09); } to { transform: none; } }
-        @keyframes home-panel-entry {
-            from { opacity: .8; transform: translateY(24px); }
-            to { opacity: 1; transform: none; }
-        }
-        .home-product-card { view-timeline: --home-product-view block 0px; }
-        .home-temples [data-temple-rail] { view-timeline: --home-temple-view block 0px; }
-        html[data-sps-motion="enabled"] .home-product-card:not(:focus-within):not(:hover) img.sps-home-scroll {
-            animation: home-photo-entry linear both;
-            animation-timeline: --home-product-view;
-            animation-range: entry 0% cover 28%;
-        }
-        html[data-sps-motion="enabled"] .home-temples [data-temple-rail]:not(:focus-within) img.sps-home-scroll {
-            animation: home-photo-entry linear both;
-            animation-timeline: --home-temple-view;
-            animation-range: entry 0% cover 32%;
-        }
-        html[data-sps-motion="enabled"] .sps-home-scroll[data-home-enter="panel"]:not(:focus-within) {
-            animation: home-panel-entry linear both;
-            animation-timeline: view(block 0px);
-            animation-range: entry 0% cover 38%;
-        }
-    }
-}
-
 @media (max-width: 350px) {
     .home-bestsellers .product-purchase,
     .home-collection .product-purchase { grid-template-columns: minmax(0, 1fr); }
@@ -283,25 +266,6 @@
 }
 .home-chapter > .home-order-guide { background-color: var(--color-bg); }
 .home-chapter > .section--warm { background-color: var(--color-bg-warm); }
-@media screen and (prefers-reduced-motion: no-preference) {
-    /* The wrapper ends the hold after a short overlap, including on a long chapter. */
-    html[data-sps-motion="enabled"] body:has(.home-chapter.is-measured) { overflow-x: clip; }
-    html[data-sps-motion="enabled"] .home-chapter.is-measured {
-        --overlap: clamp(76px, 16svh, 150px);
-        margin-bottom: calc(0px - var(--overlap));
-    }
-    html[data-sps-motion="enabled"] .home-chapter.is-measured::after {
-        content: '';
-        display: block;
-        height: var(--overlap);
-        pointer-events: none;
-    }
-    html[data-sps-motion="enabled"] .home-chapter.is-measured > section:not(:has(:focus-visible, :target)) {
-        position: sticky;
-        top: min(0px, calc(62svh - var(--chapter-height)));
-    }
-}
-
 .home-temples__header .section-title, .home-order-guide .section-title, .home-faq .section-title {
     font: 600 clamp(1.65rem, 3.4vw, 3rem)/1.12 var(--font-serif);
     color: var(--color-maroon);
@@ -354,3 +318,42 @@
     .home-bestsellers .page-sections a { flex: none; }
 }
 .home-temples__navigation { margin-bottom: 12px; }
+
+/* Whole-card rails: no active-card resizing, no JS scroll hijack. */
+.home-editorial-stack .home-product-rail {
+    position: relative; display: grid; grid-template-columns: none;
+    grid-auto-flow: column; grid-auto-columns: 100%; gap: 16px;
+    overflow-x: auto; overscroll-behavior-inline: contain;
+    scroll-snap-type: x mandatory; scrollbar-width: thin;
+    padding: 0 0 8px; align-items: stretch;
+}
+.home-editorial-stack .home-product-rail > * { min-width: 0; scroll-snap-align: start; scroll-snap-stop: always; }
+.home-editorial-stack .home-product-rail .home-product-card { height: 100%; }
+.home-editorial-stack .home-product-rail .home-collection__lead { align-self: stretch; align-content: center; }
+.home-editorial-stack .home-product-rail .product-card__image { aspect-ratio: 4 / 3; }
+.home-editorial-stack .home-product-rail:focus-visible { outline: 2px solid var(--color-maroon); outline-offset: 3px; }
+.home-editorial-stack .home-rail-controls:not([hidden]) { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-bottom: 12px; }
+.home-rail-controls button { width: 44px; height: 44px; padding: 0; border-radius: 50%; }
+.home-rail-controls button:disabled { opacity: .45; cursor: default; }
+.home-rail-controls span { font-size: .85rem; font-variant-numeric: tabular-nums; }
+.home-editorial-stack .home-product-card,
+.home-editorial-stack .home-product-card:hover,
+.home-editorial-stack .home-product-card:hover img { transform: none; transition: none; }
+.home-editorial-stack .home-product-card:hover { box-shadow: var(--shadow-sm); }
+@media (min-width:744px) { .home-editorial-stack .home-product-rail { grid-auto-columns: calc((100% - 16px)/2); } }
+@media (min-width:1050px) { .home-editorial-stack .home-product-rail { grid-auto-columns: calc((100% - 32px)/3); } }
+@media (max-height:650px) {
+    /* On short screens content is allowed to be taller than the viewport. */
+    .home-editorial-stack > :is(.home-opening,.home-bestsellers,.home-collection,.home-chapter,.home-faq) { min-height: max(0px,calc(100svh - var(--home-header-height,80px) - var(--home-bottom))); }
+}
+
+@media (max-width:744px) and (min-height:651px) {
+    .home-opening > .home-hero .home-hero-inner { grid-template-columns: minmax(0,1fr); gap: 14px; }
+    .home-opening .hero-deity { order: -1; }
+    .home-opening .hero-copy { text-align: center; }
+    .home-opening .hero-actions { align-items: center; justify-content: center; }
+    .home-opening .home-hero h1 { font-size: clamp(2rem,8vw,3rem); }
+    .home-opening .home-hero .deity-frame, .home-opening .home-hero .hero-deity[data-current-slide="guruji"] .deity-frame {
+        width: min(56vw, 25svh, 240px);
+    }
+}

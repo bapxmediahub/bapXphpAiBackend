@@ -100,6 +100,8 @@
             && win.CSS.supports('animation-range', 'entry 0% cover 38%');
         var candidates = doc.querySelectorAll(panelSelector + ',' + sectionHeadingSelector + ',' + homePhotoSelector + ',' + homePanelSelector + ',.product-card:not(.home-product-card),.blog-card,.temple-card,.auth-card,.section-title,.page-title,.admin-stat,.report-kpi,.admin-card > h2,.enterprise-chat__intro');
         var entranceTargets = Array.from(candidates).filter(function (target) {
+            // Full homepage sections are already the motion surface. Avoid simultaneous nested timelines.
+            if (target.closest('[data-home-stack]')) return false;
             if (!nativeSections) return true;
             if (target.matches(homePhotoSelector) || target.matches(homePanelSelector)) {
                 target.classList.add('sps-home-scroll');
@@ -156,41 +158,31 @@
         }
 
         var header = doc.querySelector(surface === 'admin' ? '.admin-topbar' : '#site-header');
-        var opening = doc.querySelector('[data-home-opening]');
-        var hero = opening?.querySelector('.home-hero');
-        if (hero && typeof win.ResizeObserver === 'function' && win.CSS?.supports('overflow-x', 'clip')) {
-            function measureHero() {
-                opening.style.setProperty('--home-hero-height', hero.offsetHeight + 'px');
+        var stack = doc.querySelector('[data-home-stack]');
+        if (stack && typeof win.ResizeObserver === 'function' && win.CSS?.supports('overflow-x', 'clip')) {
+            var cards = Array.from(stack.children).filter(function (card) {
+                return card.matches('.home-opening,.home-bestsellers,.home-collection,.home-chapter,.home-faq');
+            });
+            function measureCard(card, height) {
+                var value = Math.ceil(height) + 'px';
+                if (card.style.getPropertyValue('--home-card-height') !== value) card.style.setProperty('--home-card-height', value);
             }
-            measureHero();
-            new win.ResizeObserver(measureHero).observe(hero, { box: 'border-box' });
-            opening.dataset.homeLayer = 'ready';
-            hero.addEventListener('focusin', function (event) {
-                if (!canMove() || !event.target.matches(':focus-visible')) return;
-                win.requestAnimationFrame(function () {
-                    if (doc.activeElement !== event.target) return;
-                    var bounds = event.target.getBoundingClientRect();
-                    var covered = Array.from(doc.querySelectorAll('#bottom-nav, #mobile-cart-tray:not([hidden]), .support-fab')).some(function (control) {
-                        var area = control.getBoundingClientRect();
-                        return area.width > 0 && bounds.left < area.right && bounds.right > area.left
-                            && bounds.top < area.bottom && bounds.bottom > area.top;
-                    });
-                    if (bounds.top < 0 || bounds.bottom > win.innerHeight || covered) {
-                        event.target.scrollIntoView({ block: 'center', behavior: 'instant' });
-                    }
-                });
-            });
-        }
-        var chapters = doc.querySelectorAll('.home-chapter > section');
-        if (chapters.length && typeof win.ResizeObserver === 'function') {
-            var sizes = new win.ResizeObserver(function (entries) {
+            function measureHeader(height) {
+                var value = Math.ceil(height) + 'px';
+                if (stack.style.getPropertyValue('--home-header-height') !== value) stack.style.setProperty('--home-header-height', value);
+            }
+            measureHeader(header ? header.offsetHeight : 0);
+            cards.forEach(function (card) { measureCard(card, card.offsetHeight); });
+            var resize = new win.ResizeObserver(function (entries) {
                 entries.forEach(function (entry) {
-                    var section = entry.target;
-                    section.parentElement.style.setProperty('--chapter-height', section.offsetHeight + 'px');
-                    section.parentElement.classList.add('is-measured');
+                    var height = entry.borderBoxSize?.[0]?.blockSize ?? entry.target.offsetHeight;
+                    if (entry.target === header) measureHeader(height);
+                    else measureCard(entry.target, height);
                 });
             });
-            chapters.forEach(function (section) { sizes.observe(section, { box: 'border-box' }); });
+            if (header) resize.observe(header, { box: 'border-box' });
+            cards.forEach(function (card) { resize.observe(card, { box: 'border-box' }); });
+            stack.dataset.stackReady = 'true';
         }
         function updateHeaderOffset() {
             var height = header ? Math.ceil(header.getBoundingClientRect().height) : 0;

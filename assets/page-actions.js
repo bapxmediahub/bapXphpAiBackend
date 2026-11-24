@@ -70,6 +70,40 @@
         });
     });
 
+    main.querySelectorAll('[data-home-rail]').forEach(rail => {
+        const track = rail.querySelector('[data-home-track]');
+        const controls = rail.querySelector('[data-home-controls]');
+        if (!track || !controls || track.children.length < 2) return;
+        const cards = Array.from(track.children);
+        const previous = controls.querySelector('[data-home-step="-1"]');
+        const next = controls.querySelector('[data-home-step="1"]');
+        const position = controls.querySelector('[data-home-position]');
+        let stepSize = 0, queued = false;
+        function update() {
+            queued = false;
+            const max = Math.max(0,track.scrollWidth-track.clientWidth);
+            previous.disabled = track.scrollLeft < 2;
+            next.disabled = track.scrollLeft >= max-2;
+            const first = stepSize ? Math.round(track.scrollLeft/stepSize)+1 : 1;
+            const visible = stepSize ? Math.max(1,Math.round(track.clientWidth/stepSize)) : 1;
+            const label = first + '–' + Math.min(cards.length,first+visible-1) + ' of ' + cards.length;
+            if(position.textContent !== label) position.textContent=label;
+            controls.hidden=max<2;
+        }
+        function schedule() { if(!queued){queued=true;requestAnimationFrame(update);} }
+        function measure() { stepSize=cards[1].offsetLeft-cards[0].offsetLeft; schedule(); }
+        function step(direction) {
+            if(!stepSize)return;
+            const left=Math.min(Math.max(0,Math.round(track.scrollLeft/stepSize)*stepSize+direction*stepSize),track.scrollWidth-track.clientWidth);
+            track.scrollTo({left,behavior:document.documentElement.dataset.spsMotion==='enabled'?'smooth':'instant'});
+        }
+        previous.addEventListener('click',()=>step(-1));next.addEventListener('click',()=>step(1));
+        track.addEventListener('scroll',schedule,{passive:true});
+        if('ResizeObserver' in window)new ResizeObserver(measure).observe(track);
+        else window.addEventListener('resize',measure,{passive:true});
+        measure();
+    });
+
     main.querySelectorAll('[data-temple-rail]').forEach(rail => {
         const controls = rail.querySelector('[data-temple-controls]');
         if (!controls) return;

@@ -248,11 +248,13 @@ Shape should stay consistent within a component family -- don't mix `sm` and `lg
 
 Motion is progressive and causal. Public section entrances may follow native scroll position. Use a perceptible offset, readable content and clear still frames. Public and operational surfaces share
 `assets/site-motion.js` and `site-motion.css`, with shorter operational timing.
-The homepage opening uses a bounded handoff from the hero to the reassurance
-strip and top sellers. Tall heroes scroll to expose the primary action before
-holding. Read the reassurance labels directly at every width. Later sections
-derive their motion from their own content. Use photo motion within product and
-temple frames and a short lift for order steps and informational panels.
+The homepage uses a complete opaque editorial-card stack, inspired by Nebo.
+Each section fills the available stable viewport or grows to fit its content.
+Tall cards scroll to reveal their final controls before holding; incoming
+cards cover the previous card in normal paint order. Product and collection
+rails snap complete cards horizontally, with one per mobile viewport and
+two or three complete cards on wider screens. Avoid nested per-item scroll
+animations inside the editorial stack; the card handoff itself is the motion.
 Keep shopping controls, text-only collection links and FAQ disclosures steady.
 Never animate fabricated KPI values, hide text pending JavaScript, hijack native
 scrolling or move controls away from keyboard focus. Respect reduced motion
@@ -275,7 +277,7 @@ See `docs/site-motion.md` for source attribution and browser acceptance.
   content if a request fails. Verify keyboard focus, computed visibility,
   recovery after reload, and absence of page overflow at 375px and desktop.
 
-The mobile homepage places the primary action beside the devotional portrait. Visitors switch portraits manually. Group the temple name and address beside the photo, give hours and the detail action the full card width, and group rail navigation in a single row above the cards. The order guide, temples and values each hand off to the next section within a short, measured overlap.
+The mobile homepage stacks the devotional portrait and primary action on normal-height screens, retaining a compact side-by-side composition on short screens. Visitors switch portraits manually. Group the temple name and address beside the photo, give hours and the detail action the full card width, and group rail navigation in a single row above the cards. The order guide, temples and values hand off as complete editorial cards; focus and reduced motion restore ordinary flow.
 
 ## Chat checkout
 
