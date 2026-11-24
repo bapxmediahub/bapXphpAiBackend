@@ -574,10 +574,10 @@ final class AiClient
             $url = $endpoint . '/' . rawurlencode($model) . ':generateContent';
             $wire=$payload;
             if(!in_array($model,SecretService::GOOGLE_MODELS,true)){
-                $request=json_decode($payload,true);
-                if(is_array($request)&&isset($request['generationConfig']['thinkingConfig'])){
-                    unset($request['generationConfig']['thinkingConfig']);
-                    $wire=json_encode($request,JSON_UNESCAPED_SLASHES);
+                $request=json_decode($payload);
+                if(is_object($request)&&isset($request->generationConfig->thinkingConfig)){
+                    unset($request->generationConfig->thinkingConfig);
+                    $wire=json_encode($request,JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);
                 }
             }
             $body = $this->post($url, $wire, $headers, $status, $model, $deadline, $hasAlternate);

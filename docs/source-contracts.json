@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "072225aaa0830bb81221bfb1399e1d88ed27850612738fc928ca9925f8e03da6",
+            "source_sha256": "1b1870c6d72aad782f37ad91f689b7ff4e06de0c30f4f2cf0ad3da74d7874bfe",
             "references_sha256": "63d78199c80aa4fe00921be8156da0376d7e03244e96a9dcf2ec11e3945700b1",
-            "review_note": "Compared merged exact-target probe and shared tool-loop signatures, role-filtered instruction activation, trace evidence and agent regressions."
+            "review_note": "Object-preserving custom Google transport and existing role-scoped runtime adapter verified together."
         },
         "auth": {
             "source_sha256": "9937a949946eef2a4e1fb7b77ed23efe780bef2d81f3ec56e85dc218692122bf",
@@ -28,9 +28,9 @@
             "review_note": "Existing business and conversation storage boundaries unchanged; runtime adapter and source map reflect actual code."
         },
         "google-tags": {
-            "source_sha256": "1794c941b2f0dcce13e5e4cda15b69d46565364cb7080ed8c5f4b074f623f938",
+            "source_sha256": "e8358d29b16227e79ba6455e2259f1a5fe357a6cbefc4a27b223929a10ff2fe1",
             "references_sha256": "c1a578dc4920789808501aedecd633d3dccca229eb29d4942401a05d50cf992b",
-            "review_note": "Diagnostic form labels updated; Google tag behavior unchanged."
+            "review_note": "Full integrations keyboard save remains intact."
         },
         "http-errors": {
             "source_sha256": "913844884b7e734bcaf0c0f66f3ae88e18441ae4c9d5755a16a27a343909e9b3",
@@ -38,9 +38,9 @@
             "review_note": "Cross-checked the explicit Stripe namespace fallback against the existing canonical client and checkout call sites. RequestFailureService registration, CLI failure handling and exact MCP/webhook session bypass remain unchanged. The regression captures the real bootstrap before any fixture preload."
         },
         "interface": {
-            "source_sha256": "40265f597e6a22a33216538ea762b22178fe359c07d1bb37717e85036e9c7e6b",
+            "source_sha256": "0680d57bd90c9fd1702d7baafdb88055f2137d811c5eb97d97afc7a76caaf4f1",
             "references_sha256": "f1fc313dfc585e3dc0569dd2c52ac2b412aa8924f154978be71464130fe13375",
-            "review_note": "Explicit label associations verified in desktop and mobile Chromium."
+            "review_note": "Verified keyboard and explicit AI-only submitter regression on parent."
         },
         "mail": {
             "source_sha256": "cc231ae9824a02bc62d144c128574005f524ec2204f9abd61653767483200f84",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed product image paths and the bounded A2UI gallery against current media hosting paths; styling does not move uploads, delete media or expose private asset directories."
         },
         "operator-help": {
-            "source_sha256": "56a9024f1cbd037439ea03c87738a7c2cadc03e1f2cd2c0c40b1a4019779b7e6",
+            "source_sha256": "ce03aefb91e5f1473d6ad074490335f9ff839eb712d1ca96e52cd70d30e353f6",
             "references_sha256": "2201c0efbcc49c20384beab8cbef25fa6bcd6928e2928d7fd8474d6522cdf6bf",
-            "review_note": "Reviewed both agent model paths and retained provider diagnostic controls from #373."
+            "review_note": "Retain reviewed full-save default submitter."
         },
         "public-mcp": {
             "source_sha256": "28e7e05e5eba6567d5a03f8f5b77b2fcfabfc97e280ef0c01df70ac1533e53a2",

@@ -15,6 +15,10 @@ if (PHP_SAPI === 'cli-server') {
     if($scenario==='tool_probe') {
         $request=json_decode((string)file_get_contents('php://input'),true,512,JSON_THROW_ON_ERROR);
         $tool=$request['tools'][0]['functionDeclarations'][0]??[];
+        $objects=json_decode((string)file_get_contents('php://input'));
+        if(!is_object($objects->tools[0]->functionDeclarations[0]->parametersJsonSchema->properties??null) || (!$primary && isset($objects->generationConfig->thinkingConfig))) {
+            http_response_code(400);echo '{"error":"object shape or thinking config"}';return;
+        }
         if(isset($tool['parameters'])||($tool['parametersJsonSchema']['additionalProperties']??null)!==false) {
             http_response_code(400);echo '{"error":"wrong schema"}';return;
         }
@@ -24,7 +28,7 @@ if (PHP_SAPI === 'cli-server') {
         } else {
             $response=end($contents)['parts'][0]['functionResponse']??[];
             $previous=$contents[count($contents)-2]['parts'][0]['functionCall']??[];
-            if(($response['id']??'')!=='fixture-call'||($previous['id']??'')!=='fixture-call'||($response['response']['challenge']??'')!=='fixture-observed-challenge'){
+            if(!is_object($objects->contents[count($contents)-2]->parts[0]->functionCall->args??null)||($response['id']??'')!=='fixture-call'||($previous['id']??'')!=='fixture-call'||($response['response']['challenge']??'')!=='fixture-observed-challenge'){
                 http_response_code(400);echo '{"error":"missing correlated response"}';return;
             }
             echo json_encode(['candidates'=>[['content'=>['parts'=>[['text'=>'<final_answer>fixture-observed-challenge</final_answer>']]]]]]);
@@ -138,6 +142,10 @@ try {
     $reply=$complete->invoke($client,$config,'Call the tool.', $registry,256,0.0,2,null,hrtime(true)+6000000000);
     check(AiClient::probeSucceeded($reply,'fixture-observed-challenge',$client->toolCalls(),true),'Actual tool call, correlated response and final text must all succeed');
     check(count($client->transferTimings())===2,'Expected exactly two provider transfers');
+    $client=new AiClient();
+    $config['model']='custom-google-model';$config['models']=[$config['model']];
+    $reply=$complete->invoke($client,$config,'Call the tool.', $registry,256,0.0,2,null,hrtime(true)+6000000000);
+    check(AiClient::probeSucceeded($reply,'fixture-observed-challenge',$client->toolCalls(),true),'Custom Google model preserves JSON object shapes while omitting thinking configuration');
     AgentTraceService::begin(str_repeat('a',16), null, ['max_model_calls' => 1]);
     $prior = AgentTraceService::startSpan('model_attempt', SecretService::PRIMARY_MODEL);
     AgentTraceService::endSpan($prior, 'complete');
