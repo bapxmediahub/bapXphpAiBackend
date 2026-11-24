@@ -109,6 +109,11 @@ inside the existing MySQL JSON-backed settings record. Independent settings
 forms patch their own fields, and existing profile values are retained on
 upgrade. The installed app keeps its original start path and scope.
 
+New transactional emails use the published display name, help destination
+and logo. Sender, Reply-To and owner recipient remain separately configured in
+Integrations. Confirm the synthetic preview for each audience before sending
+mail from a new deployment.
+
 Verify the header and footer, About and Contact, canonical URLs, manifest names
 and the public contact tool. Check a module in both states using navigation,
 direct routes and sitemap results. Verify the working release before public

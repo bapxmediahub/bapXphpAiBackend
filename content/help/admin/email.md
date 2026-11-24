@@ -21,6 +21,12 @@ reset link. The customer and owner variants use different actions and audiences.
 An order email links to the real issued invoice when present; it does not promise
 a PDF attachment.
 
+Check that the preview shows the **Public Site Profile** display name and
+published help address or a link to the contact form. Update those details in
+**Site Settings** or change the logo in **Logo & Favicon**. Manage the sender
+name, sender address, Reply-To and owner destination separately in
+**Integrations**.
+
 ## Verify the correct recipient
 
 For a diagnostic, explicitly confirm **Send test sample once**. Customer templates

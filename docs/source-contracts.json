@@ -4,18 +4,18 @@
     "reviews": {
         "agents": {
             "source_sha256": "817b3b8099fc2827dcca3127adbe2b2d5c13865a138558c8c1cfe8fe46682732",
-            "references_sha256": "537b3acdd0532320f5b6da5970d6c9191f56c24dfab2768e3d2ba0edfa176ad2",
-            "review_note": "Reviewed role manifests and shared registry identity data, public contact tool schema and allowed role scope. Golden evaluation remains at its existing 33-check baseline."
+            "references_sha256": "fac550b7924aa73cef036476aafbfd0a448671194b98d9a560db3950620ae243",
+            "review_note": "Reviewed the backend skill addition for email rendering; agent instructions, scoped capabilities and trace contracts are unchanged."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
-            "references_sha256": "3afeae5396041cd36e7c60f04a04ea342d943555744667675b96b97d5c0ae97d",
-            "review_note": "Reviewed hash-only credentials and patch writes. Blank credential inputs preserve existing values and canonical row bootstrap excludes a legacy unrecognized password."
+            "references_sha256": "2a68bda94aa0fe256bd1311b9258aa64bc3695e5195cc45d1b2646ab35f56ed3",
+            "review_note": "Confirmed profile wording in welcome and recovery preserves account admission, recipient checks and same-site reset links."
         },
         "commerce": {
             "source_sha256": "a05e401e6a379a17ad8d6353f0f6d59396679f9f6d8d8d99afe33cbc7a57f9f2",
-            "references_sha256": "ffa1d152a21fdd630ce28eab2ce5a3b5f1a4d4ae23f2f99cabf6efe25e287b09",
-            "review_note": "Reviewed backend skill and commerce data contracts; read-only model-selected facts do not change payment, order, catalogue or checkout writes."
+            "references_sha256": "9658cdb8c07d654eb00f0a57dfa50284cef48e8bb70ab2f3216ddc5109310345",
+            "review_note": "Confirmed branded order and shipment copy still follows existing verified events, saved links, stable queue keys and chosen owner/customer recipients."
         },
         "content": {
             "source_sha256": "8047c1092ae63a74262a3b32464a4d4b02c698563ab63c8551da0b04ce9c7f72",
@@ -24,28 +24,28 @@
         },
         "foundation": {
             "source_sha256": "6ec71f86ddc930a0746ee067036c55e9bf7da3575c91f4116858df615e492572",
-            "references_sha256": "8e3f8639b29ec415355bf632307d458cb75c11b2bed26f0990e423f956256d33",
-            "review_note": "Rechecked shared configuration, row locking and optional contact rendering. The existing contact route is used for a form-only installation, with no new mutation or dependencies."
+            "references_sha256": "3e8f0b03031d549f668e0b04e749c52d85b8593ac72132331734d9f5b5648ae2",
+            "review_note": "Confirmed existing queue records, database authority and delivery claims are preserved; profile data replaces literal branding only in new rendering."
         },
         "google-tags": {
-            "source_sha256": "1c01a51f0db97fee97e18369a5bcd405085336fdd01ad5654fbbb6559bd5516a",
+            "source_sha256": "187c8971da4cad73fccba340fb2f7424e60c4cb704bed864594f6c2dd3308c72",
             "references_sha256": "9d01e572e3a406ff428555c7827aeb1d535f02f2a9c88a8eba885f298a8c3db5",
-            "review_note": "Reviewed Settings help and integrations boundaries. Profile identity and social metadata are separate from Google tags, credentials and reporting; no new OAuth permission is requested."
+            "review_note": "Reviewed the Integrations copy change. The optional sender field stays in SMTP configuration and does not alter tags, Google scopes or reports."
         },
         "http-errors": {
             "source_sha256": "2e2fee3211f50641844c05f86381f277f9c6c10b7fb60fb750c52937b0868e12",
-            "references_sha256": "74e211efca6a0b4cdf8e446bc9444a745016ec5b5d779531ad73b5742f9c154f",
-            "review_note": "Reviewed web and API dispatch. Module-off returns an intentional uncached 404; a settings transport failure still uses the guarded platform failure response."
+            "references_sha256": "6e8c4fcbebadacd6b214ad586b98937c86827466a3e31870f7d20b9bb1643d31",
+            "review_note": "Reviewed mail rendering through the guarded admin preview. Existing error, rejection and claim handling are preserved."
         },
         "interface": {
-            "source_sha256": "8769623b84176bb05e84c28885b49a63742971f2974a6f90c0754f52afff8557",
+            "source_sha256": "8969f66d12985e18d39abd23af5afe14134a3835b03956f62e71bb4a7e3ef012",
             "references_sha256": "51af0f8c5927316f5bbd938dd2cec9a57661a67172be98db4b9d26e138519de4",
-            "review_note": "Reviewed profile editing, no-JavaScript save feedback, responsive Contact and About, desktop/mobile reference layout, and consistent app identity without a new frontend."
+            "review_note": "Reviewed the optional sender-name placeholder and labeled template preview and checked both profiles in the real owner browser form at desktop and mobile."
         },
         "mail": {
-            "source_sha256": "dc2da3735eca951652388827b4f75c0a10d9e72cfe01b874e03c750151b5c038",
-            "references_sha256": "4a0de4be0ef688a713908c0e08f07ae0f1d4bba044fdb9e4da9a37392e69aa53",
-            "review_note": "Reviewed Contact admission and email operations. Published channels and hours remain separate from SMTP settings, recipients, enqueue, claims and delivery policy."
+            "source_sha256": "478194235d65cf0c290fe1e7e5df9db5459e299eb36c538ae09340d2abd8b4aa",
+            "references_sha256": "ff7d576232f9ca0c2db09056513a9932dbad4994cd971c1bd5fe46975139e0a5",
+            "review_note": "Verified profile subjects and shell, opt-in public email or form, both MIME parts, configured sender and reply-to roles, and loopback delivery classification."
         },
         "mcp-clients": {
             "source_sha256": "78b45576da2d1ffc37e26fdf5701db6321d7df0b22488288b1879d91472778f1",
@@ -58,19 +58,19 @@
             "review_note": "Reviewed persistent brand paths and owner upload contracts. The profile selects approved logo and favicon paths without modifying assets or media deletion and retention behavior."
         },
         "operator-help": {
-            "source_sha256": "48e7a886259e42299584da3530fad70f943c8c3a9466a106b57f9dbff046f775",
-            "references_sha256": "a7081f75fd4de5a5640067a85e115e61a51824629f9e65015e57285ec89be633",
-            "review_note": "Reviewed Public Site Profile labels, field limits and save feedback, independent mail configuration, and existing module controls against the native forms and validated two-site browser fixture."
+            "source_sha256": "f4a3ada64daecfd04eb41f15623cf24090170a9dff73429f7cbdd2819e3b50a8",
+            "references_sha256": "b0bd3b3f4ff194c800a2fc1aa1edfd8497f53434f3a3225afdf73fb98c9d63ad",
+            "review_note": "Reviewed the operator preview guide against the actual owner UI, fallback contact link, logo precedence and separate Integration fields."
         },
         "public-mcp": {
             "source_sha256": "e5d2bb67604d7b9c3588dba3d04e75ad9925c1c686f3a4d13dffd1dc8dd99325",
-            "references_sha256": "4c6cb909e28f8ad9e9cb1ee10df2472125efc78343d24b5ddd6afeb0ce7f957f",
-            "review_note": "Verified that a profile without published phone or email still has an actionable form link in the official MCP Apps client at both widths; the structured public facts remain optional."
+            "references_sha256": "9a15ece395692fe96ccde8e847e27a5f363174da366588d63ed7d7317cbf6655",
+            "review_note": "Reviewed the published contact projection reused by the mail shell. MCP schemas, transport, authorization and tool behavior are unchanged."
         },
         "remote-commerce": {
             "source_sha256": "e57f1d5e32c8a297bb085291e48e2f4fd3574c39841b0fe2444b2223d3ac59da",
-            "references_sha256": "9a189619d057fc46241737ffdb4e2949307c2389e7040bf0b7eb0fe4918208de",
-            "review_note": "Reviewed Shop route admission, existing capability and payment callbacks. Disabling Shop blocks new storefront checkout without changing payment completion or receipt access."
+            "references_sha256": "b04cd12c3a045510b566b11af816dabb060c7e3c2cda67ecf63ba77211987dae",
+            "review_note": "Reviewed payment completion and owner/customer mail boundaries. Body identity and help links change on new messages without modifying checkout, charge or invoice operations."
         },
         "sales-channels": {
             "source_sha256": "6e5ee7b44dd92cc4dadec7a3c02f4bb9da797ba98d4e541e9f956687db236142",
@@ -78,9 +78,9 @@
             "review_note": "Confirmed the existing catalogue optimiser and filename handling remain the default. Only brand uploads retain the original raster type."
         },
         "workflow": {
-            "source_sha256": "ce99153bc5e089b943458fcd268e6923d0ffba2d48808b68e79c868a30c369ef",
-            "references_sha256": "4d8851a49268b7fa43d93877bd463b7e05467a17f73df814d848408934e9840c",
-            "review_note": "Reviewed deployment-owned configuration and upgrade guidance against native persistence and separate fixture installs, with browser checks added to existing CI and no installer."
+            "source_sha256": "656c1b611dd3502f2b2c797c0afa1587cd292b6571030066698f1cee99b3758b",
+            "references_sha256": "7770887213db03241a85f7bbee17bf25b2c58350058ebc59e25fd76b29ad80df",
+            "review_note": "Reviewed the new-client upgrade and mail-preview sequence against current owner settings, public profile and SMTP configuration. Browser assertions use isolated fixture identities."
         }
     }
 }

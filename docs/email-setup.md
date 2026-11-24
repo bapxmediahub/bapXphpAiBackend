@@ -14,6 +14,14 @@ messages; it does not retry failed, already accepted, interrupted or unknown
 attempts. Do not run it against a historical backlog without reviewing recipients,
 events, provider limits and delivery evidence first.
 
+New transactional mail and owner previews use the **Public Site Profile**
+display name. Customer help links use the published email address when present
+and the site's enquiry form otherwise. The saved appearance logo appears in
+the email header. The reference deployment also has its bundled default logo.
+Use **Integrations** for the SMTP From address, optional From name, Reply-To
+address and separate owner notification recipient. Those settings control
+delivery. Existing queue records keep their original message content.
+
 ```
 caller → MailQueueService::enqueue()
            ├─ canonical mail_queue row (pending), plus best-effort outbox projection
@@ -82,10 +90,10 @@ table. **Never put SMTP settings in `.env`** — `.env` holds only `APP_NAME`,
 | SMTP Host | `smtp.hostinger.com` | |
 | SMTP Port | `465` (SSL) or `587` (TLS/STARTTLS) | Match the Encryption field |
 | Encryption | `ssl` for 465, `tls` for 587 | |
-| SMTP Username | `support@sripanchamispiritual.com` | **Full email address**, not just `support` |
+| SMTP Username | The authenticated mailbox address | Enter the complete email address |
 | SMTP Password | the mailbox password | Set in hPanel → Emails |
-| From Email | `support@sripanchamispiritual.com` | **Must match the authenticated mailbox** or the provider rejects the message |
-| From Name | `Sri Panchami Spiritual` | |
+| From Email | The authenticated mailbox address | Use the mailbox configured with the provider |
+| From Name | The approved sender display name | Optional. If blank, the From header uses the mailbox address |
 | Admin Notification Email | The configured owner notification address | Separate from the customer/test mailbox; never replace it during customer QA |
 
 ### From Email vs Admin Notification Email
