@@ -76,6 +76,7 @@ $tests['Stripe integration autoloads from its canonical file through the real bo
 require __DIR__ . '/google-reporting.php';
 require __DIR__ . '/google-pagespeed.php';
 require __DIR__ . '/project-map.php';
+require __DIR__ . '/runtime-storage-boundary.php';
 
 $tests['legitimate internal ticket activity is evaluated without exposing it as a model capability'] = static function (): void {
     $result=\App\Services\AgentEvaluationService::evaluate('support','show my tickets','You have no matching tickets.',[

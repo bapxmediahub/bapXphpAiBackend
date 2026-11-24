@@ -24,8 +24,8 @@
         },
         "foundation": {
             "source_sha256": "0f824a341e6e70cb0e5f0184a2a9fd047865be430e810f7870a86a54b1a0c142",
-            "references_sha256": "5e72734d9a12aeaba4d4bdc192b0b9de3199d6590ba2e7c1b1482350e5cb0bd5",
-            "review_note": "Reviewed schemas, payment snapshots, operator validation and unchanged MySQL boundary against deployed PHP and checkout architecture."
+            "references_sha256": "6eba6651fd8e747d8053034a7812f9d41e6dba5a405bc1d1ed669556c8f2474b",
+            "review_note": "Reviewed direct runtime file-writer coverage against JSON storage and architecture, preserving the PHP/MySQL business boundary, private chat files, operational files, Markdown, and media."
         },
         "google-tags": {
             "source_sha256": "187c8971da4cad73fccba340fb2f7424e60c4cb704bed864594f6c2dd3308c72",
