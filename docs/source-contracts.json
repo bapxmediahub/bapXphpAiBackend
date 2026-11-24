@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "5a88eefa5d99f2e9333426e42b407b5c7f553ff24af69119b46bed7ab8f85038",
+            "source_sha256": "c83267b5d8cf2198d259adca52c5130134b9ce4cc42398dab1c22c99c198926b",
             "references_sha256": "a3194b5f9dd2fdc5f745078b87b7c8ba8413256e7f6727105c1b4622aedfd30b",
-            "review_note": "Reviewed bounded role-scoped lexical tool activation, both provider loops, generated manifests, runtime instructions, and regression coverage."
+            "review_note": "Combined custom-model object-preserving transport and deferred discovery fixture without dropping either regression."
         },
         "auth": {
             "source_sha256": "9937a949946eef2a4e1fb7b77ed23efe780bef2d81f3ec56e85dc218692122bf",
@@ -28,9 +28,9 @@
             "review_note": "Reviewed generated project index and unchanged authentication/storage boundaries for request-local tool discovery."
         },
         "google-tags": {
-            "source_sha256": "1794c941b2f0dcce13e5e4cda15b69d46565364cb7080ed8c5f4b074f623f938",
+            "source_sha256": "e8358d29b16227e79ba6455e2259f1a5fe357a6cbefc4a27b223929a10ff2fe1",
             "references_sha256": "c1a578dc4920789808501aedecd633d3dccca229eb29d4942401a05d50cf992b",
-            "review_note": "Diagnostic form labels updated; Google tag behavior unchanged."
+            "review_note": "Reviewed unchanged full integration field submission."
         },
         "http-errors": {
             "source_sha256": "913844884b7e734bcaf0c0f66f3ae88e18441ae4c9d5755a16a27a343909e9b3",
@@ -38,9 +38,9 @@
             "review_note": "Cross-checked the explicit Stripe namespace fallback against the existing canonical client and checkout call sites. RequestFailureService registration, CLI failure handling and exact MCP/webhook session bypass remain unchanged. The regression captures the real bootstrap before any fixture preload."
         },
         "interface": {
-            "source_sha256": "40265f597e6a22a33216538ea762b22178fe359c07d1bb37717e85036e9c7e6b",
+            "source_sha256": "0680d57bd90c9fd1702d7baafdb88055f2137d811c5eb97d97afc7a76caaf4f1",
             "references_sha256": "f1fc313dfc585e3dc0569dd2c52ac2b412aa8924f154978be71464130fe13375",
-            "review_note": "Explicit label associations verified in desktop and mobile Chromium."
+            "review_note": "Retained desktop/mobile keyboard submit regression."
         },
         "mail": {
             "source_sha256": "79925cc0c003645e9e87eceadf1f34ae8c164e65840a4fde5c586fb91296ef75",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed product image paths and the bounded A2UI gallery against current media hosting paths; styling does not move uploads, delete media or expose private asset directories."
         },
         "operator-help": {
-            "source_sha256": "faf47096f230d968afc92a67aa460ee1539d887d7e3873ed56f4f442a17eab77",
+            "source_sha256": "fc5b96eab4cd8228205aac73136d893e54594105f0b6c853036b2484961cc6da",
             "references_sha256": "2201c0efbcc49c20384beab8cbef25fa6bcd6928e2928d7fd8474d6522cdf6bf",
-            "review_note": "Reviewed AdminController tool declarations, unchanged operator routes and role-scoped runtime discovery."
+            "review_note": "Retained full-form default keyboard save."
         },
         "public-mcp": {
             "source_sha256": "28e7e05e5eba6567d5a03f8f5b77b2fcfabfc97e280ef0c01df70ac1533e53a2",
