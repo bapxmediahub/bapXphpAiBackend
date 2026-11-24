@@ -99,6 +99,8 @@ jobs:
         run: |
           npm install --prefix "$RUNNER_TEMP/agent-browser" --no-audit --no-fund --ignore-scripts playwright@1.62.1 @modelcontextprotocol/client@2.4.0 @modelcontextprotocol/ext-apps@2.0.4
           NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/agent-history-browser.cjs tests/admin-pwa-browser.cjs tests/header-menu-browser.cjs tests/mobile-cart-restore-browser.cjs tests/a2ui-public-browser.cjs tests/enterprise-capabilities-browser.cjs tests/openrouter-integrations-browser.cjs tests/home-full-card-browser.cjs tests/homepage-release-browser.cjs
+      - name: Exercise reusable About layout and live-link contracts
+        run: NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/about-release-browser.cjs
       - name: Exercise native Support checkout and explicit cart handoff at desktop and mobile widths
         run: NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/support-checkout-browser.cjs tests/remote-cart-review-browser.cjs
       - name: Verify the public tools with the official MCP client

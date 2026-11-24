@@ -87,7 +87,7 @@ jobs:
           EXPECTED_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.expected_sha || github.event.workflow_run.head_sha }}
         run: |
           npm install --prefix "$RUNNER_TEMP/homepage-browser" --no-audit --no-fund --ignore-scripts playwright@1.62.1
-          NODE_PATH="$RUNNER_TEMP/homepage-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/homepage-release-browser.cjs
+          NODE_PATH="$RUNNER_TEMP/homepage-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/homepage-release-browser.cjs tests/about-release-browser.cjs
   webmcp_acceptance:
     name: Live WebMCP and A2UI public tool acceptance
     needs: verify
