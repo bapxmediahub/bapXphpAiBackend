@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "76f754ace305dbfae5f87e9487405bdfd4aebf829758d9aee786184aa32870ae",
-            "references_sha256": "8995e976a5d9c0f2f256f2f73debe375664017df2eeecc50bacae56ab1ec7310",
-            "review_note": "Reviewed live role policy, model loop, selected tools, instruction files, conversation evidence, outage behavior and generated contract; no free-form local answer bypass."
+            "source_sha256": "cc4640ed0ac4dda4cdbf0b0c4ac41b050d553d1930f973b2b5a5d61c4e715488",
+            "references_sha256": "c25f8f06f7428fab7fbba049ade49d7875a7a0782cde25064ef12db36a6aa987",
+            "review_note": "Reviewed common function execution boundary, per-round declaration snapshots, duplicate call-ID validation, correlated multi-call continuation, explicit incomplete errors, bounded provider continuation memory and article digests across both wire adapters."
         },
         "auth": {
             "source_sha256": "8ab8b0dfe90dd456bb2e5e4f76b35784ecf0d5796d96bcd5beef93f794b73cc6",
@@ -23,9 +23,9 @@
             "review_note": "Reviewed browser snapshot bounds, per-owner and page key, revision conflict, explicit save token cleanup and unchanged MySQL CAS and publication status."
         },
         "foundation": {
-            "source_sha256": "2705e16e5709149e8a14b930a0c622d4c25227ffd085023c557e86d0088d3762",
+            "source_sha256": "c90863fc623207427f8edd8f045376c53fda9e87484fa7edbafda2aae8d6d1a8",
             "references_sha256": "946576ecf5f70c6584261be1035171a23570581935217c3eca527a4368e2256c",
-            "review_note": "Reviewed role access, runtime files, shared services, JSON conversation persistence and public route contracts; no installation/storage migration."
+            "review_note": "Reviewed unchanged endpoint pinning and authorization boundaries, private compatible transport loop, trace-only rejection metadata, canonical public knowledge URLs and existing storage."
         },
         "google-tags": {
             "source_sha256": "93f7501a5e3218224b83717182e093cc4f62f5661213b4c835c50ec8705cbe8b",
@@ -48,9 +48,9 @@
             "review_note": "Reviewed AdminController and SupportController changes; model form proposal never submits or queues mail; existing mail routes and abuse containment unchanged."
         },
         "mcp-clients": {
-            "source_sha256": "cb08fbb82a36095ae5ae7d211a6f0e12904564e2f1f2bb1ee7404184b627b85e",
+            "source_sha256": "c928da291590a33c158a364220c8410fa0d31353613a21488d42985409880886",
             "references_sha256": "1390a1ae3be706072f85e628f3065e2170dc2685b3841c008d02536d232f2d1c",
-            "review_note": "Reviewed shared audit categories and transport metadata; no change to MCP client scopes, authentication, or CLI protocol."
+            "review_note": "Preserved the published four-key STDIO policy schema and enforce its key allowlist on invocation; native-only policy keys do not widen the connector."
         },
         "media": {
             "source_sha256": "c99bf5f35495fb29a3025b39dc32c1fbd2f20640fbacd2784598a53cd3a8584f",
@@ -58,14 +58,14 @@
             "review_note": "Reviewed upload eligibility, revision hash, bounded UTF-8 metadata, row lock, exact patch, no row creation, and view/search/isolated DB tests."
         },
         "operator-help": {
-            "source_sha256": "3caae4db56f9c6357370c22e689076360378d4a0806320b3d1230c3088dfee09",
+            "source_sha256": "304fd9a7a104c7cbbac375e9b16db37269eff90650b0e1136e5a637d71864a6b",
             "references_sha256": "d71ae7fc3cc07db2645077d32f54f7d871609ec9c82f93b55c10e862dda9c49c",
-            "review_note": "Reviewed both native chat entrypoints and unchanged Help, account and form routes; ordinary questions model-selected, explicit commands remain UI operations."
+            "review_note": "Reviewed model-selected operator guidance, native-only policy declarations, unchanged explicit help commands and provider outcome presentation."
         },
         "public-mcp": {
-            "source_sha256": "7f67041032b058a63923b3e0166c8bfbd935d9abcf5609866cfc4496d2abbdd6",
+            "source_sha256": "94ad00c333b2b9949bcea73134458139ef52bb87a788c5e5a980273a2b66057d",
             "references_sha256": "475a614c13ba4a5e34c83585738934e923a66761a23482f928fa1f8aab00d92b",
-            "review_note": "Reviewed shared PublicKnowledgeService and presentation projections; new article body and actor-specific tools remain native-only; public MCP schemas and access unchanged."
+            "review_note": "Verified existing public catalogue framing and published knowledge isolation; normalize UTF-8 media URLs before parsing while retaining safe path validation."
         },
         "remote-commerce": {
             "source_sha256": "6e33cbd5fc45987a486915a1bcf383f77f1074e76ef6f1b29647c75764ed8424",

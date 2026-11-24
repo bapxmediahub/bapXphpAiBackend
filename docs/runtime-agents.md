@@ -162,22 +162,48 @@ wire. Text response and synthetic tool challenge are separate diagnostics; an
 offline fixture or HTTP status does not establish successful live inference.
 See [Integrations](pages/integrations.md).
 
-## Provider calls and owner how-to questions
+## Provider-neutral model decisions and tool execution
 
-Support resolves named product comparisons before calling a provider. Two or three
-exact published name/slug matches are kept in the customer's mention order, with
-current catalogue prices, descriptions and listed specifications. Missing, hidden
-or ambiguous choices require clarification; the resolver never fills a missing
-named choice with an unrelated item of the same type. Explicit generic type
-comparisons may still use clearly labelled catalogue examples. The same resolver
-feeds exact product identities to public A2UI, so the text and cards agree.
-An ordinary presentation request such as “Show their photos and current prices”
-after the comparison preserves those identities; it cannot discard a missing
-third comparison choice.
+The native PHP runtime implements the function-calling pattern documented by OpenAI:
+send authorized tool schemas, receive model-selected calls, validate and execute
+them, correlate each result with its original call, and invoke the model again.
+Google uses its native function declaration and function response format;
+OpenRouter and configured OpenAI-compatible connections use Chat Completions.
+Both adapters use the same PHP execution gate and role-scoped registries.
 
-Enterprise Chat can read a fixed operator guide through `operator_guide`. The server validates the topic and owner session, reads the same Markdown as Admin Help, and records its source link. The explicit `/help` command and questions about drafting an article can take this path without a provider call. A question about the number of drafts still needs a business-data lookup.
+A batch can contain multiple calls. Its call identifiers must be valid and unique
+before any member executes. The advertised declaration snapshot controls the
+current round; `tool_search` activates new schemas only on subsequent model
+rounds. An invalid or unauthorized request returns a safe tool error for the
+model to handle. Explicit incomplete finishes and tool calls at the final-answer
+boundary are errors, not successful answers. Where returned, compatible-provider
+continuation fields are retained in bounded request-local wire history on the
+same locked provider connection; they are not rendered or persisted.
 
-The task guide in Enterprise Chat comes from `EnterpriseToolRegistry::capabilities`, filtered through the same actor policy as tool execution. **What can I ask?** is a native disclosure with editable question starters. `/capabilities` and a direct “What can you do?” question return that guide without a provider call or business lookup. It describes available tasks and explicit limits; it does not grant access or claim that a report ran.
+OpenAI-compatible text endpoints are not automatically tool-capable models.
+Each enabled model needs a successful live tool round trip. The portable
+`tool_search` and `read_runtime_skill` functions are application-owned, not the
+OpenAI Responses API built-ins. Responses-only models and hosted tools need
+a separate protocol adapter; this revision does not claim that support.
+Do not force strict schemas or provider-specific optional flags universally.
+
+References: [OpenAI function calling](https://developers.openai.com/api/docs/guides/function-calling),
+[OpenAI tool search](https://developers.openai.com/api/docs/guides/tools-tool-search),
+[OpenAI Chat Completions to Responses migration](https://developers.openai.com/api/docs/guides/migrate-to-responses),
+[DeepSeek thinking-mode tool calls](https://api-docs.deepseek.com/guides/thinking_mode/),
+[OpenRouter tool calling](https://openrouter.ai/blog/tutorials/tool-calling/).
+
+Support retrieves product selections through model-selected catalogue and exact
+product-detail tools. Missing, hidden or ambiguous identities must not be filled
+with unrelated products. Previous displayed slugs are referents, not current facts.
+Public A2UI follows actual retrieved identities rather than question regexes.
+Enterprise uses `operator_guide` when the model needs instructions about an
+admin task. Only explicit `/help` and `/capabilities` commands and the task-guide
+disclosure are separate UI operations; ordinary questions invoke inference.
+
+The public STDIO MCP policy contract retains its original four keys. Native
+Support can also retrieve domestic/international delivery estimates and retired
+consultation policy. Native-only additions do not expand the public MCP surface.
 
 `commerce_report` is an Enterprise-only read tool over the existing `StoreStatsService` helpers. It accepts the fixed `products`, `stock`, `customers`, and `coupons` report names, rows limited to 1–10 (default 6), and inclusive dated reports of at most 366 days through today. Stock rejects dates because it is a current status snapshot. Customer output is anonymous order-frequency groups; customer identities never enter this tool result. The actual result, rather than model text, defines metrics, source, scope and bounded saved report evidence. See [agent observability](agent-observability.md) for the private evidence projection.
 

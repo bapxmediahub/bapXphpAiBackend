@@ -48,6 +48,27 @@ namespace {
         }
         rmdir($directory);
     });
+    if(getenv('BAPX_FIXTURE_PROTOCOL')==='compatible'){
+        $actor=$_SESSION['user']??null;
+        $tools=new \App\Services\RuntimeAgentToolRegistry($surface,$actor,
+            $surface==='admin'?new \App\Services\EnterpriseToolRegistry(ownerQuestion:$argv[4]):new \App\Services\SupportToolRegistry($actor),$argv[4]);
+        $traceId=bin2hex(random_bytes(8));
+        \App\Services\AgentTraceService::begin($traceId);
+        $client=new \App\Services\AiClient();
+        $config=(new \App\Services\SecretService())->getProviderPlan()[0];
+        $config['provider']='openai_compatible';$config['configured']=true;
+        $method=new ReflectionMethod(\App\Services\AiClient::class,'completeCompatibleLoop');
+        $answer=$method->invoke($client,$config,$tools->instructionPrompt()."\n".$argv[4],1024,null,$tools,4,hrtime(true)+26000000000,false,[CURLOPT_PROXY=>'',CURLOPT_FOLLOWLOCATION=>false]);
+        $outcome=\App\Services\AiClient::isError($answer)||trim($answer)===''?'error':'model';
+        $conversation=new \App\Services\AgentConversationService();
+        $identity=$conversation::actor($surface,$actor);
+        $prepared=$conversation->prepareTurn($surface,$identity,null,$argv[4],$traceId);
+        $business=$tools->activity();
+        $record=$conversation->record($surface,$identity,$prepared['conversation_id'],$argv[4],$answer,$traceId,$outcome,$business,null,null,$client->transferTimings(),$tools->retrieval());
+        http_response_code($outcome==='model'?200:502);
+        echo json_encode(['answer'=>$answer,'ticket_id'=>null]+$record,JSON_THROW_ON_ERROR);
+        exit;
+    }
     if($surface==='admin')(new \App\Controllers\AdminController())->agentAsk();
     else (new \App\Controllers\SupportController())->ask();
 }

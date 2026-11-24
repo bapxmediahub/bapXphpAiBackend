@@ -1847,7 +1847,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AiClient.php",
-            "line": 608
+            "line": 523
         },
         {
             "from": "service:AiClient",
@@ -1855,7 +1855,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AiClient.php",
-            "line": 645
+            "line": 710
         },
         {
             "from": "service:AiClient",
@@ -2495,7 +2495,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/PublicKnowledgeService.php",
-            "line": 299
+            "line": 303
         },
         {
             "from": "service:PublicKnowledgeService",
@@ -2503,7 +2503,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/PublicKnowledgeService.php",
-            "line": 300
+            "line": 304
         },
         {
             "from": "service:PublicKnowledgeService",
@@ -2511,7 +2511,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/PublicKnowledgeService.php",
-            "line": 275
+            "line": 279
         },
         {
             "from": "service:PublicMcpService",
@@ -3127,7 +3127,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SupportToolRegistry.php",
-            "line": 21
+            "line": 23
         },
         {
             "from": "service:SupportToolRegistry",
@@ -3135,7 +3135,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SupportToolRegistry.php",
-            "line": 145
+            "line": 147
         },
         {
             "from": "service:SupportToolRegistry",
@@ -3143,7 +3143,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SupportToolRegistry.php",
-            "line": 109
+            "line": 111
         },
         {
             "from": "service:SupportToolRegistry",
@@ -3151,7 +3151,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SupportToolRegistry.php",
-            "line": 20
+            "line": 22
         },
         {
             "from": "service:SupportToolRegistry",
@@ -3159,7 +3159,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SupportToolRegistry.php",
-            "line": 107
+            "line": 109
         },
         {
             "from": "service:SupportToolRegistry",
@@ -3167,7 +3167,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SupportToolRegistry.php",
-            "line": 102
+            "line": 104
         },
         {
             "from": "service:SupportToolRegistry",
@@ -3175,7 +3175,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SupportToolRegistry.php",
-            "line": 106
+            "line": 108
         },
         {
             "from": "service:SupportToolRegistry",
@@ -3183,7 +3183,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/SupportToolRegistry.php",
-            "line": 99
+            "line": 101
         },
         {
             "from": "service:SupportToolRegistry",
@@ -3191,7 +3191,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/SupportToolRegistry.php",
-            "line": 122
+            "line": 124
         },
         {
             "from": "service:SupportToolRegistry",
@@ -3199,7 +3199,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/SupportToolRegistry.php",
-            "line": 30
+            "line": 32
         },
         {
             "from": "service:TempleService",

@@ -38,6 +38,17 @@ grant. Business mutations remain explicit admin forms/drafts with CSRF and audit
 
 ## Request and tool lifecycle
 
+Both wire adapters validate the entire returned call-ID batch and execute only
+functions advertised for that inference round. A rejected call records a safe
+`tool_call_rejected` span (no arbitrary function name or raw arguments). The
+model may correct its request on a later round. Duplicate IDs, incomplete
+finish reasons and unfinished final tool calls cannot become accepted answers.
+Article read evidence retains the bounded excerpt SHA-256. Provider continuation
+fields remain in request-local transport memory, never stored in traces or chat.
+The loopback suite checks both Google and OpenAI-compatible call correlation;
+it is protocol verification, not a model-quality benchmark.
+
+
 **Support:** identify the guest or authenticated customer, apply rate limits,
 save a pending actor-owned turn, and invoke the shared model client. The model
 selects relevant published knowledge, runtime instructions and tools; PHP

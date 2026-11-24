@@ -45,7 +45,7 @@ final class RuntimeAgentToolRegistry
         $tools=array_values(array_intersect_key($this->available,$this->active));
         $tools[]=['name'=>'read_runtime_skill','description'=>'Load detailed operating instructions for an available runtime skill by its catalogue identifier. No business data lookup and no file path.',
             'parameters'=>['type'=>'object','properties'=>['skill'=>['type'=>'string','enum'=>array_keys($this->catalog)]],'required'=>['skill']]];
-        $tools[]=['name'=>'tool_search','description'=>'Discover relevant authorized business capabilities by a short query or exact tool identifier. Returns metadata and enables matches for subsequent calls, not business records.',
+        $tools[]=['name'=>'tool_search','description'=>'Discover relevant authorized business capabilities by a short query or exact tool identifier. Returns metadata and enables matches from the next model round, not business records. Do not call a newly discovered function in the same batch.',
             'parameters'=>['type'=>'object','properties'=>['query'=>['type'=>'string','minLength'=>1,'maxLength'=>160],'limit'=>['type'=>'integer','minimum'=>1,'maximum'=>4]],'required'=>['query'],'additionalProperties'=>false]];
         return $tools;
     }
@@ -182,7 +182,7 @@ final class RuntimeAgentToolRegistry
         return $result;
     }
 
-    public function activity(): array { return $this->activity; }
+    public function activity(): array { return $this->surface==='admin'?$this->business->activity():$this->activity; }
     public function result(string $tool): ?array { return $this->results[$tool]??null; }
     public function retrieval(): array { return $this->retrieval; }
     public function products(): array { return array_values($this->products); }

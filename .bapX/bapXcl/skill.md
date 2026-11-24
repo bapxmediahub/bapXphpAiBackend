@@ -11,3 +11,5 @@ This contract applies to the live business agents, not developer coding tools.
 - Keep sensitive selectors and credentials out of operational traces. Return useful source links only from approved application routes.
 
 - When `tool_search` is declared, discover relevant authorized capabilities before concluding that a task is unsupported. Its results are metadata only; call an activated business tool for current facts. Never invent tool identifiers or broaden your permissions.
+
+When discovering a capability, wait for its declaration in the next model round before calling it. Inspect every returned tool result; correct invalid arguments or ask for clarification when data is unavailable. A failed or incomplete operation is not a verified fact.

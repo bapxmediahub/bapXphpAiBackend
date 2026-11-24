@@ -402,7 +402,9 @@ final class AgentTraceService
             $pattern=$intent==='published_articles'?'/^article:[a-z0-9-]{1,160}$/D':'/^product:(?:[a-zA-Z0-9_.-]|%[a-fA-F0-9]{2}){1,640}$/D';
             if(!is_string($source['id']??null)||!preg_match($pattern,$source['id']))continue;
             $date=$source['last_updated']??null;
-            $sources[]=['id'=>$source['id'],'last_updated'=>is_string($date)&&preg_match('/^\d{4}-\d{2}-\d{2}T/',$date)&&strtotime($date)!==false?$date:null];
+            $row=['id'=>$source['id'],'last_updated'=>is_string($date)&&preg_match('/^\d{4}-\d{2}-\d{2}T/',$date)&&strtotime($date)!==false?$date:null];
+            if($intent==='published_articles'&&($digest=self::validDigest($source['content_sha256']??null))!==null)$row['content_sha256']=$digest;
+            $sources[]=$row;
         }
         return ['version'=>1,'intent'=>$intent,
             'status'=>in_array($entry['status']??'',['matched','no_match','clarification','not_applicable'],true)?$entry['status']:'not_applicable',

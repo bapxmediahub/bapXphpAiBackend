@@ -268,7 +268,11 @@ final class PublicKnowledgeService
     {
         if (!is_string($image) || $image === '' || strlen($image) > 2048
             || str_contains($image, '\\') || preg_match('/[\\x00-\\x20\\x7F]/', $image)) return null;
-        $parts = parse_url($image);
+        // Parse an ASCII URL so PHP on every host preserves UTF-8 path bytes.
+        if(!mb_check_encoding($image,'UTF-8'))return null;
+        $encoded=preg_replace_callback('/[^\x00-\x7F]+/u',static fn(array $m):string=>rawurlencode($m[0]),$image);
+        if($encoded===null)return null;
+        $parts=parse_url($encoded);
         if (!is_array($parts) || isset($parts['user']) || isset($parts['pass']) || isset($parts['query'])
             || isset($parts['fragment'])) return null;
         if (isset($parts['host']) || isset($parts['scheme'])) {

@@ -13,8 +13,10 @@ final class SupportToolRegistry {
         'payment_methods'=>'Card and UPI.',
     ];
 
-    public static function policyInputSchema(): array {
-        return ['type'=>'object', 'properties'=>['key'=>['type'=>'string', 'enum'=>array_merge(array_keys(self::PUBLIC_POLICIES),['delivery_within_india','delivery_outside_india','consultation_booking'])]], 'required'=>['key']];
+    public static function policyInputSchema(bool $nativeAgent=false): array {
+        $keys=array_keys(self::PUBLIC_POLICIES);
+        if($nativeAgent)$keys=array_merge($keys,['delivery_within_india','delivery_outside_india','consultation_booking']);
+        return ['type'=>'object','properties'=>['key'=>['type'=>'string','enum'=>$keys]],'required'=>['key']];
     }
 
     public function __construct(private ?array $actor, private ?AgentContextService $context = null, private DatabaseService $store = new DatabaseService()) {
@@ -25,7 +27,7 @@ final class SupportToolRegistry {
             ['name'=>'public_catalog', 'description'=>'Read published products using a customer question.',
              'parameters'=>['type'=>'object','properties'=>['question'=>['type'=>'string','minLength'=>1,'maxLength'=>256]],'required'=>['question']]],
             ['name'=>'public_policy', 'description'=>'Read the public shipping, returns, or payment policy.',
-             'parameters'=>self::policyInputSchema()],
+             'parameters'=>self::policyInputSchema(true)],
             ['name'=>'get_public_contact', 'description'=>'Read the published business phone numbers, email, opening hours and contact form link. No customer or owner records.',
              'parameters'=>PublicKnowledgeService::contactInputSchema()],
             ['name'=>'list_public_services', 'description'=>'List the existing public enquiry offerings and contact form destinations. These are enquiries, not booking or payment actions.',
