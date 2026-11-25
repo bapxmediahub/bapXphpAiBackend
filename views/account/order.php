@@ -25,7 +25,7 @@ $__window = ($__country === '' || str_contains($__country, 'india'))
 $__name = trim((string)($order['customer_name'] ?? ''));
 $__first = $__name !== '' ? explode(' ', $__name)[0] : '';
 ?>
-<div class="section" style="padding-top:var(--space-xl);">
+<div class="section account-page">
     <div class="account-layout">
         <?php require __DIR__ . '/_nav.php'; ?>
         <div class="account-content">
@@ -68,10 +68,8 @@ $__first = $__name !== '' ? explode(' ', $__name)[0] : '';
                     </div>
                 </div>
             <?php else: ?>
-                <p style="margin:0 0 var(--space-sm);">
-                    <a href="/account/dashboard/orders" style="font-size:0.85rem; font-weight:600;">&larr; Back to my orders</a>
-                </p>
-                <h1 style="margin:0 0 var(--space-xs);">Order</h1>
+                <a class="account-page__back" href="/account/dashboard/orders">&larr; Back to my orders</a>
+                <h1>Order details</h1>
             <?php endif; ?>
 
             <div class="order-card">
@@ -80,7 +78,7 @@ $__first = $__name !== '' ? explode(' ', $__name)[0] : '';
                         <span class="order-card__label">Order ID</span>
                         <code class="order-card__id"><?= e((string)($order['id'] ?? '')) ?></code>
                     </div>
-                    <div style="text-align:right;">
+                    <div class="order-card__status">
                         <span class="badge badge--<?= e($__tone) ?>"><?= e($__label) ?></span>
                         <?php if ($__note !== ''): ?>
                             <p class="order-card__note"><?= e($__note) ?></p>
@@ -145,9 +143,9 @@ $__first = $__name !== '' ? explode(' ', $__name)[0] : '';
 
                 <div class="order-card__actions">
                     <?php if (!empty($order['invoice_number'])): ?>
-                        <a href="/account/orders/<?= e((string)$order['id']) ?>/invoice" class="btn btn-sm">View invoice</a>
+                        <a href="/account/orders/<?= e((string)$order['id']) ?>/invoice" class="btn btn-outline">View invoice</a>
                     <?php endif; ?>
-                    <a href="/contact" class="btn btn-sm btn-ghost">Need help with this order?</a>
+                    <a href="/contact" class="btn btn-ghost">Need help with this order?</a>
                 </div>
             </div>
         </div>

@@ -183,8 +183,8 @@ check($pages::validRevision($createdRevision), 'Creating the page initializes it
 check($pages->findPublic('guide') === null && $pages->published('Private phrase') === [], 'Draft excluded from all public reads');
 try { $pages->save($initial); throw new RuntimeException('Duplicate create overwrote an existing page'); }
 catch (DomainException) {}
-$header = ['id'=>'0123456789abcdef','url'=>'/assets/images/media/2026/11/campaign-fixture.webp','context'=>'shared'];
-$pdo->prepare('INSERT INTO media_files (id, _data) VALUES (?, ?)')->execute([$header['id'],json_encode($header, JSON_THROW_ON_ERROR)]);
+$header = ['id'=>'fedcba9876543210','url'=>'/assets/images/media/2026/11/campaign-fixture.webp','context'=>'shared'];
+$pdo->prepare('INSERT INTO media_files (id, _data, _created_at) VALUES (?, ?, NOW())')->execute([$header['id'],json_encode($header, JSON_THROW_ON_ERROR)]);
 check(!isset($pages->find('guide')['header_image_url']), 'Legacy page reads without an optional header');
 $publication = array_replace($initial, ['content'=>'Published phrase', 'status'=>'published', 'expected_revision'=>$createdRevision,
     'header_image_url'=>$header['url'], 'header_image_alt'=>'A fixture temple']);

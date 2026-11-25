@@ -8,10 +8,10 @@
   .blog-editorial .blog-card__read::after { content: ''; position: absolute; inset: 0; }
   .blog-editorial .blog-card__read:focus-visible::after { outline: 2px solid var(--color-maroon); outline-offset: -3px; }
 </style>
-<section class="blog-page blog-editorial">
+<section class="blog-page blog-editorial" aria-labelledby="journal-title">
   <div class="container">
     <header class="blog-editorial__header">
-      <h1 class="page-title"><?= e($categoryName ?? 'Sri Panchami Journal') ?></h1>
+      <h1 class="page-title" id="journal-title"><?= e($categoryName ?? 'Sri Panchami Journal') ?></h1>
       <p><?= $isHelp ? 'Guides for your account, orders, and payments.' : 'Spiritual practice, temple guides, and news from Sri Panchami.' ?></p>
     </header>
 
@@ -25,7 +25,7 @@
           </a>
         <?php endforeach; ?>
       </nav>
-      <form class="blog-search" action="<?= e($indexUrl) ?>" method="get" role="search" aria-label="Search articles">
+      <form class="blog-search" action="<?= e($indexUrl) ?>" method="get" role="search" aria-label="<?= $isHelp ? 'Search Help' : 'Search articles' ?>">
         <label for="blog-search-query" class="sr-only"><?= $isHelp ? 'Search Help' : 'Search articles' ?></label>
         <input type="search" id="blog-search-query" name="q" maxlength="120" value="<?= e($search) ?>" placeholder="<?= $isHelp ? 'Search Help' : 'Search articles' ?>">
         <button class="btn btn-primary" type="submit">Search</button>

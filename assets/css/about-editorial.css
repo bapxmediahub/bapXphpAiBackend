@@ -113,8 +113,7 @@ main.about-main { padding: 0; }
     padding-top: var(--space-lg);
     min-width: 0;
 }
-.about-pathway__number { font-size: .8rem; font-weight: 600; letter-spacing: .12em; color: var(--color-text-muted); }
-.about-pathway h3 { font-size: clamp(1.35rem, 2.5vw, 1.75rem); color: var(--color-primary); margin: var(--space-md) 0 var(--space-sm); }
+.about-pathway h3 { font-size: clamp(1.35rem, 2.5vw, 1.75rem); color: var(--color-primary); margin: 0 0 var(--space-sm); }
 .about-pathway p { color: var(--color-text-muted); margin: 0 0 var(--space-md); }
 .about-pathway a {
     margin-top: auto;
@@ -148,7 +147,7 @@ main.about-main { padding: 0; }
 .about-contact__details a {
     display: inline-flex;
     align-items: center;
-    min-height: 40px;
+    min-height: 44px;
     color: var(--color-primary);
     text-underline-offset: 4px;
 }

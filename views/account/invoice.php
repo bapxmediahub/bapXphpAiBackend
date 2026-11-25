@@ -1,7 +1,10 @@
 <style>
 .invoice-sheet{background:#fff;color:#222;padding:clamp(1rem,3vw,2rem);border:1px solid #e1d5c3;border-radius:8px}
 .invoice-head,.invoice-parties{display:flex;justify-content:space-between;align-items:flex-start;gap:1.5rem;flex-wrap:wrap}
-.invoice-parties>div{flex:1 1 220px}.invoice-sheet .table-wrap{overflow-x:auto}.invoice-sheet table{width:100%;border-collapse:collapse;min-width:640px}
+.invoice-parties>div{flex:1 1 220px;min-width:0;overflow-wrap:anywhere}.invoice-sheet .table-wrap{overflow-x:auto}.invoice-sheet table{width:100%;border-collapse:collapse;min-width:640px}
+.invoice-head h1{overflow-wrap:anywhere}.invoice-table-hint{display:none}
+@media screen and (max-width:743px){.invoice-table-hint{display:block;color:#61564e;font-size:.875rem}.invoice-sheet .table-wrap{border:1px solid #e1d5c3;border-radius:8px}}
+.invoice-sheet .table-wrap:focus-visible{outline:2px solid currentColor;outline-offset:2px}
 .invoice-sheet th,.invoice-sheet td{padding:.6rem;text-align:left;border-bottom:1px solid #e1d5c3}.invoice-totals{max-width:350px;margin:1.5rem 0 0 auto}.invoice-totals p{display:flex;justify-content:space-between;gap:1rem}
 @media print{body *{visibility:hidden}.invoice-page,.invoice-page *{visibility:visible}.invoice-page{position:absolute;inset:0;width:100%;padding:0}.invoice-sheet{border:0;padding:0}.invoice-sheet .table-wrap{overflow:visible}.invoice-sheet table{min-width:0;font-size:10px}.no-print{display:none!important}}
 </style>
@@ -10,7 +13,9 @@
     <div class="invoice-head"><div><span class="eyebrow">Tax Invoice</span><h1><?= e($order['invoice_number']) ?></h1><p><?= e(substr((string)$order['invoice_date'],0,10)) ?></p><p><strong>Order:</strong> <?= e((string)($order['id'] ?? '')) ?></p></div><div class="no-print"><button class="btn btn-outline" onclick="window.print()">Print / Save as PDF</button><?php if (!empty($adminInvoice)): ?> <a class="btn btn-primary" download href="/admin/orders/<?= e(rawurlencode((string)$order['id'])) ?>/invoice?download=1">Download invoice (HTML)</a><?php endif; ?></div></div>
     <div class="invoice-parties"><div><strong>Supplier</strong><p><?= e($order['supplier']['trade_name']??$settings['gst_trade_name']??'') ?><br><?= e($order['supplier']['legal_name']??$settings['gst_legal_name']??'') ?><br>GSTIN: <?= e($order['supplier']['gstin']??$settings['gstin']??'') ?><br><?= nl2br(e($order['supplier']['address']??$settings['gst_address']??'')) ?></p></div><div><strong>Bill / Ship To</strong><p><?= e($order['customer_name']??'') ?><br><?= e($order['shipping_address']??'') ?><br><?= e(($order['shipping_city']??'').' '.($order['shipping_pincode']??'')) ?><br><?= e($order['shipping_state']??'') ?><?php if(!empty($order['customer_gstin'])): ?><br>GSTIN: <?= e($order['customer_gstin']) ?><?php endif; ?></p></div></div>
     <p><strong>Place of supply:</strong> <?= e($order['place_of_supply']??'') ?> · <?= e(ucfirst($order['supply_type']??'')) ?></p>
-    <div class="table-wrap"><table><thead><tr><th>Product</th><th>HSN</th><th>Qty</th><th>Taxable</th><th>Rate</th><th>CGST</th><th>SGST</th><th>IGST</th><th>Total</th></tr></thead><tbody><?php foreach(($order['tax_lines']??[]) as $line): ?><tr><td><?= e($line['name']??'') ?></td><td><?= e($line['hsn_code']??'') ?></td><td>
+    <h2 id="invoice-line-items">Invoice items</h2>
+    <p id="invoice-table-hint" class="invoice-table-hint no-print">Scroll the table to see all tax columns.</p>
+    <div class="table-wrap" tabindex="0" role="region" aria-labelledby="invoice-line-items" aria-describedby="invoice-table-hint"><table><thead><tr><th>Product</th><th>HSN</th><th>Qty</th><th>Taxable</th><th>Rate</th><th>CGST</th><th>SGST</th><th>IGST</th><th>Total</th></tr></thead><tbody><?php foreach(($order['tax_lines']??[]) as $line): ?><tr><td><?= e($line['name']??'') ?></td><td><?= e($line['hsn_code']??'') ?></td><td>
         <?= e((string)($line['qty']??1)) ?>
         <?php if (!empty($line['uqc']) && isset($line['uqc_quantity'])): ?>
             <br><small><?= e((string)$line['uqc_quantity'] . ' ' . (string)$line['uqc']) ?></small>
