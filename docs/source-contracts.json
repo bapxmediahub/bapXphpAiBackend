@@ -18,9 +18,9 @@
             "review_note": "Compared canonical optional fields, verified payment snapshots, historical flags, HSN groups and CSV review aggregation with the GST commerce guide."
         },
         "content": {
-            "source_sha256": "212c08b38701ff11b88a9017c33cbefc734d241059b3b4d595ff8609de9ad282",
+            "source_sha256": "39fe7412e36bbf4ef774da1b033bfc1895de58fe8643b7c3147ddbad2e391514",
             "references_sha256": "4a7c2e24302ce60d72e88914f1b756cf44e5fc65c6912f6b00ca4501aafbb4f0",
-            "review_note": "Read the account help Markdown and its source view. The article explains the picture placeholder beside the email."
+            "review_note": "Reviewed the two published customer Help articles against current templates and the BlogService and AdminHelpService handoff. Slugs, publication metadata and article rendering remain aligned with the content docs."
         },
         "foundation": {
             "source_sha256": "908874452b8774a7e683b6764cf8d4a973e0b6d09936db89dba6f75646c61c83",
@@ -29,8 +29,8 @@
         },
         "google-tags": {
             "source_sha256": "4f6a8463add868b4016e243e90638e9dc22e442dd5964fc6c25f71a578bc6e40",
-            "references_sha256": "f97f8bd08a0edd6ee125c583e1dbadbc000f3c422b469875bb4f718abf3d8191",
-            "review_note": "Reviewed preserved public head tag rendering with the integration guide and the owner dashboard heading change. Google reporting connection states, tag setup and permitted data links match the current templates."
+            "references_sha256": "be818de53252de5004314d47c8f361a9815ccfb096c0b744f214371217ece1e7",
+            "review_note": "Checked deployed public layout and owner integration references. Commerce presentation preserves the current tag and report setup."
         },
         "http-errors": {
             "source_sha256": "63602cadbe59868b0d25a1b00729a589e75d1b31c6ea3a1b25c1e5a46fd06d50",
@@ -38,9 +38,9 @@
             "review_note": "Compared the layout-specific title assignment with the request-error boundary. Website error status, sanitized error text and public not-found rendering follow their existing handlers."
         },
         "interface": {
-            "source_sha256": "2cdf88a4a615183557660d35ab02a4c9877f511e98b29fa66f20b0487f4cfcf6",
-            "references_sha256": "fd790f419da6d11919d064db732c90fd8d945756999e4e1f3326b705e618b081",
-            "review_note": "Matched both layouts to the reconciled Design guidance. The owner drawer, table and ticket controls retain their responsive behavior, and public menu, footer and Support focus follow the merged interface guidance."
+            "source_sha256": "0be1f201b9a4b3f44183f7f4e781ed278c9e2b54beba232c43eac18f9a3e822a",
+            "references_sha256": "78a7b02bebedab3ffbaf8bc0004b5429405aabbcb2298a94af9a573dd864197b",
+            "review_note": "Checked mobile purchase focus geometry, home and checkout UI, owner workspace heading and responsive feedback, and retained both design sections."
         },
         "mail": {
             "source_sha256": "6895291447775bb17e9bef6c3d38d388ed65b3f5985b4c79bc71a9b4fa222c16",
@@ -58,9 +58,9 @@
             "review_note": "Cross-checked the revised owner UI skill with the current media selection, confirmation and metadata flows. The existing media documentation still describes those operations."
         },
         "operator-help": {
-            "source_sha256": "b509a9c0404b90c247b4551ab69d740b2af5997cb0ee1f0cbccacd7a666dd0b8",
-            "references_sha256": "00126a5c3c862ff46efed68f3dafb9c26532dc8acd3c418d7079c3862859c100",
-            "review_note": "Compared owner navigation, ticket controls and scoped Enterprise prompts with the operator guides. Checked the public Blog-gated Support guide and the preserved enquiry pane focus path."
+            "source_sha256": "aeaef93d7ac204b72942df0da9b1cd107daae1789711b49bed73ef2a1f0364af",
+            "references_sha256": "7e82e38381b508bfef30f868d205e79292161e5f4bc33707c505abaa8dc3850d",
+            "review_note": "Combined owner navigation and storefront customer help changes. Reviewed the public links, current task guides and private owner scope against the merged templates."
         },
         "public-mcp": {
             "source_sha256": "234155f55b0f66f669f6422a85acc30a6a59ebf216d8f682d7a212cd01ee7358",
@@ -68,9 +68,9 @@
             "review_note": "Checked the rendered Support enquiry controls against the current public MCP and A2UI documentation. Focus scrolling keeps the existing tool and submission contracts."
         },
         "remote-commerce": {
-            "source_sha256": "0a504ca49d9995ea386d62a2783ae399dd7f8bf0eb0c10f5fffe1c5412a7b264",
-            "references_sha256": "e266e4f053a69063bbd61cfc06758b4e95d4424ff59cebcab1e355c4363130af",
-            "review_note": "Compared public Support checkout and enquiry panes with the revised Design, native checkout and A2UI contracts. Reopening focuses the active pane and checkout retains its cart, payment and recovery boundaries."
+            "source_sha256": "d240d614ae377c8a7195af73b09b5a49e762c87241bf86a1f65ff07985316f2e",
+            "references_sha256": "28cd1914c98dfc77f0e2650f4a3050e41b4df04fc712b86ad3e375d2e9d1a06c",
+            "review_note": "Checked cart and order reviews, gateway recovery and the shared Support/checkout guidance. Existing owner display and permissions do not change commerce persistence."
         },
         "sales-channels": {
             "source_sha256": "36385e3d18e26f524d0efdd12d26cd8386e368fb5d27441460c688ffdff28b92",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed SettingsService module resolution and Merchant feed guidance. Dropping a retired header slot leaves the saved catalog eligibility inputs intact."
         },
         "workflow": {
-            "source_sha256": "843a3be0d854e776a4359a283b5f3fe890ba1892b354f5dfde4654bc1836927c",
+            "source_sha256": "e6a75fc90a449158817dc1829ba534050310ac7d1d1b6dce7f137d6343c326b6",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Cross-reviewed the owner and public UI skills with their browser verification and documentation review guidance and regenerated the project indexes from both released source changes."
+            "review_note": "Regenerated indexes after merging the deployed owner revision. Preserved the verified standalone browser, mapper and issue evidence procedure."
         }
     }
 }

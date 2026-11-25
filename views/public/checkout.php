@@ -1,24 +1,27 @@
-<section class="section" style="padding-top:var(--space-xl);">
-    <div class="container container--narrow" style="margin-bottom:var(--space-xl);">
+<section class="section checkout-page" aria-labelledby="checkout-title">
+    <div class="container">
         <nav class="breadcrumb breadcrumb--page" aria-label="Breadcrumb">
-            <a href="/shop">Shop</a><span aria-hidden="true">/</span><a href="/cart">Cart</a><span aria-hidden="true">/</span><span>Checkout</span>
+            <a href="/shop">Shop</a><span aria-hidden="true">/</span><a href="/cart">Cart</a><span aria-hidden="true">/</span><span aria-current="page">Checkout</span>
         </nav>
-    </div>
-
-    <?php if(empty($items)): ?>
-        <div class="container container--narrow" style="text-align:center; padding:var(--space-4xl) 0;">
-            <span style="display:block; margin-bottom:var(--space-md);"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--color-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></span>
-            <h1 style="font-family:var(--font-serif); margin:0 0 var(--space-sm);">Your Cart is Empty</h1>
-            <a href="/shop" class="btn btn-primary">Browse Shop</a>
-        </div>
-    <?php else: ?>
-        <div class="container">
+        <header class="checkout-page__header">
+            <h1 id="checkout-title">Checkout</h1>
+            <?php if ($items): ?>
+                <a class="checkout-page__review" href="#checkout-order-review">Review order <span aria-hidden="true">↓</span></a>
+            <?php endif; ?>
+        </header>
+        <?php if (!$items): ?>
+            <div class="cart-empty-state">
+                <h2>Your cart is empty</h2>
+                <p>Add a product to your cart to continue to checkout.</p>
+                <a href="/shop" class="btn btn-primary">Browse Shop</a>
+            </div>
+        <?php else: ?>
             <div class="checkout-layout">
                 <div class="checkout-form reveal">
                     <?php // A failed payment used to be a toast that disappeared before it could
                           // be read, leaving the shopper on a full cart with no idea what happened. ?>
                     <div class="pay-failed" id="pay-failed" role="alert" aria-live="assertive">
-                        <h3 id="pay-failed-title">Payment needs attention</h3>
+                        <h2 id="pay-failed-title">Payment needs attention</h2>
                         <p id="pay-failed-reason">We could not confirm the payment result.</p>
                         <p id="pay-failed-next">Your cart is still available. Check your payment status before trying again.</p>
                         <div class="pay-failed__actions">
@@ -27,7 +30,7 @@
                         </div>
                     </div>
                     <div class="checkout-form__section">
-                        <h3 class="checkout-form__section-title">Shipping Details</h3>
+                        <h2 class="checkout-form__section-title">Shipping details</h2>
                         <div class="checkout-form__row">
                             <div class="form-group">
                                 <label for="checkout-name">Full Name</label>
@@ -101,23 +104,20 @@
                     ?>
                     <input type="hidden" id="csrf-token" value="<?= $csrf ?>">
                     <?php if($hasPaymentGateway): ?>
-                    <div id="payment-method-toggle" style="margin-bottom:var(--space-md);">
+                    <fieldset id="payment-method-toggle" class="checkout-payment-options">
+                        <legend>Payment method</legend>
                         <?php if ($hasRazorpay): ?>
-                        <label style="display:inline-flex; align-items:center; gap:var(--space-sm); margin-right:var(--space-lg); cursor:pointer;">
-                            <input type="radio" name="payment_method" value="razorpay" <?= $defaultPaymentMethod === 'razorpay' ? 'checked' : '' ?> onchange="togglePaymentMethod()"> Pay securely with Razorpay <small>(<?= e($secrets['razorpay_mode'] ?? 'test') ?>)</small>
+                        <label>
+                            <input type="radio" name="payment_method" value="razorpay" <?= $defaultPaymentMethod === 'razorpay' ? 'checked' : '' ?> onchange="togglePaymentMethod()"> <span>Razorpay<?php if (($secrets['razorpay_mode'] ?? 'test') === 'test'): ?> <small>Test mode</small><?php endif; ?></span>
                         </label>
                         <?php endif; ?>
                         <?php if ($hasStripe): ?>
-                        <label style="display:inline-flex; align-items:center; gap:var(--space-sm); cursor:pointer;">
-                            <input type="radio" name="payment_method" value="stripe" <?= $defaultPaymentMethod === 'stripe' ? 'checked' : '' ?> onchange="togglePaymentMethod()"> Pay with Stripe
+                        <label>
+                            <input type="radio" name="payment_method" value="stripe" <?= $defaultPaymentMethod === 'stripe' ? 'checked' : '' ?> onchange="togglePaymentMethod()"> Stripe
                         </label>
                         <?php endif; ?>
-                    </div>
-                    <?php else: ?>
-                    <p style="color:var(--color-text-muted); font-style:italic;">Payment gateway is not configured. Please contact the site owner to complete the setup.</p>
-                    <?php endif; ?>
-                    <?php if($hasPaymentGateway): ?>
-                        <button id="pay-now" class="btn btn-primary btn-block btn-lg">Pay ₹<?= e((string)$total) ?></button>
+                    </fieldset>
+                        <button type="button" id="pay-now" class="btn btn-primary btn-block btn-lg">Pay ₹<?= e((string)$total) ?></button>
                         <p style="margin:var(--space-sm) 0 0; color:var(--color-text-muted); font-size:0.85rem;">Product orders use secure online card or UPI payment. Cash on delivery is not available.</p>
                         <?php if($hasRazorpay): ?>
                         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
@@ -141,7 +141,8 @@
                                 : 'Your cart is still available. Check your bank or payment app before trying payment again.';
                             if (retry) retry.textContent = pending ? 'Check payment status' : 'Try payment again';
                             panel.classList.add('is-open');
-                            panel.scrollIntoView({behavior: 'smooth', block: 'center'});
+                            const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+                            panel.scrollIntoView({behavior: reducedMotion ? 'instant' : 'smooth', block: 'center'});
                         }
                         const checkoutGateways = {
                             razorpay: <?= $hasRazorpay ? 'true' : 'false' ?>,
@@ -325,14 +326,21 @@
                         togglePaymentMethod();
                         </script>
                     <?php else: ?>
-                        <div class="payment-status payment-status--unavailable"><strong>Online payment temporarily unavailable</strong><span>Your order details are safe, but checkout cannot take payment until the live gateway is connected.</span></div>
+                        <div class="payment-status payment-status--unavailable"><strong>Online payment is temporarily unavailable</strong><span>Try again later or <a href="/contact">contact us</a> for help.</span></div>
                     <?php endif; ?>
                 </div>
-                <div class="checkout-summary reveal">
-                    <h2>Order Review</h2>
+                <section class="checkout-summary reveal" aria-labelledby="checkout-order-review">
+                    <header class="checkout-summary__header">
+                        <h2 id="checkout-order-review" tabindex="-1">Order review</h2>
+                        <a href="/cart">Edit cart</a>
+                    </header>
                     <?php foreach($items as $item): ?>
+                        <?php
+                        $placeholder = placeholder_img($item['product']['name']);
+                        $image = trim((string)($item['product']['image_url'] ?? '')) ?: $placeholder;
+                        ?>
                         <div class="checkout-item">
-                            <img class="checkout-item__img" src="<?= e(webp_src($item['product']['image_url'] ?? placeholder_img($item['product']['name']))) ?>" alt="<?= e($item['product']['name']) ?>">
+                            <img class="checkout-item__img" src="<?= e(webp_src($image)) ?>" data-product-image-fallback="<?= e($placeholder) ?>" alt="" width="60" height="60">
                             <div>
                                 <div class="checkout-item__name"><?= e($item['product']['name']) ?></div>
                                 <div class="checkout-item__meta">Qty: <?= e((string)$item['qty']) ?></div>
@@ -372,7 +380,7 @@
                     </div>
                     <?php endif; ?>
                     <div style="margin-top:var(--space-lg); padding-top:var(--space-md); border-top:1px solid var(--color-border);">
-                        <h4 style="margin:0 0 var(--space-sm); font-size:0.9rem;">Tax Information</h4>
+                        <h3 style="margin:0 0 var(--space-sm); font-size:0.9rem;">Tax information</h3>
                         <?php if ($gstConfigured && $anyGstRate): ?>
                             <div style="font-size:0.85rem; color:var(--color-text-muted); display:grid; gap:var(--space-2xs);">
                                 <span>Prices include GST at <?= e($gstRateLabel) ?>% — ₹<?= e(number_format($gstAmount, 2)) ?> of this order.</span>
@@ -393,8 +401,8 @@
                             </div>
                         <?php endif; ?>
                     </div>
-                </div>
+                </section>
             </div>
-        </div>
-    <?php endif; ?>
+        <?php endif; ?>
+    </div>
 </section>

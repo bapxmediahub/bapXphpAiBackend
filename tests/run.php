@@ -4553,6 +4553,36 @@ $tests['admin product preview protects hidden catalog content and disables purch
     assertTrue(strpos($view, 'if (empty($adminPreview))') < strpos($view, 'id="product-cart-form"'), 'Preview must not render purchase controls');
 };
 
+$tests['product detail places native purchase actions before specifications and respects stock'] = static function (): void {
+    $renderProduct = static function (array $stock, bool $adminPreview = false): string {
+        $product = $stock + [
+            'slug' => 'fixture-pendant',
+            'name' => 'Fixture pendant',
+            'price' => 250,
+            'specifications' => ['Item type' => 'Pendant'],
+        ];
+        $related = [];
+        ob_start();
+        require app_path('views/public/product.php');
+        return (string)ob_get_clean();
+    };
+
+    $available = $renderProduct(['stock_status' => 'active']);
+    $form = strpos($available, 'id="product-cart-form"');
+    $specifications = strpos($available, 'id="product-specifications"');
+    assertTrue($form !== false && $specifications !== false && $form < $specifications, 'Purchase form should appear before specifications');
+    assertTrue(str_contains($available, 'name="redirect" value="/checkout"'), 'Buy Now remains a native submit to checkout');
+    assertTrue(str_contains($available, 'for="qty-input"'), 'Quantity field has a visible associated label');
+
+    foreach ([$renderProduct(['stock_status' => 'out_of_stock']), $renderProduct([])] as $unavailable) {
+        assertTrue(!str_contains($unavailable, 'id="product-cart-form"'), 'Unavailable items must not offer a form the cart rejects');
+        assertTrue(str_contains($unavailable, 'Out of stock'), 'Unavailable items explain why the purchase action is absent');
+    }
+
+    $preview = $renderProduct(['stock_status' => 'active'], true);
+    assertTrue(!str_contains($preview, 'id="product-cart-form"'), 'Owner preview never shows purchase actions');
+};
+
 $tests['a coupon obeys its dates, spend range and usage limits'] = function (): void {
     $service = new \App\Services\CouponService();
     $now = new \DateTimeImmutable('2026-08-06 12:00:00');
