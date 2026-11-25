@@ -238,7 +238,14 @@ key can only update its own entry. Ordinary transient server
 failures and timeouts are recorded but do not skip the primary in the next turn.
 Quota or a positive explicit provider delay may temporarily exclude a model.
 Positive delays set the cross-turn hold and ordinary transient observations
-cannot prolong it. Explicit diagnostics can contact the chosen model. Successful transfers clear their
+cannot prolong it. Before each provider transfer, the client rereads the exact
+credential/model hold. A hold observed by another worker after plan selection can
+therefore stop that candidate before a model-attempt span or transfer is recorded.
+Short holds of up to eight seconds can be waited out within the existing request
+budget, followed by another read. An extended hold stops locally with
+`provider_cooldown`. Earlier observed upstream responses remain in the attempt
+history. Explicit integration diagnostics bypass this gate, including their
+continuation requests. A held tool continuation stops on its original model. Successful transfers clear their
 entry for the credential used by that transfer. Unversioned legacy holds are ignored
 because their originating credential cannot be determined. The old default file
 remains untouched, and workers using the former format cannot replace the versioned

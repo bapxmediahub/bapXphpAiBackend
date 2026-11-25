@@ -282,7 +282,10 @@ deadline and at most 32 transfers; both browsers wait up to 120 seconds. The tra
 Provider holds are scoped to the configured API key, endpoint and model. A replacement
 key starts eligible, and delayed responses under the previous key update only that
 key's health entry. The local version-2 health file stores HMAC identities and expiry
-metadata. Unscoped legacy entries are ignored.
+metadata. Unscoped legacy entries are ignored. Each transfer rechecks current provider holds.
+A short hold can expire within the turn's remaining budget. Longer holds skip
+the candidate before recording a transfer. Tool exchanges remain on their original
+model, and an explicit integration diagnostic bypasses these hold checks.
 The deadline or budget can stop a cycle early. Once tool exchange starts,
 three-attempt recovery resends only the correlated inference request to the
 same model, never repeating completed PHP tools or switching the exchange
