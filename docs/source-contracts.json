@@ -5,7 +5,7 @@
         "agents": {
             "source_sha256": "bde2bde8a9de8bf32dc819c741e87a13e30ec696f95f2049814fee7028c63a73",
             "references_sha256": "59d91112858e014ed292486928ad508929e2a99da261fe3508975bb5f00a7f2b",
-            "review_note": "Matched the evaluated HTTP 503, opaque trace ID and saved-turn replay to the Support controller, transcript and observability guide. The owner sign-in update leaves both agent routes intact."
+            "review_note": "Matched the evaluated HTTP 503, opaque trace ID and saved-turn replay to the Support controller, transcript and observability guide. The owner sign-in update leaves both agent routes intact. Verified the scoped storefront counter read uses its separate database projection and the Support transcript remains limited to the opaque run reference."
         },
         "auth": {
             "source_sha256": "c34a5b34bc904f36cda184c26113f91e2cf36afa2b506217d1f74e22e9e0cefd",
@@ -18,14 +18,14 @@
             "review_note": "Reviewed the downloaded file resolver and schema field against the source contracts for product orders and payments. This route uses the authored page publication and enquiry grant."
         },
         "content": {
-            "source_sha256": "d2e1d8cdf1e5ae801cb5a521b488dfb8837886db11eb2370db15d7e3533fa3b1",
-            "references_sha256": "b86513fa3175b30fae3a1e16dfb1bcddaa69a1c2d380809d14cd421b31556312",
+            "source_sha256": "f90d034be5e00c6debf36fa98be35127f82d1d520396374ed06f522f882294fa",
+            "references_sha256": "9f4b89e9662c998b53e5805a3e3177dd84341cf6c61839f1ca0cd97e062a1473",
             "review_note": "Matched the published Support article contact link with the failure reference customers see. Compared the preserved authored-page download guide with the current revision, membership and grant checks."
         },
         "foundation": {
-            "source_sha256": "1bcc201874515c3d7068bd38fb2237ce6332b9df1e089d43d72fee2829a9051a",
-            "references_sha256": "edb833e6497897729ae4c0a1e1eca65934b466c547881885d7e8abb770eeda5b",
-            "review_note": "Compared the hosted page fields and private immutable binaries with the application and host storage contracts, deployment backup instructions, campaign-only SQL timestamp normalization and actual direct-path denial."
+            "source_sha256": "c4ab3eff00f320185e292979a674f736c23d027d787de55f5c4431bfa3e6b4bd",
+            "references_sha256": "c3165ef24301726715e782e931c2fa3c2e7ff1f70e61adf8662c15aae8c1557e",
+            "review_note": "Cross-checked the single streamed audit SELECT, strictly typed bridge counts and campaign file storage. Updated the review fingerprints for the combined source."
         },
         "google-tags": {
             "source_sha256": "67136427c2eed206447c590b386451e42387c976b0c791fa9ebec1201e99019c",
@@ -39,13 +39,13 @@
         },
         "interface": {
             "source_sha256": "89193e9a6a04fbc0f65112f16317c69d9638f947db23d22240303ab811b8032e",
-            "references_sha256": "58a84b3f5e424a4487984c2373a63d091b0b08e7d1fd737985c75bdfb88b2a50",
+            "references_sha256": "1e05b440155ebb295570a6f2de0a89f7a5daa935ecd6c9d61d0a8829c25cb86c",
             "review_note": "Compared the selectable Support reference and separate contact action with Design. The public layout and protected-download view retain their current control placement and shared reading styles."
         },
         "mail": {
-            "source_sha256": "72b1c4a0ac6e5d88b2edb4e8190bbc9bb8271e1c9b25880f6d4ea068b2f82b56",
+            "source_sha256": "ff38e120ef920358444bdb5d81c455b37118403b6ac3def03eb363f38d5a0fb1",
             "references_sha256": "b570c94d1b4f038514750f1f5550593ae54324f0da7b659b2d8a184b1baf0fa2",
-            "review_note": "Compared the single configured-owner security notice with the existing claim and settlement rules. Supported SAPIs finish the stored-session response before entering the same mail path."
+            "review_note": "Compared configured-owner session close, redirect and one notice attempt with the mail guide. The dashboard telemetry read has no mail side effects."
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
@@ -58,19 +58,19 @@
             "review_note": "Reviewed the independent private download storage against the existing owner Media Library, header image and deletion documentation. Download files keep their own private root."
         },
         "operator-help": {
-            "source_sha256": "db227fa43657f9bb17caff6293594edb565aaf619f6dbcfe8ea2c4171a01b29a",
+            "source_sha256": "95ef124e5f2a4c38e4ce598051397cb1b42596576804f01ade367dfdcdbf6e5a",
             "references_sha256": "ec6fd6b5c08c66d7a8b453e6c58fa5d9507ce633f56cc54a2e14e2e8907b62f0",
-            "review_note": "Compared the published Support guide, reference and contact flow. Reviewed the owner Pages guide for protected downloads and the auth guide for the configured-owner session and notice sequence."
+            "review_note": "Compared the published Support guide, reference and contact flow. Reviewed the owner Pages guide for protected downloads and the auth guide for the configured-owner session and notice sequence. Verified the scoped storefront counter read uses its separate database projection and the Support transcript remains limited to the opaque run reference."
         },
         "public-mcp": {
-            "source_sha256": "ad08f180ca73336364b9cd907dfcbc99fafe564bfbc5555611ed1c41949b4de4",
+            "source_sha256": "cfcb00923cc748f61fadd303204640ed5bf3d3e30325b4c87fb0dde9b5454a85",
             "references_sha256": "4e016c2896dbeb1b1c300436bc89b235e56245aa9cd9cade4fdd1c4605cf1e6a",
-            "review_note": "Compared the new public HTTP route with the MCP capability and discoverability contracts. Campaign assets do not extend the existing agent tool surface."
+            "review_note": "Cross-checked the regenerated Dashboard and authored page map with Public MCP and A2UI. The audit count remains an authenticated database operation."
         },
         "remote-commerce": {
-            "source_sha256": "5e984b01967b1c562ed41ee7763ade820ec42712a36a0dcd4ad8f723d404c427",
+            "source_sha256": "d89e2e60695cdba3b0c67df27e0970528da91b5947d15b271ead1d38540328d8",
             "references_sha256": "1dc8f801c96ea8a63fd80e8a800b631a12378fa3a76e9eb4086ece101e206377",
-            "review_note": "Compared the Support reference against the shared layout, Design and native cart and checkout recovery. Existing payment actions and session capability handling are preserved."
+            "review_note": "Compared the Support reference against the shared layout, Design and native cart and checkout recovery. Existing payment actions and session capability handling are preserved. Verified the scoped storefront counter read uses its separate database projection and the Support transcript remains limited to the opaque run reference."
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",
@@ -78,7 +78,7 @@
             "review_note": "Compared the MediaService additions with the Merchant Feed and product image inspection contracts. Header choices are filtered only for the owner authored editor, and catalogue image eligibility and feed URLs retain their existing resolution."
         },
         "workflow": {
-            "source_sha256": "b7343829808b0fe3e6d418fa18ad7a217f3c9d9650494e9f799d8e21eba018cb",
+            "source_sha256": "01cf7e9aebaeb2435c4ce81a6a414f66bb8005e99878c7691068b1cb0b4bef88",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
             "review_note": "Reviewed the Support frontend skill against the targeted desktop and phone browser fixture and documentation review procedures. Regenerated the repository maps and confirmed the protected-download route and owner-auth source indexes."
         }

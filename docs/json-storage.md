@@ -12,6 +12,24 @@ media metadata and `audit_events`) remains in hosted MySQL through
 `DatabaseService`. `storage/schema/collections.php` defines those collections.
 Do not introduce local JSON mirrors of customer or admin business tables.
 
+For the Dashboard's 30-day storefront counters, `DatabaseService` streams only
+the event type and original timestamp for cart additions and checkout initiations
+from one prepared MySQL SELECT. It skips clearly expired canonical timestamps and
+uses PHP's original parser for the exact cutoff, including offsets and legacy
+formats. The cursor closes and PDO's original buffering mode is restored after
+counting.
+
+Remote dashboards call the authenticated `count_storefront_activity` action
+once. The bridge validates the exact request cutoff against its own 30-day window,
+allows up to 60 seconds for clock skew and transit, and returns two integer counts.
+The dashboard and bridge need the same action contract. A bridge without the
+action produces the Dashboard's unavailable state. The fixture in
+`tests/storefront-activity-mysql.php` verifies direct and bridge reads.
+
+See [MySQL JSON extraction](https://dev.mysql.com/doc/refman/8.4/en/json-search-functions.html),
+[PDO query buffering](https://www.php.net/manual/en/mysqlinfo.concepts.buffering.php)
+and [PHP timestamp parsing](https://www.php.net/manual/en/function.strtotime.php).
+
 **Conversation history** is the deliberate exception: each Support or Enterprise
 Agent chat is stored as one private file in
 `storage/agent-conversations/<conversation-id>.json`. The source of truth for

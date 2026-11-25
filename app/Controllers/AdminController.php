@@ -66,7 +66,7 @@ final class AdminController extends BaseController {
         $orderStatusCounts = StoreStatsService::orderStatusCounts($allOrders, $from, $to);
         $storefrontActivity = null;
         try {
-            $storefrontActivity = \App\Services\SiteTelemetryService::counts((new AuditLogService())->all());
+            $storefrontActivity = \App\Services\SiteTelemetryService::recentCounts();
         } catch (\Throwable) {
             // A failed audit read must be shown as unavailable rather than zero events.
         }

@@ -48,7 +48,7 @@ final class DatabaseService {
         return self::$remoteQueryCache[$cacheKey] = $result['data'];
     }
 
-    private function remoteMutation(string $action, string $table, array $payload): array {
+    private function remoteMutation(string $action, string $table, array $payload, bool $invalidateCache = true): array {
         $payload['password'] = $this->cfg['pass'] ?? '';
         $body = json_encode(['action' => $action, 'collection' => preg_replace('/[^a-z_]/', '', $table)] + $payload);
         $ch = curl_init($this->cfg['remote_url']);
@@ -63,7 +63,7 @@ final class DatabaseService {
         if ($body === false || $code < 200 || $code >= 300 || empty($result['success'])) {
             throw new \RuntimeException((string)($result['error'] ?? 'Remote mutation failed.'));
         }
-        self::$remoteQueryCache = [];
+        if ($invalidateCache) self::$remoteQueryCache = [];
         return $result;
     }
 
@@ -1001,6 +1001,69 @@ final class DatabaseService {
         $stmt->execute($params);
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
+    /** Count storefront actions on the database host, preserving the PHP cutoff. */
+    public function storefrontActivitySince(int $since): array {
+        if ($this->isTestMode()) return SiteTelemetryService::counts([], $since);
+        if (!$this->isRemote()) {
+            return SiteTelemetryService::counts($this->storefrontActivityCandidates($since), $since);
+        }
+
+        $response = $this->remoteMutation('count_storefront_activity', 'audit_events', ['since' => $since], invalidateCache: false);
+        $counts = $response['result'] ?? null;
+        if (($response['success'] ?? null) !== true || !is_array($counts) || count($counts) !== 2
+            || !is_int($counts['cart_add'] ?? null) || $counts['cart_add'] < 0
+            || !is_int($counts['checkout_initiated'] ?? null) || $counts['checkout_initiated'] < 0) {
+            throw new \RuntimeException('Database returned invalid storefront activity counts.');
+        }
+        return $counts;
+    }
+
+    private function storefrontActivityCandidates(int $since): \Generator {
+        // Only discard unmistakably old date('c') shapes. Four days cover both
+        // PHP's short-month date normalization and the explicit offset. Keep any
+        // other format for the same PHP parser used before this filtered read.
+        $oldestDate = gmdate('Y-m-d', $since - 4 * 86400);
+        $sql = <<<'SQL'
+            SELECT event_name, recorded_at
+            FROM (
+                SELECT JSON_UNQUOTE(JSON_EXTRACT(_data, '$.meta.event')) AS event_name,
+                       JSON_EXTRACT(_data, '$.created_at') AS recorded_at
+                FROM audit_events
+                WHERE CAST(JSON_UNQUOTE(JSON_EXTRACT(_data, '$.event')) AS BINARY) = CAST('commerce.event' AS BINARY)
+            ) AS storefront_events
+            WHERE CAST(event_name AS BINARY) IN (CAST('cart_add' AS BINARY), CAST('checkout_initiated' AS BINARY))
+              AND JSON_TYPE(recorded_at) NOT IN ('NULL', 'OBJECT', 'ARRAY')
+              AND NOT (
+                  CHAR_LENGTH(JSON_UNQUOTE(recorded_at)) = 25
+                  AND JSON_UNQUOTE(recorded_at) REGEXP '^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9][+-]([01][0-9]|2[0-3]):[0-5][0-9]$'
+                  AND LEFT(JSON_UNQUOTE(recorded_at), 10) < ?
+              )
+            SQL;
+        $pdo = $this->db();
+        $bufferedAttribute = defined('Pdo\Mysql::ATTR_USE_BUFFERED_QUERY')
+            ? \Pdo\Mysql::ATTR_USE_BUFFERED_QUERY
+            : \PDO::MYSQL_ATTR_USE_BUFFERED_QUERY;
+        $wasBuffered = $pdo->getAttribute($bufferedAttribute);
+        $stmt = null;
+        try {
+            if (!$pdo->setAttribute($bufferedAttribute, false)) {
+                throw new \RuntimeException('Could not stream the storefront activity result.');
+            }
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$oldestDate]);
+            while (($row = $stmt->fetch(\PDO::FETCH_ASSOC)) !== false) {
+                $timestamp = json_decode($row['recorded_at'], true, flags: JSON_THROW_ON_ERROR);
+                yield ['event' => 'commerce.event', 'meta' => ['event' => $row['event_name']], 'created_at' => $timestamp];
+            }
+        } finally {
+            try {
+                $stmt?->closeCursor();
+            } finally {
+                $pdo->setAttribute($bufferedAttribute, $wasBuffered);
+            }
+        }
+    }
+
     public function connection(): \PDO {
         if ($this->isTestMode()) throw new \RuntimeException('Database connection is disabled in test mode.');
         return $this->db();

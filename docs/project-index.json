@@ -183,7 +183,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 69
+            "line": 141
         },
         {
             "from": "controller:AdminController",
@@ -1351,7 +1351,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/RemoteDbController.php",
-            "line": 172
+            "line": 188
         },
         {
             "from": "controller:RemoteDbController",
@@ -1359,7 +1359,15 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/RemoteDbController.php",
-            "line": 13
+            "line": 14
+        },
+        {
+            "from": "controller:RemoteDbController",
+            "to": "service:SiteTelemetryService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/RemoteDbController.php",
+            "line": 174
         },
         {
             "from": "controller:ReviewController",
@@ -2275,6 +2283,14 @@
         },
         {
             "from": "service:DatabaseService",
+            "to": "service:SiteTelemetryService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/DatabaseService.php",
+            "line": 1006
+        },
+        {
+            "from": "service:DatabaseService",
             "to": "service:SupportTicketService",
             "relation": "static_reference",
             "provenance": "source_token",
@@ -3167,7 +3183,15 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SiteTelemetryService.php",
-            "line": 17
+            "line": 18
+        },
+        {
+            "from": "service:SiteTelemetryService",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/SiteTelemetryService.php",
+            "line": 29
         },
         {
             "from": "service:SmtpMailer",
@@ -3690,7 +3714,6 @@
                 "OrderService",
                 "StoreStatsService",
                 "SiteInsightsService",
-                "AuditLogService",
                 "SiteTelemetryService",
                 "AuthService"
             ]
