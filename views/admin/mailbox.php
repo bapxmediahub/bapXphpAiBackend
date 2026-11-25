@@ -18,7 +18,7 @@ if ($outbox) {
         <?php else: ?>
         <?= ($box ?? '') === 'outbox'
             ? 'Outbound messages are stored here when the app queues payment, shipping, review, account, and newsletter emails.'
-            : 'Inbound website messages are stored here from the contact form so the admin panel does not depend on an external mailbox.' ?>
+            : 'Review messages received from the Contact page and campaign enquiry forms.' ?>
         <?php endif; ?>
     </p>
     <?php if (!empty($newsletter) && (new \App\Services\SettingsService())->moduleEnabled('blog')): ?>
@@ -119,9 +119,31 @@ if ($outbox) {
                                 <br><span style="color:var(--color-text-muted); font-size:0.8rem;"><?= e($item['from_email'] ?? '') ?></span>
                             <?php endif; ?>
                         </td>
-                        <td><?= e($item['subject'] ?? '') ?></td>
-                        <?php $preview = strip_tags((string)($item['body'] ?? '')); ?>
-                        <td style="max-width:420px; color:var(--color-text-muted);"><?= e(mb_strimwidth($preview, 0, 180, '…', 'UTF-8')) ?></td>
+                        <?php
+                        $campaign = !$outbox && ($item['source'] ?? null) === 'contact_submissions'
+                            && is_string($item['campaign_slug'] ?? null)
+                            && \App\Services\AuthoredPageService::validSlug($item['campaign_slug'])
+                            && \App\Services\AuthoredPageService::validRevision($item['campaign_revision'] ?? null);
+                        ?>
+                        <td><?= e($item['subject'] ?? '') ?>
+                            <?php if ($campaign): ?>
+                                <details class="mail-outbox-references">
+                                    <summary>Campaign <?= e($item['campaign_slug']) ?></summary>
+                                    <span>Page revision <code><?= e($item['campaign_revision']) ?></code></span>
+                                </details>
+                            <?php endif; ?>
+                        </td>
+                        <?php $preview = (string)($item['body'] ?? ''); ?>
+                        <td style="max-width:420px; color:var(--color-text-muted);">
+                            <?php if ($campaign): ?>
+                                <details>
+                                    <summary>Read enquiry</summary>
+                                    <p style="white-space:pre-wrap; overflow-wrap:anywhere"><?= e($preview) ?></p>
+                                </details>
+                            <?php else: ?>
+                                <?= e(mb_strimwidth(strip_tags($preview), 0, 180, '…', 'UTF-8')) ?>
+                            <?php endif; ?>
+                        </td>
                         <td><?= e(substr((string)($item['created_at'] ?? ''), 0, 16)) ?></td>
                     </tr>
                 <?php endforeach; ?>

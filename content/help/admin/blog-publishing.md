@@ -44,11 +44,22 @@ Open **Pages** in the sidebar. Give the page a title and a short address, then
 write its Markdown. In **Header image**, choose an uploaded image or use
 **Upload to Media Library** to add one. Describe informative images in
 **Alternative text**. For a text-only page, choose **No header image**.
-Use **Preview** to inspect the unsaved title, image and Markdown. Select
-**Published** and **Save page** when it is ready. Use **Open published page**
+Under **Enquiry form**, select **Show an enquiry form** to collect a name and
+email. To ask for more information, choose a type and enter a label for up to
+three fields. Tick **Required** on any field the visitor must complete.
+Choose **Unused** to remove a field from the form. Clear **Show an enquiry
+form** to remove the whole form when you save.
+
+Use **Preview** to inspect the unsaved title, image, Markdown and enquiry
+fields. The preview form is disabled. Select **Published** and **Save page**
+when it is ready. Use **Open published page**
 to check it. Select **Draft** and save to withdraw the page from its address,
 search, and the sitemap. The address stays fixed across edits. If another
-editor saved first, copy your text before reopening the current version.
-Unsaved page title, address, Markdown and header choice are saved in this browser when storage is available. Reopen the same page as the same owner to restore or discard the draft. If the saved page changed, download the browser copy instead; review visibility before using Save page. Autosave does not publish or send content to the server.
+editor saved first, download the browser draft before reopening the current version.
+Unsaved page title, address, Markdown, header choice and enquiry settings are saved in this browser when storage is available. Reopen the same page as the same owner to restore or discard the draft. If the saved page changed, download the browser copy instead; review visibility before using Save page. Autosave does not publish or send content to the server.
+Review submitted enquiries in **Contact Submissions** or **Email → Inbox**.
+Inbox shows the campaign address and revision alongside each enquiry. The
+visitor sees a receipt on the page.
+
 To remove the page and its text permanently, open **Delete page**, tick the
 confirmation and choose **Delete this page**.

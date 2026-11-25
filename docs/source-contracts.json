@@ -4,48 +4,48 @@
     "reviews": {
         "agents": {
             "source_sha256": "bde2bde8a9de8bf32dc819c741e87a13e30ec696f95f2049814fee7028c63a73",
-            "references_sha256": "aee4fc1a3cf60b7a06d15d96b1ddcf008bb908a280973f8c5ba9d8b67ceefa5c",
+            "references_sha256": "a126aa2cc3aeae806e203654994633da932f3d9e0c7ee5c6ea47774f9268a6af",
             "review_note": "Matched the opaque trace ID, evaluated HTTP 503 and saved-turn replay to Support and the observability guide. The guide retains the existing ready-model selection and provider attempt evidence."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
-            "references_sha256": "54af9d4d2d11ada9af9ae5548b5b4b639b47b8226d6dd67ad5d40dad20fba125",
-            "review_note": "Verified the authored header controls remain on the existing owner admin GET and CSRF-guarded POST, with published-only guest content. The backend guidance retains the existing role and account isolation described in authentication docs."
+            "references_sha256": "e2412f540c3fe005a6d79e12514470e938b31a1718ba341ee6ddc2c1c28c8b43",
+            "review_note": "Checked campaign CSRF, session-bound submission token and owner Inbox authorization against existing login/account policy, including guest and customer access checks."
         },
         "commerce": {
             "source_sha256": "4d8f53718f4495182ccef03d41eacb3da729dbe5ff1b5db5b54cbfd88957749e",
-            "references_sha256": "c954dba2a6dbbaac3a7592de46f23b2ed712d3027a5c1e3a1f47586e65f6d611",
-            "review_note": "Reviewed the authored-page data section added to the backend skill alongside catalogue, orders and tax references. The new optional settings fields and upload row lock apply to authored headers, leaving the documented commerce record and payment flows intact."
+            "references_sha256": "079ae8d53b0448564cbc5195d8cfda515ef03890b278632a54ae868c15447db0",
+            "review_note": "Reviewed the campaign additions against the order and catalogue contracts; campaign validation and owner CRM records do not enter commerce order, checkout or revenue processing."
         },
         "content": {
-            "source_sha256": "6f1b6b0a2ec85723394eb8d1465e5439f8bfbab2241786c7559d981bc9a8d5be",
-            "references_sha256": "647a11458f42133b5bd573d7015abfde7140a81dac515569339d4d9ac74c3f42",
-            "review_note": "Matched the customer Support article and its contact link to the selectable error reference. Compared the authored-page preview and published view with guidance on optional image, alternative text and Markdown."
+            "source_sha256": "9054c3cbbdc666918f0ee921b0e096128ce7a66db3d0e6c01b3768149155ebc8",
+            "references_sha256": "ed431946047cc8f0b267edd928ec8d38a59571da585e175c8c81a90a3634ce09",
+            "review_note": "Matched the customer Support article and its contact link to the selectable error reference. Compared the authored-page preview and published view with guidance on optional image, alternative text and Markdown. Reviewed campaign enquiry instructions and the shared layout. The Support transcript reference remains scoped to evaluated failure."
         },
         "foundation": {
-            "source_sha256": "d24c91f5fc87058aeda5d42d2f4ef3e2fcd431ee88cd650e05573ba2f4dd3172",
-            "references_sha256": "185f906cb2170ba47183425b0a3da23b534d6bebc5d299297d18d16da548df4b",
-            "review_note": "Reviewed the changed reference profile, navigation and authored PDO validation against architecture. Deployment-owned defaults, admin permissions and hosted content storage remain in their existing paths."
+            "source_sha256": "92bff954bec5748362d195aa1e98e75b309669bf9e47b92810ee3e6a32f21650",
+            "references_sha256": "d662c82d5107cfdb842c2481427c6e4cf8c57154ff87dbc37b0ef533adc45622",
+            "review_note": "Checked scoped campaign DATETIME normalization, original timestamps on other records, and continued rollback and replay verification on the hosted database fixture."
         },
         "google-tags": {
             "source_sha256": "67136427c2eed206447c590b386451e42387c976b0c791fa9ebec1201e99019c",
-            "references_sha256": "d08526e2286d28bd69bdf8e76d5a0167c16d2f99069b5c087e33ba725d2c881b",
+            "references_sha256": "9b24c4858faabf17b9924cf811e97bb139906d0b6deb93ac0b3fc1489742d05a",
             "review_note": "Reviewed the shared public layout and frontend guide for Support reference rendering. The authored-page stylesheet consolidation affects document presentation and leaves the existing Google tag head and reporting controls intact."
         },
         "http-errors": {
             "source_sha256": "63602cadbe59868b0d25a1b00729a589e75d1b31c6ea3a1b25c1e5a46fd06d50",
-            "references_sha256": "0328e92ddba3b69d790e8c4c69158891f80a8888b510be88c4a855ef9f4c609b",
-            "review_note": "Compared the admin heading selection and authored page validation with canonical error rendering. Header eligibility failures remain expected owner form feedback, and transport and handler failures retain sanitized status and correlation behavior."
+            "references_sha256": "f5a7e88a8eb384a858c816522ae302bcdf67c8d8917ae1e887bacfbd6637c8c5",
+            "review_note": "Checked the native enquiry route failure handling against the HTTP response guard; unavailable writes are presented on-page and the campaign path logs a generic outcome."
         },
         "interface": {
-            "source_sha256": "2fb596cb1080de51f2534ef28dcaeea379b90ee29141e7513c851227e79be6b2",
-            "references_sha256": "ea91418993f2802874ae4d70be186904a98ef63d906ad44e7db058a621cd7cd5",
-            "review_note": "Compared the error, selectable Support reference and separate contact action with Design. The authored page keeps the optional header and shared reading column in preview and the published view."
+            "source_sha256": "77d2a49611a96d432e2055ef6d879de6d88b70afbc47f1add302d3ba591f8657",
+            "references_sha256": "147c841ed8faef2dc651c763a2000245773d8bea71b508a5367198ce2dcfb670",
+            "review_note": "Compared the error, selectable Support reference and separate contact action with Design. The authored page keeps the optional header and shared reading column in preview and the published view. Reviewed campaign enquiry instructions and the shared layout. The Support transcript reference remains scoped to evaluated failure."
         },
         "mail": {
-            "source_sha256": "cf53ad09364ca09e808c9a465e24eb33d11754a62ce95c6d0f81ef2d2d101cff",
-            "references_sha256": "d4dbc02c5a391de33b25b183a057d6f6c84d8cabacd508b79e5ac2b389875f41",
-            "review_note": "Compared the reconciled owner controller routes with existing mail dispatch documentation. Authored headers and analytics operate outside the established mail queue and delivery paths."
+            "source_sha256": "251088a617081be06441224ceeaf9e73bd5173321a2480158ee9cd4734608a76",
+            "references_sha256": "b1e04cedcc7e8a69e2df75ace16c7c08801fd8929d66ad6436b5cf4ca0f3ffa9",
+            "review_note": "Reviewed the merged AdminController and Inbox guide against the campaign Contact and Inbox projections. Accepting a campaign enquiry does not enqueue mail."
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
@@ -54,22 +54,22 @@
         },
         "media": {
             "source_sha256": "edc32a5a9f73cf7f2954eac135a2eaed1394089034bac24ea835af48c4d9600e",
-            "references_sha256": "a2db070f8970b9549f912577bf0603781cbab7f0ce25bcf46bc2246cc152eea5",
-            "review_note": "Checked the combined admin skill against guarded Media Library deletion and the authored header attach lock. The public renderer reads only the selected owned image URL."
+            "references_sha256": "2fd761a2616ecb1883b70ce991e391eb25cb72b76d5f7f1a7cf314bcc176792c",
+            "review_note": "Reviewed the Owner UI skill and shared upload lock documentation against the media source. Campaign layout renders the same owned image before the enquiry form."
         },
         "operator-help": {
-            "source_sha256": "5718710db441c70b3e4957fe20664a792347f9a506eaed067ef2e75b69438561",
-            "references_sha256": "ab27cf5ad47e8e6f392b03f7766e4f19572580526d7e1bb0f94ecf515009ccfc",
-            "review_note": "Matched the Support guide to the evaluated error and existing contact path. Compared the owner Pages guide with Media Library selection, unsaved preview and publication controls."
+            "source_sha256": "be7f0d714a9945fc792ef64333c80dc9c08680f5faf635d425f240b2058b67f7",
+            "references_sha256": "86a526f8469e6d22f802508611749d1340b016cb3ede47c01274fb6e9261c498",
+            "review_note": "Matched the Support guide to the evaluated error and existing contact path. Compared the owner Pages guide with Media Library selection, unsaved preview and publication controls. Reviewed campaign enquiry instructions and the shared layout. The Support transcript reference remains scoped to evaluated failure."
         },
         "public-mcp": {
-            "source_sha256": "51674601e9e1a9fb49a92f87564c1189a0d4c25ad41c76f8b5f1ce1f154bb0f4",
-            "references_sha256": "49f145b54368e95240f2bfe5b347b3b18ac1b2b09931a252aaf9f69d8ffc5d31",
-            "review_note": "Reviewed ProjectMapService declarations for the owner analytics and authored page routes. The public MCP dispatcher and published scope retain their allowlisted contracts."
+            "source_sha256": "c5a5fe7a8f6708e210a95964afd24f5f47c9b5524ee392fef57cf3b422ec41d2",
+            "references_sha256": "dffe6c3f2848c483be1141280dc7fdaeace1304acd45927a3468fbb23dc45a33",
+            "review_note": "Checked that the merged ProjectMapService declares owner analytics and public authored enquiry separately from the fixed public MCP allowlist."
         },
         "remote-commerce": {
-            "source_sha256": "cdc793e0ba23eda44af7328854930911090fc29f31af3d02c7e3e352fa8ab44c",
-            "references_sha256": "b0ad67c3a65c64eadeb9a7c035c629156aea1a07f6cb4f7b2e8380ee08eaa5e4",
+            "source_sha256": "0da1fabc164743effb73db98ceb35d0e55fa1d8d1422d9961f393d0ee4b6e85c",
+            "references_sha256": "c28843bf7f0b05100ec0082064589bcbf9c2c5bb64c06ef958e1732dfc9e2db2",
             "review_note": "Compared shared Design and the public layout with the Support reference and native checkout recovery. The authored-page reading styles are in the shared stylesheet, and checkout still uses its existing cart access and explicit payment actions."
         },
         "sales-channels": {
@@ -78,9 +78,9 @@
             "review_note": "Compared the MediaService additions with the Merchant Feed and product image inspection contracts. Header choices are filtered only for the owner authored editor, and catalogue image eligibility and feed URLs retain their existing resolution."
         },
         "workflow": {
-            "source_sha256": "8605aebf5c6d7fde316819b5ff9d69de9ec75b48db7524dd73987065fc49c34e",
+            "source_sha256": "57eedd67abec22beffc440e4ebab377815616097a4b5a4444523bbd96493ce61",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Checked the revised Support frontend skill against the desktop and phone fixtures. Regenerated the canonical indexes for the merged authored-page routes and verified the documentation review fingerprints."
+            "review_note": "Checked the revised Support frontend skill against the desktop and phone fixtures. Regenerated the canonical indexes for the merged authored-page routes and verified the documentation review fingerprints. Reviewed campaign enquiry instructions and the shared layout. The Support transcript reference remains scoped to evaluated failure."
         }
     }
 }

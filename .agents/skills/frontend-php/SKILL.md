@@ -16,6 +16,10 @@ description: Use when editing public, account, shop, consultant, temple, cart, c
 - Essential content must be legible before JavaScript enhancement. Never make reveal-animation opacity a loading dependency.
 - Keep enquiry card label contrast in the shared stylesheet. Test the native
   contact link and measure the shared label with the About stylesheet blocked.
+- Render authored campaign forms after Markdown with the contact form styles.
+  Keep the native submission, preserve validated text on recoverable errors,
+  and verify the focused error and receipt states at desktop and 375px.
+  Keep owner previews visibly disabled.
 - Use the shared public site profile for the header, footer, About and Contact.
   Test absent contact methods, app metadata and module-off URLs in an
   independent synthetic deployment as well as the reference layout.

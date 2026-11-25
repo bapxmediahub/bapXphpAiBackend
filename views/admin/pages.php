@@ -3,6 +3,14 @@ $editing = ($form['original_slug'] ?? '') !== '';
 $headerImages ??= [];
 $selectedHeader = $form['header_image_url'] ?? '';
 $knownHeader = in_array($selectedHeader, array_column($headerImages, 'url'), true) ? $selectedHeader : '';
+$savedCampaignFields = is_array($form['campaign_form'] ?? null) ? $form['campaign_form'] : null;
+$campaignEnabled = array_key_exists('campaign_enabled', $form)
+    ? in_array($form['campaign_enabled'], ['1', 1, true], true)
+    : $savedCampaignFields !== null;
+$campaignFields = is_array($form['campaign_fields'] ?? null)
+    ? $form['campaign_fields']
+    : array_column($savedCampaignFields ?? [], null, 'id');
+$campaignTypes = ['' => 'Unused'] + \App\Services\CampaignLeadService::OPTIONAL_TYPES;
 ?>
 <section class="admin-card" aria-labelledby="pages-title">
     <h1 id="pages-title">Pages</h1>
@@ -68,6 +76,37 @@ $knownHeader = in_array($selectedHeader, array_column($headerImages, 'url'), tru
         </fieldset>
         <label>Page content <textarea name="content" rows="13" required><?= e($form['content'] ?? '') ?></textarea>
         <small>Write in Markdown. HTML tags appear as text.</small></label>
+        <fieldset class="campaign-form-settings" aria-describedby="campaign-form-settings-help">
+            <legend>Enquiry form</legend>
+            <label class="campaign-form-settings__checkbox">
+                <input type="checkbox" name="campaign_enabled" value="1" <?= $campaignEnabled ? 'checked' : '' ?>>
+                Show an enquiry form on this page
+            </label>
+            <p id="campaign-form-settings-help">Name and email are required. You can add up to three fields.</p>
+            <?php foreach (\App\Services\CampaignLeadService::SLOT_IDS as $index => $fieldId): ?>
+                <?php
+                $field = is_array($campaignFields[$fieldId] ?? null) ? $campaignFields[$fieldId] : [];
+                $type = $field['type'] ?? '';
+                $label = is_string($field['label'] ?? null) ? $field['label'] : '';
+                $required = in_array($field['required'] ?? null, ['1', 1, true], true);
+                ?>
+                <fieldset class="campaign-form-settings__field">
+                    <legend>Additional field <?= $index + 1 ?></legend>
+                    <label for="campaign-<?= e($fieldId) ?>-type">Field type</label>
+                    <select id="campaign-<?= e($fieldId) ?>-type" name="campaign_fields[<?= e($fieldId) ?>][type]">
+                        <?php foreach ($campaignTypes as $typeId => $typeName): ?>
+                            <option value="<?= e($typeId) ?>" <?= $type === $typeId ? 'selected' : '' ?>><?= e($typeName) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <label for="campaign-<?= e($fieldId) ?>-label">Field label</label>
+                    <input id="campaign-<?= e($fieldId) ?>-label" type="text" name="campaign_fields[<?= e($fieldId) ?>][label]" maxlength="72" value="<?= e($label) ?>">
+                    <label class="campaign-form-settings__checkbox">
+                        <input type="checkbox" name="campaign_fields[<?= e($fieldId) ?>][required]" value="1" <?= $required ? 'checked' : '' ?>>
+                        Require an answer
+                    </label>
+                </fieldset>
+            <?php endforeach; ?>
+        </fieldset>
         <label>Visibility <select name="status">
             <option value="draft">Draft</option>
             <option value="published" <?= ($form['status'] ?? '') === 'published' ? 'selected' : '' ?>>Published</option>
