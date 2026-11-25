@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "3c6e1cb910ca0d8ad6ca0e30e7c295bb08df0df79ff147624fc80603a23a8525",
-            "references_sha256": "4e77fad706f5a9d4b1086c8b1422566453b66ea6d6b4cb85671e4e96f62f0187",
-            "review_note": "Compared the reconciled Chat Completions role and tool-call handling with runtime and observability documentation. Campaign forms continue to use PHP validation and never invoke inference."
+            "source_sha256": "bde2bde8a9de8bf32dc819c741e87a13e30ec696f95f2049814fee7028c63a73",
+            "references_sha256": "74748f701c331a8c80e9de06bd25b362c7cb22e8c56b3e35c9782a14880e2006",
+            "review_note": "Compared ready-model selection, strict assistant tool-call validation and direct Luna settings with the runtime guide. Campaign enquiry continues through the existing PHP Contact and Inbox path."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -29,8 +29,8 @@
         },
         "google-tags": {
             "source_sha256": "366fdab983979cc3a1fec22fb6da4afb61072d6fd24cd0ba2271d67a0c063019",
-            "references_sha256": "7b99436a8978ca89d41b9d56e88c5ad4990afaa65adea5bc654b6da437b32eab",
-            "review_note": "Reviewed the updated Google reporting links, provider settings template and existing public head registration. The authored form and receipt render within the document body."
+            "references_sha256": "6f7327e1ae9f078467369947f555cc4948c01970e4eafabe8dc39a727ae77603",
+            "review_note": "Reviewed the inherited Integrations provider instructions and Google reporting controls. Campaign presentation remains within the shared document body."
         },
         "http-errors": {
             "source_sha256": "63602cadbe59868b0d25a1b00729a589e75d1b31c6ea3a1b25c1e5a46fd06d50",
@@ -49,8 +49,8 @@
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
-            "references_sha256": "4274d502f7d2500a1a88e8dbb5d2626a6930d3b01197a0698083f41c03981144",
-            "review_note": "Reviewed the merged Integrations page references against the MCP client guide and approved route inventory. Display-group changes are owner navigation and preserve the client capability and config instructions."
+            "references_sha256": "73c4e7ed550ac139d52f0e560ab34a74738e8f4aa2ae6fc87c9e635c9dcd4d43",
+            "review_note": "Checked the merged Integrations guide against the local MCP client controller and form. The owner issues and revokes a paid-sales grant, and the trusted STDIO client receives it through its process environment."
         },
         "media": {
             "source_sha256": "edc32a5a9f73cf7f2954eac135a2eaed1394089034bac24ea835af48c4d9600e",
