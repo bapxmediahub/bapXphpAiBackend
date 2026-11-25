@@ -18,6 +18,10 @@ Main files: `AuthController.php`, `AuthService.php`, `EnvService.php`, `PublicCo
   - **customer password sign-in** → `/account/dashboard`
 - The configured admin identity is verified by `EnvService` against the canonical MySQL `app_settings` password hash; plain text is not accepted. Changes require the authorized settings workflow, not a model instruction.
 
+## Profile avatar
+
+The profile shows initials in a fixed avatar slot. With JavaScript enabled, a stored HTTPS picture fills the slot after it loads. Initials remain visible while it loads, if it fails or if JavaScript is disabled.
+
 ## Google OAuth
 
 - Button appears only when `google_client_id` and `google_client_secret` are configured in Admin → Integrations.

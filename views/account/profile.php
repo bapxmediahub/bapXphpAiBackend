@@ -1,5 +1,8 @@
 <?php
 $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16));
+$email = (string)($profile['email'] ?? '');
+$name = trim((string)($profile['name'] ?? ''));
+$initial = mb_strtoupper(mb_substr($name !== '' ? $name : $email, 0, 1));
 $picture = (string)($profile['picture'] ?? '');
 $showPicture = filter_var($picture, FILTER_VALIDATE_URL) && parse_url($picture, PHP_URL_SCHEME) === 'https';
 ?>
@@ -7,13 +10,30 @@ $showPicture = filter_var($picture, FILTER_VALIDATE_URL) && parse_url($picture, 
     <div class="account-layout">
         <?php require __DIR__ . '/_nav.php'; ?>
         <div class="account-content">
-            <h1>My Profile</h1>
+            <header class="account-profile__identity">
+                <div class="account-profile__avatar" aria-hidden="true">
+                    <?= e($initial) ?>
+                    <?php if ($showPicture): ?>
+                        <img id="account-profile-photo" src="<?= e($picture) ?>" alt="" width="56" height="56" referrerpolicy="no-referrer" hidden>
+                    <?php endif; ?>
+                </div>
+                <div>
+                    <h1 class="account-profile__heading">My Profile</h1>
+                    <p><?= e($email) ?></p>
+                </div>
+            </header>
             <?php if ($showPicture): ?>
-                <img src="<?= e($picture) ?>" alt="" width="56" height="56" referrerpolicy="no-referrer">
-            <?php else: ?>
-                <span aria-hidden="true"><?= e(mb_strtoupper(mb_substr($profile['name'] ?? '', 0, 1))) ?></span>
+                <script>
+                (() => {
+                    const photo = document.getElementById('account-profile-photo');
+                    const reveal = () => {
+                        if (photo.naturalWidth > 0) photo.hidden = false;
+                    };
+                    photo.addEventListener('load', reveal, {once: true});
+                    if (photo.complete) reveal();
+                })();
+                </script>
             <?php endif; ?>
-            <p><?= e($profile['email'] ?? '') ?></p>
             <div data-section-index hidden></div>
             <h2 id="profile-details" data-page-section="Profile details" tabindex="-1">Profile details</h2>
             <form method="post" class="form-group" action="/account/dashboard/profile">

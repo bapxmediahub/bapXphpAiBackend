@@ -103,8 +103,8 @@ jobs:
           NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/agent-history-browser.cjs tests/admin-pwa-browser.cjs tests/header-menu-browser.cjs tests/mobile-cart-restore-browser.cjs tests/a2ui-public-browser.cjs tests/enterprise-capabilities-browser.cjs tests/openrouter-integrations-browser.cjs tests/home-full-card-browser.cjs tests/homepage-release-browser.cjs tests/google-pagespeed-browser.cjs tests/media-metadata-browser.cjs tests/page-draft-browser.cjs tests/shipping-preview-browser.cjs tests/contact-admission-browser.cjs
       - name: Exercise reusable About layout and live-link contracts
         run: NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/about-release-browser.cjs tests/site-profile-browser.cjs
-      - name: Exercise native Users search and collapsed filters
-        run: NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/users-directory-browser.cjs
+      - name: Exercise owner Users directory and customer Profile in Chromium
+        run: NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/users-directory-browser.cjs tests/account-profile-browser.cjs
       - name: Exercise owner scheduled mail confirmation in Chromium
         run: NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/mail-scheduled-browser.cjs
       - name: Exercise owner GST unit configuration and issued reconciliation in Chromium

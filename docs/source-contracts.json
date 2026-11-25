@@ -9,8 +9,8 @@
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
-            "references_sha256": "ee198f67d585f331a334248688775e433181b828fbf7a5f58d41dac5a34f3a2d",
-            "review_note": "Compared the shared backend skill and mail change with account lifecycle guidance. Ordinary verified signup and password recovery retain their original event and queue paths."
+            "references_sha256": "3a5c9d23740782e0276c02c9ca6e6dbc0722cca4a6b91b24993c4039b17207dd",
+            "review_note": "Compared the profile rendering and saved HTTPS picture check to the authentication module guide. The guide documents the photo loading and JavaScript fallback cases."
         },
         "commerce": {
             "source_sha256": "4d8f53718f4495182ccef03d41eacb3da729dbe5ff1b5db5b54cbfd88957749e",
@@ -18,9 +18,9 @@
             "review_note": "Compared canonical optional fields, verified payment snapshots, historical flags, HSN groups and CSV review aggregation with the GST commerce guide."
         },
         "content": {
-            "source_sha256": "8047c1092ae63a74262a3b32464a4d4b02c698563ab63c8551da0b04ce9c7f72",
+            "source_sha256": "212c08b38701ff11b88a9017c33cbefc734d241059b3b4d595ff8609de9ad282",
             "references_sha256": "4a7c2e24302ce60d72e88914f1b756cf44e5fc65c6912f6b00ca4501aafbb4f0",
-            "review_note": "Reviewed Blog direct-route gating, sitemap module filtering, canonical URL and optional brand image defaults. Profile story is published as bounded plain paragraphs."
+            "review_note": "Read the account help Markdown and its source view. The article explains the picture placeholder beside the email."
         },
         "foundation": {
             "source_sha256": "99b0aba85d1f7d8d956cafda9e13da088ae367f789f09350a1c068d65732a1c6",
@@ -29,8 +29,8 @@
         },
         "google-tags": {
             "source_sha256": "187c8971da4cad73fccba340fb2f7424e60c4cb704bed864594f6c2dd3308c72",
-            "references_sha256": "9d01e572e3a406ff428555c7827aeb1d535f02f2a9c88a8eba885f298a8c3db5",
-            "review_note": "Reviewed the Integrations copy change. The optional sender field stays in SMTP configuration and does not alter tags, Google scopes or reports."
+            "references_sha256": "375789ec969029b886d4f33e4c8f519915e7ebc978e4988dc53e6f45e53011b5",
+            "review_note": "Checked the shared frontend rules against the existing tag rendering contract. The profile observes the load event of an already saved picture."
         },
         "http-errors": {
             "source_sha256": "2e2fee3211f50641844c05f86381f277f9c6c10b7fb60fb750c52937b0868e12",
@@ -38,9 +38,9 @@
             "review_note": "Reviewed the new hosting instructions against existing request-failure guidance. A transport receipt remains distinct from a rendering response, and the worker preserves the canonical queue before reporting an outcome."
         },
         "interface": {
-            "source_sha256": "5691334bfa118e3b1753939dcc785dea9e3029a734509e4acc95c4e4f6904eb3",
-            "references_sha256": "bb65c1d59300d1d2e8f59e2fb2ced31de0b00de5ed92b0781f50f6e5338230c9",
-            "review_note": "Compared directory labels and history highlights with rendered PHP and the responsive stylesheet. Documented full reference matching, labeled actions and conditional history expansion."
+            "source_sha256": "5e87ceec9ddc669b7c1128c21b53134ed9aaea494f51bb877d07ebab8c389e6d",
+            "references_sha256": "231cf2ca4f26baab840682fd1b8bd75517d3297dbe29016cd871db7137e5a7af",
+            "review_note": "Compared the Profile layout, photo load event and fallback to Design and the frontend skill, including long-email wrapping at 375px."
         },
         "mail": {
             "source_sha256": "302f0faf2a0313a87273606cc8c15bcd816d4c1df8780ea6da482ee60b8d3cd3",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed the changed Admin UI skill against the media guide and guardrails. The new verification instructions apply only to Users and leave the media flows unchanged."
         },
         "operator-help": {
-            "source_sha256": "439737263864678cad02cecd1fde0ff5f6348173bdf84d49e25647f8565587cb",
-            "references_sha256": "a716684adfa34efaa380fd473fbfa4d5cfdd5ef8307e649ffb69281beb0cfe8f",
-            "review_note": "Compared Users filter parsing, badge and order history rendering to the Customers guide. Documented exact reference lookup and the single-account opening behavior."
+            "source_sha256": "d34d47d3a1865992040446d3f81cc7d01b2ab4a377a0662b301f019b5e067ecd",
+            "references_sha256": "99fd0cfb0ea114e69da86d519db8afb53c3d8b4c4e5df3075ff0e6b8006b9635",
+            "review_note": "Compared the customer profile guide to the rendered avatar and unchanged profile form. The guide describes the saved-photo and initial states."
         },
         "public-mcp": {
             "source_sha256": "e5d2bb67604d7b9c3588dba3d04e75ad9925c1c686f3a4d13dffd1dc8dd99325",
@@ -69,8 +69,8 @@
         },
         "remote-commerce": {
             "source_sha256": "20def67683e671cd66be902f690208bfe1c5638987528b10e3889b195954274b",
-            "references_sha256": "a91597d6387daf01863b502509b24e5fd7db2a77f0305949da76843946d99c2f",
-            "review_note": "Read the changed Design directory guidance and order links against remote commerce references. Reference lookup uses existing order history and does not change checkout or payment presentation."
+            "references_sha256": "3fe064f00cb256b98aea325c6a990a2b13c0fd86c3d3113346b5253892797a76",
+            "review_note": "Reviewed the shared frontend skill and Design diff alongside checkout guidance. The new styling and recovery behavior is scoped to the authenticated Profile view."
         },
         "sales-channels": {
             "source_sha256": "6e5ee7b44dd92cc4dadec7a3c02f4bb9da797ba98d4e541e9f956687db236142",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed the optional canonical catalogue fields against the merchant feed projection. Published product, price and inventory fields remain as documented."
         },
         "workflow": {
-            "source_sha256": "3c0591c4c706655d518b6d6e3e413c333c7b9ddd925ed22474eed08b4844f6c6",
+            "source_sha256": "2c0b7fa39826e3c8168e7a378dbc294ecdaf6a328d05ebce202dbab690abe9cf",
             "references_sha256": "7770887213db03241a85f7bbee17bf25b2c58350058ebc59e25fd76b29ad80df",
-            "review_note": "Reviewed the Admin UI skill and Chromium test changes against the workflow. The new checks use the existing Users fixture and preserve issue-first and deployed verification."
+            "review_note": "Reviewed the existing Chromium workflow. The isolated profile fixture uses the installed browser and inserts no production fixture or browser dependency."
         }
     }
 }
