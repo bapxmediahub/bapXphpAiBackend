@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "46f2f864df34c1a0a9b2f871fa1e3367c68b0e4c49859c55c5f1b0d5b3590ac1",
-            "references_sha256": "1787b64eb38150f6ec3fd5d9415a6b6615cdb913e02f75f2356604b31fb7d6c2",
-            "review_note": "Compared Enterprise chat and monitoring headings and keyboard behavior with authorized requests, saved history and report evidence. Each UI still presents the same allowed operations and recorded evidence."
+            "source_sha256": "1270bb0e3936847bca34439fa7277e75a49282ec0f83ec1d4b41e4b3a9d8e87b",
+            "references_sha256": "174a5489597b865a31a302ce317abf54ca0629c2079a3c362515681a44d9d387",
+            "review_note": "Reviewed the merged Enterprise chat and Monitoring UI against authorized requests, saved evidence and the provider guidance. An observed 401 excludes only the rejected connection models and independent fallbacks remain eligible. A 403 points to connection permissions. The displayed owner states and private attempt evidence match the documented boundaries."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",

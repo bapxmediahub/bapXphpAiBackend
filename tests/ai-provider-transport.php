@@ -25,6 +25,27 @@ if (PHP_SAPI === 'cli-server') {
         }
         http_response_code(503);echo '{"error":{"status":"UNAVAILABLE"}}';return;
     }
+    if (in_array($scenario, ['auth_ordered', 'auth_independent', 'auth_cycle'], true)) {
+        if ($model === 'chat/completions') {
+            $payload = json_decode((string)file_get_contents('php://input'), true, 512, JSON_THROW_ON_ERROR);
+            $status = $scenario === 'auth_cycle'
+                ? (($payload['model'] ?? '') === 'fixture/first' ? 503 : 401) : 401;
+        } elseif ($scenario === 'auth_independent') {
+            echo json_encode(['candidates'=>[['content'=>['parts'=>[['text'=>'<final_answer>independent connection ok</final_answer>']]]]]]);
+            return;
+        } else {
+            $status = match ($scenario) {
+                'auth_cycle' => 403,
+                default => $primary ? 503 : 429,
+            };
+            if ($status !== 403) {
+                header('Retry-After: 60');
+            }
+        }
+        http_response_code($status);
+        echo '{"error":{"message":"private-fixture-auth-details"}}';
+        return;
+    }
     if($scenario==='body_retry'||$scenario==='daily_quota'){
         $file=getenv('BAPX_CYCLE_FIXTURE_DIR').'/'.$scenario;
         $count=(int)@file_get_contents($file)+1;file_put_contents($file,(string)$count,LOCK_EX);
@@ -253,12 +274,15 @@ try {
     $googleText=new ReflectionMethod(AiClient::class,'completeGoogleText');
     $compatibleLoop=new ReflectionMethod(AiClient::class,'completeCompatibleLoop');
     $ordered=new ReflectionMethod(AiClient::class,'completeWithFallbacks');
-    $deadline=hrtime(true)+40000000000;
-    $reply=$ordered->invoke($client,$plan,$deadline,true,
-        static function(array $cfg)use($client,$googleText,$compatibleLoop,$deadline):string{
-            return $cfg['provider']==='google'?$googleText->invoke($client,$cfg,'Fixture',32,0.0,$deadline)
-                :$compatibleLoop->invoke($client,$cfg,'Fixture',32,null,null,0,$deadline,false,[CURLOPT_PROXY=>'',CURLOPT_FOLLOWLOCATION=>false]);
-        });
+    $runOrdered = static function (AiClient $client, array $plan) use ($ordered, $googleText, $compatibleLoop): string {
+        $deadline = hrtime(true) + 40_000_000_000;
+        return $ordered->invoke($client, $plan, $deadline, true,
+            static function (array $cfg) use ($client, $googleText, $compatibleLoop, $deadline): string {
+                return $cfg['provider'] === 'google' ? $googleText->invoke($client, $cfg, 'Fixture', 32, 0.0, $deadline)
+                    : $compatibleLoop->invoke($client, $cfg, 'Fixture', 32, null, null, 0, $deadline, false, [CURLOPT_PROXY=>'',CURLOPT_FOLLOWLOCATION=>false]);
+            });
+    };
+    $reply = $runOrdered($client, $plan);
     $attempts=$client->transferTimings();
     $expected=array_merge(array_fill(0,3,SecretService::PRIMARY_MODEL),array_fill(0,3,SecretService::FALLBACK_MODEL),
         array_fill(0,3,'openrouter/free'),[SecretService::PRIMARY_MODEL]);
@@ -274,6 +298,36 @@ try {
 
     echo "PASS exact three-model ordered retry cycle: ".implode(' -> ',array_column($attempts,'model'))."\n";
     AgentTraceService::reset();
+
+    foreach (['auth_ordered', 'auth_independent', 'auth_cycle'] as $scenario) {
+        $endpoint = 'http://'.$address.'/'.$scenario;
+        $google = ['provider'=>'google','endpoint'=>$endpoint,'apiKey'=>'fixture-google',
+            'model'=>SecretService::PRIMARY_MODEL,'models'=>SecretService::GOOGLE_MODELS,'configured'=>true];
+        $compatible = ['provider'=>$scenario === 'auth_ordered' ? 'openrouter' : 'openai_compatible',
+            'endpoint'=>$endpoint,'apiKey'=>'fixture-compatible','model'=>'fixture/first',
+            'models'=>['fixture/first','fixture/second','fixture/third'],'configured'=>true];
+        $client = new AiClient();
+        $reply = $runOrdered($client, $scenario === 'auth_ordered' ? [$google,$compatible] : [$compatible,$google]);
+        $attempts = $client->transferTimings();
+        check(!str_contains(json_encode($attempts), 'private-fixture-auth-details')
+            && !str_contains($reply, 'private-fixture-auth-details'), 'Raw provider denial details remain private');
+        if ($scenario === 'auth_ordered') {
+            check(array_column($attempts,'status') === [503,429,401], 'Capacity, quota and a rejected credential remain separate observed transfers');
+            check(array_column($attempts,'provider') === ['google','google','openrouter'], 'Remaining models on the rejected OpenRouter connection are skipped');
+            check($client->failureCategory() === 'authentication' && str_contains($reply,'OpenRouter API Key')
+                && !str_contains($reply,'Google API Key'), 'The owner receives the actual rejected connection field');
+        } elseif ($scenario === 'auth_independent') {
+            check(array_column($attempts,'status') === [401,200] && $reply === 'independent connection ok',
+                'A rejected key skips its own models and leaves the next connection eligible');
+        } else {
+            check(array_column($attempts,'status') === [503,503,503,401,403,403]
+                && array_column($attempts,'cycle') === array_fill(0,6,1),
+                'A later 401 prevents an earlier model on that connection from re-entering cycle two');
+            check(str_contains($reply,'Google connection permissions') && !str_contains($reply,'API Key'),
+                '403 guides the owner to connection permissions');
+        }
+    }
+    echo "PASS credential rejection skips the connection within both cycles and identifies the right field\n";
 
     // Structured Google RetryInfo can exceed a Retry-After header. The client
     // must wait the full minimum and retain only bounded quota metadata.

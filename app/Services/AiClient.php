@@ -374,15 +374,16 @@ final class AiClient
      * Wire adapters receive one model and preserve its tool exchange. */
     private function completeWithFallbacks(array $plan,int $deadline,bool $repeat,callable $generate): string {
         $eligible=[];
-        foreach($plan as $connection)foreach($connection['models'] as $model){
+        foreach($plan as $connectionIndex=>$connection)foreach($connection['models'] as $model){
             $single=$connection;$single['models']=[$model];$single['model']=$model;
-            $eligible[]=$single;
+            $eligible[]=[$connectionIndex,$single];
         }
-        $answer='';$nextDelay=0;$notBefore=[];
+        $answer='';$nextDelay=0;$notBefore=[];$rejectedConnections=[];
         for($cycle=1;$cycle<=($repeat?self::MAX_PROVIDER_CYCLES:1)&&$eligible!==[];$cycle++){
             $this->cycle=$cycle;$next=[];
-            foreach($eligible as $config){
-                $identity=$config['provider']."\0".$config['endpoint']."\0".$config['model'];
+            foreach($eligible as [$connectionIndex,$config]){
+                if(isset($rejectedConnections[$connectionIndex]))continue;
+                $identity=$connectionIndex."\0".$config['model'];
                 $delay=max($nextDelay,(int)ceil((($notBefore[$identity]??0)-hrtime(true))/1_000_000));
                 if($delay>0&&!$this->waitForRetry($delay,$deadline)){
                     $this->failureCategory='request_deadline';return $this->failureMessage(0,false);
@@ -400,12 +401,17 @@ final class AiClient
                 // Invalid model IDs, credentials, schema errors and quota/long
                 // Retry-After failures are not retried in the following cycle.
                 $last=end($this->transferTimings)?:[];
-                $retryable=count($this->transferTimings)>$before
-                    &&$this->retryableInferenceFailure((int)($last['status']??0))
+                $observed=count($this->transferTimings)>$before
                     &&($last['model']??null)===$config['model']
                     &&($last['provider']??null)===$config['provider'];
+                // Model IDs in one connection share its credential. An actual 401
+                // rejects that credential for this request, including later cycles.
+                if($observed&&$last['status']===401&&$last['curl_error']===0){
+                    $rejectedConnections[$connectionIndex]=true;
+                }
+                $retryable=$observed&&$this->retryableInferenceFailure((int)($last['status']??0));
                 if($retryable){
-                    $next[]=$config;
+                    $next[]=[$connectionIndex,$config];
                     $notBefore[$identity]=hrtime(true)+($this->retryAfterMs??0)*1000000;
                 }
                 $nextDelay=self::backoffMs($retryable?3:1);
@@ -809,7 +815,7 @@ final class AiClient
         return match ($this->failureCategory) {
             'request_deadline' => 'AI request failed: the time available for this request was exhausted.',
             'provider_budget' => 'AI request failed: the model call or token limit for this request was reached.',
-            default => self::describeFailure($status, $body, $this->transportError),
+            default => self::describeFailure($status, $body, $this->transportError, $this->activeConnection['provider'] ?? null),
         };
     }
 
@@ -989,11 +995,24 @@ final class AiClient
      * Provide actionable status guidance without exposing provider response bodies,
      * which may contain sensitive request data or infrastructure details.
      */
-    public static function describeFailure(int $status, $body, int $transportError = 0): string
+    public static function describeFailure(int $status, $body, int $transportError = 0, ?string $provider = null): string
     {
+        $keyLabel = match ($provider) {
+            'google' => 'Google API Key',
+            'openrouter' => 'OpenRouter API Key',
+            'openai_compatible' => 'Compatible API Key',
+            default => 'provider API key',
+        };
+        $providerLabel = match ($provider) {
+            'google' => 'Google',
+            'openrouter' => 'OpenRouter',
+            'openai_compatible' => 'OpenAI-compatible',
+            default => 'AI provider',
+        };
         $hint = match (true) {
             $status === 400 => ' The provider rejected the request. Check the integration configuration.',
-            in_array($status, [401, 403], true) => ' The API key was rejected. Set a valid ai_api_key in Admin → Integrations.',
+            $status === 401 => ' The provider rejected authentication. Check the '.$keyLabel.' in Admin → Integrations.',
+            $status === 403 => ' Access was denied. Check the '.$providerLabel.' connection permissions in Admin → Integrations.',
             $status === 404 => ' The configured model or endpoint was not found. Check the integration configuration.',
             $status === 429 => ' The provider rate limit or quota was exceeded.',
             in_array($status, [500, 503], true) => ' The provider could not complete the request. Try again later.',
