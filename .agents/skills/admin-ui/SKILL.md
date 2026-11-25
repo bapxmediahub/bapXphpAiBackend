@@ -29,6 +29,9 @@ badge and reset visible when the disclosure closes. Verify combined criteria
 and pagination without JavaScript, native keyboard expansion, IST dates and
 stacked order history at 375px with synthetic accounts. Latest-order status uses
 the most recent dated match. Keep older and undated orders in history.
+The reference filter resolves a complete order or issued-invoice ID within
+that history. Show a text marker on the matching row and open the history when
+one account matches. Keep icons decorative and retain the action labels.
 
 The Public Site Profile is a native Site Settings form for published fields.
 Keep its save and validation independent of SMTP, credentials, appearance and

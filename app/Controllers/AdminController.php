@@ -214,6 +214,7 @@ final class AdminController extends BaseController {
     public function users(): void {
         header('Cache-Control: private, no-store');
         $query = is_string($_GET['q'] ?? null) ? mb_substr(trim($_GET['q']), 0, 150) : '';
+        $reference = is_string($_GET['reference'] ?? null) ? mb_substr(trim($_GET['reference']), 0, 150) : '';
         $roles = ['customer' => 'Customer', 'admin' => 'Admin', 'astrologer' => 'Legacy consultant', 'unknown' => 'Unspecified'];
         $activityOptions = [
             'with_orders' => 'Has orders', 'one_order' => 'One order',
@@ -259,7 +260,16 @@ final class AdminController extends BaseController {
                 '' => true,
                 default => $activity === $segment,
             };
-            if ($matchesActivity) $users[] = $user;
+            if (!$matchesActivity) continue;
+            if ($reference !== '') {
+                foreach ($user['orders'] as $position => $order) {
+                    if (strcasecmp($order['id'], $reference) === 0 || strcasecmp($order['invoice'], $reference) === 0) {
+                        $user['reference_matches'][$position] = true;
+                    }
+                }
+                if (empty($user['reference_matches'])) continue;
+            }
+            $users[] = $user;
         }
         usort($users, static function (array $a, array $b) use ($sort): int {
             $order = match ($sort) {
@@ -277,7 +287,7 @@ final class AdminController extends BaseController {
         $offset = ($page - 1) * $pageSize;
         $users = array_slice($users, $offset, $pageSize);
         $this->render('admin/users', ['pageTitle' => 'Users'] + compact(
-            'users', 'count', 'pages', 'page', 'query', 'role', 'activity', 'period', 'sort', 'pageSize',
+            'users', 'count', 'pages', 'page', 'query', 'reference', 'role', 'activity', 'period', 'sort', 'pageSize',
             'sizeOptions', 'roles', 'activityOptions', 'periodOptions', 'status', 'statusOptions', 'sortOptions', 'stats', 'offset'
         ));
     }

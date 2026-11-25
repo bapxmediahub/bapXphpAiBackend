@@ -7,7 +7,7 @@ $__adminAppName = $siteProfile->hasReferenceName() ? 'SPS Admin' : $__adminBrand
 $__settings = $__settingsService->public();
 $__adminLogo = ($__settings['logo_url'] ?? '') ?: ($siteProfile->isReference() ? '/assets/images/logo-square.jpeg' : '');
 
-// The sidebar supplies only literal icon names from this private set.
+// Admin templates supply only literal icon names from this private set.
 $navIcon = static function (string $name): string {
     $path = match ($name) {
         'home' => 'm3 10 9-7 9 7v11H3zM9 21v-7h6v7',
@@ -38,6 +38,12 @@ $navIcon = static function (string $name): string {
         'menu' => 'M4 6h16M4 12h16M4 18h16',
         'plug' => 'M9 3v4m6-4v4M6 7h12v3a6 6 0 0 1-12 0V7Zm6 9v5',
         'settings' => 'M4 7h4m5 0h7M4 17h9m5 0h2M8 4v6m10 4v6',
+        'search' => 'M15.5 15.5 21 21M18 10.5a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0Z',
+        'filter' => 'M4 7h16M7 12h10m-7 5h4',
+        'check' => 'm5 12 4 4L19 6',
+        'previous' => 'm15 5-7 7 7 7',
+        'next' => 'm9 5 7 7-7 7',
+        'reset' => 'M3 10V4m0 6h6M4 9a8 8 0 1 1 0 6',
         'help' => 'M3 5h5a4 4 0 0 1 4 4v11a4 4 0 0 0-4-3H3zM21 5h-5a4 4 0 0 0-4 4v11a4 4 0 0 1 4-3h5z',
     };
 

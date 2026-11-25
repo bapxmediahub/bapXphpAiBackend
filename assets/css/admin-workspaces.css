@@ -113,7 +113,7 @@
     border-radius: 6px; color: var(--color-text-muted); font-size: .78rem; font-variant-numeric: tabular-nums;
 }
 .users-reset {
-    display: inline-flex; align-items: center; min-height: 44px; padding-inline: .25rem;
+    display: inline-flex; align-items: center; gap: .3rem; min-height: 44px; padding-inline: .25rem;
     color: var(--color-maroon); text-decoration: underline; font-size: .82rem;
 }
 .users-filters {
@@ -153,8 +153,9 @@
     padding: .75rem; margin-top: .55rem; background: #fdfbf6;
     border: 1px solid var(--color-border); border-radius: 8px;
 }
-.users-actions { grid-column: 1 / -1; }
-.users-filters .btn, .users-pages .btn { min-height: 44px; }
+.users-reference, .users-actions { grid-column: 1 / -1; }
+.users-filters .btn, .users-pages .btn { min-height: 44px; gap: .35rem; }
+.users-workspace .btn .admin-nav-icon, .users-reset .admin-nav-icon { flex: none; }
 .users-applied {
     display: flex; flex-wrap: wrap; align-items: flex-start; gap: .35rem .75rem;
     padding: 0 1.2rem .85rem;
@@ -216,6 +217,12 @@
 .users-history .table-wrap { max-width: 100%; overflow-x: auto; }
 .users-history td { overflow-wrap: anywhere; }
 .users-history td small { display: none; }
+.users-history .users-history__match { background: #f8efdb; }
+.users-history__match-label {
+    display: block; width: fit-content; margin-top: .3rem; padding: .12rem .4rem;
+    border-radius: 6px; background: var(--color-white); color: var(--color-maroon);
+    font-size: .73rem; font-weight: 650;
+}
 .users-history p, .users-empty p { margin: .3rem 0 0; color: var(--color-text-muted); font-size: .85rem; }
 .users-empty { padding: 1.8rem 1rem; text-align: center; border-top: 1px solid var(--color-border); }
 .users-pages {
