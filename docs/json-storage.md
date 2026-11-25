@@ -12,6 +12,19 @@ media metadata and `audit_events`) remains in hosted MySQL through
 `DatabaseService`. `storage/schema/collections.php` defines those collections.
 Do not introduce local JSON mirrors of customer or admin business tables.
 
+For the Dashboard's 30-day storefront counters, `DatabaseService` projects only
+the event type and original timestamp for cart additions and checkout initiations.
+It uses one query for fewer than 500 candidates and reads further pages as needed
+using internal audit keys. The projection excludes the other audit fields and
+skips clearly expired records written in the canonical format.
+The application uses PHP's original timestamp parser for the exact cutoff,
+including offsets and legacy formats. The same prepared query works through
+direct PDO and the authenticated `/remotedb` bridge. The fixture in
+`tests/storefront-activity-mysql.php` exercises both paths.
+
+See [MySQL JSON extraction](https://dev.mysql.com/doc/refman/8.4/en/json-search-functions.html)
+and [PHP timestamp parsing](https://www.php.net/manual/en/function.strtotime.php).
+
 **Conversation history** is the deliberate exception: each Support or Enterprise
 Agent chat is stored as one private file in
 `storage/agent-conversations/<conversation-id>.json`. The source of truth for

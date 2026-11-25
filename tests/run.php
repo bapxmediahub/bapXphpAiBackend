@@ -706,7 +706,8 @@ $tests['admin dashboard resolves all services and renders its actual zero-data p
         assertTrue(str_contains($html,'No paid orders in this period.'),'Zero-data rendering remains safe through the full controller');
         assertTrue(str_contains($html,'id="web-analytics" data-page-section="Site analytics"'),'Site analytics keeps the direct dashboard bookmark');
         assertTrue(str_contains($html,'data-commerce-event="cart_add"') && str_contains($html,'data-commerce-event="checkout_initiated"'),'Storefront action totals appear on the dashboard');
-        assertTrue(!str_contains($html,'Storefront activity is temporarily unavailable.'),'An empty readable audit feed is valid data');
+        assertTrue(!str_contains($html,'Storefront activity is temporarily unavailable.'),'A successful empty storefront aggregate is available');
+        assertSame(2, preg_match_all('~data-commerce-event="(?:cart_add|checkout_initiated)"[^>]*>\s*<dt>[^<]+</dt>\s*<dd>0</dd>~', $html), 'Both storefront metrics render explicit zeroes');
         ob_start();$controller->agentMonitoring();$monitoring=(string)ob_get_clean();
         assertTrue(str_contains($monitoring,'Provider and model reliability'),'Agent Monitoring retains provider evidence');
         assertTrue(!str_contains($monitoring,'data-commerce-event=') && !str_contains($monitoring,'First-party commerce events'),'Agent Monitoring no longer shows unrelated storefront totals');

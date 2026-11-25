@@ -23,9 +23,9 @@
             "review_note": "Reviewed published Markdown guides, search navigation and module filters against the merged catalogue and account source."
         },
         "foundation": {
-            "source_sha256": "7d10a0293ed9e27d0d8b5e6b87e2e14ac904e882209495e278a0bac35aec7782",
-            "references_sha256": "6eba6651fd8e747d8053034a7812f9d41e6dba5a405bc1d1ed669556c8f2474b",
-            "review_note": "Rechecked architecture, backend evidence and hosted route boundaries after integrating the provider config change. Analytics continues to read existing aggregates and carries explicit unavailable states."
+            "source_sha256": "4013157784db89ccea40b207b391c0ae95de547ea28e251e49b71244a1cd8e68",
+            "references_sha256": "33ad3f16fad5ebb9b4767e425b9a34b49dbfd131d607107f01bf143c01e708d2",
+            "review_note": "Cross-checked the fixed audit projection, keyset pages and legacy date parsing with the storage guide and existing direct and bridge paths."
         },
         "google-tags": {
             "source_sha256": "4834fd90479519dba801e19dbd3c1e434d62cf7cb6a4915eed9905f1c21bb8b5",
@@ -39,13 +39,13 @@
         },
         "interface": {
             "source_sha256": "738e38a60e1cf8946e57026804877aec36c9effa52f9f190db1702b5f8a695a0",
-            "references_sha256": "53cc2ed21de9291d5d1d5288ff06d8e236f6f342f6d155e3b695151676d4e235",
-            "review_note": "Reconciled dashboard, owner navigation and integration views against Design and recent UI contracts. The named workspace stays deployment-profile based, and no heading or permission is duplicated."
+            "references_sha256": "3221b47348acdba484740fe39f1c65c4114344dff8065f589d04ff2fe1722826",
+            "review_note": "Verified the Dashboard view keeps both storefront counters and its unavailable status. The admin guide now describes a valid zero and failed read."
         },
         "mail": {
-            "source_sha256": "20e83e649ed008a9061724716681cff8a4c7888b7e5520459aed8843abdc5cda",
+            "source_sha256": "854044fb01727487fe4398e5a5a3f00c73b6cc5973287d1eedb21a84832c8a19",
             "references_sha256": "903e7da848c1e0472ce9a1823b94afc21004e564d12041ee0456918176a6cc72",
-            "review_note": "Checked the two changed AdminController rendering paths against owner email and delivery-state guidance. Queue and mailbox behavior continues through the existing mail actions."
+            "review_note": "Checked the AdminController change against the mail setup guide. The dashboard reader sits outside the mail actions and delivery-state paths."
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
@@ -58,19 +58,19 @@
             "review_note": "Reviewed the owner skill changes against media selection, deletion and metadata guidance. The new analytics section describes navigation and owner counts, and the media controls follow their documented path."
         },
         "operator-help": {
-            "source_sha256": "711ba481e7a1209bea63a8890341fee1c3a3d64e353992e78d5e4e09046f56f1",
+            "source_sha256": "369beb12a93cc67dbef1a6852d3f914f1b486fa728b3e17097bf7a62ac2402bc",
             "references_sha256": "9c949b4806f5ffa9c5ff122c863e4b2af50516fff6d0ea5e6201d543c147b4a3",
-            "review_note": "Reviewed the reconciled settings and owner docs after the endpoint change. Agent monitoring, site analytics, and commerce are navigable independently while provider configuration and scopes stay in Integrations."
+            "review_note": "Cross-checked the existing Commerce Dashboard section and reports guide. The storefront counters keep their 30-day window, valid zero and unavailable states."
         },
         "public-mcp": {
-            "source_sha256": "6855ccd4ae97d341559568e5e6799115f860d8bed5216f003680919a474ab934",
+            "source_sha256": "7001f1f32f514052478f62575a5c027d87e97873181ae7682de7f77e039b036e",
             "references_sha256": "d1e0824e500f825020b2cccfaad7fd435a8fefbe73d61e1b5f05fd54fed0b829",
-            "review_note": "Cross-checked the updated route associations with Public MCP and A2UI guidance. The moved storefront evidence is rendered through the authenticated Dashboard and the published contracts stay scoped."
+            "review_note": "Reviewed the Dashboard route association against the public MCP and A2UI source boundaries. This owner analytics read uses only the authenticated database transport."
         },
         "remote-commerce": {
-            "source_sha256": "d4727219602e3533680fbc91389cb2648ede2b15ef7dfa8ea866f2ed8bcd25c9",
+            "source_sha256": "d9c5f34a244b4d64632a7d7fc9f2d2f353b37f633474f4d02a1e115d3de59e9e",
             "references_sha256": "1b5573df9e0031b30d2aff8a41f9b249a03ed67030455440ea9edcbbaeb24892",
-            "review_note": "Rechecked dashboard and admin Design against remote commerce, checkout, and order source. Site actions remain aggregate counts over the documented window and no new commerce operation is exposed."
+            "review_note": "Compared the storefront telemetry read with the cart and checkout contracts. The existing cart and checkout writes continue through the documented paths."
         },
         "sales-channels": {
             "source_sha256": "36385e3d18e26f524d0efdd12d26cd8386e368fb5d27441460c688ffdff28b92",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed SettingsService module resolution and Merchant feed guidance. Dropping a retired header slot leaves the saved catalog eligibility inputs intact."
         },
         "workflow": {
-            "source_sha256": "916168e32dd7086fca5fd23e94e2fbf6a8bd2b94dda0b62f1a5596b6d4f8c86d",
+            "source_sha256": "71a41862a468c8e0a0dbf1645b785f70cfcc104c526f3fed7f113aa58eef24a2",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Verified current workflow guidance, including the newly released credential history fallback, against the analytics change and existing release tests. The separate Agent and Site sections use the existing approval and private test process."
+            "review_note": "Reviewed CI and the generated call graph against the workflow guide. The isolated MySQL and MariaDB jobs exercise the exact PHP timestamp cutoff with direct and bridge reads."
         }
     }
 }

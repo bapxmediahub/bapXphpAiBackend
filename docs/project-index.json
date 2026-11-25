@@ -183,7 +183,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 69
+            "line": 141
         },
         {
             "from": "controller:AdminController",
@@ -2063,7 +2063,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 305
+            "line": 306
         },
         {
             "from": "service:DatabaseService",
@@ -2071,7 +2071,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 243
+            "line": 244
         },
         {
             "from": "service:DatabaseService",
@@ -2079,7 +2079,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 731
+            "line": 732
         },
         {
             "from": "service:DatabaseService",
@@ -2087,7 +2087,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 278
+            "line": 279
         },
         {
             "from": "service:DatabaseService",
@@ -2095,7 +2095,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 542
+            "line": 543
         },
         {
             "from": "service:DatabaseService",
@@ -2103,7 +2103,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 491
+            "line": 492
         },
         {
             "from": "service:DatabaseService",
@@ -2111,7 +2111,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 704
+            "line": 705
         },
         {
             "from": "service:DatabaseService",
@@ -2119,7 +2119,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 330
+            "line": 331
         },
         {
             "from": "service:DatabaseService",
@@ -2127,7 +2127,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 432
+            "line": 433
         },
         {
             "from": "service:DatabaseService",
@@ -2135,7 +2135,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 427
+            "line": 428
         },
         {
             "from": "service:DatabaseService",
@@ -2143,7 +2143,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 595
+            "line": 596
         },
         {
             "from": "service:DatabaseService",
@@ -2151,7 +2151,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 296
+            "line": 297
         },
         {
             "from": "service:DocsMapService",
@@ -3039,7 +3039,15 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SiteTelemetryService.php",
-            "line": 17
+            "line": 18
+        },
+        {
+            "from": "service:SiteTelemetryService",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/SiteTelemetryService.php",
+            "line": 26
         },
         {
             "from": "service:SmtpMailer",
@@ -3562,7 +3570,6 @@
                 "OrderService",
                 "StoreStatsService",
                 "SiteInsightsService",
-                "AuditLogService",
                 "SiteTelemetryService",
                 "AuthService"
             ]

@@ -159,6 +159,7 @@ jobs:
         run: |
           php cli/runtime-check.php --json --strict
           php tests/admin-list-pagination.php
+          php tests/storefront-activity-mysql.php
           node --test tests/catalogue-mcp-mysql.test.cjs tests/mcp-client-access.test.cjs
       - name: Test reporting grant storage and disconnect against isolated MySQL
         run: php tests/google-reporting-storage.php
@@ -231,8 +232,8 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
-          extensions: mbstring, pdo_mysql
-      - name: Exercise admin search and media deduplication on the hosted database family
+          extensions: curl, mbstring, pdo_mysql
+      - name: Exercise scoped reads on the hosted database family
         env:
           BAPX_TEST_MODE: '0'
           BAPX_MYSQL_HOST: '127.0.0.1'
@@ -241,4 +242,6 @@ jobs:
           BAPX_MYSQL_USER: sps_test
           BAPX_MYSQL_PASS: sps_ci_fixture
           BAPX_REMOTE_DB_URL: 'http://127.0.0.1:1/remotedb'
-        run: php tests/admin-list-pagination.php
+        run: |
+          php tests/admin-list-pagination.php
+          php tests/storefront-activity-mysql.php
