@@ -227,8 +227,9 @@ Each attempt in Recent runs displays the observed HTTP status, cURL error and el
 The deployment-local health file stores only hashed model/connection identities,
 bounded expiry timestamps and a provider-hold flag. Ordinary transient server
 failures and timeouts are recorded but do not skip the primary in the next turn.
-Quota or explicit long Retry-After may temporarily exclude a model. Explicit
-diagnostics can contact the chosen model. Successful transfers clear their
+Quota or a positive explicit provider delay may temporarily exclude a model.
+Positive delays set the cross-turn hold and ordinary transient observations
+cannot prolong it. Explicit diagnostics can contact the chosen model. Successful transfers clear their
 entry. Legacy integer cooldowns are read as transient observations, not
 provider-mandated holds. The synchronous fallback loop tries each eligible model up
 to three times, then the next in order; a second cycle starts from the first
