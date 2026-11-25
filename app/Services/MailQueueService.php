@@ -255,12 +255,13 @@ final class MailQueueService {
 
     /** Count completed states in MySQL and pass only pending routing evidence to the existing health rules. */
     public function outboxHealth(bool $newsletter, ?int $now = null): array {
-        $status = "JSON_UNQUOTE(JSON_EXTRACT(_data, '$.status'))";
-        $scope = $newsletter ? " AND JSON_UNQUOTE(JSON_EXTRACT(_data, '$.type')) = 'blog_newsletter'" : '';
-        $rows = $this->store->query("SELECT CAST($status AS BINARY) AS status, COUNT(*) AS total, NULL AS routing
-            FROM mail_queue WHERE ($status IS NULL OR CAST($status AS BINARY) <> 'pending')$scope GROUP BY CAST($status AS BINARY)
-            UNION ALL
-            SELECT 'pending' AS status, 1 AS total, JSON_OBJECT(
+        $status = "CAST(JSON_UNQUOTE(JSON_EXTRACT(_data, '$.status')) AS BINARY)";
+        $scope = $newsletter ? " WHERE JSON_UNQUOTE(JSON_EXTRACT(_data, '$.type')) = 'blog_newsletter'" : '';
+        // One group per pending ID and one group per other status. MySQL temporary
+        // tables can only be referenced once per query.
+        // https://dev.mysql.com/doc/refman/8.4/en/temporary-table-problems.html
+        $rows = $this->store->query("SELECT $status AS status, COUNT(*) AS total,
+            MAX(CASE WHEN $status = 'pending' THEN CAST(JSON_OBJECT(
                 'status', 'pending', 'type', JSON_EXTRACT(_data, '$.type'),
                 'subject', JSON_EXTRACT(_data, '$.subject'), 'available_at', JSON_EXTRACT(_data, '$.available_at'),
                 'created_at', JSON_EXTRACT(_data, '$.created_at'), 'meta', JSON_OBJECT(
@@ -269,7 +270,8 @@ final class MailQueueService {
                     'synthetic_sample', JSON_EXTRACT(_data, '$.meta.synthetic_sample'),
                     'template', JSON_EXTRACT(_data, '$.meta.template')
                 )
-            ) AS routing FROM mail_queue WHERE CAST($status AS BINARY) = 'pending'$scope");
+            ) AS CHAR) END) AS routing
+            FROM mail_queue$scope GROUP BY $status, CASE WHEN $status = 'pending' THEN id END");
         $pending = [];
         $completed = [];
         foreach ($rows as $row) {

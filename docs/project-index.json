@@ -2231,7 +2231,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/MailQueueService.php",
-            "line": 320
+            "line": 322
         },
         {
             "from": "service:MailQueueService",
@@ -2247,7 +2247,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/MailQueueService.php",
-            "line": 340
+            "line": 342
         },
         {
             "from": "service:MailQueueService",
@@ -2263,7 +2263,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/MailQueueService.php",
-            "line": 340
+            "line": 342
         },
         {
             "from": "service:MailQueueService",

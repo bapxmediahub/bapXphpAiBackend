@@ -34,8 +34,8 @@ if ($outbox) {
         <p>The sample-only worker has <?= (int)$mailHealth['scheduled_samples'] ?> pending test samples. <?= (int)$mailHealth['inactive_samples'] ?> samples are expired or otherwise inactive.</p>
         <?php endif; ?>
         <div class="admin-stats">
-        <?php foreach(['pending'=>'Pending','sending'=>'Attempt in progress or interrupted','sent'=>'SMTP accepted or legacy sent','failed'=>'Not accepted / failed','needs_review'=>'Acceptance unknown: review before retry','unknown'=>'Legacy/unclassified'] as $state=>$label): ?>
-            <div class="admin-stat"><div class="admin-stat__value"><?= (int)$mailHealth['states'][$state] ?></div><div class="admin-stat__label"><?= e($label) ?></div></div>
+        <?php foreach(['pending'=>'Pending','sending'=>'Attempt in progress or interrupted','sent'=>'SMTP accepted or legacy sent','failed'=>'Not accepted / failed','needs_review'=>'Acceptance unknown: review before retry','unknown'=>'Legacy/unclassified'] as $healthState=>$label): ?>
+            <div class="admin-stat"><div class="admin-stat__value"><?= (int)$mailHealth['states'][$healthState] ?></div><div class="admin-stat__label"><?= e($label) ?></div></div>
         <?php endforeach; ?>
         </div>
         <p><strong>Inbox receipt is unverified.</strong> SMTP acceptance is not proof of inbox placement.

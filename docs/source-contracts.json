@@ -43,9 +43,9 @@
             "review_note": "Compared native search, selected filter parameters, wrapping controls and page navigation with the owner UI guide and Design."
         },
         "mail": {
-            "source_sha256": "8b8bcdc0fac9d5e41049ba9f6080d9ff62a0f5c200b46098c519297ede41d8c1",
+            "source_sha256": "a3951ae338838c3a75fd5e6fdaaca490782e9fc345d900850ef9bf95f3856462",
             "references_sha256": "903e7da848c1e0472ce9a1823b94afc21004e564d12041ee0456918176a6cc72",
-            "review_note": "Compared candidate paged queries and aggregate health with hosted read results and the queue rules. Documented separate canonical acceptance and legacy status."
+            "review_note": "Validated the single-table queue-health query against the hosted counts. Pending routing and existing expiry, held-contact and due predicates remain shared with the worker."
         },
         "mcp-clients": {
             "source_sha256": "38828d52259fbd6b6555d790e463ff775e79be85872a5d5b5aea78e599fba3ac",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed the new Outbox verification paragraph in the shared Admin UI skill alongside media controls."
         },
         "operator-help": {
-            "source_sha256": "e411f3266f5ac6f69ccda381c909fe64141ee5113687b08615a49729b870b252",
+            "source_sha256": "1b2a1edabfb1eef44d80f89c3adeb855b52e78edce41e5e0d3bb63277abd95a1",
             "references_sha256": "f050a041557fac9400a70251e570a8bb464274a869529097211c0f627c7295e3",
-            "review_note": "Compared the browser filter, queue scope, reference disclosure and receipt labels with the Email operator guide."
+            "review_note": "Verified the selected delivery state is retained independently of whole-scope queue-health labels, including native form submission."
         },
         "public-mcp": {
             "source_sha256": "e5d2bb67604d7b9c3588dba3d04e75ad9925c1c686f3a4d13dffd1dc8dd99325",
