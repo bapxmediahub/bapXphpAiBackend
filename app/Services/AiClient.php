@@ -65,28 +65,6 @@ final class AiClient
         };
     }
 
-    /** @return array{0:string,1:string} primary first, then the other Gemma model */
-    public static function googleModelPair(string $preferred): array
-    {
-        $primary = in_array($preferred, SecretService::GOOGLE_MODELS, true)
-            ? $preferred
-            : SecretService::PRIMARY_MODEL;
-        $fallback = $primary === SecretService::PRIMARY_MODEL
-            ? SecretService::FALLBACK_MODEL
-            : SecretService::PRIMARY_MODEL;
-        return [$primary, $fallback];
-    }
-
-    /** @return array<int,array{model:string,timeout_ms:int}> */
-    public static function googleAttemptPlan(string $preferred, bool $modelLocked = false, ?array $configuredModels = null): array
-    {
-        $configuredModels ??= self::googleModelPair($preferred);
-        $primary=in_array($preferred,$configuredModels,true)?$preferred:($configuredModels[0]??'');
-        if($primary==='')return [];
-        $models=$modelLocked?[$primary]:array_values(array_unique(array_merge([$primary],$configuredModels)));
-        return array_map(static fn(string $model): array => ['model' => $model, 'timeout_ms' => self::MODEL_ATTEMPT_TIMEOUT_MS], $models);
-    }
-
     /** DNS/connect, interrupted transfers, and transient HTTP failures can recover.
      * An alternate model on the same endpoint cannot fix TLS verification or credentials. */
     public static function canFailOver(int $status, int $transportError): bool
@@ -139,149 +117,6 @@ final class AiClient
         ?string $modelOverride = null
     ): string {
         return $this->route($prompt,$maxTokens,$temperature,$modelOverride,$tools,$maxRounds);
-    }
-
-    private function completeGoogleTools(array $config,string|AgentModelTurn $prompt,AgentToolRegistry|RuntimeAgentToolRegistry $tools,int $maxTokens,
-        float $temperature,int $maxRounds,?string $modelOverride,int $deadline): string {
-        $key = trim((string)($config['apiKey'] ?? ''));
-        if ($key === '') { $this->failureCategory = 'not_configured'; return 'No AI API key is configured. Set ai_api_key in Admin → Integrations, then try again.'; }
-        if (!function_exists('curl_init')) { $this->failureCategory = 'transport'; return 'AI request failed: cURL is not available on this server.'; }
-
-        $endpoint = rtrim((string)($config['endpoint'] ?? ''), '/');
-        $activeModel = in_array($modelOverride,$config['models'],true)?$modelOverride:$config['model'];
-        $modelLocked = false;
-        $headers = ['Content-Type: application/json', 'x-goog-api-key: ' . $key];
-
-        // REST uses systemInstruction and alternating user/model history for hosted Gemma.
-        // https://gemma.ai/deployment/gemini-api/#system-instructions
-        $instruction = [];
-        if ($prompt instanceof AgentModelTurn) {
-            $instruction = ['systemInstruction' => ['parts' => [['text' => $this->withAnswerFence($prompt->instructions)]]]];
-            $contents = array_map(static fn(array $message): array => [
-                'role' => $message['role'] === 'assistant' ? 'model' : 'user',
-                'parts' => [['text' => $message['content']]],
-            ], $prompt->dialogue());
-        } else {
-            $contents = [['role' => 'user', 'parts' => [['text' => $this->withAnswerFence($prompt)]]]];
-        }
-
-        $deadline ??= hrtime(true) + self::GENERATION_TIMEOUT_NS;
-        $seenCalls=[];
-        for ($round = 0; $round <= $maxRounds; $round++) {
-            $this->inferenceRound=$round+1;
-            $finalRound = $round === $maxRounds;
-            $declared=$tools->declarations();
-            $advertised=array_column($declared,'name');
-            $request = [
-                'contents' => $contents,
-                'tools' => [['functionDeclarations' => self::googleDeclarations($declared)]],
-                'generationConfig' => [
-                    'temperature' => $temperature,
-                    'maxOutputTokens' => $maxTokens,
-                    'thinkingConfig' => ['thinkingLevel' => 'MINIMAL'],
-                ],
-            ] + $instruction;
-            // Keep the tool responses in history while asking for a final text answer.
-            // https://ai.google.dev/gemini-api/docs/function-calling
-            if ($finalRound) $request['toolConfig'] = ['functionCallingConfig' => ['mode' => 'NONE']];
-            $payload = json_encode($request, JSON_UNESCAPED_SLASHES);
-
-            $body = $this->postGoogleRouted(
-                $endpoint, $activeModel, $payload, $headers, $status, $modelLocked, $deadline, $config['models'], true
-            );
-            if ($status !== 200 || $body === false) return $this->failureMessage($status, $body);
-
-            $result = json_decode((string)$body, true);
-            $candidate=$result['candidates'][0]??[];
-            $parts=$candidate['content']['parts']??[];
-            if(!is_array($candidate)||!is_array($parts)||!self::finishedGoogleCandidate($candidate))return $this->incompleteResponse();
-
-            $calls = [];
-            foreach ($parts as $part) {
-                if(!is_array($part))return $this->incompleteResponse();
-                if(array_key_exists('functionCall',$part))$calls[]=$part['functionCall'];
-            }
-            if($finalRound&&$calls!==[])return $this->incompleteResponse();
-            if($calls===[]) { $answer=self::answerFromParts($parts); if(trim($answer)==='')$this->failureCategory='empty_response'; return $answer; }
-
-            if(count($calls)>self::MAX_TOOL_CALLS_PER_ROUND||!self::validCallBatch($calls,$seenCalls,true)) {
-                $this->failureCategory = 'provider_response';
-                return 'AI request failed: the model returned an invalid set of lookups.';
-            }
-
-            // Keep the model's own turn in the history, or the next request has a
-            // function response answering a call the conversation no longer contains.
-            $contents[] = ['role' => 'model', 'parts' => self::googleToolHistoryParts($parts)];
-            $modelLocked = true;
-            $this->toolExchangeStarted=true;
-
-            $responses = [];
-            foreach ($calls as $call) {
-                $name = (string)$call['name'];
-                $args = $call['args'] ?? [];
-                $result=$this->executeDeclaredTool($tools,$advertised,$name,$args);
-                $responses[] = self::googleFunctionResponse($call, $result);
-            }
-            $contents[] = ['role' => 'user', 'parts' => $responses];
-        }
-
-        $this->failureCategory = 'empty_response';
-        return '';
-    }
-
-    public static function googleDeclarations(array $tools): array {
-        return array_map(static function(array $tool):array {
-            if(isset($tool['parameters'])) {
-                $tool['parametersJsonSchema']=$tool['parameters'];
-                unset($tool['parameters']);
-            }
-            return $tool;
-        },$tools);
-    }
-
-    /**
-     * Preserve Google's object-shaped function arguments when replaying model history.
-     *
-     * The API returns an empty argument object as `{}`. json_decode(..., true) turns it
-     * into PHP's empty array, and json_encode then changes it to `[]`. Google rejects
-     * that second-round payload because FunctionCall.args uses the Struct/object shape.
-     * Only the empty ambiguous value is converted; real nested argument lists remain
-     * lists. Schema: https://ai.google.dev/api/generate-content#FunctionCall
-     *
-     * @param array<int,array<string,mixed>> $parts
-     * @return array<int,array<string,mixed>>
-     */
-    public static function googleToolHistoryParts(array $parts): array
-    {
-        foreach ($parts as &$part) {
-            if (isset($part['functionCall'])
-                && is_array($part['functionCall'])
-                && array_key_exists('args', $part['functionCall'])
-                && $part['functionCall']['args'] === []) {
-                $part['functionCall']['args'] = new \stdClass();
-            }
-        }
-        unset($part);
-        return $parts;
-    }
-
-    /**
-     * Build the object-shaped response paired to a Google function call.
-     *
-     * @param array<string,mixed> $call
-     * @param array<mixed> $result
-     * @return array{functionResponse:array<string,mixed>}
-     */
-    public static function googleFunctionResponse(array $call, array $result): array
-    {
-        $response = [
-            'name' => (string)($call['name'] ?? ''),
-            // FunctionResponse.response is also a Struct. Keep list-valued tool output
-            // under an object key rather than sending a top-level JSON list.
-            'response' => array_is_list($result) ? ['result' => $result] : $result,
-        ];
-        if (trim((string)($call['id'] ?? '')) !== '') $response['id'] = (string)$call['id'];
-        return ['functionResponse' => $response];
     }
 
     /** Model text, or a sentence explaining why there is none. */
@@ -374,16 +209,15 @@ final class AiClient
         }
         if(!function_exists('curl_init')){$this->failureCategory='transport';return 'AI request failed: cURL is not available on this server.';}
         $deadline=hrtime(true)+self::GENERATION_TIMEOUT_NS;
-        return $this->completeWithFallbacks($plan,$deadline,!$diagnostic&&$override===null,
-            fn(array $config):string=>$config['provider']==='google'
-                ?($tools===null?$this->completeGoogleText($config,$prompt,$maxTokens,$temperature,$deadline)
-                    :$this->completeGoogleTools($config,$prompt,$tools,$maxTokens,$temperature,$rounds,$override,$deadline))
-                :$this->completeCompatible($config,is_string($prompt)?$this->withAnswerFence($prompt):$prompt,
-                    $maxTokens,$override,$tools,$rounds,$deadline));
+        $chatPrompt = is_string($prompt) ? $this->withAnswerFence($prompt) : $prompt;
+        return $this->completeWithFallbacks($plan, $deadline, !$diagnostic && $override === null,
+            fn(array $config): string => $this->completeCompatible(
+                $config, $chatPrompt, $maxTokens, $override, $tools, $rounds, $deadline, temperature: $temperature
+            ));
     }
 
     /** Direct synchronous fallback loop; no scheduled jobs or worker.
-     * Wire adapters receive one model and preserve its tool exchange. */
+     * The wire loop receives one model and preserves its tool exchange. */
     private function completeWithFallbacks(array $plan,int $deadline,bool $repeat,callable $generate): string {
         $eligible=[];
         foreach($plan as $connectionIndex=>$connection)foreach($connection['models'] as $model){
@@ -416,7 +250,7 @@ final class AiClient
                 $answer=$generate($config);
                 // A started tool exchange stays on the original model, including
                 // its retries. Never restart it through another provider.
-                if(!$this->routerNeedsGoogleFallback())return $answer;
+                if(!$this->canTryAnotherConnection())return $answer;
                 // Invalid model IDs, credentials, schema errors and quota/long
                 // Retry-After failures are not retried in the following cycle.
                 $last=end($this->transferTimings)?:[];
@@ -441,22 +275,6 @@ final class AiClient
         return $answer!==''?$answer:'AI request failed: no enabled provider completed the request.';
     }
 
-    private function completeGoogleText(array $config,string $prompt,int $maxTokens,float $temperature,int $deadline): string {
-        $model=$config['model'];$modelLocked=false;
-        $payload=json_encode([
-            'contents'=>[['parts'=>[['text'=>$this->withAnswerFence($prompt)]]]],
-            'generationConfig'=>['temperature'=>$temperature,'maxOutputTokens'=>$maxTokens,
-                'thinkingConfig' => ['thinkingLevel' => 'MINIMAL']],
-        ],JSON_UNESCAPED_SLASHES);
-        $headers=['Content-Type: application/json','x-goog-api-key: '.$config['apiKey']];
-        $body=$this->postGoogleRouted($config['endpoint'],$model,$payload,$headers,$status,$modelLocked,$deadline,$config['models'],true);
-        if($status!==200||$body===false)return $this->failureMessage($status,$body);
-        $result=json_decode((string)$body,true);
-        $answer=self::answerFromParts($result['candidates'][0]['content']['parts']??[]);
-        if(trim($answer)==='')$this->failureCategory='empty_response';
-        return $answer;
-    }
-
     /**
      * OpenAI Chat Completions tool calls are replayed with the original assistant
      * tool-call IDs and one role=tool result per call.
@@ -470,7 +288,8 @@ final class AiClient
         AgentToolRegistry|RuntimeAgentToolRegistry|null $tools = null,
         int $maxRounds = 0,
         ?int $deadline = null,
-        bool $laterGoogleFallback = false
+        bool $laterConnection = false,
+        float $temperature = 0.3
     ): string {
         if (!$config['configured']) {
             $this->failureCategory = 'not_configured';
@@ -481,42 +300,49 @@ final class AiClient
             return 'AI request failed: cURL is not available on this server.';
         }
         $deadline ??= hrtime(true) + self::GENERATION_TIMEOUT_NS;
-        $host = parse_url($config['endpoint'], PHP_URL_HOST);
-        $port = parse_url($config['endpoint'], PHP_URL_PORT) ?? 443;
-        $addresses = dns_get_record($host, DNS_A | DNS_AAAA) ?: [];
-        $resolve = [];
-        foreach ($addresses as $record) {
-            $ip = $record['ip'] ?? $record['ipv6'] ?? '';
-            if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_GLOBAL_RANGE)) continue;
-            $resolve[] = str_contains($ip, ':') ? '[' . $ip . ']' : $ip;
-        }
-        if ($resolve === []) {
-            $this->failureCategory = 'provider_request';
-            return 'AI request failed: the compatible endpoint must resolve to a public address.';
-        }
-        // Pin the validated addresses so DNS cannot change the destination between
-        // validation and connection. Do not follow redirects or use a proxy here.
         $options = [
-            CURLOPT_RESOLVE => [$host . ':' . $port . ':' . implode(',', array_unique($resolve))],
             CURLOPT_PROXY => '',
             CURLOPT_FOLLOWLOCATION => false,
         ];
-        return $this->completeCompatibleLoop($config,$prompt,$maxTokens,$modelOverride,$tools,$maxRounds,$deadline,$laterGoogleFallback,$options);
+        if ($config['provider'] === 'google') {
+            // SecretService supplies the fixed Google endpoint and its own key.
+            $config['temperature'] = $temperature;
+        } else {
+            $host = parse_url($config['endpoint'], PHP_URL_HOST);
+            $port = parse_url($config['endpoint'], PHP_URL_PORT) ?? 443;
+            $addresses = dns_get_record($host, DNS_A | DNS_AAAA) ?: [];
+            $resolve = [];
+            foreach ($addresses as $record) {
+                $ip = $record['ip'] ?? $record['ipv6'] ?? '';
+                if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_GLOBAL_RANGE)) continue;
+                $resolve[] = str_contains($ip, ':') ? '[' . $ip . ']' : $ip;
+            }
+            if ($resolve === []) {
+                $this->failureCategory = 'provider_request';
+                return 'AI request failed: the compatible endpoint must resolve to a public address.';
+            }
+            // Pin validated addresses between lookup and connection.
+            $options[CURLOPT_RESOLVE] = [$host . ':' . $port . ':' . implode(',', array_unique($resolve))];
+        }
+        return $this->completeCompatibleLoop($config,$prompt,$maxTokens,$modelOverride,$tools,$maxRounds,$deadline,$laterConnection,$options);
     }
 
-    /** Private wire loop; production callers first validate and pin the endpoint. */
+    /** Private wire loop for the configured Chat Completions connection. */
     private function completeCompatibleLoop(array $config,string|AgentModelTurn $prompt,int $maxTokens,?string $modelOverride,
-        AgentToolRegistry|RuntimeAgentToolRegistry|null $tools,int $maxRounds,int $deadline,bool $laterGoogleFallback,array $options): string {
+        AgentToolRegistry|RuntimeAgentToolRegistry|null $tools,int $maxRounds,int $deadline,bool $laterConnection,array $options): string {
         $headers = ['Content-Type: application/json', 'Authorization: Bearer ' . $config['apiKey']];
         $url = $config['endpoint'] . '/chat/completions';
         $models = in_array($modelOverride, $config['models'], true) ? [$modelOverride] : $config['models'];
         $officialOpenAi = parse_url($url, PHP_URL_HOST) === 'api.openai.com';
         $tokenField = $config['tokenField'] ?? ($officialOpenAi ? 'max_completion_tokens' : 'max_tokens');
+        $usesGoogleContinuation = $config['provider'] === 'google';
         $usesOpenRouterContinuation = $config['provider'] === 'openrouter';
         $dialogue = $prompt instanceof AgentModelTurn ? $prompt->dialogue() : [['role' => 'user', 'content' => $prompt]];
         $status = 0;
         $body = false;
         foreach ($models as $index => $model) {
+            $requestModel = $model;
+            $usesFreeRouter = $usesOpenRouterContinuation && $model === SecretService::OPENROUTER_MODEL;
             $messages = $dialogue;
             if ($prompt instanceof AgentModelTurn) {
                 // OpenAI documents developer messages for o1 and newer models.
@@ -536,8 +362,16 @@ final class AiClient
                     $tools->declarations()
                 );
                 $advertised=array_map(static fn(array $declaration):string=>$declaration['function']['name'],$declarations);
-                $payload = ['model' => $model, 'messages' => $messages];
+                $payload = ['model' => $requestModel, 'messages' => $messages];
                 $payload[$tokenField] = $maxTokens;
+                if ($usesGoogleContinuation && isset($config['temperature'])) {
+                    $payload['temperature'] = $config['temperature'];
+                }
+                if ($usesGoogleContinuation && in_array($model, SecretService::GOOGLE_MODELS, true)) {
+                    // Preserve the exact supported level on the hosted Gemma models.
+                    // https://aistudio.google.com/docs/openai#thinking
+                    $payload['extra_body'] = ['google' => ['thinking_config' => ['thinking_level' => 'minimal']]];
+                }
                 // Luna tool calling on Chat Completions requires reasoning_effort=none.
                 // https://developers.openai.com/api/docs/models/gpt-6-luna
                 if ($officialOpenAi && $tools !== null
@@ -549,15 +383,19 @@ final class AiClient
                     $payload['tool_choice'] = $round < $maxRounds ? 'auto' : 'none';
                 }
                 $hasModelAlternate = $round === 0 && $index + 1 < count($models);
-                $hasAlternate = $hasModelAlternate || ($round === 0 && $laterGoogleFallback
+                $hasAlternate = $hasModelAlternate || ($round === 0 && $laterConnection
                     && $this->toolCalls === 0);
                 $wire=json_encode($payload,JSON_THROW_ON_ERROR);
-                $body=$this->postWithRetries($url,$wire,$headers,$status,$model,$deadline,$hasAlternate,$options);
+                $body=$this->postWithRetries($url,$wire,$headers,$status,$requestModel,$deadline,$hasAlternate,$options);
                 if ($status !== 200 || $body === false) {
                     if ($hasModelAlternate && $this->waitForFailover($status, $deadline, $index)) break;
                     return $this->failureMessage($status, $body);
                 }
-                $choices = json_decode($body)->choices ?? null;
+                $response = json_decode($body);
+                if ($usesFreeRouter && $round > 0 && ($response->model ?? null) !== $requestModel) {
+                    return $this->incompleteResponse();
+                }
+                $choices = $response->choices ?? null;
                 $choice = is_array($choices) ? ($choices[0] ?? null) : null;
                 $message = $choice->message ?? null;
                 $wireCalls = $message->tool_calls ?? [];
@@ -586,17 +424,34 @@ final class AiClient
                     if ($round === 0) break;
                     return '';
                 }
-                if(count($calls)>self::MAX_TOOL_CALLS_PER_ROUND||!self::validCallBatch($calls,$seenCalls,false)) {
+                if(count($calls)>self::MAX_TOOL_CALLS_PER_ROUND||!self::validCallBatch($calls,$seenCalls)) {
                     $this->failureCategory = 'provider_response';
                     return 'AI request failed: the model returned an invalid set of lookups.';
                 }
-                $this->toolExchangeStarted=true;
+                if ($usesFreeRouter && $round === 0) {
+                    $resolvedModel = $response->model ?? null;
+                    if (!is_string($resolvedModel) || !SecretService::validModelId($resolvedModel)
+                        || !str_contains($resolvedModel, '/') || !str_ends_with($resolvedModel, ':free')) {
+                        return $this->incompleteResponse();
+                    }
+                    $requestModel = $resolvedModel;
+                }
                 $assistant = ['role' => 'assistant', 'tool_calls' => []];
                 if (array_key_exists('content', $message) && (is_string($message['content']) || $message['content'] === null)) {
                     $assistant['content'] = $message['content'];
                 }
-                // Keep the pre-existing OpenRouter adapter's continuation state on
-                // that connection. The custom endpoint uses the OpenAI HTTP schema.
+                // Continuation extensions stay on the connection that returned them.
+                if ($usesGoogleContinuation) {
+                    $remaining = 262144;
+                    $extension = self::googleContinuation($message['extra_content'] ?? null, $remaining);
+                    if ($extension === null) return $this->incompleteResponse();
+                    $assistant += $extension;
+                    foreach ($wireCalls as $index => $wireCall) {
+                        $extension = self::googleContinuation($wireCall->extra_content ?? null, $remaining);
+                        if ($extension === null) return $this->incompleteResponse();
+                        $calls[$index] += $extension;
+                    }
+                }
                 foreach($usesOpenRouterContinuation ? ['reasoning_content','reasoning_details'] : [] as $field){
                     if(!isset($message[$field]))continue;
                     $value=$message[$field];
@@ -606,6 +461,7 @@ final class AiClient
                     $assistant[$field]=$value;
                 }
 
+                $this->toolExchangeStarted=true;
                 $responses = [];
                 foreach ($calls as $call) {
                     $id = $call['id'] ?? '';
@@ -615,8 +471,7 @@ final class AiClient
                     // https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create
                     $args=str_starts_with(ltrim($arguments),'{')?json_decode($arguments,true,64):null;
                     $result=$this->executeDeclaredTool($tools,$advertised,$name,$args);
-                    $assistant['tool_calls'][] = ['id' => $id, 'type' => 'function',
-                        'function' => ['name' => $name, 'arguments' => $arguments]];
+                    $assistant['tool_calls'][] = $call;
                     $responses[] = ['role' => 'tool', 'tool_call_id' => $id,
                         'content' => json_encode($result, JSON_THROW_ON_ERROR)];
                 }
@@ -632,18 +487,28 @@ final class AiClient
     }
 
     /** A malformed or repeated ID cannot execute part of a tool batch. */
-    private static function validCallBatch(array $calls,array &$seen,bool $google): bool {
+    private static function validCallBatch(array $calls,array &$seen): bool {
         foreach($calls as $call){
             if(!is_array($call))return false;
-            $name=$google?($call['name']??null):($call['function']['name']??null);
+            $name=$call['function']['name']??null;
             if(!is_string($name)||!preg_match('/^[a-zA-Z_][a-zA-Z0-9_-]{0,63}$/D',$name))return false;
-            if(!$google&&(($call['type']??null)!=='function'||!is_string($call['function']['arguments']??null)))return false;
+            if(($call['type']??null)!=='function'||!is_string($call['function']['arguments']??null))return false;
             $id=$call['id']??null;
-            if($google&&$id===null)continue;
             if(!is_string($id)||$id===''||strlen($id)>256||isset($seen[$id]))return false;
             $seen[$id]=true;
         }
         return true;
+    }
+
+    /** Preserve Google's opaque Chat Completions signature at its original location. */
+    private static function googleContinuation(mixed $extra, int &$remaining): ?array
+    {
+        $google = $extra->google ?? null;
+        if (!$google instanceof \stdClass || !property_exists($google, 'thought_signature')) return [];
+        $signature = $google->thought_signature;
+        if (!is_string($signature) || $signature === '' || strlen($signature) > $remaining) return null;
+        $remaining -= strlen($signature);
+        return ['extra_content' => ['google' => ['thought_signature' => $signature]]];
     }
 
     /** Shared execution boundary for every supported provider. */
@@ -658,10 +523,6 @@ final class AiClient
         return $result;
     }
 
-    private static function finishedGoogleCandidate(array $candidate): bool {
-        return !isset($candidate['finishReason'])||in_array($candidate['finishReason'],['STOP'],true);
-    }
-
     private function incompleteResponse(): string {
         $this->failureCategory='provider_response';
         return 'AI request failed: the model response was incomplete. Please try the question again.';
@@ -669,7 +530,7 @@ final class AiClient
 
     /** Cross-provider recovery is allowed only before a tool result has been executed.
      * A partial tool exchange must never be replayed through another model/provider. */
-    private function routerNeedsGoogleFallback(): bool {
+    private function canTryAnotherConnection(): bool {
         return !$this->toolExchangeStarted && $this->toolCalls === 0 && $this->failureCategory !== null
             && !in_array($this->failureCategory, ['provider_budget','request_deadline'], true);
     }
@@ -709,42 +570,6 @@ final class AiClient
         return (string)end($candidates);
     }
 
-    /**
-     * The answer, with the model's private reasoning left out.
-     *
-     * This client used to read parts[0]. For a reasoning model parts[0] is the
-     * *thought*, and the answer is a later part:
-     *
-     *     "parts": [
-     *       { "text": "The user wants me to…", "thought": true },
-     *       { "text": "the actual answer" }
-     *     ]
-     *
-     * So every reply handed back was the model thinking out loud. That is the whole of
-     * the "agent leaks its scaffold" bug, and also the whole of the "agent has stopped
-     * answering" bug: AiReplyCleaner correctly recognised the reasoning as scaffold and
-     * stripped it, leaving nothing, so both agents fell back to a canned reply. One
-     * array index.
-     *
-     * A thought-only response has no public answer. Callers use the existing
-     * empty-response outcome without displaying or persisting the private parts.
-     *
-     * @param array<int,array<string,mixed>> $parts
-     */
-    public static function answerFromParts(array $parts): string
-    {
-        $answer = '';
-        foreach ($parts as $part) {
-            if(!is_array($part)||!is_string($part['text']??null))continue;
-            $text=$part['text'];
-            if ($text === '' || !empty($part['thought'])) continue;
-            $answer .= $text;
-        }
-        $answer = trim($answer);
-        // The fence is the reliable signal; the thought flag is not always set.
-        return self::fencedAnswer($answer) ?? $answer;
-    }
-
     /** True when the string is one of this client's failure sentences, not an answer. */
     public static function isError(string $text): bool
     {
@@ -752,46 +577,6 @@ final class AiClient
             if (str_starts_with($text, $prefix)) return true;
         }
         return false;
-    }
-
-    /** Google wire adapter. Normal routed turns pass a single model and use the
-     * shared three-attempt transfer loop; locked tool history never changes model. */
-    private function postGoogleRouted(
-        string $endpoint,
-        string &$activeModel,
-        string $payload,
-        array $headers,
-        ?int &$status,
-        bool &$modelLocked,
-        ?int $deadline = null,
-        ?array $configuredModels = null,
-        bool $allowRecovery = false
-    ) {
-        $deadline ??= hrtime(true) + self::GENERATION_TIMEOUT_NS;
-        $plan = self::googleAttemptPlan($activeModel, $modelLocked, $configuredModels);
-        $body = false;
-        foreach ($plan as $index => $attempt) {
-            $model = $attempt['model'];
-            $hasAlternate = $index + 1 < count($plan);
-            $url = $endpoint . '/' . rawurlencode($model) . ':generateContent';
-            $wire=$payload;
-            if(!in_array($model,SecretService::GOOGLE_MODELS,true)){
-                $request=json_decode($payload);
-                if(is_object($request)&&isset($request->generationConfig->thinkingConfig)){
-                    unset($request->generationConfig->thinkingConfig);
-                    $wire=json_encode($request,JSON_UNESCAPED_SLASHES|JSON_THROW_ON_ERROR);
-                }
-            }
-            $body=$allowRecovery?$this->postWithRetries($url,$wire,$headers,$status,$model,$deadline,$hasAlternate)
-                :$this->post($url,$wire,$headers,$status,$model,$deadline,$hasAlternate);
-            if ($status === 200 && $body !== false) {
-                if ($model !== $activeModel) $modelLocked = true;
-                $activeModel = $model;
-                return $body;
-            }
-            if (!$hasAlternate || !$this->waitForFailover($status, $deadline, $index)) break;
-        }
-        return $body;
     }
 
     private static function remainingProviderMs(int $deadline): int
@@ -1023,18 +808,14 @@ final class AiClient
         if($status!==200||!is_string($body))return [];
         $response=json_decode($body,true);
         if(!is_array($response))return ['response_kind'=>'invalid'];
-        $candidate=is_array($response['candidates']??null)?($response['candidates'][0]??null):null;
         $choice=is_array($response['choices']??null)?($response['choices'][0]??null):null;
-        $candidate=is_array($candidate)?$candidate:null;$choice=is_array($choice)?$choice:null;
-        $parts=is_array($candidate)?($candidate['content']['parts']??[]):[];
-        $message=is_array($choice)?($choice['message']??[]):[];
-        $calls=is_array($message)?(array)($message['tool_calls']??[]):[];
-        foreach((array)$parts as $part)if(is_array($part)&&isset($part['functionCall']))$calls[]=$part['functionCall'];
-        $finish=$candidate['finishReason']??$choice['finish_reason']??null;
-        $safe=['response_kind'=>$calls!==[]?'tool_calls':((is_array($candidate)||is_array($choice))?'text_or_empty':'invalid')];
+        $message=is_array($choice)?($choice['message']??null):null;
+        $calls=is_array($message['tool_calls']??null)?$message['tool_calls']:[];
+        $finish=$choice['finish_reason']??null;
+        $safe=['response_kind'=>$calls!==[]?'tool_calls':(is_array($message)?'text_or_empty':'invalid')];
         $safe['requested_tool_count']=min(100,count($calls));
-        if(is_string($finish)&&in_array($finish,['STOP','MAX_TOKENS','SAFETY','RECITATION','OTHER','MALFORMED_FUNCTION_CALL','stop','length','tool_calls','content_filter','function_call','error'],true))$safe['finish_reason']=$finish;
-        $actual=$response['modelVersion']??$response['model']??null;
+        if(is_string($finish)&&in_array($finish,['stop','length','tool_calls','content_filter','function_call','error'],true))$safe['finish_reason']=$finish;
+        $actual=$response['model']??null;
         if(is_string($actual)&&SecretService::validModelId($actual)&&!preg_match('/^(?:sk-|AIza)/i',$actual))$safe['response_model']=$actual;
         return $safe;
     }

@@ -38,18 +38,19 @@ grant. Business mutations remain explicit admin forms/drafts with CSRF and audit
 
 ## Request and tool lifecycle
 
-Both wire adapters validate the entire returned call-ID batch and execute only
-functions advertised for that inference round. A rejected call records a safe
+The shared Chat Completions loop validates the entire returned call-ID batch
+and executes only functions advertised for that round. A rejected call records a safe
 `tool_call_rejected` span (no arbitrary function name or raw arguments). The
 model may correct its request on a later round. Duplicate IDs, incomplete
 finish reasons and unfinished final tool calls cannot become accepted answers.
 Article read evidence retains the published article identifier, exact file
 revision SHA-256, excerpt SHA-256, and numeric section index when a targeted
 passage is selected. The model receives the heading and text in the tool
-result. Neither the query nor the heading or text enters the trace. Provider
-continuation fields stay in request-local transport memory.
-The loopback suite checks both Google and OpenAI-compatible call correlation;
-it is protocol verification, not a model-quality benchmark.
+result. The trace excludes the query, heading and text. Provider continuation
+fields stay in request-local transport memory.
+The loopback suite checks Chat Completions call correlation across configured
+connections. Live text and tool probes verify the selected model and provider
+separately when run with the deployment's saved credentials.
 
 
 **Support:** identify the guest or authenticated customer, apply rate limits,
@@ -475,10 +476,11 @@ transfer or continuation, after completed business tools, business tool errors,
 and response/application failure. This stage is inferred conservatively from
 observed attempts and completed tools, not from private reasoning. New inference
 attempts retain round, phase, retry/cycle, requested tool count, bounded finish
-reason and reported response model. Structured Google quota details retain only
-fixed categories and numeric retry delay, not descriptions, project IDs or raw
-bodies. Backoff spans measure actual waiting time; tool-search and instruction
-read counts remain separate from executed business tools. Token totals include
+reason and reported response model. Google quota categories and retry delay are
+recorded when recognized structured details are available. The trace retains
+fixed categories and numeric values. Backoff spans measure actual waiting time.
+Tool-search and instruction read counts remain separate from executed business
+tools. Token totals include
 only reported usage and missing usage remains unknown.
 
 References: https://ai-sdk.dev/docs/ai-sdk-core/telemetry and
