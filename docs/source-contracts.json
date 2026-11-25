@@ -3,29 +3,29 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "5bc528985312485b9732d829b75addacb345765dfc1c767c85e38db4faa2ac99",
-            "references_sha256": "f5c7361b8ca9c867682dbafcde10dd099cdd71d35190bc7aaea8d770ba2d53ff",
-            "review_note": "Reviewed initial plan, candidate and per-transfer hold checks against runtime/observability docs and backend skill. Holds stop locally before model-attempt evidence, short waits reread current health, explicit probes bypass the gate, and locked tools never replay. Credentials remain confined to private health state."
+            "source_sha256": "867dad532227d4210d5345ed341a768bc3def20d4e87378c141ff5e7ed09cc8a",
+            "references_sha256": "74554e8088c03307c6980c42fa647ddf6709700a862a6fa6674185f8238b23c8",
+            "review_note": "Compared native article discovery, keyword passage selection, public file revision and excerpt hashes, and trace projections with the role guidance and wire fixtures."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
-            "references_sha256": "3a5c9d23740782e0276c02c9ca6e6dbc0722cca4a6b91b24993c4039b17207dd",
-            "review_note": "Compared the profile rendering and saved HTTPS picture check to the authentication module guide. The guide documents the photo loading and JavaScript fallback cases."
+            "references_sha256": "ebb0c928c577565d8894a49f76721c79a8ca867c128da84e9fece758cb33a111",
+            "review_note": "Compared the runtime article permission with the authentication and Google OAuth guidance. Native lookup uses the existing actor policy and grants no customer or owner privileges."
         },
         "commerce": {
             "source_sha256": "4d8f53718f4495182ccef03d41eacb3da729dbe5ff1b5db5b54cbfd88957749e",
-            "references_sha256": "49ed13d7bb4503ead03763ce9c02b37edb4aed8e340ec2ac68dea584dd2d8f35",
-            "review_note": "Compared canonical optional fields, verified payment snapshots, historical flags, HSN groups and CSV review aggregation with the GST commerce guide."
+            "references_sha256": "15ae78aabe6a3bfd6932e72bd82aa96828b3f5d78dbe643d70780de4d21c5bb6",
+            "review_note": "Reviewed the retrieval addition to the backend skill against the commerce guides. Article claims use source evidence; product, order and payment projections still use their named data services."
         },
         "content": {
             "source_sha256": "212c08b38701ff11b88a9017c33cbefc734d241059b3b4d595ff8609de9ad282",
-            "references_sha256": "4a7c2e24302ce60d72e88914f1b756cf44e5fc65c6912f6b00ca4501aafbb4f0",
-            "review_note": "Read the account help Markdown and its source view. The article explains the picture placeholder beside the email."
+            "references_sha256": "dffa496299280f3eff7e427f21d0973ebb0f3f4b09ef687ce4d8115f6a2ce5e2",
+            "review_note": "Compared BlogService publication and generated HTML with the article documentation. Both native agents now find published body matches and read bounded exact-slug passages."
         },
         "foundation": {
-            "source_sha256": "f8fda746e7fc7a3e0b2e0ce59de40b8b9125da1e42d280c827ead7b3abf5521b",
-            "references_sha256": "6eba6651fd8e747d8053034a7812f9d41e6dba5a405bc1d1ed669556c8f2474b",
-            "review_note": "Checked architecture and private JSON storage against controller replay. Only accepted model responses use native presentation on replay and no replay refreshes business data or changes access scope."
+            "source_sha256": "149c6db0439f2e2859fafaf91942524d151f261f7dc25ed2c7f9b9a471325714",
+            "references_sha256": "19374082935b4847bbb5f384debd59d75beac6e118415585f5434701c8264cf5",
+            "review_note": "Reviewed passage retrieval against the native PHP, private JSON and published Markdown boundaries. The tool result carries the passage; the private trace keeps its identity, digests and numeric section only."
         },
         "google-tags": {
             "source_sha256": "683b99f0a3158682ae753aef309c0a7339cdc4005f2e640b4e5c94d5f05fac49",
@@ -34,8 +34,8 @@
         },
         "http-errors": {
             "source_sha256": "2e2fee3211f50641844c05f86381f277f9c6c10b7fb60fb750c52937b0868e12",
-            "references_sha256": "d309fba94f0e9ed81e83cce280b9c5ac3560d4726227d058c866ee0ea4b12cd2",
-            "review_note": "Reviewed the new hosting instructions against existing request-failure guidance. A transport receipt remains distinct from a rendering response, and the worker preserves the canonical queue before reporting an outcome."
+            "references_sha256": "1455f6c2ccaeba8657640148cdc9e92732a9b0c5d6ae6eae999e6f2a59f4e33f",
+            "review_note": "Compared Blog setting and publication checks with the PHP failure boundary. A missing passage is a normal tool result and a failed settings read still surfaces as a source failure."
         },
         "interface": {
             "source_sha256": "108179ff3bf10f1a1a2bdd30b8dd48b373954c74e642ee59761a6b3b5a7475eb",
@@ -44,8 +44,8 @@
         },
         "mail": {
             "source_sha256": "6895291447775bb17e9bef6c3d38d388ed65b3f5985b4c79bc71a9b4fa222c16",
-            "references_sha256": "903e7da848c1e0472ce9a1823b94afc21004e564d12041ee0456918176a6cc72",
-            "review_note": "Reviewed Support controller failure and replay handling against email configuration and ticket boundaries. Verified outbound mail and persisted receipt handling remain separate from chat presentation."
+            "references_sha256": "508cdfbeb24b568024d263df54048e3303796b6fc098eceec0ef6d46fbc0cb4f",
+            "review_note": "Reviewed the retrieval addition to the backend skill against the mail guide. Reading article passages requires no mail queue, recipient lookup or message send."
         },
         "mcp-clients": {
             "source_sha256": "38828d52259fbd6b6555d790e463ff775e79be85872a5d5b5aea78e599fba3ac",
@@ -58,19 +58,19 @@
             "review_note": "Compared active-chat restoration and attachment changes with the media operator instructions, and confirmed upload and in-memory draft attachment regressions pass."
         },
         "operator-help": {
-            "source_sha256": "d4df8c61faae0b85fc48b8629ffc1519f43656271defcb0e9dfdbe9b568b691f",
+            "source_sha256": "1966dfa3c44a464203517ba643bf1c106122df8d6ed3066ebb967c454c1fdb07",
             "references_sha256": "7a684be61b80d3002adcfb6a344e0c4bf547d9c8082bee3fa151bd61b1dc9d98",
-            "review_note": "Cross-checked merged Enterprise declaration and scoped operator-guide behavior with the operator references. Verified that the public Support guide stays in the Blog gate and the public enquiry restores visible pane focus."
+            "review_note": "Cross-checked the published customer help guide with the new article lookup. Exact-slug reads use the public Blog gate and cannot select the authenticated operator guide."
         },
         "public-mcp": {
-            "source_sha256": "234155f55b0f66f669f6422a85acc30a6a59ebf216d8f682d7a212cd01ee7358",
-            "references_sha256": "d1e0824e500f825020b2cccfaad7fd435a8fefbe73d61e1b5f05fd54fed0b829",
-            "review_note": "Checked the rendered Support enquiry controls against the current public MCP and A2UI documentation. Focus scrolling keeps the existing tool and submission contracts."
+            "source_sha256": "517200df08254008f1b4312f19981c9a88e6e915743ec16645c4503e3579f287",
+            "references_sha256": "8999944fc0137b069e1433c7ae750ce3e0cb2a67f7fdd3fcea63173126b96d26",
+            "review_note": "Compared the shared knowledge service with the public MCP article schema. The MCP and browser clients still receive title and summary ranking and the same result fields."
         },
         "remote-commerce": {
             "source_sha256": "0a504ca49d9995ea386d62a2783ae399dd7f8bf0eb0c10f5fffe1c5412a7b264",
-            "references_sha256": "233a298972f70b9eaa75c089da038a8d4e589686e2118f81235a5f32088ce1d5",
-            "review_note": "Reviewed both existing Support panes and verified nested heading focus on reopen. Checkout and commerce contracts remain as documented."
+            "references_sha256": "0d06bd95f7056026c42294c864042483bc0b1dba8d5fbd7f64d4694a3bdf8633",
+            "review_note": "Reviewed the backend skill change against the remote checkout contracts. The published article lookup remains a read and does not use cart or payment capabilities."
         },
         "sales-channels": {
             "source_sha256": "36385e3d18e26f524d0efdd12d26cd8386e368fb5d27441460c688ffdff28b92",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed SettingsService module resolution and Merchant feed guidance. Dropping a retired header slot leaves the saved catalog eligibility inputs intact."
         },
         "workflow": {
-            "source_sha256": "0f5ec4723ce72247773717eae57bc723e10147e4a59b70a1ea4f491c4353ad08",
+            "source_sha256": "b8bbbcc806f5f1752866b6dc5ddcac81022d59ab844fe6ab08ad45650c01819e",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Regenerated source indexes after the layout focus fix and checked the established review and browser verification steps."
+            "review_note": "Reviewed the new backend skill guidance and Chat Completions loopback assertions against the source review workflow. The approved authored Markdown and versioned tool contract remain the sources of truth."
         }
     }
 }

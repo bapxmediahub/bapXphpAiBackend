@@ -9,9 +9,9 @@ require dirname(__DIR__) . '/app/bootstrap.php';
 
 $root = sys_get_temp_dir() . '/bapx-public-knowledge-' . bin2hex(random_bytes(6));
 mkdir($root, 0700);
-$write = static function (string $slug,string $title,bool $published,string $date,string $category='help') use ($root): void {
+$write = static function (string $slug,string $title,bool $published,string $date,string $category='help',string $body='Public guidance.') use ($root): void {
     file_put_contents($root.'/'.$slug.'.md',
-        "---\ntitle: $title\npublished: ".($published?'true':'false')."\npublished_at: $date\ncategory: $category\nexcerpt: Safe ritual guide\n---\n\nPublic guidance.\n");
+        "---\ntitle: $title\npublished: ".($published?'true':'false')."\npublished_at: $date\ncategory: $category\nexcerpt: Safe ritual guide\n---\n\n$body\n");
 };
 try {
     $write('published-guide','Public Ritual Guide',true,'2026-01-01');
@@ -81,6 +81,8 @@ try {
         $settings->setValue(null, ['module_shop'=>'0', 'module_blog'=>'0',
             'admin_email'=>'private@example.invalid', 'admin_password'=>'PRIVATE_TEST_VALUE']);
         if ($service->products()['total'] !== 0 || $service->articles()['total'] !== 0
+            || ($service->articlesForAgent('ritual')['found'] ?? null) !== 0
+            || !isset($service->readArticleForAgent(['slug'=>'published-guide','query'=>'guidance'])['error'])
             || $service->contact() !== $contact || $service->services()['total'] !== 4
             || str_contains(json_encode([$service->contact(), $service->services()]), 'PRIVATE_TEST_VALUE')) {
             throw new RuntimeException('Module or private-settings isolation failed.');
@@ -136,6 +138,46 @@ try {
     if(($body['articles'][0]['text']??null)!=='Public guidance.' || ($body['articles'][0]['content_sha256']??null)!==hash('sha256','Public guidance.'))throw new RuntimeException('Published body retrieval failed.');
     foreach(['hidden-guide','future-guide','retired-guide','linked-guide','../private-instructions'] as $slug)
         if(!isset($service->readArticleForAgent(['slug'=>$slug])['error']))throw new RuntimeException('Private article selector accepted.');
+    $longBody = str_repeat('Opening background. ', 400) . "\n\n## Delivery receipt\n\n"
+        . str_repeat('Receipt background. ', 400) . "\n\nThe signature token is proofpetal.";
+    $write('delivery-receipt', 'Delivery basics', true, '2026-01-01', body: $longBody);
+    $write('hidden-receipt', 'Hidden delivery basics', false, '2026-01-01', body: $longBody);
+    $write('future-receipt', 'Future delivery basics', true, '2999-01-01', body: $longBody);
+    $aliases = $service->searchArticlesForAgent(['query'=>'the proofpetal']);
+    if (($aliases['found'] ?? null) !== 1 || array_column($aliases['articles'], 'path') !== ['/blog/delivery-receipt']
+        || $service->articles('proofpetal')['total'] !== 0) {
+        throw new RuntimeException('Native body-only article matching or publication boundary failed.');
+    }
+    $passage = $service->readArticleForAgent(['query'=>'proofpetal', 'slug'=>'delivery-receipt'])['articles'][0] ?? [];
+    if (($passage['heading'] ?? null) !== 'Delivery receipt' || ($passage['section_index'] ?? null) !== 2
+        || ($passage['truncated'] ?? null) !== true || !str_contains($passage['text'], 'proofpetal')
+        || mb_strlen($passage['text']) > 6000 || ($passage['content_sha256'] ?? null) !== hash('sha256', $passage['text'])
+        || ($passage['revision_sha256'] ?? null) !== hash_file('sha256', $root . '/delivery-receipt.md')) {
+        throw new RuntimeException('Passage selection failed to locate text beyond the opening and the first 6,000 characters of its section.');
+    }
+    if (($service->readArticleForAgent(['slug'=>'delivery-receipt','query'=>'unknownunique'])['found'] ?? null) !== 0
+        || !isset($service->readArticleForAgent(['slug'=>'hidden-receipt','query'=>'proofpetal'])['error'])
+        || !isset($service->readArticleForAgent(['slug'=>'future-receipt','query'=>'proofpetal'])['error'])) {
+        throw new RuntimeException('Keyword passage may not ignore no-match, draft or future states.');
+    }
+    foreach ([null, [], str_repeat('a', 121), "\xff"] as $invalidQuery) {
+        if (!isset($service->readArticleForAgent(['slug'=>'delivery-receipt','query'=>$invalidQuery])['error'])) {
+            throw new RuntimeException('Invalid passage query was accepted.');
+        }
+    }
+    $evidence = AgentTraceService::toolEvidence('read_published_article', ['query'=>'private@example.invalid'],
+        ['found'=>1,'articles'=>[$passage]]);
+    $safe = AgentTraceService::safeTool(['name'=>'read_published_article','status'=>'complete','evidence'=>$evidence]);
+    if (($safe['evidence']['sources'] ?? []) !== [[
+        'id'=>'article:delivery-receipt', 'last_updated'=>null, 'content_sha256'=>$passage['content_sha256'],
+        'revision_sha256'=>$passage['revision_sha256'], 'section_index'=>2,
+    ]]) {
+        throw new RuntimeException('Trace omitted the verified passage identity.');
+    }
+    $trace = json_encode($safe, JSON_THROW_ON_ERROR);
+    foreach (['proofpetal', 'private@example.invalid', 'Delivery receipt', 'Receipt background'] as $privateText) {
+        if (str_contains($trace, $privateText)) throw new RuntimeException('Raw passage content entered the trace.');
+    }
     $productPath = new ReflectionMethod(PublicKnowledgeService::class, 'productPath');
     foreach (['legacy item.v2'=>'/product/legacy%20item.v2', '珊瑚 pendant'=>'/product/%E7%8F%8A%E7%91%9A%20pendant',
         'தமிழ் pendant'=>'/product/%E0%AE%A4%E0%AE%AE%E0%AE%BF%E0%AE%B4%E0%AF%8D%20pendant',

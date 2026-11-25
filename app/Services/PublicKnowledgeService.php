@@ -10,6 +10,8 @@ namespace App\Services;
  */
 final class PublicKnowledgeService
 {
+    private const ARTICLE_PASSAGE_LIMIT = 6000;
+
     /** These are the existing public contact form topics, not bookable services. */
     private const CONTACT_SUBJECTS = [
         'product' => 'Product Inquiry',
@@ -384,15 +386,15 @@ final class PublicKnowledgeService
     /**
      * Public blogs include customer help guides only when BlogService marks them public.
      * Draft, future, disabled-module, retired and symlinked Markdown never escapes.
+     * Native agents can include body matches without changing public transport ranking.
      */
-    public function articles(string $query='', int $offset=0, int $limit=5): array
+    public function articles(string $query='', int $offset=0, int $limit=5, bool $includeBody=false): array
     {
         self::checkPage($query,$offset,$limit);
         if (!(new SettingsService())->modules(requireReadable:true)['blog']) {
             return ['articles'=>[], 'total'=>0, 'nextOffset'=>null];
         }
-        $words=preg_split('/[^\p{L}\p{N}]+/u',mb_strtolower(trim($query)),-1,PREG_SPLIT_NO_EMPTY)?:[];
-        $words=array_values(array_filter($words,static fn(string $w):bool=>mb_strlen($w)>=3));
+        $words = self::articleSearchWords($query, $includeBody);
         if(trim($query)!=='' && $words===[])return ['articles'=>[],'total'=>0,'nextOffset'=>null];
         $scored=[];
         foreach($this->articlesSource()->all(false) as $post){
@@ -401,10 +403,12 @@ final class PublicKnowledgeService
             if(!preg_match('/^[a-z0-9-]{1,120}$/D',$slug)||$title==='')continue;
             $summary=mb_strtolower((string)($post['excerpt']??$post['summary']??''));
             $lowerTitle=mb_strtolower($title);
+            $body = $includeBody && $words !== [] ? mb_strtolower(self::articleText($post['html'] ?? '')) : '';
             $score=$words===[]?1:0;
             foreach($words as $word){
-                if(mb_strpos($lowerTitle,$word)!==false)$score+=2;
-                if(mb_strpos($summary,$word)!==false)$score++;
+                if(mb_strpos($lowerTitle,$word)!==false)$score+=$includeBody ? 4 : 2;
+                if(mb_strpos($summary,$word)!==false)$score+=$includeBody ? 2 : 1;
+                if($includeBody && mb_strpos($body,$word)!==false)$score++;
             }
             if($score===0)continue;
             $scored[]=[
@@ -424,29 +428,108 @@ final class PublicKnowledgeService
     public static function agentArticleDeclaration(): array
     {
         return ['name'=>'search_articles',
-            'description'=>'Search published blog and customer help articles by keyword. Returns real titles and paths; never private documents or article bodies.',
+            'description'=>'Search titles, summaries and text of published blog and customer help articles. Use specific keywords. Returns real titles and paths, never private documents or article text.',
             'parameters'=>['type'=>'object','properties'=>['query'=>['type'=>'string','maxLength'=>120]],
                 'required'=>['query'],'additionalProperties'=>false]];
     }
 
     public static function agentReadArticleDeclaration(): array {
-        return ['name'=>'read_published_article','description'=>'Read a bounded text excerpt from an exact currently published blog/help article slug. Use after article discovery to answer content questions. No private files.',
-            'parameters'=>['type'=>'object','properties'=>['slug'=>['type'=>'string','pattern'=>'^[a-z0-9-]{1,120}$']],
-                'required'=>['slug'],'additionalProperties'=>false]];
+        return ['name'=>'read_published_article',
+            'description'=>'Read a bounded passage from an exact currently published blog or help article slug. Pass the topic keywords in query to find a relevant section beyond the opening. No private files.',
+            'parameters'=>['type'=>'object','properties'=>[
+                'slug'=>['type'=>'string','pattern'=>'^[a-z0-9-]{1,120}$'],
+                'query'=>['type'=>'string','maxLength'=>120],
+            ],'required'=>['slug'],'additionalProperties'=>false]];
     }
 
     public function readArticleForAgent(array $args): array {
-        if(array_keys($args)!==['slug']||!is_string($args['slug'])||!preg_match('/^[a-z0-9-]{1,120}$/D',$args['slug']))
+        if (!is_string($args['slug'] ?? null) || !preg_match('/^[a-z0-9-]{1,120}$/D', $args['slug'])) {
             return ['error'=>'Invalid article slug.'];
-        if(!(new SettingsService())->modules(requireReadable:true)['blog'])return ['error'=>'Public blog unavailable.'];
-        $source=$this->articlesSource();$post=$source->find($args['slug']);
-        if(!$source->isPublic($post))return ['error'=>'No published article found.'];
-        $body=trim(html_entity_decode(strip_tags((string)($post['html']??'')),ENT_QUOTES|ENT_HTML5,'UTF-8'));
-        if($body==='')return ['error'=>'Published article text unavailable.'];
-        $text=mb_substr($body,0,6000);
-        return ['found'=>1,'articles'=>[['title'=>self::plainText((string)($post['title']??''),160),
-            'path'=>'/blog/'.$args['slug'],'text'=>$text,'truncated'=>mb_strlen($body)>6000,
-            'content_sha256'=>hash('sha256',$text)]]];
+        }
+        $query = array_key_exists('query', $args) ? $args['query'] : '';
+        if (array_diff(array_keys($args), ['slug', 'query']) || !is_string($query)
+            || !mb_check_encoding($query, 'UTF-8') || mb_strlen($query) > 120) {
+            return ['error'=>'Invalid article query.'];
+        }
+        if (!(new SettingsService())->modules(requireReadable: true)['blog']) {
+            return ['error'=>'Public blog unavailable.'];
+        }
+        $source = $this->articlesSource();
+        $post = $source->find($args['slug']);
+        if (!$source->isPublic($post)) return ['error'=>'No published article found.'];
+
+        $html = (string)($post['html'] ?? '');
+        $body = self::articleText($html);
+        if ($body === '') return ['error'=>'Published article text unavailable.'];
+
+        $passage = trim($query) === ''
+            ? ['text'=>mb_substr($body, 0, self::ARTICLE_PASSAGE_LIMIT)]
+            : self::articlePassage($html, $query);
+        if ($passage === null) return ['found'=>0,'articles'=>[],'message'=>'No article passage matched these keywords.'];
+
+        return ['found'=>1,'articles'=>[[
+            'title'=>self::plainText((string)($post['title'] ?? ''), 160),
+            'path'=>'/blog/'.$args['slug'],
+            'truncated'=>mb_strlen($passage['text']) < mb_strlen($body),
+            'content_sha256'=>hash('sha256', $passage['text']),
+            'revision_sha256'=>$post['_revision'],
+        ] + $passage]];
+    }
+
+    private static function articleText(string $html): string {
+        return trim(html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+    }
+
+    private static function articleSearchWords(string $query, bool $includeBody): array {
+        $separator = $includeBody ? '/[^\p{L}\p{M}\p{N}]+/u' : '/[^\p{L}\p{N}]+/u';
+        $words = preg_split($separator, mb_strtolower(trim($query)), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $stopWords = ['about', 'and', 'for', 'from', 'the', 'this', 'what', 'when', 'where', 'which', 'with'];
+        return array_values(array_filter($words, static fn (string $word): bool =>
+            mb_strlen($word) >= 3 && (!$includeBody || !in_array($word, $stopWords, true))
+        ));
+    }
+
+    /** Scope by generated Markdown headings, then bound the excerpt around its match. */
+    private static function articlePassage(string $html, string $query): ?array {
+        $words = array_unique(self::articleSearchWords($query, true));
+        if ($words === []) return null;
+        $sections = preg_split('~(?=<h[1-6](?:\s|>))~i', $html, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $best = null;
+        $bestScore = 0;
+        foreach ($sections as $index => $section) {
+            $text = self::articleText($section);
+            $heading = preg_match('~^<h[1-6][^>]*>(.*?)</h[1-6]>~is', $section, $match)
+                ? mb_substr(self::articleText($match[1]), 0, 160) : '';
+            $matches = 0;
+            $headingMatches = 0;
+            $termLength = 0;
+            $termPosition = 0;
+            foreach ($words as $word) {
+                $position = mb_stripos($text, $word);
+                if ($position === false) continue;
+                $matches++;
+                if (mb_stripos($heading, $word) !== false) $headingMatches++;
+                if (mb_strlen($word) > $termLength) {
+                    $termLength = mb_strlen($word);
+                    $termPosition = $position;
+                }
+            }
+            if ($matches === 0) continue;
+            $phrasePosition = mb_stripos($text, trim($query));
+            $score = $matches * (count($words) + 2) + $headingMatches + (int)($phrasePosition !== false);
+            if ($score <= $bestScore) continue;
+            $bestScore = $score;
+
+            // A specific term is a better excerpt anchor than an earlier generic one.
+            $anchor = $phrasePosition === false ? $termPosition : $phrasePosition;
+            $start = max(0, min($anchor - 800, mb_strlen($text) - self::ARTICLE_PASSAGE_LIMIT));
+            $best = [
+                'text'=>trim(mb_substr($text, $start, self::ARTICLE_PASSAGE_LIMIT)),
+                'section_index'=>$index + 1,
+            ];
+            if ($heading !== '') $best['heading'] = $heading;
+        }
+        return $best;
     }
 
     public function searchArticlesForAgent(array $args): array
@@ -461,11 +544,10 @@ final class PublicKnowledgeService
     public function articlesForAgent(string $query): array
     {
         if(trim($query)==='')return ['error'=>'Give something to search for.'];
-        $words=preg_split('/[^\p{L}\p{N}]+/u',mb_strtolower($query),-1,PREG_SPLIT_NO_EMPTY)?:[];
-        if(!array_filter($words,static fn(string $w):bool=>mb_strlen($w)>=3)){
+        if (self::articleSearchWords($query, true) === []) {
             return ['found'=>0,'message'=>'Nothing specific enough to search for.'];
         }
-        $result=$this->articles(mb_substr($query,0,120));
+        $result = $this->articles(mb_substr($query, 0, 120), includeBody: true);
         if(!$result['articles'])return ['found'=>0,'message'=>'No published article matched.'];
         return ['found'=>$result['total'],'articles'=>$result['articles']];
     }

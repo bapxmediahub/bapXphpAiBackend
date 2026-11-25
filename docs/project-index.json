@@ -2511,7 +2511,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/PublicKnowledgeService.php",
-            "line": 41
+            "line": 43
         },
         {
             "from": "service:PublicKnowledgeService",
@@ -2519,7 +2519,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/PublicKnowledgeService.php",
-            "line": 36
+            "line": 38
         },
         {
             "from": "service:PublicKnowledgeService",
@@ -2527,7 +2527,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/PublicKnowledgeService.php",
-            "line": 341
+            "line": 343
         },
         {
             "from": "service:PublicKnowledgeService",
@@ -2535,7 +2535,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/PublicKnowledgeService.php",
-            "line": 266
+            "line": 268
         },
         {
             "from": "service:PublicKnowledgeService",
@@ -2543,7 +2543,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/PublicKnowledgeService.php",
-            "line": 206
+            "line": 208
         },
         {
             "from": "service:PublicMcpService",
