@@ -44,7 +44,8 @@ for(const width of [1280,375]) test('owner OpenRouter toggle and masked save at 
             }
             if(url.pathname==='/admin/integrations/save'){
                 const params=new URLSearchParams(req.postData());
-                submissions.push({aiOnly:params.get('save_ai_only'),smtpHost:params.get('smtp_host')});
+                submissions.push({aiOnly:params.get('save_ai_only'),smtpHost:params.get('smtp_host'),
+                    tokenField:params.get('ai_compatible_token_field')});
                 sent.push({
                     enabled:params.getAll('ai_openrouter_enabled').at(-1), // PHP uses the last value after the hidden off sentinel
                     keyMatches:params.get('ai_openrouter_key')===fakeKey,
@@ -91,9 +92,12 @@ for(const width of [1280,375]) test('owner OpenRouter toggle and masked save at 
         assert.equal(sent[1].csrf,true);
         await page.getByLabel('SMTP Host',{exact:true}).fill('smtp.fixture.example');
         await page.getByLabel('SMTP Host',{exact:true}).press('Enter');
-        assert.deepEqual(submissions[2],{aiOnly:null,smtpHost:'smtp.fixture.example'},'Implicit keyboard submit must save the full integration form.');
+        assert.deepEqual(submissions[2],{aiOnly:null,smtpHost:'smtp.fixture.example',tokenField:'auto'},
+            'Implicit keyboard submit must save the full integration form with automatic token field selection.');
+        await page.getByLabel('Chat Completions token limit field').selectOption('max_completion_tokens');
         await page.getByRole('button',{name:'Save AI Provider Settings'}).click();
         assert.equal(submissions[3].aiOnly,'1','Explicit AI-only action retains its scoped submission.');
+        assert.equal(submissions[3].tokenField,'max_completion_tokens','The custom token field is included in the AI-only save.');
         const overflow=await page.evaluate(()=>({
             viewport:innerWidth,
             width:document.documentElement.scrollWidth,

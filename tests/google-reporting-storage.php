@@ -61,6 +61,14 @@ checkReporting(($secrets->getModelConfig()['provider']??'')==='google'
     && ($secrets->all()['ai_openrouter_key']??'')===$routerFixture,
     'Disabling OpenRouter must keep the encrypted key and restore Google.');
 
+$secrets->save(['ai_compatible_token_field'=>'max_completion_tokens']);
+checkReporting($secrets->all()['ai_compatible_token_field']==='max_completion_tokens',
+    'The Chat Completions token field must survive reloading settings.');
+$rejected=false;
+try {$secrets->save(['ai_compatible_token_field'=>'messages']);} catch (InvalidArgumentException) {$rejected=true;}
+checkReporting($rejected && $secrets->all()['ai_compatible_token_field']==='max_completion_tokens',
+    'An invalid request field must not overwrite the saved token field.');
+
 checkReporting(!isset($secrets->all()['refresh_token']), 'Integration form copied a refresh token.');
 checkReporting(!str_contains(json_encode($db->read('secrets')), 'private-fixture-refresh'), 'Token appeared in plaintext storage.');
 $firstTab = $secondTab = ['generation'=>$old['generation'], 'revision'=>$old['revision']];
