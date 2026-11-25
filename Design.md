@@ -337,3 +337,10 @@ Use shared semantic color roles and typography, natural document scrolling,
 one primary heading, real image dimensions, and a single-column phone layout.
 All content and navigation work without JavaScript. Never borrow competitor
 claims, images or unverifiable milestones.
+
+
+Authoring shows the booking amount only while **Enable payment** is checked.
+The authored page uses the existing enquiry card geometry for the independent
+booking action. The booking status page uses the same card treatment and places
+the next action directly below the amount or payment state. File links appear
+on the confirmed receipt and retain 44px targets on mobile.

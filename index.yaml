@@ -46,18 +46,18 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 506
-  relationships: 461
+  concepts: 513
+  relationships: 478
   by_type:
     blog: 16
-    controller: 18
+    controller: 19
     doc: 55
     image: 89
     operator_guide: 12
-    route: 184
+    route: 187
     runtime_instruction: 6
-    schema: 24
-    service: 90
+    schema: 25
+    service: 92
     skill: 12
 concepts:
   - id: "blog:benefits-of-rudraksha"
@@ -273,6 +273,14 @@ concepts:
     title: "BlogController"
     description: "Controller: BlogController"
     resource: "app/Controllers/BlogController.php"
+    tags:
+      - "code"
+      - "controller"
+  - id: "controller:CampaignBookingController"
+    type: "controller"
+    title: "CampaignBookingController"
+    description: "Controller: CampaignBookingController"
+    resource: "app/Controllers/CampaignBookingController.php"
     tags:
       - "code"
       - "controller"
@@ -3666,7 +3674,42 @@ concepts:
       - "MarkdownRenderer"
       - "CampaignLeadService"
       - "CampaignDownloadService"
+      - "CampaignPaymentService"
     view: "public/authored-page"
+    response: null
+    provenance: "route_registry"
+  - id: "route:get__pages__slug__booking__id"
+    type: "route"
+    title: "GET /pages/{slug}/booking/{id}"
+    description: "pages.booking.status"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "GET"
+    path: "/pages/{slug}/booking/{id}"
+    controller: "CampaignBookingController@status"
+    services:
+      - "CampaignPaymentService"
+      - "RazorpayPaymentLinkService"
+    view: "public/campaign-booking"
+    response: null
+    provenance: "route_registry"
+  - id: "route:get__pages__slug__booking__id__downloads__file"
+    type: "route"
+    title: "GET /pages/{slug}/booking/{id}/downloads/{file}"
+    description: "pages.booking.download"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "GET"
+    path: "/pages/{slug}/booking/{id}/downloads/{file}"
+    controller: "CampaignBookingController@download"
+    services:
+      - "CampaignPaymentService"
+      - "CampaignDownloadService"
+    view: "public/campaign-booking"
     response: null
     provenance: "route_registry"
   - id: "route:get__pages__slug__downloads__revision___id"
@@ -4961,6 +5004,8 @@ concepts:
     controller: "RemoteCheckoutController@webhook"
     services:
       - "RemoteCheckoutService"
+      - "CampaignPaymentService"
+      - "RazorpayPaymentLinkService"
       - "PaymentService"
       - "VerifiedOrderService"
       - "DatabaseService"
@@ -5136,6 +5181,25 @@ concepts:
     services:
       - "DatabaseService"
     view: "public/login"
+    response: null
+    provenance: "route_registry"
+  - id: "route:post__pages__slug__booking"
+    type: "route"
+    title: "POST /pages/{slug}/booking"
+    description: "pages.booking.start"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "POST"
+    path: "/pages/{slug}/booking"
+    controller: "CampaignBookingController@start"
+    services:
+      - "CampaignPaymentService"
+      - "AuthoredPageService"
+      - "DatabaseService"
+      - "RateLimiter"
+    view: "public/campaign-booking"
     response: null
     provenance: "route_registry"
   - id: "route:post__pages__slug__enquiry"
@@ -5416,6 +5480,16 @@ concepts:
       - "schema"
     data_source: "DatabaseService (direct or configured remote transport)"
     collection: "audit_events"
+    schema_file: "storage/schema/collections.php"
+  - id: "schema:campaign_bookings"
+    type: "schema"
+    title: "campaign_bookings"
+    description: "Schema collection: campaign_bookings"
+    resource: "storage/schema/collections.php"
+    tags:
+      - "schema"
+    data_source: "DatabaseService (direct or configured remote transport)"
+    collection: "campaign_bookings"
     schema_file: "storage/schema/collections.php"
   - id: "schema:categories"
     type: "schema"
@@ -5831,6 +5905,14 @@ concepts:
     tags:
       - "code"
       - "service"
+  - id: "service:CampaignPaymentService"
+    type: "service"
+    title: "CampaignPaymentService"
+    description: "Service: CampaignPaymentService"
+    resource: "app/Services/CampaignPaymentService.php"
+    tags:
+      - "code"
+      - "service"
   - id: "service:CartService"
     type: "service"
     title: "CartService"
@@ -6100,6 +6182,14 @@ concepts:
     title: "RateLimiter"
     description: "Service: RateLimiter"
     resource: "app/Services/RateLimiter.php"
+    tags:
+      - "code"
+      - "service"
+  - id: "service:RazorpayPaymentLinkService"
+    type: "service"
+    title: "RazorpayPaymentLinkService"
+    description: "Service: RazorpayPaymentLinkService"
+    resource: "app/Services/RazorpayPaymentLinkService.php"
     tags:
       - "code"
       - "service"
@@ -6667,6 +6757,24 @@ relationships:
   - from: "controller:BlogController"
     to: "service:MarkdownRenderer"
     relation: "declared_service"
+  - from: "controller:CampaignBookingController"
+    to: "service:AuthoredPageService"
+    relation: "declared_service"
+  - from: "controller:CampaignBookingController"
+    to: "service:CampaignDownloadService"
+    relation: "declared_service"
+  - from: "controller:CampaignBookingController"
+    to: "service:CampaignPaymentService"
+    relation: "declared_service"
+  - from: "controller:CampaignBookingController"
+    to: "service:DatabaseService"
+    relation: "declared_service"
+  - from: "controller:CampaignBookingController"
+    to: "service:RateLimiter"
+    relation: "declared_service"
+  - from: "controller:CampaignBookingController"
+    to: "service:RazorpayPaymentLinkService"
+    relation: "declared_service"
   - from: "controller:CommerceController"
     to: "service:CartService"
     relation: "declared_service"
@@ -6737,6 +6845,9 @@ relationships:
     to: "service:CampaignLeadService"
     relation: "declared_service"
   - from: "controller:PublicController"
+    to: "service:CampaignPaymentService"
+    relation: "declared_service"
+  - from: "controller:PublicController"
     to: "service:CartService"
     relation: "declared_service"
   - from: "controller:PublicController"
@@ -6797,10 +6908,16 @@ relationships:
     to: "service:VerifiedOrderService"
     relation: "declared_service"
   - from: "controller:RemoteCheckoutController"
+    to: "service:CampaignPaymentService"
+    relation: "declared_service"
+  - from: "controller:RemoteCheckoutController"
     to: "service:DatabaseService"
     relation: "declared_service"
   - from: "controller:RemoteCheckoutController"
     to: "service:PaymentService"
+    relation: "declared_service"
+  - from: "controller:RemoteCheckoutController"
+    to: "service:RazorpayPaymentLinkService"
     relation: "declared_service"
   - from: "controller:RemoteCheckoutController"
     to: "service:RemoteCheckoutService"
@@ -6935,6 +7052,9 @@ relationships:
     to: "service:AdminHelpService"
     relation: "rendered_by"
   - from: "operator_guide:blog-publishing"
+    to: "controller:CampaignBookingController"
+    relation: "explains"
+  - from: "operator_guide:blog-publishing"
     to: "service:AuthoredPageService"
     relation: "explains"
   - from: "operator_guide:blog-publishing"
@@ -6948,6 +7068,9 @@ relationships:
     relation: "explains"
   - from: "operator_guide:blog-publishing"
     to: "service:CampaignLeadService"
+    relation: "explains"
+  - from: "operator_guide:blog-publishing"
+    to: "service:CampaignPaymentService"
     relation: "explains"
   - from: "operator_guide:blog-publishing"
     to: "service:AdminHelpService"
@@ -7357,6 +7480,12 @@ relationships:
   - from: "route:get__pages__slug"
     to: "controller:PublicController"
     relation: "handled_by"
+  - from: "route:get__pages__slug__booking__id"
+    to: "controller:CampaignBookingController"
+    relation: "handled_by"
+  - from: "route:get__pages__slug__booking__id__downloads__file"
+    to: "controller:CampaignBookingController"
+    relation: "handled_by"
   - from: "route:get__pages__slug__downloads__revision___id"
     to: "controller:PublicController"
     relation: "handled_by"
@@ -7603,6 +7732,9 @@ relationships:
   - from: "route:post__login"
     to: "controller:AuthController"
     relation: "handled_by"
+  - from: "route:post__pages__slug__booking"
+    to: "controller:CampaignBookingController"
+    relation: "handled_by"
   - from: "route:post__pages__slug__enquiry"
     to: "controller:PublicController"
     relation: "handled_by"
@@ -7657,6 +7789,12 @@ relationships:
   - from: "service:AuthoredPageService"
     to: "schema:settings"
     relation: "collection_reference"
+  - from: "service:CampaignPaymentService"
+    to: "schema:campaign_bookings"
+    relation: "collection_reference"
+  - from: "service:CampaignPaymentService"
+    to: "schema:settings"
+    relation: "collection_reference"
   - from: "service:CategoryService"
     to: "schema:categories"
     relation: "collection_reference"
@@ -7689,6 +7827,9 @@ relationships:
     relation: "collection_reference"
   - from: "service:DatabaseService"
     to: "schema:appointments"
+    relation: "collection_reference"
+  - from: "service:DatabaseService"
+    to: "schema:campaign_bookings"
     relation: "collection_reference"
   - from: "service:DatabaseService"
     to: "schema:checkout_attempts"

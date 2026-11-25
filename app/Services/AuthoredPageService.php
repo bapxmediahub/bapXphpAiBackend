@@ -34,6 +34,7 @@ final class AuthoredPageService
         if (isset($input['campaign_downloads'])) {
             $record['campaign_downloads'] = CampaignDownloadService::definition($input['campaign_downloads']);
         }
+        if (isset($input['campaign_payment'])) $record['campaign_payment'] = CampaignPaymentService::definition($input['campaign_payment']);
         $url = $input['header_image_url'] ?? '';
         if ($url === '') return $record;
         if (!MediaService::isPageHeaderPath($url)) {

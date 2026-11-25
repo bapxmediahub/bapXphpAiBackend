@@ -20,6 +20,9 @@ description: Use when editing owner/admin pages, CRUD forms, media library, envi
 - Attach authored-page downloads through the same revisioned editor. Show the
   combined byte limit, retained order, removals and upload recovery. Preview
   lists file descriptions as text and asks the owner to reselect new uploads.
+- In Pages, confirm **Enable payment** reveals the INR amount with the keyboard
+  and with scripts disabled. Preview the approved amount with booking disabled,
+  then verify that reopening the saved page restores the explicit payment state.
 - Use schema-driven resource fields and the media library for product, temple, blog, and authored-page media.
 - Authored-page headers use a native selection of uploaded library images. Reuse the owner Media Library upload and render Preview through the public PHP template. Verify clear, draft recovery, stale revision and accurate text/image rendering at 1280px and 375px. Page publication still requires Save page.
 - Astrologer profile management and portraits are retired in admin as well as publicly. Do not restore their navigation, upload category, or bundled assets. Existing historical session and financial records remain owner-accessible; they do not authorize reintroducing profile management.

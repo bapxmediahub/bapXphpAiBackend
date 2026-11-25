@@ -4,83 +4,83 @@
     "reviews": {
         "agents": {
             "source_sha256": "be4f539aad8155de1f1bf79a8f62235178cf989967067d9f0a389fe9f21a2855",
-            "references_sha256": "12a5cec46670b085c1ae4e8cb42e86db66a149c402aad59025339bb7c19ef7d5",
-            "review_note": "Reviewed both native registries, published-data gates, and passage evidence allowlists on the merged tree. Both agents share optional topic selection and sanitized digests, and the Chat Completions tool correlation and refusal handling remain intact. Rechecked the Luna-aware HTTP path and both role fixtures on this merge. Verified the merged short-hold readiness path, including original-model continuation and the existing correlation/reference behavior. Cross-checked the latest Monitoring split and the unchanged separation of publication evidence from storefront analytics."
+            "references_sha256": "83f6f759f937c3b3d71b38628781bb1e36f615f931cc1e08a945799cb6d4aea0",
+            "review_note": "Reviewed the published article body search and passage selectors, exact slug and Blog module checks, and trace allowlist for excerpt and revision hashes and numeric section index."
         },
         "auth": {
             "source_sha256": "c34a5b34bc904f36cda184c26113f91e2cf36afa2b506217d1f74e22e9e0cefd",
-            "references_sha256": "a4253536bffaadd6f7dc7d3b3f0470ec88aa839175c8e1068b4f9948f3a5528c",
-            "review_note": "Compared the backend skill update with auth boundaries. Shared public article policy controls publication access, and the Enterprise tool registry retains its owner requirement and existing account identity checks. Cross-checked the merged sign-in response and existing login notice behavior against stored agent evidence and published article scope."
+            "references_sha256": "41e3a8b4e89cfa4973dfc3e206cc95ca04c80e1bbf5f35cf50ec021985c3f2e9",
+            "review_note": "Checked published article module gates and booking session ownership against authenticated controller boundaries and backend skill guidance."
         },
         "commerce": {
-            "source_sha256": "4d8f53718f4495182ccef03d41eacb3da729dbe5ff1b5db5b54cbfd88957749e",
-            "references_sha256": "05011a59331f5e796c642611b0028ea8e40f2e5a5c1c3ec1c083d4f5cfb5b728",
-            "review_note": "Compared the shared backend skill update with catalogue and order boundaries. The modified native article routines operate on published Markdown, and product lookup, pricing, and order paths retain their existing contracts."
+            "source_sha256": "c53c5c291d70428a6219887de1da8c789c7fc0f23afb3b909b75ac55f034306a",
+            "references_sha256": "421bcfc4ff33f095ff53a86a5929968f7274b0d7b754713a0d0a75cbe1ac2aa5",
+            "review_note": "Verified campaign booking capture and independent shop order handling against the backend skill and confirmed that article passage routing changes neither boundary."
         },
         "content": {
-            "source_sha256": "375b2bd190de1a6c8179aa3c70e0c4be53776afa38847d2e859be67e4b8ec110",
-            "references_sha256": "c3820f39cbab95b275a05d3d7a2771a6738a73c369be9dfac7470c1adf9fcb2b",
-            "review_note": "Verified the blog guide against published Markdown fixtures for inline text, heading/list/table/blockquote/figure boundaries, and literal fenced YAML indentation. Checked the merged authored-page media workflow and preserved existing publication and owner access boundaries. Reviewed the merged campaign enquiry and owner Inbox guidance. Business article and report evidence remain scoped to their agent tools. Reviewed published blog evidence and the separately scoped authored-page download and storage guides in the merged tree."
+            "source_sha256": "0cf3fdbab8334c87c055ab44c9d531774c37c03a6a52dc5d0ca7db013969f1a7",
+            "references_sha256": "5c5617c1fa58e9ea64dfdac3d464a30fe2b7c64b816ff2f13487140054e80c8b",
+            "review_note": "Checked the combined authored-campaign publication and exact article passage guides against their distinct PHP page and published blog sources."
         },
         "foundation": {
-            "source_sha256": "d9aba6a0a76ab803f2c8daf97b2ba489fce2a8b430887163cd5476012a3e883a",
-            "references_sha256": "45a16316ed41ff42fbde160fce980c3da5c6f1f4c6c430b619d0f8153f3906f2",
-            "review_note": "Reviewed plain rendered passage text and HTML removal. Preserving code indentation does not alter published-source guards, private chat storage or the allowlisted evidence projection. Published Markdown recovery now preserves leading YAML indentation and trailing scalar line breaks through the complete read path. Reviewed published blog evidence and the separately scoped authored-page download and storage guides in the merged tree."
+            "source_sha256": "32bf3fea5ff990aac09fcf3dcd7d4a506f1fbd3066e9cd06cae51f84151965a3",
+            "references_sha256": "10526d45bf18808c6f376466236ea95a9b9194646d7a0b913dacaaf59578cb1f",
+            "review_note": "Cross-reviewed the schema and deployment instructions for campaign payments and the bounded article source identifiers and content. The hosted booking and private trace records keep their separate stores."
         },
         "google-tags": {
             "source_sha256": "366fdab983979cc3a1fec22fb6da4afb61072d6fd24cd0ba2271d67a0c063019",
-            "references_sha256": "4f45021d1a3d34906fd47b1d74a23b9efde06284298f50fa6b7edc2975e15239",
-            "review_note": "Compared the updated integration and provider examples with the Google reporting and analytics contracts, and cross-reviewed native download links against the frontend skill."
+            "references_sha256": "655070d558837a1d942929e6860428b9d822cb9b89e2d0d95344fdfe5d88b87d",
+            "review_note": "Rechecked the current Site analytics, Google reporting and integration routes inherited from the merged base. Campaign booking changes add no tag or reporting behavior."
         },
         "http-errors": {
             "source_sha256": "0f920c297cfc4e216a87be02a35c20827cc254dd6934ba24a1fa9135520a0560",
-            "references_sha256": "9f6581248d417b17877bd697f7789c57e3a4fd0664f25388925a86264564f416",
-            "review_note": "Compared the backend skill addition with the existing request failure boundary. Article lookup reports unavailable or no matching published content through its tool result while the request failure handler keeps its existing responsibility."
+            "references_sha256": "bb1efdf69eefdabbb242f58bda9aeaba721f2ba0e018a16bb1cb9615159af3a8",
+            "review_note": "Reviewed booking failure handling and article result errors against the existing private response and no-partial-output boundaries."
         },
         "interface": {
-            "source_sha256": "ea5a8fecc5689f03bbe430db89e242f12f7d947ac3abb85ee47d240fef0e8ae4",
-            "references_sha256": "af5ab7f563f3179499adfc25b9b432edf03dcd73106769341fa96156ef02694b",
-            "review_note": "Checked the merged campaign reading column, native feedback and 44px underlined download links with editor selection, preview, lock and mobile design contracts."
+            "source_sha256": "82b14d7ac04642c59d3078ae1c355cee4aa65d582a36ae6dff4fec93456f3f36",
+            "references_sha256": "404619f91aeea891998b9c1cb6ef921514f8dd59adb0ae4f24a58e03fdcade70",
+            "review_note": "Reviewed the independent amount toggle, disabled preview, keyboard booking review, and private pending and captured cards against Design and the browser fixtures."
         },
         "mail": {
-            "source_sha256": "72b1c4a0ac6e5d88b2edb4e8190bbc9bb8271e1c9b25880f6d4ea068b2f82b56",
-            "references_sha256": "6002b3512786bb94bec7e431e39b8b3efb8d4b24d72713dc66c351ec403d5c43",
-            "review_note": "Compared the backend skill addition with mail and support boundaries. Published article retrieval uses BlogService and records public source evidence without entering the mail queue or SMTP flow. Reviewed the merged campaign enquiry and owner Inbox guidance. Business article and report evidence remain scoped to their agent tools. Cross-checked the merged sign-in response and existing login notice behavior against stored agent evidence and published article scope."
+            "source_sha256": "50f211eb00addc6fe811c0dfb270f1be9d2d28b2fd0a8e66d321ae83b2d28aec",
+            "references_sha256": "fff258ed8121b5ab72cd0adf60dcdcd8d1a414afc1e94332c6498de85371b0da",
+            "review_note": "Checked the published article gates and booking records against existing mail flow guidance. Article discovery and payment setup do not enqueue publication or payment messages."
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
-            "references_sha256": "73c4e7ed550ac139d52f0e560ab34a74738e8f4aa2ae6fc87c9e635c9dcd4d43",
-            "review_note": "Checked the merged Integrations guide against the local MCP client controller and form. The owner issues and revokes a paid-sales grant, and the trusted STDIO client receives it through its process environment."
+            "references_sha256": "ac1bc03220b226d653c8a317355e57292d38c7d8f2320162ad1405d16a3a7bb8",
+            "review_note": "Reviewed local CLI and remote client guidance. Adding the isolated public search fixture to the CI command keeps existing client setup and capability contracts intact."
         },
         "media": {
             "source_sha256": "edc32a5a9f73cf7f2954eac135a2eaed1394089034bac24ea835af48c4d9600e",
-            "references_sha256": "1011ad8c368684766c4694dbc430e61737314b7c0bba1e97f1776fd509dad7f5",
-            "review_note": "Reviewed the independent private download storage against the existing owner Media Library, header image and deletion documentation. Download files keep their own private root."
+            "references_sha256": "bb02d897e7b68e33511130766ce52a09d9b74f352c9c52e43c45706712515ef8",
+            "review_note": "Checked retained campaign file descriptors and protected streaming against Media Library behavior. Booking authorization is scoped to the frozen private manifest."
         },
         "operator-help": {
-            "source_sha256": "84fcab2201a1fd0e0c68b0bd55e3bbdd7cf7fcde362d04d865064f17ee2a670e",
-            "references_sha256": "f5c667e8fdb836b615fc47f2c1e84fe62d463ccf085757a8f354a0542de7d2c7",
-            "review_note": "Compared the enterprise-agent guide dependencies and published support guide. Passage evidence adds hashes and a section index to the existing authorized review context. Operator Help remains behind the owner gate. Checked the merged authored-page media workflow and preserved existing publication and owner access boundaries. Reviewed the merged campaign enquiry and owner Inbox guidance. Business article and report evidence remain scoped to their agent tools. Reviewed published blog evidence and the separately scoped authored-page download and storage guides in the merged tree. Cross-checked the merged sign-in response and existing login notice behavior against stored agent evidence and published article scope."
+            "source_sha256": "809a9715f83d4305aa209d264ebe03fffeff1b8497b9d6f1555db85e30ae7d30",
+            "references_sha256": "d7972865c18db0e7cab36b4fdf0cf22cf388c8fbde7bd5ae088de971afd212fe",
+            "review_note": "Reviewed the private booking help dependencies and public article gateways together. The PHP agent source remains limited to published customer articles."
         },
         "public-mcp": {
-            "source_sha256": "4281b40017e338bb529daa24d33a9303254ec3a153276a8873f2b93141c41bfe",
-            "references_sha256": "57cf6bf4829a14085cb408ffa954f0f333e78f84ee147b0f7afab31419f39ad6",
-            "review_note": "Rechecked unchanged public and STDIO projection alongside native article text. Native passages preserve visible block boundaries and preformatted code indentation without changing public queries. Bounded keyword excerpts preserve literal whitespace at either edge of preformatted Markdown code."
+            "source_sha256": "eefb05e4a3d5c53a5201c3a44e5159423612a4d1d3ff49c92572dd520693eec5",
+            "references_sha256": "d06c98bd47f7604ad0a0529c3673bc10c92cbb8608c2027af4a5df5d379fcb67",
+            "review_note": "Confirmed the published knowledge adapter retains its bounded metadata response while agent-only reads return article passages through their fixed tool declaration."
         },
         "remote-commerce": {
-            "source_sha256": "e1002a568f4707c36a240b3d2297e7fe44f4dc047266ed569fc1b51ab6446364",
-            "references_sha256": "744c5a20a1917494b4fd5858f0a60c29fe8400bad4c28ff89c1b50d2694983b7",
-            "review_note": "Cross-checked the shared backend skill and the retrieved article projection. Article digests are confined to article tools and traces, and the branch adds no cart, payment, or checkout calls."
+            "source_sha256": "16cdd579f0b1b79b1bdc841eefa697e7cb43663f2ef73407245dcfb268c26e77",
+            "references_sha256": "d9dc45bfd7e9d83ecc307e6bcb7f3b43eb6c825940a8b2f6fcf8dc5add63448d",
+            "review_note": "Checked that link creation and verified captured payments retain their existing routes, provider references and booking state recovery after combining the backend guidance."
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",
-            "references_sha256": "ed194e15ddaa5ac6ee1118994fceeb94723165cedba02bc92ad745a196a18fd1",
-            "review_note": "Compared the MediaService additions with the Merchant Feed and product image inspection contracts. Header choices are filtered only for the owner authored editor, and catalogue image eligibility and feed URLs retain their existing resolution."
+            "references_sha256": "584b563cb628dce2573081ef1aaf46071bd9815c6bc37e1c4bc18b295a9daa39",
+            "review_note": "Compared the CLI skill change with the Google sales-channel test and API requirements. The extra fixture covers local storefront search parity and calls no vendor service."
         },
         "workflow": {
-            "source_sha256": "bf14331319051d4bec4b9e6c844c22e0628835703174c9bbf88be3eb813b939d",
-            "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Reviewed the PHP backend skill and test changes against documented release steps. The merged guide retains private test credential handling and the distinction between local regression checks and deployed agent acceptance. Checked the merged authored-page media workflow and preserved existing publication and owner access boundaries. Reviewed the merged campaign enquiry and owner Inbox guidance. Business article and report evidence remain scoped to their agent tools. Reviewed published blog evidence and the separately scoped authored-page download and storage guides in the merged tree."
+            "source_sha256": "65e407f0a27b0d157cdef3ef1998c9bdb6cd96a736e980ed80f317ce0fc26290",
+            "references_sha256": "c11003880ee0b940715945afbc145188e466086d8e2a3e4aeace1e9dbe10780b",
+            "review_note": "Reviewed the reconciled backend skill and existing CI and generated inventory documentation. Both deposits of source changes keep their original tracked tests."
         }
     }
 }

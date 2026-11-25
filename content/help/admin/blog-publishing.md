@@ -71,3 +71,13 @@ visitor sees a receipt on the page.
 
 To remove the page and its text permanently, open **Delete page**, tick the
 confirmation and choose **Delete this page**.
+
+In **Pages**, turn on **Enable payment** and enter the booking amount in INR.
+The preview shows the amount. Save the page to make it available to visitors.
+Booking works with or without enquiries. If downloads are also enabled,
+visitors retrieve the purchased file versions from their confirmed booking.
+
+Set up Razorpay API credentials and the webhook secret for the selected payment
+mode in **Integrations**. Walk through a booking in test mode before accepting
+payments. The booking reference appears on the visitor's status page when
+Razorpay confirms capture.
