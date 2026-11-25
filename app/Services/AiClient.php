@@ -530,6 +530,12 @@ final class AiClient
                 $advertised=array_map(static fn(array $declaration):string=>$declaration['function']['name'],$declarations);
                 $payload = ['model' => $model, 'messages' => $messages];
                 $payload[$tokenField] = $maxTokens;
+                // Luna tool calling on Chat Completions requires reasoning_effort=none.
+                // https://developers.openai.com/api/docs/models/gpt-6-luna
+                if ($officialOpenAi && $tools !== null
+                    && preg_match('/^gpt-6-luna(?:-\d{4}-\d{2}-\d{2})?$/D', $model) === 1) {
+                    $payload['reasoning_effort'] = 'none';
+                }
                 if ($declarations !== []) {
                     $payload['tools'] = $declarations;
                     $payload['tool_choice'] = $round < $maxRounds ? 'auto' : 'none';
@@ -543,15 +549,25 @@ final class AiClient
                     if ($hasModelAlternate && $this->waitForFailover($status, $deadline, $index)) break;
                     return $this->failureMessage($status, $body);
                 }
-                $choice=json_decode($body,true)['choices'][0]??[];
-                $message=$choice['message']??[];
-                $calls=$message['tool_calls']??[];
+                $choices = json_decode($body)->choices ?? null;
+                $choice = is_array($choices) ? ($choices[0] ?? null) : null;
+                $message = $choice->message ?? null;
+                $wireCalls = $message->tool_calls ?? [];
                 // Only a completed assistant turn can produce an answer or dispatch tools.
-                $expectedFinish = $calls === [] ? 'stop' : 'tool_calls';
-                if (!is_array($choice) || !is_array($message) || ($message['role'] ?? null) !== 'assistant'
-                    || !is_array($calls) || !array_is_list($calls) || ($choice['finish_reason'] ?? null) !== $expectedFinish) {
+                $expectedFinish = $wireCalls === [] ? 'stop' : 'tool_calls';
+                if (!($message instanceof \stdClass) || ($message->role ?? null) !== 'assistant'
+                    || !is_array($wireCalls) || ($choice->finish_reason ?? null) !== $expectedFinish) {
                     return $this->incompleteResponse();
                 }
+                $calls = array_map(static fn(mixed $call): array => [
+                    'id' => $call->id ?? null,
+                    'type' => $call->type ?? null,
+                    'function' => [
+                        'name' => $call->function->name ?? null,
+                        'arguments' => $call->function->arguments ?? null,
+                    ],
+                ], $wireCalls);
+                $message = get_object_vars($message);
                 if($calls!==[]&&($tools===null||$round===$maxRounds))return $this->incompleteResponse();
                 if ($calls === []) {
                     $refusal = $message['refusal'] ?? null;

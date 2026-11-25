@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "f2753a74b64693b5337672dc4fadc3fa99f19e9ab081e27d53887f3483ed752e",
+            "source_sha256": "466706c116ed40e7c762efb343d7ce2ac8bfb15bee7de64f02980ff769f5257a",
             "references_sha256": "c7fe91e79969f37bbde7042b03e330052b9edce97cab50af334fc15295f2f1db",
-            "review_note": "Verified typed report completion evidence and prior receipt behavior with the merged Chat Completions transport. Runtime provider behavior and reported tool evidence remain separate."
+            "review_note": "Compared the version 3 report observation and version 2 receipt retention against conversation storage and the observability guide. Checked Luna tool calls against the documented reasoning setting and the Chat Completions JSON list boundary against the loopback cases."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -29,8 +29,8 @@
         },
         "google-tags": {
             "source_sha256": "a02edc85b6bd4cc5f95748217edaf7ea3fae53a6d67edd0098c99848290122d8",
-            "references_sha256": "a75991231da6a13cfb14b382b45cc7b414c9c24b7b77e5a7c39b3179517af0fe",
-            "review_note": "Checked the Integrations change within its AI fieldset and verified the Google tags and OAuth configuration continue to use their existing independent fields."
+            "references_sha256": "d4b4260ffa9152b4e1ce2693cab26a998376cf85e6265c906727a56d7148e3c7",
+            "review_note": "Checked the shared Integrations reference. The Luna example applies exclusively to Chat Completions and the Google tags and OAuth guidance remains accurate."
         },
         "http-errors": {
             "source_sha256": "63602cadbe59868b0d25a1b00729a589e75d1b31c6ea3a1b25c1e5a46fd06d50",
@@ -49,8 +49,8 @@
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
-            "references_sha256": "85b869a493003e809468f64813cc5a78b0d0532793151a999375e457417ac0da",
-            "review_note": "Checked the shared SecretsService change against the MCP grant storage and Integrations documentation. The additional field is scoped to the model connection and existing MCP grant handling is preserved."
+            "references_sha256": "0b4814b02f21a481f4cb06d148700595ebfa01586ed4388f52bdf093226b61d9",
+            "review_note": "Checked that the endpoint example and supported model guidance change only the existing AI connection documentation. The local reporting client setup remains accurate."
         },
         "media": {
             "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
@@ -60,7 +60,7 @@
         "operator-help": {
             "source_sha256": "0083eeb417f56c09e8b6c23202dee46241262cf40bdd32f312e82b8fb2c46956",
             "references_sha256": "c4f92ef1a785d3800380a6878286c4fec17e3c8f7e377d248b5f4f00bbc419c0",
-            "review_note": "Checked owner monitoring and review instructions against saved evaluation receipts after the latest merge. Existing public ordering and account guidance still follows its templates."
+            "review_note": "Compared Agent Monitoring and answer review with the saved receipt and authorized JSON export. Report observations remain independent of guardrail status and staff assessments. Checked the settings guide against the provider plan and targeted diagnostic controls."
         },
         "public-mcp": {
             "source_sha256": "234155f55b0f66f669f6422a85acc30a6a59ebf216d8f682d7a212cd01ee7358",
