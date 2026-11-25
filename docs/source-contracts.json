@@ -8,9 +8,9 @@
             "review_note": "Cross-checked typed owner report evidence in version 3 receipts and evaluation spans, retained version 2 receipts, provider hold recovery, and the separate Agent Monitoring and Dashboard Commerce evidence against the merged PHP and observability guide."
         },
         "auth": {
-            "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
-            "references_sha256": "fb0ed91e79da831124c7268b88c9d77ce218d0b26de28b4773dd0d14acf89ce1",
-            "review_note": "Reviewed the owner constructor authorization, CSRF and session-bound public download grant against the authentication guides and actual guest/owner fixtures."
+            "source_sha256": "c34a5b34bc904f36cda184c26113f91e2cf36afa2b506217d1f74e22e9e0cefd",
+            "references_sha256": "3b0ae5857696e6a3783f663fb5921a02a29d7fd82757fdda2fd50196715d993e",
+            "review_note": "Verified configured owner authentication, session regeneration and flash persistence before native response finalization and confirmed other login paths retain their routes."
         },
         "commerce": {
             "source_sha256": "4d8f53718f4495182ccef03d41eacb3da729dbe5ff1b5db5b54cbfd88957749e",
@@ -43,9 +43,9 @@
             "review_note": "Checked the merged campaign reading column, native feedback and 44px underlined download links with editor selection, preview, lock and mobile design contracts."
         },
         "mail": {
-            "source_sha256": "5227980c18b489b2f985b67c057a1f94a95c6784bd1e3b594f7fd2294ce37179",
-            "references_sha256": "5f7bb76e9a89eeb8e4bb8ec4a1c749eea3aee31fb9dd51411e657b1287ea8ffd",
-            "review_note": "Reviewed the download grant placement after a confirmed enquiry and the unchanged local receipt path against the documented held mail and owner Inbox boundary."
+            "source_sha256": "72b1c4a0ac6e5d88b2edb4e8190bbc9bb8271e1c9b25880f6d4ea068b2f82b56",
+            "references_sha256": "b570c94d1b4f038514750f1f5550593ae54324f0da7b659b2d8a184b1baf0fa2",
+            "review_note": "Compared the single configured-owner security notice with the existing claim and settlement rules. Supported SAPIs finish the stored-session response before entering the same mail path."
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed the independent private download storage against the existing owner Media Library, header image and deletion documentation. Download files keep their own private root."
         },
         "operator-help": {
-            "source_sha256": "c5fbd2aa21c88a4f97ed7bebb8104f1d6cab8af29b4f4b991efbb9925fc27ae7",
+            "source_sha256": "06e238fbb18fe90c62054c3e0ca8b639a10cd2e2aa457bb390eed29df0a925b7",
             "references_sha256": "f5c667e8fdb836b615fc47f2c1e84fe62d463ccf085757a8f354a0542de7d2c7",
-            "review_note": "Compared the Enterprise Agent navigation, Site analytics and Dashboard Commerce guides with the merged layout and views. Verified that the authorized conversation export and staff review preserve saved report observations, guardrail status and original legacy receipts. Checked the merged authored-page media workflow and preserved existing publication and owner access boundaries. Reviewed the merged campaign enquiry and owner Inbox guidance. Business article and report evidence remain scoped to their agent tools. Reviewed published blog evidence and the separately scoped authored-page download and storage guides in the merged tree."
+            "review_note": "Compared the Enterprise Agent navigation, Site analytics and Dashboard Commerce guides with the merged layout and views. Verified that the authorized conversation export and staff review preserve saved report observations, guardrail status and original legacy receipts. Checked the merged authored-page media workflow and preserved existing publication and owner access boundaries. Reviewed the merged campaign enquiry and owner Inbox guidance. Business article and report evidence remain scoped to their agent tools. Reviewed published blog evidence and the separately scoped authored-page download and storage guides in the merged tree. Cross-checked the merged sign-in response and existing login notice behavior against stored agent evidence and published article scope."
         },
         "public-mcp": {
             "source_sha256": "ad08f180ca73336364b9cd907dfcbc99fafe564bfbc5555611ed1c41949b4de4",
