@@ -14,6 +14,9 @@ description: Use when editing owner/admin pages, CRUD forms, media library, envi
 - Media metadata editing is owner-only, bounded, revision-checked and limited to existing MySQL uploads; never replace binaries or enable bundled/legacy editing.
 - Media bulk removal uses named per-upload checkboxes and a separate owner review. Confirm only the recorded selection, consume its token once, and apply the single-upload reference checks and audit to each item. Test cancel, partial results, and 375 px without JavaScript.
 - Logo & Favicon uses persistent Media Library uploads and the saved settings for previews. Test size and format rejection, a failed write, and successful reload with disposable brand profiles. Production verification reads the existing brand without replacing it.
+- On authored pages, preview the configured enquiry fields in the public
+  renderer with disabled controls. Keep field slot identity and publication
+  revision on the server, and expose only saved enquiry evidence in owner Inbox.
 - Use schema-driven resource fields and the media library for product, temple, blog, and authored-page media.
 - Authored-page headers use a native selection of uploaded library images. Reuse the owner Media Library upload and render Preview through the public PHP template. Verify clear, draft recovery, stale revision and accurate text/image rendering at 1280px and 375px. Page publication still requires Save page.
 - Astrologer profile management and portraits are retired in admin as well as publicly. Do not restore their navigation, upload category, or bundled assets. Existing historical session and financial records remain owner-accessible; they do not authorize reintroducing profile management.

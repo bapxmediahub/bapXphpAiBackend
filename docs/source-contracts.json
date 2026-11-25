@@ -4,48 +4,48 @@
     "reviews": {
         "agents": {
             "source_sha256": "be4f539aad8155de1f1bf79a8f62235178cf989967067d9f0a389fe9f21a2855",
-            "references_sha256": "ff81649888bfafc486728cf2a018fd6639ca7d22e6cd58313d44c04f7f9ab8bd",
+            "references_sha256": "6949a152e06c27aab32294348d1c59d04a4ad43640a134932998386e8f0951ef",
             "review_note": "Reviewed both native registries, published-data gates, and passage evidence allowlists on the merged tree. Both agents share optional topic selection and sanitized digests, and the Chat Completions tool correlation and refusal handling remain intact. Rechecked the Luna-aware HTTP path and both role fixtures on this merge. Verified the merged short-hold readiness path, including original-model continuation and the existing correlation/reference behavior. Cross-checked the latest Monitoring split and the unchanged separation of publication evidence from storefront analytics."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
-            "references_sha256": "c18f6382cf53df4e4df816751c38b19832debd374b8a3f45ffc28859673ccb3d",
+            "references_sha256": "5f68e7c6c1a731efe023f8d6ea09380b6f706e54e17cee9c5532f7f867b1383c",
             "review_note": "Compared the backend skill update with auth boundaries. Shared public article policy controls publication access, and the Enterprise tool registry retains its owner requirement and existing account identity checks."
         },
         "commerce": {
             "source_sha256": "4d8f53718f4495182ccef03d41eacb3da729dbe5ff1b5db5b54cbfd88957749e",
-            "references_sha256": "65a52afeec3e216f64cc1f9449ba9130c0511bd65068e61ca74d9635bb286d2d",
+            "references_sha256": "7ce85e17731ca24b17958743be0e99ca044b8148e7c3e7332107e42b08d6f65f",
             "review_note": "Compared the shared backend skill update with catalogue and order boundaries. The modified native article routines operate on published Markdown, and product lookup, pricing, and order paths retain their existing contracts."
         },
         "content": {
-            "source_sha256": "aa44287c8d53c64b1a58281a876b43c890556429951832e221b9a93de2748666",
-            "references_sha256": "3668c7013fbbff0cdb15748aacefbe1af0ee53c3daa2f68402d3059dbd820ddb",
-            "review_note": "Verified the blog guide against published Markdown fixtures for inline text, heading/list/table/blockquote/figure boundaries, and literal fenced YAML indentation. Checked the merged authored-page media workflow and preserved existing publication and owner access boundaries."
+            "source_sha256": "36eed5968658c8b5e35dfdd1028dba9999e555335b39f959185c22bec81a9415",
+            "references_sha256": "d220c84657f00116ee71aca20412eb46b089efd6270562e58153b75921843d6b",
+            "review_note": "Verified the blog guide against published Markdown fixtures for inline text, heading/list/table/blockquote/figure boundaries, and literal fenced YAML indentation. Checked the merged authored-page media workflow and preserved existing publication and owner access boundaries. Reviewed the merged campaign enquiry and owner Inbox guidance. Business article and report evidence remain scoped to their agent tools."
         },
         "foundation": {
-            "source_sha256": "566a532b0e644f8c9ac16e6c2f5bda009eec0e0c04ce51108f29cf5595c3a4a6",
-            "references_sha256": "7e5ecb2068a85fca959a970b812ae43a576311cd384e8f1f977665febff599d2",
+            "source_sha256": "7265d7ec23913edbf2a05056c5e0edda91205a15cade5c93de90e9028b935b98",
+            "references_sha256": "39beb88b7b81f131c6c490da33eff9f4e7a51d955b7c67122b4e36452c0b7a79",
             "review_note": "Reviewed plain rendered passage text and HTML removal. Preserving code indentation does not alter published-source guards, private chat storage or the allowlisted evidence projection. Published Markdown recovery now preserves leading YAML indentation and trailing scalar line breaks through the complete read path."
         },
         "google-tags": {
             "source_sha256": "366fdab983979cc3a1fec22fb6da4afb61072d6fd24cd0ba2271d67a0c063019",
-            "references_sha256": "ac5f69a9cfd73428a1702be69cd944a1ee4f8ed3211c040ed755356134044065",
-            "review_note": "Reviewed the merged Integrations provider guidance alongside the existing Google reporting controls and public head layout."
+            "references_sha256": "6f7327e1ae9f078467369947f555cc4948c01970e4eafabe8dc39a727ae77603",
+            "review_note": "Reviewed the inherited Integrations provider instructions and Google reporting controls. Campaign presentation remains within the shared document body."
         },
         "http-errors": {
             "source_sha256": "63602cadbe59868b0d25a1b00729a589e75d1b31c6ea3a1b25c1e5a46fd06d50",
-            "references_sha256": "bbd53993d0ec5243d95cdef0430fb3a416fd50fd08723944f4978260d0c9f25f",
+            "references_sha256": "8a44179c462fdaf85ac26e5cc3ba290a5fe4a26a3b121328d3abbc0ae74dcff0",
             "review_note": "Compared the backend skill addition with the existing request failure boundary. Article lookup reports unavailable or no matching published content through its tool result while the request failure handler keeps its existing responsibility."
         },
         "interface": {
-            "source_sha256": "04086ba16f36c41801ab52e38c972e71f72ca7f3823cdea576fb201618a0ef62",
-            "references_sha256": "729151b085c7e3d56d44f72717ee75cbccfeb389258919805a0be757e4e3b2dc",
-            "review_note": "Compared the analytics destination, responsive owner navigation and authored document layout against Design. The owner picker and public page preserve the confirmed reading column and optional image."
+            "source_sha256": "4119b05acc120db71614301a2e7aea6d108814cc64f856a4508fdbc3b886989c",
+            "references_sha256": "fbb79a65586820b5d9d84e728d590ae23b0cf88ed41ae3fc73f0184594018d37",
+            "review_note": "Compared updated analytics and integrations navigation with the authored reading column, mobile form layout, disabled preview and native receipt focus tests."
         },
         "mail": {
-            "source_sha256": "cf53ad09364ca09e808c9a465e24eb33d11754a62ce95c6d0f81ef2d2d101cff",
-            "references_sha256": "a552b5fdab386774897fb7d3664382c1c6d749bd0ca4e2a55ca536828baa5f2d",
-            "review_note": "Compared the backend skill addition with mail and support boundaries. Published article retrieval uses BlogService and records public source evidence without entering the mail queue or SMTP flow."
+            "source_sha256": "251088a617081be06441224ceeaf9e73bd5173321a2480158ee9cd4734608a76",
+            "references_sha256": "4eb3fbdd6753d2292c690c0a2121641b376b4a65f17630f0eb0a5f0430209b03",
+            "review_note": "Compared the backend skill addition with mail and support boundaries. Published article retrieval uses BlogService and records public source evidence without entering the mail queue or SMTP flow. Reviewed the merged campaign enquiry and owner Inbox guidance. Business article and report evidence remain scoped to their agent tools."
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
@@ -54,22 +54,22 @@
         },
         "media": {
             "source_sha256": "edc32a5a9f73cf7f2954eac135a2eaed1394089034bac24ea835af48c4d9600e",
-            "references_sha256": "a2db070f8970b9549f912577bf0603781cbab7f0ce25bcf46bc2246cc152eea5",
-            "review_note": "Checked the combined admin skill against guarded Media Library deletion and the authored header attach lock. The public renderer reads only the selected owned image URL."
+            "references_sha256": "2fd761a2616ecb1883b70ce991e391eb25cb72b76d5f7f1a7cf314bcc176792c",
+            "review_note": "Reviewed the Owner UI skill and shared upload lock documentation against the media source. Campaign layout renders the same owned image before the enquiry form."
         },
         "operator-help": {
-            "source_sha256": "50e2af7c831accdf80104595f3e66cd345c36d4dfa5b937980ceadf4f4e01b7b",
-            "references_sha256": "eac498d861f24877bfaf4a708ac47a5bacb1c2bd09384206c2fe3584caba2d3f",
-            "review_note": "Compared the enterprise-agent guide dependencies and published support guide. Passage evidence adds hashes and a section index to the existing authorized review context. Operator Help remains behind the owner gate. Checked the merged authored-page media workflow and preserved existing publication and owner access boundaries."
+            "source_sha256": "26b892cc93a264501eca03e196a7ce0896036df0ccbce6c53223be7b4880486b",
+            "references_sha256": "f8665f2397dd7bcd2d7dd9376123fd10fb26f09c6a8bb5b7934c28771331a17f",
+            "review_note": "Compared the enterprise-agent guide dependencies and published support guide. Passage evidence adds hashes and a section index to the existing authorized review context. Operator Help remains behind the owner gate. Checked the merged authored-page media workflow and preserved existing publication and owner access boundaries. Reviewed the merged campaign enquiry and owner Inbox guidance. Business article and report evidence remain scoped to their agent tools."
         },
         "public-mcp": {
-            "source_sha256": "ab24df4ac591a50cabb444393b56001eab280c85a080a12aa1b0eef924c05d02",
-            "references_sha256": "a3abd5ec38662964630fa90176318a443b44eab5c32f2f2287ea6bcd6354b6fd",
+            "source_sha256": "5f7161ade491dfb67a7d000d3f57be4c788c9fc94475ef1e663c1a3111e0dcb6",
+            "references_sha256": "c57cdfe31c5b9d5e91ad8f322dd6ca11bb7f754ea511493c3e59ee5eef50fd56",
             "review_note": "Rechecked unchanged public and STDIO projection alongside native article text. Native passages preserve visible block boundaries and preformatted code indentation without changing public queries. Bounded keyword excerpts preserve literal whitespace at either edge of preformatted Markdown code."
         },
         "remote-commerce": {
-            "source_sha256": "4eb65e92d0fffab91ea37804c69190d405daaf24c084338d3d624c3691da0de3",
-            "references_sha256": "d311281d3d78dc488924bd2658587bf782006ba58e906a10729fef12a6e96334",
+            "source_sha256": "838fc2e55edce98c70da808104c0630fe85bc9d2b3dff94d5d531fa980297bf4",
+            "references_sha256": "07f5f5301c2ddd8d33574cb02d5de75a21aa20d2f11ff3aa4f04a66dc42e1c0a",
             "review_note": "Cross-checked the shared backend skill and the retrieved article projection. Article digests are confined to article tools and traces, and the branch adds no cart, payment, or checkout calls."
         },
         "sales-channels": {
@@ -78,9 +78,9 @@
             "review_note": "Compared the MediaService additions with the Merchant Feed and product image inspection contracts. Header choices are filtered only for the owner authored editor, and catalogue image eligibility and feed URLs retain their existing resolution."
         },
         "workflow": {
-            "source_sha256": "6c5bd96ab92cfbd643c66d640ce5153d1b6478df0cba486981340f00e167ee38",
+            "source_sha256": "68e694ba447d330c4faa6c145c635b5a85bda6d2a1c33ff499c6a2283b0a1011",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Reviewed the PHP backend skill and test changes against documented release steps. The merged guide retains private test credential handling and the distinction between local regression checks and deployed agent acceptance. Checked the merged authored-page media workflow and preserved existing publication and owner access boundaries."
+            "review_note": "Reviewed the PHP backend skill and test changes against documented release steps. The merged guide retains private test credential handling and the distinction between local regression checks and deployed agent acceptance. Checked the merged authored-page media workflow and preserved existing publication and owner access boundaries. Reviewed the merged campaign enquiry and owner Inbox guidance. Business article and report evidence remain scoped to their agent tools."
         }
     }
 }

@@ -75,6 +75,13 @@ account/order notifications and unrelated SMTP states unchanged. Re-enabling
 automatic contact mail requires reviewed recipient verification and anti-abuse
 controls. Never test by flooding the production form or replaying its backlog.
 
+Published campaign forms share contact admission. Validate answers against
+the exact published revision, and verify CSRF and the session receipt before
+accepting a submission. On the database host, lock the authored page and persist
+the Contact and its Inbox projection together with one idempotent receipt.
+Store campaign slug and revision on the owner records. Keep form text out of
+logs and leave the mail queue untouched.
+
 ## SMTP persistence and retry boundary
 
 A pending queue row must be atomically claimed on the database host before

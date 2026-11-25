@@ -118,6 +118,15 @@ final class RemoteDbController {
                 }
                 return;
             }
+            if ($collection === 'contact_submissions' && $action === 'save_campaign_lead') {
+                if (!is_string($input['id'] ?? null) || !is_string($input['slug'] ?? null)
+                    || !is_string($input['revision'] ?? null) || !is_array($input['answers'] ?? null)) {
+                    throw new \InvalidArgumentException('Campaign submission identity and answers are required.');
+                }
+                $outcome = $store->saveCampaignLead($input['id'], $input['slug'], $input['revision'], $input['answers']);
+                echo json_encode(['success'=>true, 'outcome'=>$outcome], JSON_THROW_ON_ERROR);
+                return;
+            }
             if ($collection === 'settings' && $action === 'save_header_menu') {
                 if (!is_array($input['items'] ?? null) || !is_int($input['revision'] ?? null)) {
                     throw new \InvalidArgumentException('Menu items and revision are required.');
@@ -252,7 +261,9 @@ final class RemoteDbController {
             throw new \InvalidArgumentException('Unsupported mutation action.');
         } catch (\Throwable $e) {
             http_response_code(422);
-            echo json_encode(['error' => 'Remote mutation failed: ' . $e->getMessage()]);
+            echo json_encode(['error' => $action === 'save_campaign_lead'
+                ? 'Campaign submission was not confirmed.'
+                : 'Remote mutation failed: ' . $e->getMessage()]);
         }
     }
 }
