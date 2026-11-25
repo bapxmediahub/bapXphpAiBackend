@@ -49,6 +49,9 @@ reset resolution. The PHP controller validates session ownership so
 browser-supplied conversation IDs cannot access another customer.
 Test the actual browser post/feedback interaction at desktop and 375px,
 including no JavaScript exceptions and saved JSON status on the local fixture.
+Check the same-session A2UI transcript and conversation ID after reopening
+Support. Verify that an actor or session change gets a fresh transcript and
+New chat resets the conversation independently of the checkout receipt.
 
 ## Shared scroll/motion
 

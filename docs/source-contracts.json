@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "713a58ac7ced3d1afc6a991ee4c85b42b27b4effd5efd0464047050991bc3321",
-            "references_sha256": "327982b8cd1a6ce869e72a9d144ccb24e7d20a8bf8b3c77f31a37c6b9ba936e5",
-            "review_note": "Compared cURL measurement, trace sanitation, operational aggregation and attempt presentation to the documented timeout stages and the preserved inference policy."
+            "source_sha256": "d5f0851b1ab4062dfabf3a31ca0d7772768240651806691248863da9fdd8ab4b",
+            "references_sha256": "e4737035a37729b2b774948284777addb1cc79354c31b2f22fdc84b8728c783e",
+            "review_note": "Verified successful context selection, preserved failed traces, actor authorization, pending status and historical report scope against the updated observability documentation and loopback provider fixtures."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -23,14 +23,14 @@
             "review_note": "Read the account help Markdown and its source view. The article explains the picture placeholder beside the email."
         },
         "foundation": {
-            "source_sha256": "dbe49cadbdc8bcc3643720eb7eba701e6720c8bcfe9244b2636288064d04b7a1",
+            "source_sha256": "9e135981c37ec399549ab0dce73c8575dad7de7f85d534435bac759aa2d9bb2f",
             "references_sha256": "6eba6651fd8e747d8053034a7812f9d41e6dba5a405bc1d1ed669556c8f2474b",
-            "review_note": "Reviewed the stored header menu normalization and browser fixture against the shared PHP layout and settings architecture, including revision-safe editing and the existing search route."
+            "review_note": "Reviewed private JSON ownership, error status handling and the browser scope identifiers against the documented architecture. Reads remain bound to the session actor and use one existing conversation document."
         },
         "google-tags": {
-            "source_sha256": "1df6faf47d1e2701ed9d9b02f6df22b7d4a3ffc48a10497fe344b79de7a75f21",
-            "references_sha256": "c7394b5af25daabb62844498c4e83bb9a88e3dfbb6c15c5f1bf07741e6546719",
-            "review_note": "Cross-checked public layout changes and the frontend skill against Google head and operator instructions. The keyboard fix executes only in the modal form."
+            "source_sha256": "cb62a05f8d83f991e38d6f1593e8ccb31a0006cfb3bed28033056679f7106f63",
+            "references_sha256": "327d47f02e4a8ad21085d0a1d09c4cc515fb2da60c56659fecfccebb0d4a40ef",
+            "review_note": "Cross-reviewed the public layout and frontend skill with the tag integration paths. The new session-scoped logic is inside the Support widget only and has no analytics payload."
         },
         "http-errors": {
             "source_sha256": "2e2fee3211f50641844c05f86381f277f9c6c10b7fb60fb750c52937b0868e12",
@@ -38,14 +38,14 @@
             "review_note": "Reviewed the new hosting instructions against existing request-failure guidance. A transport receipt remains distinct from a rendering response, and the worker preserves the canonical queue before reporting an outcome."
         },
         "interface": {
-            "source_sha256": "e45c241b3424146449c88225b98e14b3fb3c37c8bff5ddcb2720b56c122eabb1",
-            "references_sha256": "e4bdda540cea659baaf3baadc1170486f4eda356343beb7b8267bc6912d8370d",
-            "review_note": "Compared the fixed popup and query preservation behavior against Design, the frontend skill and the real browser checks at three sizes."
+            "source_sha256": "9356d22785c878605c902ffb69e1443eb67504b0b289b9f75680abdcbdcd2b8b",
+            "references_sha256": "99cc04fc48e47c2686cc6efa23f470e7acc6d654dcc91336499ab570364cced6",
+            "review_note": "Cross-checked Design, Enterprise history and Support New chat against actual page markup and Chromium regressions for role scope, local recovery, keyboard and A2UI restoration."
         },
         "mail": {
-            "source_sha256": "a3951ae338838c3a75fd5e6fdaaca490782e9fc345d900850ef9bf95f3856462",
+            "source_sha256": "f65c4ff06685dbdff017b4d543e58c3360a56ac92ccd16a9b58a172eb102bbbc",
             "references_sha256": "903e7da848c1e0472ce9a1823b94afc21004e564d12041ee0456918176a6cc72",
-            "review_note": "Validated the single-table queue-health query against the hosted counts. Pending routing and existing expiry, held-contact and due predicates remain shared with the worker."
+            "review_note": "Reviewed the scoped AdminController agent entry and history diff alongside mail routing and transport guidance. The change reads private saved turns via AgentConversationService."
         },
         "mcp-clients": {
             "source_sha256": "38828d52259fbd6b6555d790e463ff775e79be85872a5d5b5aea78e599fba3ac",
@@ -54,23 +54,23 @@
         },
         "media": {
             "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
-            "references_sha256": "5bc8f1234d96ba28fc159eba092cea8d75d72750db3e3c8340b8d7b7331618ac",
-            "review_note": "Reviewed the new Outbox verification paragraph in the shared Admin UI skill alongside media controls."
+            "references_sha256": "e46a00af045b0f554d796d480bc4c7bfe25b8464276587147872d4c29e2701f1",
+            "review_note": "Compared active-chat restoration and attachment changes with the media operator instructions, and confirmed upload and in-memory draft attachment regressions pass."
         },
         "operator-help": {
-            "source_sha256": "f5e9db6c68df3a5fe4ffeba0e81640c687c113f7e03f97db66b0febb071dee00",
-            "references_sha256": "2842000a1f8b81dde2029f42d4c5b37945a18898b21c7bb0843370648ce2c997",
-            "review_note": "Verified the owner Header menu still describes a fixed Search icon and editable link positions while the dialog owns keyboard dismissal."
+            "source_sha256": "d67cf2d69bda2f6d1a09aa55007726a45bc9825406241787727b818fe9253492",
+            "references_sha256": "eade3ce9f5666b9678b0c7d16fbdda7f423bde6dc7118ff83bf0416d23c3beca",
+            "review_note": "Verified Enterprise History and Reload saved chat against the operator guide and the authorized original controller response, including pending and unavailable states."
         },
         "public-mcp": {
             "source_sha256": "e5d2bb67604d7b9c3588dba3d04e75ad9925c1c686f3a4d13dffd1dc8dd99325",
-            "references_sha256": "b7b593e717c34bd2d587fe066462410dc6806da1eb0822d0ddb1204946c98291",
-            "review_note": "Checked the shared remote documentation against the public MCP checkout projection. Unit options remain private catalogue and invoice metadata."
+            "references_sha256": "7188c628083dfc2704d98649d139f1b2c0a0d43db12ab8a321d7c1870c96f86a",
+            "review_note": "Compared A2UI history wording with the existing public and owner scopes. The same renderer fallback remains and only the private native Enterprise history route supplies restored owner cards."
         },
         "remote-commerce": {
-            "source_sha256": "afc1b3a2cf25981492c69d666e10a0ca56fdcc3a6c7fb284a624f64f8a57f6f9",
-            "references_sha256": "464010285c847c9e358552ae8ac592459fb1c3f5848c49733e66fce0b2e519aa",
-            "review_note": "Checked that Escape handling is bound only to the public search input. Browser checks cover Cart and Menu after closing the popup."
+            "source_sha256": "1573658d95dac28bb53f540081e22a5f29e7121bf8d1acb2dfc72b6554b7d0b1",
+            "references_sha256": "135d6012b4cf58ce8c5942ea0f98245fd8e8e8c38175ea0c839e8a258777d287",
+            "review_note": "Reviewed Support New chat, actor-scoped transcript eviction, and pending controls against the independent checkout recovery contract. The populated receipt survives conversation reset in the browser regression."
         },
         "sales-channels": {
             "source_sha256": "36385e3d18e26f524d0efdd12d26cd8386e368fb5d27441460c688ffdff28b92",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed SettingsService module resolution and Merchant feed guidance. Dropping a retired header slot leaves the saved catalog eligibility inputs intact."
         },
         "workflow": {
-            "source_sha256": "780c5496da8ae2bdcb793e57ae5abcfcaa23a7cd7dbea44037b46a184545cfcd",
+            "source_sha256": "01a5f99199d0a95b3ad299e7ae7ba239591d348eb2b60910cd77f415194ef6c5",
             "references_sha256": "7770887213db03241a85f7bbee17bf25b2c58350058ebc59e25fd76b29ad80df",
-            "review_note": "Reviewed the updated frontend skill and existing browser fixture against the issue-first live verification procedure, including the typed-query regression."
+            "review_note": "Read the updated frontend and admin skills and checked their session isolation and desktop/mobile regressions against the existing GitHub release workflow."
         }
     }
 }

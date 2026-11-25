@@ -15,6 +15,12 @@ const scripts={
 };
 const css=readFileSync(path.join(root,'assets/css/a2ui-public.css'));
 const fixtures=JSON.parse(execFileSync('php',['tests/fixtures/a2ui-responses.php'],{cwd:root,encoding:'utf8'}));
+function supportScope() {
+    const {html}=JSON.parse(execFileSync('php',['tests/fixtures/support-checkout.php'],{cwd:root,encoding:'utf8'}));
+    const key=html.match(/data-support-key="([^"]*)"/)?.[1];
+    assert.match(key,/^sps-support-chat:[a-f0-9]{64}$/);
+    return key;
+}
 const catalog='https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json';
 const a2ui=(label,pathValue)=>({messages:[{
     version:'1.0',createSurface:{
@@ -308,7 +314,7 @@ test('Public and actor-scoped surfaces preserve content and fail closed', {timeo
 });
 
 for (const width of [1280,375]) {
-    test(`Support structured primary answer, complete fallback and reload at ${width}px`, {timeout:30000},async()=>{
+    test(`Support structured answers and session-scoped follow-ups at ${width}px`, {timeout:30000},async()=>{
         const browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH||undefined,args:['--no-sandbox']});
         const page=await browser.newPage({viewport:{width,height:800}});
         const origin='https://support-a2ui.example.test';
@@ -317,32 +323,64 @@ for (const width of [1280,375]) {
         const end=template.indexOf('function showToast(',start);
         assert.ok(start>=0&&end>start,'Actual Support interaction script not found');
         const widget=template.slice(start,end);
+        const originalScope=supportScope(),newScope=supportScope();
+        assert.notEqual(originalScope,newScope,'The PHP widget must emit a different key for a new session');
         const html='<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><style>'+css+
             'body{margin:8px;font:16px sans-serif}*{box-sizing:border-box}.support-panel{max-width:420px}.support-panel[hidden]{display:none}textarea{width:100%}</style></head><body>'+
             '<button class="support-fab" aria-controls="support-panel" aria-expanded="false">Support</button>'+
-            '<section id="support-panel" class="support-panel" data-support-key="synthetic-support" hidden><button class="support-panel__close">Close support</button>'+
+            '<section id="support-panel" class="support-panel" data-support-key="'+originalScope+'" hidden><button class="support-panel__close">Close support</button>'+
+            '<button id="support-new-chat" type="button" disabled>New chat</button>'+
             '<div id="support-log" aria-live="polite"></div><form id="support-form"><input name="_csrf" type="hidden" value="fixture">'+
             '<textarea name="message" aria-label="Support message" required></textarea><button>Send</button></form></section>'+
             '<script>'+scripts['/renderer.js']+'</script><script>'+readFileSync(path.join(root,'assets/agent-status.js'))+'</script><script>'+widget+'</script></body></html>';
         const errors=[];page.on('pageerror',e=>errors.push(e.message));
+        const posts=[];
         let sends=0;
+        let releaseFirst;
+        const firstPending=new Promise(resolve=>{releaseFirst=resolve;});
         try {
-            await page.route(origin+'/**',route=>{
+            await page.addInitScript(()=>{
+                const getItem=Storage.prototype.getItem;
+                Storage.prototype.getItem=function(key){
+                    if(String(key).startsWith('sps-support-chat-'))window.legacySupportRead=true;
+                    return getItem.call(this,key);
+                };
+                if(sessionStorage.getItem('fixture:unrelated-consumer')===null){
+                    sessionStorage.setItem('fixture:unrelated-consumer','keep');
+                    sessionStorage.setItem('sps-support-chat-old@example.test','Old fixture transcript');
+                    sessionStorage.setItem('sps-support-chat-old@example.test:conversation_id','c'.repeat(32));
+                }
+            });
+            await page.route(origin+'/**',async route=>{
                 const url=new URL(route.request().url());
                 if(url.pathname==='/support/ask'){
+                    const request=route.request();
+                    const form=await new Response(request.postDataBuffer(),{headers:{'Content-Type':request.headers()['content-type']}}).formData();
+                    posts.push({conversation:form.get('conversation_id'),request:form.get('request_id')});
                     sends++;
+                    if(sends===1)await firstPending;
+                    if(sends===4)return route.fulfill({status:503,json:{error:'Fixture chat unavailable',request_status:'incomplete',conversation_id:'a'.repeat(32)}});
                     const surface=structuredClone(sends===2?fixtures.product:fixtures.support);
                     if(sends>2)surface.messages[0].version='unsupported';
                     return route.fulfill({json:{reply:sends===1?'Here is the matching Emerald Ring.\n\nIts published price is ₹1,250.00.':sends===2?'Complete fallback after public-only presentation.':'Complete fallback after unsupported presentation.',
                         a2ui:surface,conversation_id:'a'.repeat(32),turn_id:'b'.repeat(32)}});
                 }
                 if(url.pathname.startsWith('/assets/images/'))return route.fulfill({contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZlV0AAAAASUVORK5CYII=','base64')});
-                return route.fulfill({contentType:'text/html',body:html});
+                return route.fulfill({contentType:'text/html',body:url.pathname==='/another-session'?html.replace(originalScope,newScope):html});
             });
             await page.goto(origin+'/');
             await page.getByRole('button',{name:'Support',exact:true}).click();
-            await page.getByRole('textbox',{name:'Support message'}).fill('Show the Emerald ring');
-            await page.getByRole('button',{name:'Send',exact:true}).click();
+            assert.deepEqual(await page.evaluate(()=>({
+                read:!!window.legacySupportRead,
+                remains:Object.keys(sessionStorage).some(key=>key.startsWith('sps-support-chat-'))
+            })),{read:false,remains:false},'Retire legacy chat keys without reading or displaying them');
+            const input=page.getByRole('textbox',{name:'Support message'});
+            const send=page.getByRole('button',{name:'Send',exact:true});
+            const newChat=page.getByRole('button',{name:'New chat',exact:true});
+            await input.fill('Show the Emerald ring');
+            await send.click();
+            assert.equal(await newChat.isDisabled(),true,'The active request owns its chat until it settles');
+            releaseFirst();
             await page.locator('.bapx-a2ui--answer').waitFor();
             assert.equal(await page.locator('.support-answer').count(),1);
             assert.equal(await page.getByText('Here is the matching Emerald Ring.',{exact:true}).count(),1,'No duplicate flat answer');
@@ -361,13 +399,49 @@ for (const width of [1280,375]) {
             await page.getByRole('textbox',{name:'Support message'}).fill('Another question');
             await page.getByRole('button',{name:'Send',exact:true}).click();
             await page.getByText('Complete fallback after public-only presentation.',{exact:false}).waitFor();
+            assert.equal(posts[1].conversation,'a'.repeat(32),'A same-session follow-up carries the restored chat ID');
             assert.equal(await page.locator('.bapx-a2ui--answer').count(),1,'Public-only response cannot replace the full native answer');
             assert.equal(await page.locator('.bapx-a2ui:not(.bapx-a2ui--answer)').count(),1,'Rejected public-only response adds no cards');
             await page.getByRole('textbox',{name:'Support message'}).fill('Unsupported response');
             await page.getByRole('button',{name:'Send',exact:true}).click();
             await page.getByText('Complete fallback after unsupported presentation.',{exact:false}).waitFor();
             assert.equal(await page.locator('.bapx-a2ui--answer').count(),1,'Malformed second answer must leave the full fallback');
+            await input.fill('Unavailable thread');await send.click();
+            await page.getByText('Choose New chat to ask a different question.',{exact:false}).waitFor();
+            const commerceKey='bapx-support-commerce:v1:'+origin;
+            await page.evaluate(key=>sessionStorage.setItem(key,'independent fixture receipt'),commerceKey);
+            await newChat.press('Enter');
+            assert.equal(await input.evaluate(el=>el===document.activeElement),true);
+            assert.equal(await page.locator('.support-answer').count(),0);
+            assert.equal(await page.evaluate(key=>sessionStorage.getItem(key),commerceKey),'independent fixture receipt');
+            assert.equal(sends,4,'New chat never resubmits a question');
+            await input.fill('A new question');await send.click();
+            await page.getByText('Complete fallback after unsupported presentation.',{exact:false}).waitFor();
+            assert.notEqual(posts[4].conversation,posts[3].conversation);
+            assert.notEqual(posts[4].request,posts[3].request);
+            await page.goto(origin+'/another-session');
+            await page.getByRole('button',{name:'Support',exact:true}).click();
+            assert.equal(await page.locator('.support-answer').count(),0,'A different session cannot restore the old transcript');
+            assert.deepEqual(await page.evaluate(({originalScope,commerceKey})=>({
+                prior:sessionStorage.getItem(originalScope),
+                priorId:sessionStorage.getItem(originalScope+':conversation_id'),
+                unrelated:sessionStorage.getItem('fixture:unrelated-consumer'),
+                commerce:sessionStorage.getItem(commerceKey)
+            }),{originalScope,commerceKey}),{prior:null,priorId:null,unrelated:'keep',commerce:'independent fixture receipt'});
+            assert.equal(sends,5,'Session transition does not submit previous messages');
+            await input.fill('A different session question');await send.click();
+            await page.getByText('Complete fallback after unsupported presentation.',{exact:false}).waitFor();
+            assert.match(posts[5].conversation,/^[a-f0-9]{32}$/);
+            assert.notEqual(posts[5].conversation,'a'.repeat(32),'A different session cannot reuse the previous actor chat ID');
+            await page.evaluate(key=>{
+                sessionStorage.setItem('sps-support-chat:active',key);
+                window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}));
+            },originalScope);
+            assert.equal(await page.locator('.support-answer').count(),0,'A restored stale page cannot display the old cached transcript');
+            await page.getByText('This Support session changed. Refresh the page to continue.',{exact:true}).waitFor();
+            assert.equal(await send.isDisabled(),true);
+            assert.equal(sends,6,'A restored stale page cannot send a question automatically');
             assert.deepEqual(errors,[]);
-        } finally {await browser.close();}
+        } finally {releaseFirst();await browser.close();}
     });
 }

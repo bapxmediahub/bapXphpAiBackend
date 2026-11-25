@@ -492,14 +492,23 @@ if ($__flash):
 <?php endif; ?>
 
 <?php if (!in_array(rtrim($currentPath, '/'), ['/login', '/register', '/contact'], true)): ?>
+<?php
+    $__supportKey = '';
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        $__supportActor = \App\Services\AgentConversationService::actor('support', $_SESSION['user'] ?? null);
+        $__supportKey = 'sps-support-chat:' . hash_hmac('sha256',
+            'support-browser-chat:v2:' . $__supportActor['type'] . ':' . $__supportActor['id'], session_id());
+    }
+?>
 <button class="support-fab" type="button" aria-controls="support-panel" aria-expanded="false" title="Support">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>
     <span class="sr-only">Support</span>
 </button>
-<section class="support-panel" id="support-panel" data-support-key="sps-support-chat-<?= !empty($_SESSION['user']['email']) ? e(strtolower((string)$_SESSION['user']['email'])) : 'guest' ?>" hidden>
+<section class="support-panel" id="support-panel" data-support-key="<?= e($__supportKey) ?>" hidden>
     <div class="support-panel__head">
         <strong>Support</strong>
         <button type="button" id="support-commerce-toggle" class="support-commerce-toggle" aria-controls="support-commerce" aria-expanded="false" disabled><?= $__modules['shop'] ? 'Cart &amp; checkout' : 'Checkout status' ?></button>
+        <button type="button" id="support-new-chat" class="btn btn-ghost btn-sm support-panel__new" disabled>New chat</button>
         <button type="button" class="support-panel__close" aria-label="Close support">×</button>
     </div>
     <div class="support-panel__body" id="support-log" aria-live="polite">
@@ -642,7 +651,9 @@ document.addEventListener('error',function(event){
     image.src=image.dataset.productImageFallback;
 },true);
 var supportFab=document.querySelector('.support-fab'),supportPanel=document.getElementById('support-panel'),supportClose=document.querySelector('.support-panel__close'),supportForm=document.getElementById('support-form'),supportLog=document.getElementById('support-log'),supportConversationId=null;
-var supportPendingRequest=null;
+var supportNewChat=document.getElementById('support-new-chat'),supportInitialLog=supportLog?.innerHTML||'';
+var supportCacheKey=supportPanel?.dataset.supportKey||'',supportCacheScope='sps-support-chat:active';
+var supportPendingRequest=null,supportFeedbackPending=false,supportSessionChanged=false;
 function supportRandomId(){var bytes=new Uint8Array(16);crypto.getRandomValues(bytes);return Array.from(bytes,function(x){return x.toString(16).padStart(2,'0');}).join('');}
 function supportEscape(value){return String(value).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c];});}
 function supportReplyHtml(value){var safe=supportEscape(value);var allowed=/\/(?:shop|cart|checkout|temples|contact|blog(?:\/[a-z0-9-]+|\/category\/[a-z0-9-]+)?|product\/(?:[a-z0-9-]|%20)+|account\/dashboard(?:\/orders|\/install)?)(?=$|[\s.,)])/gi;return safe.replace(allowed,function(path){return '<a class="support-action" href="'+path+'">Open '+supportEscape(path.replace(/^\//,'').replace(/%20|[-/]/g,' '))+'</a>';});}
@@ -739,22 +750,63 @@ function supportRenderAnswer(answer){
     supportLog.appendChild(block);
 }
 function supportToggle(open){if(!supportPanel||!supportFab)return;supportPanel.hidden=!open;supportFab.setAttribute('aria-expanded',open?'true':'false');}
-function supportSaveLog(){try{if(!supportPanel||!supportLog)return;sessionStorage.setItem(supportPanel.dataset.supportKey,supportLog.innerHTML);sessionStorage.setItem(supportPanel.dataset.supportKey+':conversation_id',supportConversationId||'');}catch(e){}}
-function supportLoadLog(){try{if(!supportPanel||!supportLog)return;var saved=sessionStorage.getItem(supportPanel.dataset.supportKey);if(saved){supportLog.innerHTML=saved;}var cid=sessionStorage.getItem(supportPanel.dataset.supportKey+':conversation_id');if(cid&&/^[a-f0-9]{32}$/.test(cid))supportConversationId=cid;}catch(e){}}
+function supportSaveLog(){
+    try{
+        if(!supportCacheKey||!supportLog||sessionStorage.getItem(supportCacheScope)!==supportCacheKey)return;
+        sessionStorage.setItem(supportCacheKey,supportLog.innerHTML);
+        sessionStorage.setItem(supportCacheKey+':conversation_id',supportConversationId||'');
+    }catch(e){}
+}
+function supportLoadLog(){
+    if(!supportCacheKey||!supportLog)return;
+    try{
+        var retiredKeys=Array.from({length:sessionStorage.length},function(_,i){return sessionStorage.key(i);});
+        retiredKeys.forEach(function(key){if(key?.startsWith('sps-support-chat-'))sessionStorage.removeItem(key);});
+        var previousKey=sessionStorage.getItem(supportCacheScope)||'';
+        if(previousKey!==supportCacheKey&&/^sps-support-chat:[a-f0-9]{64}$/.test(previousKey)){
+            sessionStorage.removeItem(previousKey);
+            sessionStorage.removeItem(previousKey+':conversation_id');
+        }
+        sessionStorage.setItem(supportCacheScope,supportCacheKey);
+        var saved=sessionStorage.getItem(supportCacheKey);
+        if(saved)supportLog.innerHTML=saved;
+        var cid=sessionStorage.getItem(supportCacheKey+':conversation_id');
+        if(cid&&/^[a-f0-9]{32}$/.test(cid))supportConversationId=cid;
+    }catch(e){}
+}
+function supportSyncNewChat(){if(supportNewChat)supportNewChat.disabled=supportSessionChanged||supportForm?.dataset.busy==='true'||supportFeedbackPending;}
+window.addEventListener('pageshow',function(event){
+    if(!event.persisted||!supportCacheKey||!supportLog||!supportForm)return;
+    try{if(sessionStorage.getItem(supportCacheScope)===supportCacheKey)return;}catch(e){return;}
+    supportSessionChanged=true;supportConversationId=null;supportPendingRequest=null;
+    supportLog.textContent='This Support session changed. Refresh the page to continue.';
+    supportForm.querySelectorAll('textarea,button').forEach(function(control){control.disabled=true;});
+    supportSyncNewChat();
+});
+if(supportNewChat&&supportForm&&supportLog){
+    supportNewChat.addEventListener('click',function(){
+        if(supportNewChat.disabled)return;
+        supportConversationId=null;supportPendingRequest=null;
+        supportLog.innerHTML=supportInitialLog;
+        supportSaveLog();
+        supportForm.querySelector('textarea')?.focus();
+    });
+    supportSyncNewChat();
+}
 if(supportFab&&supportPanel){supportLoadLog();
 supportFab.addEventListener('click',function(){supportToggle(supportPanel.hidden);});
 supportClose.addEventListener('click',function(){supportToggle(false);});}
 if(supportForm){supportForm.addEventListener('submit',async function(e){
     e.preventDefault();
-    if(supportForm.dataset.busy==='true')return;
+    if(supportSessionChanged||supportForm.dataset.busy==='true')return;
     var data=new FormData(supportForm),msg=String(data.get('message')||'').trim();
-    if(supportConversationId)data.set('conversation_id',supportConversationId);
     if(!msg||!supportLog)return;
     if(!supportConversationId)supportConversationId=supportRandomId();
     if(!supportPendingRequest||supportPendingRequest.message!==msg){supportPendingRequest={message:msg,id:supportRandomId()};}
     data.set('conversation_id',supportConversationId);
     data.set('request_id',supportPendingRequest.id);
     supportForm.dataset.busy='true';
+    supportSyncNewChat();
     var controls=Array.from(supportForm.querySelectorAll('textarea,button'));
     controls.forEach(function(control){control.disabled=true;});
     supportLog.querySelectorAll('.support-feedback').forEach(function(el){el.remove();});
@@ -765,32 +817,41 @@ if(supportForm){supportForm.addEventListener('submit',async function(e){
     var abort=new AbortController(),timeout=setTimeout(function(){abort.abort();},window.AgentRequestStatus.timeoutMs);
     try{
         var r=await fetch('/support/ask',{method:'POST',body:data,signal:abort.signal});
-        var j=await r.json();failed=!r.ok||!!j.error;
+        var j=await r.json();
+        if(supportSessionChanged)return;
+        failed=!r.ok||!!j.error;
         if(!failed||typeof j.turn_id==='string')supportPendingRequest=null;
-        if(typeof j.conversation_id==='string')supportConversationId=j.conversation_id;
+        if(typeof j.conversation_id==='string'&&/^[a-f0-9]{32}$/.test(j.conversation_id))supportConversationId=j.conversation_id;
         supportRenderAnswer(j);
+        if(failed&&['incomplete','pending_or_interrupted'].includes(j.request_status)){
+            var recovery=document.createElement('p');
+            recovery.textContent='Check whether your last request completed before repeating it. Choose New chat to ask a different question.';
+            supportLog.appendChild(recovery);
+        }
         if(!failed&&j.ui?.kind==='contact_enquiry')void supportOpenEnquiry();
         if(!failed&&!j.ticket_id&&typeof j.turn_id==='string'&&/^[a-f0-9]{32}$/.test(j.turn_id)){
             var feedback=document.createElement('div');feedback.className='support-feedback';feedback.dataset.turnId=j.turn_id;
             feedback.innerHTML='<span>Did this answer your question?</span> <button type="button" data-support-rating="helpful">Yes, resolved</button> <button type="button" data-support-rating="not_helpful">No, need help</button>';
             supportLog.appendChild(feedback);
         }
-    }catch(err){failed=true;supportLog.insertAdjacentHTML('beforeend','<p><strong>Support:</strong> Unable to answer right now. Please try again.</p>');}
+    }catch(err){failed=true;if(!supportSessionChanged)supportLog.insertAdjacentHTML('beforeend','<p><strong>Support:</strong> The reply was interrupted. Check whether your last request completed before repeating it. Choose New chat to ask a different question.</p>');}
     finally{
         clearTimeout(timeout);progress.finish(failed);
-        supportForm.dataset.busy='false';controls.forEach(function(control){control.disabled=false;});
+        supportForm.dataset.busy='false';controls.forEach(function(control){control.disabled=supportSessionChanged;});
+        supportSyncNewChat();
         supportSaveLog();supportLog.scrollTop=supportLog.scrollHeight;
     }
 });}
 if(supportPanel){supportPanel.addEventListener('click',async function(event){
     var button=event.target.closest('[data-support-rating]');
-    if(!button || !supportPanel.contains(button) || !supportConversationId) return;
+    if(!button || !supportPanel.contains(button) || !supportConversationId || supportFeedbackPending) return;
     var feedback=button.closest('.support-feedback');
     if(!feedback || !/^[a-f0-9]{32}$/.test(feedback.dataset.turnId||''))return;
     var rating=button.dataset.supportRating;
     if(rating!=='helpful'&&rating!=='not_helpful')return;
     var buttons=Array.from(feedback.querySelectorAll('button'));
     buttons.forEach(function(el){el.disabled=true;});
+    supportFeedbackPending=true;supportSyncNewChat();
     var body=new FormData();
     body.set('_csrf',supportForm.querySelector('input[name="_csrf"]')?.value||'');
     body.set('conversation_id',supportConversationId);
@@ -807,6 +868,8 @@ if(supportPanel){supportPanel.addEventListener('click',async function(event){
     }catch(error){
         feedback.insertAdjacentText('beforeend',' Could not save feedback; please retry.');
         buttons.forEach(function(el){el.disabled=false;});
+    }finally{
+        supportFeedbackPending=false;supportSyncNewChat();
     }
 });}
 function showToast(msg,type){type=type||'info';var c=document.getElementById('toast-container');if(!c){c=document.createElement('div');c.id='toast-container';document.body.appendChild(c);}var t=document.createElement('div');t.className='toast toast--'+type;var icons={success:'✓',error:'✕',warning:'⚠',info:'ℹ'};t.innerHTML='<span class="toast__icon">'+(icons[type]||'ℹ')+'</span><span class="toast__text"></span><button class="toast__close" aria-label="Dismiss">&times;</button>';t.querySelector('.toast__text').textContent=String(msg);t.querySelector('.toast__close').addEventListener('click',function(e){e.stopPropagation();dismiss(t);});t.addEventListener('click',function(){dismiss(t);});c.appendChild(t);var timer=setTimeout(function(){dismiss(t);},4000);function dismiss(el){if(el.classList.contains('toast--out'))return;el.classList.add('toast--out');clearTimeout(timer);setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},250);}}

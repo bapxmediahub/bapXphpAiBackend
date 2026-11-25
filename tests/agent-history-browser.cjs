@@ -7,8 +7,12 @@ const {chromium} = require('playwright');
 
 const root = path.resolve(__dirname, '..');
 const render = `function e($s) { return htmlspecialchars($s, ENT_QUOTES); }
-    $csrf='test'; $attachables=[['name'=>'terms','kind'=>'page']]; $modelConfig=['configured'=>true]; include 'views/admin/agent.php';`;
+    $csrf='test'; $attachables=[['name'=>'terms','kind'=>'page']]; $modelConfig=['configured'=>true];
+    $chatScope='fixture-owner-one'; include 'views/admin/agent.php';`;
 const view = execFileSync('php', ['-r', render], {cwd: root, encoding: 'utf8'});
+const presentation = JSON.parse(execFileSync('php', ['-r',
+    "require 'app/bootstrap.php'; echo json_encode((new App\\Services\\AgentAnswerPresentationService())->responseData('Recorded owner answer.','admin'));"
+], {cwd: root, encoding:'utf8'}));
 const origin = 'http://enterprise-agent.test';
 const first = 'a'.repeat(32), second = 'b'.repeat(32);
 let browser;
@@ -89,6 +93,87 @@ for (const width of [1280, 375]) {
             await finishRead(4);
             await transcript.getByText('First question').waitFor();
             assert.equal(await reply.evaluate(el => el === document.activeElement), true);
+        } finally {
+            await page.close();
+        }
+    });
+
+    test(`Owner resumes the same scoped chat after navigation at ${width}px`, async () => {
+        const page = await browser.newPage({viewport:{width,height:800}});
+        const posts = [];
+        let documentStatus = 200;
+        let pendingTurns = 0;
+        let otherOwner = false;
+        const key = 'sps-enterprise-active-chat:fixture-owner-one';
+        const turns = [{question:'Saved question',answer:'Recorded owner answer.',...presentation}];
+        try {
+            await page.addInitScript({path:path.join(root,'assets/agent-status.js')});
+            await page.route(origin+'/admin/agent', route=>route.fulfill({contentType:'text/html',
+                body:otherOwner ? view.replace('fixture-owner-one','fixture-owner-two') : view}));
+            await page.route(origin+'/assets/*', route=>route.fulfill({path:path.join(root,new URL(route.request().url()).pathname)}));
+            await page.route(origin+'/admin/docs/enterprise-agent', route=>route.fulfill({body:'Owner guide',contentType:'text/html'}));
+            await page.route(origin+'/admin/agent/history/'+first, route=>route.fulfill({status:documentStatus,
+                json:documentStatus === 200 ? {conversation_id:first,turns,pending_turn_count:pendingTurns} : {error:'Saved chat unavailable'}}));
+            await page.route(origin+'/admin/agent/ask', route=>{
+                posts.push(new URLSearchParams(route.request().postData()).get('conversation_id'));
+                return route.fulfill({json:{answer:'Recorded owner answer.',conversation_id:otherOwner?second:first,...presentation}});
+            });
+
+            const home = origin+'/admin/agent';
+            const log = page.getByRole('log');
+            const input = page.getByRole('textbox',{name:'Message'});
+            const send = page.getByRole('button',{name:'Send',exact:true});
+            await page.goto(home);
+            await input.fill('Saved question');
+            await input.press('Enter');
+            await log.locator('.bapx-a2ui').getByText('Recorded owner answer.').waitFor();
+            assert.equal(await page.evaluate(key=>sessionStorage.getItem(key),key), first);
+            await page.goto(origin+'/admin/docs/enterprise-agent');
+            await page.goto(home);
+            await log.locator('.bapx-a2ui').getByText('Recorded owner answer.').waitFor();
+            assert.equal(await input.evaluate(el=>document.activeElement===el), false, 'Restore does not pop up the mobile keyboard');
+            await input.fill('Related follow-up');
+            await input.press('Enter');
+            await log.getByText('Recorded owner answer.').last().waitFor();
+            assert.deepEqual(posts,[null,first]);
+
+            documentStatus = 503;
+            await page.reload();
+            await page.getByText('Could not reopen your saved chat.',{exact:false}).waitFor();
+            assert.equal(await send.isDisabled(),true);
+            await input.fill('Should stay a draft while history is unavailable');
+            await input.press('Enter');
+            assert.deepEqual(posts,[null,first]);
+            assert.equal(await page.evaluate(key=>sessionStorage.getItem(key),key),first);
+            documentStatus = 200;
+            pendingTurns = 1;
+            await page.getByRole('button',{name:'Reload saved chat'}).press('Enter');
+            await page.getByText('This chat has an unfinished request.',{exact:false}).waitFor();
+            assert.equal(await send.isDisabled(),true);
+            pendingTurns = 0;
+            await page.getByRole('button',{name:'Reload saved chat'}).press('Enter');
+            await page.waitForFunction(()=>!document.getElementById('agent-submit').disabled);
+            assert.equal(await send.isEnabled(),true);
+            assert.equal(await input.inputValue(),'Should stay a draft while history is unavailable');
+
+            otherOwner = true;
+            await page.reload();
+            assert.equal(await log.locator('.agent-bubble').count(),0);
+            await input.fill('Separate owner question');
+            await input.press('Enter');
+            await log.getByText('Recorded owner answer.').waitFor();
+            assert.deepEqual(posts,[null,first,null]);
+            await page.getByRole('button',{name:'New chat'}).press('Enter');
+            assert.equal(await log.locator('.agent-bubble').count(),0);
+            assert.equal(await page.evaluate(()=>sessionStorage.getItem('sps-enterprise-active-chat:fixture-owner-two')),null);
+            assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+
+            otherOwner = false;
+            documentStatus = 404;
+            await page.reload();
+            await page.getByText('This saved chat is unavailable.',{exact:false}).waitFor();
+            assert.equal(await page.evaluate(key=>sessionStorage.getItem(key),key),null);
+            assert.equal(await send.isEnabled(),true);
         } finally {
             await page.close();
         }

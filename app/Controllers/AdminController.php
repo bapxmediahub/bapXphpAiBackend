@@ -622,9 +622,11 @@ final class AdminController extends BaseController {
         header('Cache-Control: private, no-store');
         $actor = \App\Services\AgentConversationService::actor('admin', $_SESSION['user'] ?? null);
         try {
-            $document = (new \App\Services\AgentConversationService())->getForActor($id, 'admin', $actor);
-        } catch (\RuntimeException) {
-            $document = null; // Do not reveal whether another actor owns this ID.
+            $document = (new \App\Services\AgentConversationService())->getForActor($id, 'admin', $actor, hideForeign: true);
+        } catch (\RuntimeException|\JsonException $error) {
+            error_log('Owner chat history unavailable (' . get_class($error) . ')');
+            $this->jsonResponse(['error'=>'Saved chat is temporarily unavailable'], 503);
+            return;
         }
         if ($document === null) {
             $this->jsonResponse(['error'=>'Conversation not found'], 404);
@@ -637,7 +639,8 @@ final class AdminController extends BaseController {
             'at'=>(string)($t['at'] ?? ''),
         ] + (($t['outcome'] ?? '') === 'error' ? ['outcome'=>'error', 'turn_id'=>(string)($t['turn_id'] ?? '')]
             : $presenter->responseData((string)($t['answer']??''),'admin',[],null,\App\Services\AgentAnswerPresentationService::toolsForTurn($t))), $document['turns'] ?? []);
-        $this->jsonResponse(['conversation_id'=>$document['id'], 'turns'=>$turns]);
+        $this->jsonResponse(['conversation_id'=>$document['id'], 'turns'=>$turns,
+            'pending_turn_count'=>count($document['pending_turns'] ?? [])]);
     }
 
     public function agentReview(string $id): void {
@@ -693,11 +696,14 @@ final class AdminController extends BaseController {
     public function agent(): void{
         $secrets = new SecretService();
         $modelConfig = $secrets->getModelConfig();
+        $user = $_SESSION['user'] ?? null;
+        $actor = \App\Services\AgentConversationService::actor('admin', $user);
+        $chatScope = hash_hmac('sha256', 'enterprise-chat:' . $actor['id'], session_id());
         // Everything the owner may write @ against, so the chat can autocomplete rather
         // than making them remember slugs and filenames.
         $attachables = (new \App\Services\AgentAttachmentService())->catalogue();
         $this->render('admin/agent',['pageTitle'=>'Enterprise Agent','modelConfig'=>$modelConfig,'attachables'=>$attachables,
-            'agentCapabilities'=>\App\Services\EnterpriseToolRegistry::capabilities($_SESSION['user'] ?? null),
+            'chatScope'=>$chatScope,'agentCapabilities'=>\App\Services\EnterpriseToolRegistry::capabilities($user),
             'agentCapabilityLimits'=>\App\Services\EnterpriseToolRegistry::capabilityLimits()]);
     }
     public function agentAsk(): void{

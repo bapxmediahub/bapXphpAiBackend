@@ -144,6 +144,17 @@ for(const width of [1280,375])test(`native Support cart, inline checkout and pri
         releaseRefresh();
         await pane.getByText('Cart refreshed. Review current quantities, prices and availability.',{exact:true}).waitFor();
         assert.equal(await pane.getByRole('textbox',{name:'Full name',exact:true}).inputValue(),'CANCEL_PRESERVES_DRAFT');
+        const beforeReset=await page.evaluate(key=>sessionStorage.getItem(key),recoveryKey);
+        const beforeResetCalls=adapter.calls.length;
+        await page.getByRole('button',{name:'Back to chat',exact:true}).click();
+        const newChat=page.getByRole('button',{name:'New chat',exact:true});
+        const control=await newChat.boundingBox();
+        assert.ok(control&&control.height>=44&&control.x+control.width<=width,'New chat stays reachable in the real Support header');
+        await newChat.press('Enter');
+        assert.equal(await page.locator('#support-log .support-answer').count(),0);
+        assert.equal(await page.evaluate(key=>sessionStorage.getItem(key),recoveryKey),beforeReset);
+        assert.equal(adapter.calls.length,beforeResetCalls,'Starting a chat cannot call a shopping tool');
+        assert.equal(asks,1,'Starting a chat cannot send a question');
         assert.deepEqual(errors,[]);
     }finally{await context.close();await browser.close();}
 });
@@ -151,6 +162,8 @@ for(const width of [1280,375])test(`native Support cart, inline checkout and pri
 test('native Support keeps verified payment status available when Shop is disabled',{timeout:180000},async()=>{
     const disabledView=JSON.parse(execFileSync(process.env.PHP_BINARY||'php',['tests/fixtures/support-checkout.php','--shop-disabled'],
         {cwd:root,encoding:'utf8',maxBuffer:2*1024*1024}));
+    const supportKey=disabledView.html.match(/data-support-key="([^"]*)"/)?.[1];
+    assert.match(supportKey,/^sps-support-chat:[a-f0-9]{64}$/);
     const adapter=shoppingAdapter();
     const created=(await apiTool(adapter,'create_cart',{})).structuredContent;
     const cart=(await apiTool(adapter,'set_cart_quantity',{cartToken:created.cartToken,expectedRevision:created.revision,
@@ -168,11 +181,11 @@ test('native Support keeps verified payment status available when Shop is disabl
     const context=await browser.newContext({viewport:{width:375,height:850}}),page=await context.newPage();
     const errors=[];page.on('pageerror',error=>errors.push(error.message));
     try{
-        await context.addInitScript(({origin,receipt})=>{
+        await context.addInitScript(({origin,receipt,supportKey})=>{
             sessionStorage.setItem('bapx-support-commerce:v1:'+origin,JSON.stringify(receipt));
-            sessionStorage.setItem('sps-support-chat-guest','<div class="bapx-a2ui__card"><a href="/product/sri-varahi-amman-ring">Ring</a>'
+            sessionStorage.setItem(supportKey,'<div class="bapx-a2ui__card"><a href="/product/sri-varahi-amman-ring">Ring</a>'
                 +'<div class="support-commerce-actions"><button data-support-commerce="add" data-product-path="/product/sri-varahi-amman-ring">Add to cart</button></div></div>');
-        },{origin,receipt});
+        },{origin,receipt,supportKey});
         await page.route('**/*',async route=>{
             const req=route.request(),url=new URL(req.url());
             assert.equal(url.origin,origin,'Synthetic status recovery must never contact a real provider');

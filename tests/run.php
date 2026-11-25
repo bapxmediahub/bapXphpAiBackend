@@ -502,6 +502,45 @@ $tests['support context keeps bounded own turns and revalidates ordinal product 
     }finally{foreach(array_merge(glob($root.'/*')?:[],glob($root.'/.conversation*')?:[]) as $f)if(is_file($f))@unlink($f);@rmdir($root);}
 };
 
+$tests['both agents retain failed turns in history and use successful dialogue for follow-ups'] = static function (): void {
+    $root = sys_get_temp_dir() . '/sps-context-recovery-' . bin2hex(random_bytes(6));
+    mkdir($root, 0700);
+    try {
+        $service = new \App\Services\AgentConversationService($root);
+        $catalogue = 'I found /product/second and /product/first. ' . str_repeat('Read their product pages. ', 26);
+        foreach (['support'=>'guest', 'admin'=>'admin'] as $surface=>$type) {
+            $actor = ['type'=>$type, 'id'=>'fixture-actor'];
+            $created = $service->record($surface, $actor, null, 'Show the published products.', $catalogue,
+                bin2hex(random_bytes(8)), 'model', knowledge:['public_product_slugs'=>['second','first']]);
+            $id = $created['conversation_id'];
+            $service->record($surface, $actor, $id, 'How is delivery arranged?', 'Delivery is explained on the shipping page.',
+                bin2hex(random_bytes(8)), 'local');
+            for ($attempt = 0; $attempt < 4; $attempt++) {
+                $service->record($surface, $actor, $id, 'What about the second one?', 'The provider is unavailable.',
+                    bin2hex(random_bytes(8)), 'error', knowledge:['public_product_slugs'=>['unaccepted']]);
+            }
+            $context = $service->contextForActor($id, $surface, $actor);
+            assertSame([$catalogue,'Delivery is explained on the shipping page.'], array_column($context['messages'],'answer'),
+                'Only successful dialogue enters the model context, in chronological order');
+            assertSame(['second','first'], $context['public_product_slugs'],
+                'Historical referents come from the latest included successful product reply');
+            $limited = $service->contextForActor($id, $surface, $actor, maxBytes:512);
+            assertSame([$context['messages'][1]], $limited['messages'], 'Dialogue still respects its byte budget');
+            assertSame([], $limited['public_product_slugs'], 'No product identity survives when its turn is out of budget');
+            assertSame([], $service->contextForActor($id, $surface, $actor, maxTurns:1)['public_product_slugs'],
+                'No product identity survives when its turn is outside the turn limit');
+            $history = $service->getForActor($id, $surface, $actor)['turns'];
+            assertSame(['model','local','error','error','error','error'], array_column($history,'outcome'),
+                'All completed and failed turns remain visible in actor-owned history');
+            assertSame(['unaccepted'], $history[5]['knowledge']['public_product_slugs'],
+                'Filtering follow-up context does not alter recorded evidence');
+        }
+    } finally {
+        foreach (array_merge(glob($root.'/*') ?: [], glob($root.'/.conversation*') ?: []) as $file) if (is_file($file)) unlink($file);
+        rmdir($root);
+    }
+};
+
 $tests['Tamil named festive retrieval matches English collection without guessing generic requests'] = static function (): void {
     $collections=[['name'=>'Ayyappa Swamy Festive Sale','slug'=>'ayyappa','product_ids'=>['a']],['name'=>'Sassthi Festival Sale','slug'=>'sassthi','product_ids'=>['b']]];
     assertSame('ayyappa',\App\Services\AgentContextService::requestedCollection('அய்யப்பன் சுவாமி பண்டிகை பொருட்கள்',$collections)['slug'],'Tamil alias maps to real collection');
@@ -1875,6 +1914,17 @@ $tests['Enterprise Agent new chat and history are scoped to each admin JSON iden
         } catch (\RuntimeException $error) {
             assertSame('Conversation not accessible to this actor', $error->getMessage(), 'Other admin history is private');
         }
+        assertSame(null, $service->getForActor($bobChat['conversation_id'], 'admin', $alice, hideForeign:true),
+            'An actor history route can treat a foreign reference as missing');
+        assertSame(null, $service->getForActor($aliceChat['conversation_id'], 'support', $alice, hideForeign:true),
+            'The conversation surface remains part of ownership');
+        $unavailable = new \App\Services\AgentConversationService($dir . '/' . $aliceChat['conversation_id'] . '.json');
+        try {
+            $unavailable->getForActor($aliceChat['conversation_id'], 'admin', $alice, hideForeign:true);
+            throw new \LogicException('Expected history storage error');
+        } catch (\RuntimeException $error) {
+            assertTrue(str_contains($error->getMessage(), 'storage'), 'History storage errors propagate when hiding foreign IDs');
+        }
         assertSame(2, count(glob($dir . '/*.json') ?: []), 'Each separate chat uses one JSON file');
         $routes = \App\Services\ProjectMapService::registry()['routes'];
         foreach (['/admin/agent/history', '/admin/agent/history/{id}'] as $path) {
@@ -2102,11 +2152,14 @@ $tests['agent conversations validate identity and deterministic evaluations'] = 
 
 $tests['enterprise follow-up retrieves only actor-owned persisted history'] = static function (): void {
     $doc = ['surface'=>'admin','actor'=>['type'=>'admin','id'=>'u1'],'turns'=>[
-        ['report_context'=>['tool'=>'sales_summary','from'=>'2026-11-01','to'=>'2026-11-07']]
+        ['report_context'=>['tool'=>'sales_summary','from'=>'2026-11-01','to'=>'2026-11-07']],
+        ['outcome'=>'error','report_context'=>['tool'=>'sales_summary','from'=>'2026-11-08','to'=>'2026-11-14']]
     ]];
     $service = new \App\Services\AgentConversationService();
     $report = $service::previousReportFromDocument($doc,['type'=>'admin','id'=>'u1']);
-    assertSame('2026-11-01',$report['from'],'Server report history is available for same actor');
+    assertSame('2026-11-01',$report['from'],'An unsuccessful report cannot replace the last delivered report, including legacy turns');
+    assertSame(null, $service::previousReportFromDocument(array_replace($doc, ['turns'=>[$doc['turns'][1]]]), ['type'=>'admin','id'=>'u1']),
+        'A conversation with no successful report has no prior report scope');
     try {
         $service::previousReportFromDocument($doc,['type'=>'admin','id'=>'u2']);
         throw new \RuntimeException('Expected actor rejection');

@@ -367,18 +367,28 @@ final class AgentConversationService
         return array_slice(array_values(array_unique(array_filter($slugs,static fn($s):bool=>is_string($s)
             &&preg_match('/^[\p{L}\p{M}\p{N} _.-]{1,160}$/uD',$s)===1))),0,20);
     }
-    public function contextForActor(?string $id,string $surface,array $actor,int $maxTurns=4,int $maxBytes=8000): array {
-        $empty=['messages'=>[],'public_product_slugs'=>[]];if($id===null)return $empty;
-        $doc=$this->getForActor($id,$surface,$actor);if($doc===null)return $empty;
-        $maxTurns=max(1,min(8,$maxTurns));$maxBytes=max(512,min(16000,$maxBytes));$messages=[];$slugs=[];
-        foreach(array_reverse($doc['turns']??[]) as $turn){
-            if($slugs===[])$slugs=self::safeSlugs($turn['knowledge']['public_product_slugs']??[]);
-            $pair=['question'=>mb_strcut((string)($turn['question']??''),0,800,'UTF-8'),
-                'answer'=>mb_strcut((string)($turn['answer']??''),0,2000,'UTF-8')];
-            if(strlen(json_encode([$pair,...$messages],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR))>$maxBytes)break;
-            array_unshift($messages,$pair);if(count($messages)>=$maxTurns)break;
+    public function contextForActor(?string $id, string $surface, array $actor, int $maxTurns = 4, int $maxBytes = 8000): array
+    {
+        $document = $id === null ? null : $this->getForActor($id, $surface, $actor);
+        $maxTurns = max(1, min(8, $maxTurns));
+        $maxBytes = max(512, min(16000, $maxBytes));
+        $messages = [];
+        $productSlugs = [];
+        foreach (array_reverse($document['turns'] ?? []) as $turn) {
+            // Keep failed attempts in history without using them to ground a follow-up.
+            if (($turn['outcome'] ?? '') === 'error') continue;
+            $pair = [
+                'question' => mb_strcut((string)($turn['question'] ?? ''), 0, 800, 'UTF-8'),
+                'answer' => mb_strcut((string)($turn['answer'] ?? ''), 0, 2000, 'UTF-8'),
+            ];
+            if (strlen(json_encode([$pair, ...$messages], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR)) > $maxBytes) break;
+            array_unshift($messages, $pair);
+            if ($productSlugs === []) {
+                $productSlugs = self::safeSlugs($turn['knowledge']['public_product_slugs'] ?? []);
+            }
+            if (count($messages) >= $maxTurns) break;
         }
-        return ['messages'=>$messages,'public_product_slugs'=>$slugs];
+        return ['messages' => $messages, 'public_product_slugs' => $productSlugs];
     }
 
     public function previousReportForActor(?string $id, array $actor): ?array
@@ -394,6 +404,7 @@ final class AgentConversationService
             throw new \RuntimeException('Conversation not accessible to this actor');
         }
         foreach (array_reverse($document['turns'] ?? []) as $turn) {
+            if (($turn['outcome'] ?? '') === 'error') continue;
             $context = $turn['report_context'] ?? null;
             if (is_array($context) && $context !== []) return $context;
         }
@@ -408,11 +419,12 @@ final class AgentConversationService
         return $document !== null && ($document['id'] ?? null) === $id ? $document : null;
     }
 
-    /** Restore a conversation only for the authenticated actor who owns it. */
-    public function getForActor(string $id, string $surface, array $actor): ?array {
+    /** Restore an actor-owned conversation. History routes may hide foreign IDs as missing. */
+    public function getForActor(string $id, string $surface, array $actor, bool $hideForeign = false): ?array {
         $document = $this->getForAdmin($id);
         if ($document === null) return null;
         if (!self::ownedBy($document, $surface, $actor)) {
+            if ($hideForeign) return null;
             throw new \RuntimeException('Conversation not accessible to this actor');
         }
         return $document;
