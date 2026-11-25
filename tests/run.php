@@ -2582,6 +2582,41 @@ $tests['campaign revisions preserve legacy pages and validate configured enquiri
         'Server limits count Unicode characters');
 };
 
+$tests['campaign download selection and grants are bounded to the published revision'] = static function (): void {
+    $downloads = \App\Services\CampaignDownloadService::class;
+    $file = ['id'=>str_repeat('a', 32), 'name'=>'Visitor guide.pdf', 'mime'=>'application/pdf', 'bytes'=>5_000_000];
+    $manifest = ['enabled'=>true, 'files'=>[$file]];
+    $page = ['slug'=>'campaign', 'revision'=>str_repeat('b', 32), 'status'=>'published', 'campaign_downloads'=>$manifest];
+    assertSame($manifest, $downloads::manifest($page), 'The exact maximum is a supported manifest');
+    assertTrue($downloads::canAccess($page, []), 'Published downloads with no form are open');
+    assertTrue(!$downloads::canAccess(array_replace($page, ['status'=>'draft']), []), 'Draft download remains private');
+    assertTrue(!$downloads::canAccess(array_replace($page, ['campaign_downloads'=>['enabled'=>false, 'files'=>[$file]]]), []),
+        'Disabling downloads revokes even free access');
+    $oneByte = ['id'=>str_repeat('c', 32), 'name'=>'One byte.txt', 'mime'=>'text/plain','bytes'=>1];
+    foreach ([
+        [...$manifest['files'],$oneByte],
+        [$file,$file],
+        [array_replace($file,['name'=>'../guide.pdf'])],
+        [array_replace($file,['mime'=>'text/html'])],
+        [array_replace($file,['name'=>"bad\nname.pdf"])],
+    ] as $bad) {
+        assertSame(null, $downloads::manifest(['campaign_downloads'=>['enabled'=>true, 'files'=>$bad]]),
+            'Over-limit, duplicate or unsafe file descriptors are rejected');
+    }
+    $session = [];
+    $gated = $page + ['campaign_form'=>[]];
+    $now = 1800000000;
+    assertTrue(!$downloads::canAccess($gated, $session, $now), 'Gated downloads require a grant');
+    $downloads::grant($session, $gated, str_repeat('d', 32), $now);
+    assertTrue(!$downloads::canAccess($gated, $session, $now), 'A different revision cannot mint the grant');
+    $downloads::grant($session, $gated, $gated['revision'], $now);
+    assertTrue($downloads::canAccess($gated, $session, $now + $downloads::GRANT_SECONDS - 1), 'The matching session has limited access');
+    assertTrue(!$downloads::canAccess($gated, [], $now), 'The download URL does not confer access in a different session');
+    assertTrue(!$downloads::canAccess($gated, $session, $now + $downloads::GRANT_SECONDS), 'The grant expires');
+    assertTrue(!$downloads::canAccess(array_replace($gated, ['revision'=>str_repeat('d', 32)]), $session, $now),
+        'Republishing invalidates the previous grant');
+};
+
 $tests['campaign submission receipts bind session, page, revision and expiry'] = static function (): void {
     $service = \App\Services\CampaignLeadService::class;
     $slug = 'campaign';

@@ -4,48 +4,48 @@
     "reviews": {
         "agents": {
             "source_sha256": "bde2bde8a9de8bf32dc819c741e87a13e30ec696f95f2049814fee7028c63a73",
-            "references_sha256": "74748f701c331a8c80e9de06bd25b362c7cb22e8c56b3e35c9782a14880e2006",
-            "review_note": "Compared ready-model selection, strict assistant tool-call validation and direct Luna settings with the runtime guide. Campaign enquiry continues through the existing PHP Contact and Inbox path."
+            "references_sha256": "bcdcc214a330193a60997d89de5d77b4e09754b26e1483c3679684a1dd9a3b22",
+            "review_note": "Cross-checked ready-first provider selection, bounded cooldown and native tool routing against the updated runtime and observability docs. Protected files remain scoped to PHP."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
-            "references_sha256": "e2412f540c3fe005a6d79e12514470e938b31a1718ba341ee6ddc2c1c28c8b43",
-            "review_note": "Checked campaign CSRF, session-bound submission token and owner Inbox authorization against existing login/account policy, including guest and customer access checks."
+            "references_sha256": "fb0ed91e79da831124c7268b88c9d77ce218d0b26de28b4773dd0d14acf89ce1",
+            "review_note": "Reviewed the owner constructor authorization, CSRF and session-bound public download grant against the authentication guides and actual guest/owner fixtures."
         },
         "commerce": {
             "source_sha256": "4d8f53718f4495182ccef03d41eacb3da729dbe5ff1b5db5b54cbfd88957749e",
-            "references_sha256": "079ae8d53b0448564cbc5195d8cfda515ef03890b278632a54ae868c15447db0",
-            "review_note": "Reviewed the campaign additions against the order and catalogue contracts; campaign validation and owner CRM records do not enter commerce order, checkout or revenue processing."
+            "references_sha256": "9f2b8970b34f4cc6e0a07951ebd67feafe3412ec41ee0a3fba803908621837a2",
+            "review_note": "Reviewed the downloaded file resolver and schema field against the source contracts for product orders and payments. This route uses the authored page publication and enquiry grant."
         },
         "content": {
-            "source_sha256": "ea91cadc20eac49a971699378266b4988947c9de2a1e7d920e8231d72ad771f4",
-            "references_sha256": "ed431946047cc8f0b267edd928ec8d38a59571da585e175c8c81a90a3634ce09",
-            "review_note": "Reviewed the merged database service and controller boundaries against authored pages and campaign guidance. The storefront action uses a separate audit query and does not change campaign receipts or revisions."
+            "source_sha256": "6ed1b0682de0ec02e129e85a80160a1009a93dbb831d139706a05d442a76c802",
+            "references_sha256": "9f4b89e9662c998b53e5805a3e3177dd84341cf6c61839f1ca0cd97e062a1473",
+            "review_note": "Checked the campaign entitlement route, authored settings and protected storage references against the content and storage guides. The dashboard uses a separate one-query audit projection."
         },
         "foundation": {
-            "source_sha256": "8d03cf930ba59d4efe0d38f35afd8b9ebd03dd39f7e8e168b32b748592521a69",
-            "references_sha256": "55f827076a8b777979fb1dfe4e7bd8de7dd3c9770a0a5589a5d037af8f1666cf",
-            "review_note": "Compared the one unbuffered MySQL query, PDO cleanup and fixed authenticated response with the storage guide and exact cutoff fixture."
+            "source_sha256": "e0d5b94723088650ef04d7be591210e22b6cc3bcf9ffbeba3af0ad301d4ddacc",
+            "references_sha256": "c3165ef24301726715e782e931c2fa3c2e7ff1f70e61adf8662c15aae8c1557e",
+            "review_note": "Compared the fixed audit bridge, PDO cleanup and original timestamp parser with the storage guide. The private download directory and revision-aware entitlement remain documented."
         },
         "google-tags": {
             "source_sha256": "366fdab983979cc3a1fec22fb6da4afb61072d6fd24cd0ba2271d67a0c063019",
-            "references_sha256": "6f7327e1ae9f078467369947f555cc4948c01970e4eafabe8dc39a727ae77603",
-            "review_note": "Reviewed the inherited Integrations provider instructions and Google reporting controls. Campaign presentation remains within the shared document body."
+            "references_sha256": "4f45021d1a3d34906fd47b1d74a23b9efde06284298f50fa6b7edc2975e15239",
+            "review_note": "Compared the updated integration and provider examples with the Google reporting and analytics contracts, and cross-reviewed native download links against the frontend skill."
         },
         "http-errors": {
-            "source_sha256": "63602cadbe59868b0d25a1b00729a589e75d1b31c6ea3a1b25c1e5a46fd06d50",
-            "references_sha256": "f5a7e88a8eb384a858c816522ae302bcdf67c8d8917ae1e887bacfbd6637c8c5",
-            "review_note": "Checked the native enquiry route failure handling against the HTTP response guard; unavailable writes are presented on-page and the campaign path logs a generic outcome."
+            "source_sha256": "0f920c297cfc4e216a87be02a35c20827cc254dd6934ba24a1fa9135520a0560",
+            "references_sha256": "08e0e1b9c8e9e4135e255ef70a7d950b288f711f2ad6c7104e7c195c34bde242",
+            "review_note": "Compared the front-controller and Apache path guards, private resolution and upload errors with the shared request-boundary documentation."
         },
         "interface": {
-            "source_sha256": "4119b05acc120db71614301a2e7aea6d108814cc64f856a4508fdbc3b886989c",
-            "references_sha256": "c1659f308be94493abf629640f84b8f3ec81da4025336d9a4e0a19b39e740d91",
-            "review_note": "Reviewed the Dashboard counters and unavailable state against the admin guide. Design still describes the optional header, reading layout and enquiry controls."
+            "source_sha256": "ea5a8fecc5689f03bbe430db89e242f12f7d947ac3abb85ee47d240fef0e8ae4",
+            "references_sha256": "a4e0d57969c6b20e1e663c78572d0d610e397dcbd65ac5bcd04f350b597805b3",
+            "review_note": "Compared the storefront count states with the admin guide and the private download and enquiry controls with their authored layouts."
         },
         "mail": {
-            "source_sha256": "c724bf535aba7476e4b8829cf986a2113b5c52a7108a632b2e616127a29efc8e",
-            "references_sha256": "b1e04cedcc7e8a69e2df75ace16c7c08801fd8929d66ad6436b5cf4ca0f3ffa9",
-            "review_note": "Reviewed the inbox projection and priority of recorded campaign enquiries against the mail guide. Storefront counters only query the audit collection."
+            "source_sha256": "ea2a2447d9c9c54582a0b84669d04cae5d6f17ae892c28efe56cb68960491735",
+            "references_sha256": "5f7bb76e9a89eeb8e4bb8ec4a1c749eea3aee31fb9dd51411e657b1287ea8ffd",
+            "review_note": "Reviewed dashboard and authored controller paths against the mail guide. The existing campaign enquiry receipt and Inbox projection are preserved."
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
@@ -54,23 +54,23 @@
         },
         "media": {
             "source_sha256": "edc32a5a9f73cf7f2954eac135a2eaed1394089034bac24ea835af48c4d9600e",
-            "references_sha256": "2fd761a2616ecb1883b70ce991e391eb25cb72b76d5f7f1a7cf314bcc176792c",
-            "review_note": "Reviewed the Owner UI skill and shared upload lock documentation against the media source. Campaign layout renders the same owned image before the enquiry form."
+            "references_sha256": "1011ad8c368684766c4694dbc430e61737314b7c0bba1e97f1776fd509dad7f5",
+            "review_note": "Reviewed the independent private download storage against the existing owner Media Library, header image and deletion documentation. Download files keep their own private root."
         },
         "operator-help": {
-            "source_sha256": "ed315d23b53df6761636d3bed73381a0087d94cfe733fd89dcbdc123c06e893d",
-            "references_sha256": "f8665f2397dd7bcd2d7dd9376123fd10fb26f09c6a8bb5b7934c28771331a17f",
-            "review_note": "Compared the storefront counters and unavailable status with owner Reports. The Pages and Inbox guides still match header and enquiry controls."
+            "source_sha256": "dc35c2517c773d1e285f0efc4785dc440944a94ec0978e2b958d09f7a7691116",
+            "references_sha256": "f5c667e8fdb836b615fc47f2c1e84fe62d463ccf085757a8f354a0542de7d2c7",
+            "review_note": "Compared the dashboard counters and unavailable state with the Reports guide. Owner Pages and Inbox guidance still describes the authored enquiry and protected download controls."
         },
         "public-mcp": {
-            "source_sha256": "b7f2abab6eeeb9bcdc6893e53984cb92130b56bc7b80e16d24957a4b5f24eb09",
-            "references_sha256": "dffe6c3f2848c483be1141280dc7fdaeace1304acd45927a3468fbb23dc45a33",
-            "review_note": "Cross-checked Dashboard and authored page route associations with Public MCP and A2UI. The new Dashboard query uses the authenticated database bridge."
+            "source_sha256": "cfcb00923cc748f61fadd303204640ed5bf3d3e30325b4c87fb0dde9b5454a85",
+            "references_sha256": "4e016c2896dbeb1b1c300436bc89b235e56245aa9cd9cade4fdd1c4605cf1e6a",
+            "review_note": "Cross-checked the dashboard and authored page map entries with public MCP and A2UI. The storefront count remains owner analytics through the authenticated data bridge."
         },
         "remote-commerce": {
-            "source_sha256": "ee5beeae0e0dda8a1938f86b2da7074dd3fb48a7f045dbd72083677f5660f19b",
-            "references_sha256": "248cb29bdb4f8186da9b74c3e14cfe0742e7a6431faa623bd7c480032e63d472",
-            "review_note": "Reviewed the fixed authenticated storefront read alongside the existing cart and checkout contracts. It returns two counts and issues no writes."
+            "source_sha256": "56272e2df67a9bf604d722200664aef95a8846b39ccbb539fdc3ddad430f417a",
+            "references_sha256": "f9c8aa084e1f0e49bea48d97b588303f78f6457ee8128f5da9b33f0f369d432c",
+            "review_note": "Reviewed the fixed authenticated storefront count alongside Checkout and campaign controls. It reads the audit table independently of checkout writes and entitlement handling."
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",
@@ -78,9 +78,9 @@
             "review_note": "Compared the MediaService additions with the Merchant Feed and product image inspection contracts. Header choices are filtered only for the owner authored editor, and catalogue image eligibility and feed URLs retain their existing resolution."
         },
         "workflow": {
-            "source_sha256": "20271bb103b18a45948d6c309926b1a3249970f5ee94a566f8ae6d4d34cba10d",
+            "source_sha256": "86da3cb8a2f43718fc6f9a4551df905704e0ff00e771e1cdf2ee9c49adb16486",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Reviewed the merged CI and generated maps. MySQL and MariaDB jobs exercise storefront reads alongside the campaign form and authored page checks."
+            "review_note": "Reviewed the regenerated maps and CI with authored campaign downloads present. The MySQL and MariaDB suites include the direct storefront SELECT and authenticated bridge regression."
         }
     }
 }
