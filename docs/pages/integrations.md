@@ -51,7 +51,8 @@ are product choices, not mandates from the providers.
 2. Enter the HTTPS API base URL, the API key issued for that endpoint, and one
    or more exact model IDs in fallback order. For direct OpenAI, use
    `https://api.openai.com/v1` and a Chat Completions model with function
-   calling, such as `gpt-4.1-mini`.
+   calling, such as `gpt-6-luna`. For direct OpenAI Luna tool requests, PHP
+   sends the required `reasoning_effort: "none"`.
 3. For endpoint-only routing, disable **Enable Google models** and
    **Enable OpenRouter Free**. Save the AI provider settings. Both agents then
    use the custom connection, including Enterprise draft generation.
@@ -66,7 +67,7 @@ endpoint that expects the current field.
 The endpoint must also support Chat Completions function declarations and
 multi-turn messages with `tool_call_id`.
 [Chat Completions HTTP reference](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create) ·
-[GPT-4.1 mini capabilities](https://developers.openai.com/api/docs/models/gpt-4.1-mini).
+[GPT-6 Luna capabilities](https://developers.openai.com/api/docs/models/gpt-6-luna).
 
 ## Verify an actual provider response
 

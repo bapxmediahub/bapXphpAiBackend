@@ -181,9 +181,12 @@ try {
     $write('packing-notes', 'Packing notes', true, '2026-01-01', body:
         '<h2>Packing checklist</h2><p>Choose <strong>card</strong>board.<br>Keep dry.</p>'
         . '<ul><li>Pack receipt</li><li>Add sleeve</li></ul>'
-        . '<table><tr><td>Small parcel</td><td>Paper label</td></tr></table>');
+        . '<table><tr><td>Small parcel</td><td>Paper label</td></tr></table>'
+        . '<div>Preparation<blockquote>Keep label dry.</blockquote>Store safely.</div>'
+        . '<div>Before<figure>Parcel image</figure>After</div>');
     $packing = $service->readArticleForAgent(['slug'=>'packing-notes','query'=>'packing checklist'])['articles'][0] ?? [];
-    foreach (['Packing checklist Choose cardboard.', 'cardboard. Keep dry.', 'Pack receipt Add sleeve', 'Small parcel Paper label'] as $visibleText) {
+    foreach (['Packing checklist Choose cardboard.', 'cardboard. Keep dry.', 'Pack receipt Add sleeve',
+        'Small parcel Paper label', 'Preparation Keep label dry. Store safely.', 'Before Parcel image After'] as $visibleText) {
         if (!str_contains($packing['text'] ?? '', $visibleText)) {
             throw new RuntimeException('Rendered article passage omitted a visible text boundary.');
         }

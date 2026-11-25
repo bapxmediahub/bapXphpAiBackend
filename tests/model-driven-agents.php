@@ -18,14 +18,18 @@ if(PHP_SAPI==='cli-server'){
     $wire=file_get_contents('php://input');
     $r=json_decode($wire,true,512,JSON_THROW_ON_ERROR);
     $compatible=isset($r['messages']);
-    $modernTokenField = $scenario === 'modern_policy' || in_array($r['model'] ?? '', ['gpt-5','gpt-4o'], true);
+    $luna = ($r['model'] ?? '') === 'gpt-6-luna';
+    $modernTokenField = $luna || $scenario === 'modern_policy' || in_array($r['model'] ?? '', ['gpt-5','gpt-4o'], true);
     $tokenField = $modernTokenField ? 'max_completion_tokens' : 'max_tokens';
+    $allowedFields = ['model','messages','tools','tool_choice',$tokenField];
+    if ($luna) $allowedFields[] = 'reasoning_effort';
     if ($compatible && ($_SERVER['REQUEST_METHOD'] !== 'POST'
         || !str_ends_with($_SERVER['REQUEST_URI'], '/chat/completions')
         || ($_SERVER['HTTP_AUTHORIZATION'] ?? '') !== 'Bearer fixture-only'
         || ($_SERVER['CONTENT_TYPE'] ?? '') !== 'application/json'
         || !isset($r[$tokenField])
-        || array_diff(array_keys($r), ['model','messages','tools','tool_choice',$tokenField]))) {
+        || ($luna && ($r['reasoning_effort'] ?? null) !== 'none')
+        || array_diff(array_keys($r), $allowedFields))) {
         $fail('Unexpected Chat Completions request');
         return;
     }
@@ -36,7 +40,7 @@ if(PHP_SAPI==='cli-server'){
     $hasHistory = str_starts_with($scenario, 'catalogue_') || $scenario === 'owner_followup';
     $assistantRole = $compatible ? 'assistant' : 'model';
     $expectedRoles = $hasHistory ? ['user',$assistantRole,'user',$assistantRole,'user'] : ['user'];
-    $instructionRole = ($r['model'] ?? '') === 'gpt-5' ? 'developer' : 'system';
+    $instructionRole = $luna || ($r['model'] ?? '') === 'gpt-5' ? 'developer' : 'system';
     if ($compatible) array_unshift($expectedRoles, $instructionRole);
     $initialMessages = array_slice($contents, 0, count($expectedRoles));
     $instruction = $compatible ? array_shift($initialMessages)['content'] ?? '' : $r['systemInstruction']['parts'][0]['text'] ?? '';
@@ -184,7 +188,7 @@ if(PHP_SAPI==='cli-server'){
         else{$fail('Unauthorized tool was not denied');return;}
     }elseif($scenario==='duplicate'){
         $parts=[$call('tool_search',['query'=>'public_policy'],'dup'),$call('tool_search',['query'=>'public_catalogue_summary'],'dup')];
-    }elseif($scenario==='stopped_tool'){
+    }elseif(in_array($scenario,['stopped_tool','object_tool_batch'],true)){
         $parts=[$call('tool_search',['query'=>'public_policy'],'unexpected')];
     }elseif($scenario==='missing_finish'){
         $parts=[['text'=>'<final_answer>Unverified partial answer.</final_answer>']];
@@ -260,7 +264,7 @@ if(PHP_SAPI==='cli-server'){
         }
         if($calls!==[]){
             $message['content'] = null;
-            $message['tool_calls']=$calls;
+            $message['tool_calls']=$scenario === 'object_tool_batch' ? (object)$calls : $calls;
             $message['reasoning_content']='fixture-continuation';
             $message['reasoning_details']=[['type'=>'fixture','id'=>'opaque-state']];
         }
@@ -340,6 +344,7 @@ try{
     ];
     $chatCompletionBoundaries = [
         ['stopped_tool','support','guest','Help with shipping.',null],
+        ['object_tool_batch','support','guest','Help with shipping.',null],
         ['missing_finish','admin','admin','What can you help with?',null],
         ['refusal','support','guest','Answer this unrelated question.',null],
     ];
@@ -349,6 +354,7 @@ try{
         'compatible' => array_merge($standard, $compatibleRecovery, $chatCompletionBoundaries),
         'openai' => [$cases[9], $followupCases[3]],
         'openai_legacy' => [$followupCases[3]],
+        'openai_luna' => [$cases[9], $followupCases[3]],
         'compatible_modern' => [['modern_policy','support','guest','How is shipping calculated?','public_policy']],
         'openrouter' => [['router_policy','support','guest','How is shipping calculated?','public_policy']],
     ];
@@ -367,7 +373,8 @@ try{
             echo "PASS $protocol/$surface/$scenario: denied before provider transfer\n";
             continue;
         }
-        $expected=in_array($scenario,['outage','duplicate','truncated','unfinished','quota','long_retry','schema_error','catalogue_stale','catalogue_wrong','catalogue_locked','stopped_tool','missing_finish'],true)?'error':'model';
+        $invalidChatCompletion = in_array($scenario,['stopped_tool','object_tool_batch','missing_finish'],true);
+        $expected=$invalidChatCompletion||in_array($scenario,['outage','duplicate','truncated','unfinished','quota','long_retry','schema_error','catalogue_stale','catalogue_wrong','catalogue_locked'],true)?'error':'model';
         $rounds=match($scenario){'mixed'=>3,'denied'=>2,'unfinished','transient_continuation','catalogue_fallback'=>5,
             'transient_start','slash_help','direct_shop_total','direct_delivery_charge','direct_order_total'=>2,
             'outage'=>6,default=>$tool!==null?4:1};
@@ -385,6 +392,9 @@ try{
         }
         $attempts = $turn['model_attempts'];
         $measured = $attempts[0];
+        if ($invalidChatCompletion && (($measured['http_status'] ?? null) !== 200 || ($turn['tools'] ?? []) !== [])) {
+            throw new RuntimeException('Malformed successful Chat Completions response must fail before tool dispatch');
+        }
         if (($measured['connect_ms'] ?? 0) <= 0 || ($measured['ready_ms'] ?? 0) <= 0 || ($measured['first_byte_ms'] ?? 0) <= 0) {
             throw new RuntimeException('Loopback request milestones missing from private attempt evidence');
         }
@@ -431,7 +441,7 @@ try{
         if(str_contains($raw,'fixture-continuation')||str_contains($raw,'opaque-state')||str_contains($raw,'fixture-google-signature'))throw new RuntimeException('Provider-only continuation leaked');
         if($scenario==='contact'&&($response['ui']['kind']??null)!=='contact_enquiry')throw new RuntimeException('Missing model-selected form proposal');
         if($scenario==='outage'&&($turn['tools']??[])!==[])throw new RuntimeException('Outage must not trigger canned lookup');
-        if(in_array($scenario,['denied','duplicate','truncated','stopped_tool','missing_finish'],true)&&($turn['tools']??[])!==[])throw new RuntimeException('Denied call executed');
+        if(in_array($scenario,['denied','duplicate','truncated'],true)&&($turn['tools']??[])!==[])throw new RuntimeException('Denied call executed');
         if($scenario==='recover'&&count(array_filter($turn['tools']??[],static fn(array $t):bool=>$t['name']==='public_policy'))!==2)throw new RuntimeException('Unadvertised tool executed');
         if($scenario==='transient_start'||$scenario==='transient_continuation'){
             $attempts=$turn['model_attempts'];

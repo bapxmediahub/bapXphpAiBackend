@@ -13,7 +13,7 @@ namespace App\Services {
     }
 
     function fixtureCompatibleHost(): string {
-        return in_array(getenv('BAPX_FIXTURE_PROTOCOL'), ['openai','openai_legacy'], true)
+        return in_array(getenv('BAPX_FIXTURE_PROTOCOL'), ['openai','openai_legacy','openai_luna'], true)
             ? 'api.openai.com' : 'provider.fixture.invalid';
     }
 
@@ -44,6 +44,7 @@ namespace App\Services {
             $model = match ($protocol) {
                 'openai' => 'gpt-5',
                 'openai_legacy' => 'gpt-4o',
+                'openai_luna' => 'gpt-6-luna',
                 default => 'fixture-model',
             };
             $compatible = ['provider'=>'openai_compatible','endpoint'=>'https://' . fixtureCompatibleHost() . '/v1',
