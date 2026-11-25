@@ -5,6 +5,12 @@ if(PHP_SAPI==='cli-server'){
     if(getenv('BAPX_MODEL_DRIVEN_FIXTURE')!=='1'){http_response_code(404);return;}
     header('Content-Type: application/json');
     $scenario=explode('/',trim(parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH),'/'))[0];
+    $fail=static function(string $message):void{http_response_code(400);echo json_encode(['error'=>['message'=>$message]]);};
+    if (str_starts_with($scenario, 'foreign_')) {
+        file_put_contents(getenv('BAPX_RECOVERY_FIXTURE_DIR') . '/' . $scenario, 'Unexpected provider transfer');
+        $fail('A foreign conversation reached the provider');
+        return;
+    }
     if($scenario==='outage'){http_response_code(503);echo '{"error":{"status":"UNAVAILABLE"}}';return;}
     if($scenario==='quota'){http_response_code(429);header('Retry-After: 60');echo '{}';return;}
     if($scenario==='long_retry'){http_response_code(503);header('Retry-After: 60');echo '{}';return;}
@@ -14,7 +20,66 @@ if(PHP_SAPI==='cli-server'){
     $compatible=isset($r['messages']);
     $names=$compatible?array_column(array_column($r['tools']??[],'function'),'name'):array_column($r['tools'][0]['functionDeclarations']??[],'name');
     $contents=$compatible?$r['messages']:$r['contents'];
-    $n=$compatible?1+2*count(array_filter($contents,static fn(array $m):bool=>($m['role']??null)==='assistant')):count($contents);
+    $owner=in_array($scenario,['owner','capability','owner_followup'],true);
+    $guest=!$owner&&!in_array($scenario,['customer','ticket'],true);
+    $hasHistory = str_starts_with($scenario, 'catalogue_') || $scenario === 'owner_followup';
+    $assistantRole = $compatible ? 'assistant' : 'model';
+    $expectedRoles = $hasHistory ? ['user',$assistantRole,'user',$assistantRole,'user'] : ['user'];
+    $instructionRole = ($r['model'] ?? '') === 'gpt-5' ? 'developer' : 'system';
+    if ($compatible) array_unshift($expectedRoles, $instructionRole);
+    $initialMessages = array_slice($contents, 0, count($expectedRoles));
+    $instruction = $compatible ? array_shift($initialMessages)['content'] ?? '' : $r['systemInstruction']['parts'][0]['text'] ?? '';
+    $text = static fn(array $message): string => $compatible ? ($message['content'] ?? '') : ($message['parts'][0]['text'] ?? '');
+    $current = json_decode($text(end($initialMessages)), true);
+    if (array_column(array_slice($contents, 0, count($expectedRoles)), 'role') !== $expectedRoles
+        || !str_contains($instruction, $owner ? 'Enterprise Agent runtime constitution' : 'Support Agent runtime constitution')
+        || !str_contains($instruction, 'finished answer between <final_answer> and </final_answer>')
+        || !is_string($current['question'] ?? null) || $current['question'] === ''
+        || !is_array($current['reference_data'] ?? null) || !is_string($current['reference_data']['site_display_name'] ?? null)
+        || (strlen($current['question']) > 16 && str_contains($instruction, $current['question']))) {
+        $fail('Unexpected native instructions, roles or current question');
+        return;
+    }
+    $context = $current['reference_data'];
+    if (str_contains($instruction, $context['site_display_name']) || isset($context['conversation_history'])
+        || (!$owner && (isset($context['previous_report']) || isset($context['attachments'])))) {
+        $fail('Reference data crossed its provider-role boundary');
+        return;
+    }
+    if ($hasHistory) {
+        $expectedFirst = $owner
+            ? ['Show the first order report.','The last delivered order report covered 3 to 7 January.']
+            : ['How many products were published?','There are currently 43 products published in the shop. One example was /product/fixture-first.'];
+        $history = array_map($text, array_slice($initialMessages, 0, -1));
+        $hasGrounding = $owner
+            ? ($context['previous_report']['tool'] ?? null) === 'order_count'
+                && ($context['previous_report']['from'] ?? null) === '2024-01-03'
+                && ($context['previous_report']['to'] ?? null) === '2024-01-07'
+                && str_contains((string)($context['attachments'] ?? ''), '@privacy (legal page)')
+                && !str_contains($instruction, '@privacy (legal page)')
+                && ($current['question'] ?? '') === 'How many orders in that same period now? Include @privacy for reference.'
+            : ($context['previous_public_product_slugs'] ?? null) === ['fixture-first']
+                && ($current['question'] ?? '') === 'Is that published product count still correct?';
+        if ($history !== [...$expectedFirst,'Can I ask a follow-up?','Yes, you can ask about the same subject.']
+            || !$hasGrounding || str_contains($wire, 'Unsuccessful provider attempt.')
+            || str_contains($instruction, $expectedFirst[1]) || str_contains($wire, '2024-01-08')) {
+            $fail('Unsuccessful attempts displaced approved follow-up context, or native role order changed');
+            return;
+        }
+    }
+    $n = 1 + 2 * count(array_filter(array_slice($contents, count($expectedRoles)),
+        static fn(array $message): bool => ($message['role'] ?? null) === $assistantRole));
+    if (($scenario === 'catalogue_fallback' && $compatible && $n === 1)
+        || ($scenario === 'catalogue_locked' && $compatible && $n === 7)) {
+        http_response_code(503);
+        header('Retry-After: 60');
+        echo '{"error":{"status":"UNAVAILABLE"}}';
+        return;
+    }
+    if ($scenario === 'catalogue_locked' && !$compatible) {
+        $fail('A partially executed tool exchange crossed providers');
+        return;
+    }
     // Force a single failed HTTP transfer, then require a byte-identical retry.
     // State is isolated in this test runner's temporary directory.
     if(($scenario==='transient_start'&&$n===1)||($scenario==='transient_continuation'&&$n===7)){
@@ -44,20 +109,22 @@ if(PHP_SAPI==='cli-server'){
                 $response=$part['functionResponse']??[];
                 $responses[$response['id']??'']=$response['response']??[];
             }
-            $previous=array_column(array_column($contents[count($contents)-2]['parts'],'functionCall'),'id');
+            $modelParts = $contents[count($contents)-2]['parts'];
+            $previous=array_column(array_column($modelParts,'functionCall'),'id');
+            if (($modelParts[0]['thoughtSignature'] ?? '') !== 'fixture-google-signature') {
+                $fail('Gemma tool continuation signature missing');
+                return;
+            }
         }
         if(count($previous)!==count($responses)||array_diff($previous,array_keys($responses))){
             http_response_code(400);echo '{"error":{"message":"Uncorrelated tool batch"}}';return;
         }
     }
     $last=$responses===[]?[]:reset($responses);
-    $owner=in_array($scenario,['owner','capability','owner_followup'],true);
-    $guest=!$owner&&!in_array($scenario,['customer','ticket'],true);
-    $fail=static function(string $message):void{http_response_code(400);echo json_encode(['error'=>['message'=>$message]]);};
     if((!$owner&&in_array('order_count',$names,true))||($guest&&array_intersect(['own_order_status','own_ticket_status'],$names))){$fail('Role leak');return;}
     $call=static fn(string $name,array $args,string $id):array=>['functionCall'=>['name'=>$name,'args'=>(object)$args,'id'=>$id]];
     $choice=match($scenario){
-        'aggregate','catalogue_wrong','catalogue_current'=>['public_catalogue_summary',[], 'total','catalogue'],
+        'aggregate','catalogue_wrong','catalogue_current','catalogue_fallback','catalogue_locked'=>['public_catalogue_summary',[], 'total','catalogue'],
         'owner'=>['order_count',['period'=>'all_time'],'count','reporting'],
         'owner_followup'=>['order_count',['from'=>'2024-01-03','to'=>'2024-01-07'],'count','reporting'],
         'customer'=>['own_order_status',[],'count','customer-policy'],
@@ -68,18 +135,6 @@ if(PHP_SAPI==='cli-server'){
         default=>null
     };
     $finish='STOP';
-    if ($n === 1 && (str_starts_with($scenario, 'catalogue_') || $scenario === 'owner_followup')) {
-        $prompt = $contents[0]['parts'][0]['text'] ?? '';
-        $hasGrounding = $scenario === 'owner_followup'
-            ? str_contains($prompt, 'The last delivered order report covered 3 to 7 January.')
-                && str_contains($prompt, 'Previous report: order_count, 2024-01-03 to 2024-01-07 inclusive.')
-            : str_contains($prompt, 'There are currently 43 products published in the shop.')
-                && str_contains($prompt, '"previous_public_product_slugs":["fixture-first"]');
-        if (!$hasGrounding || str_contains($prompt, 'Unsuccessful provider attempt.') || str_contains($prompt, '2024-01-08')) {
-            $fail('Unsuccessful attempts displaced verified follow-up context');
-            return;
-        }
-    }
     if($scenario==='catalogue_stale') {
         $parts=[['text'=>'<final_answer>There are currently 43 products published in the shop.</final_answer>']];
     }elseif($scenario==='mixed'){
@@ -116,7 +171,7 @@ if(PHP_SAPI==='cli-server'){
         elseif($n===5&&isset($last['instructions'])&&in_array($tool,$names,true))$parts=[$call($tool,$args,'business')];
         elseif($n===7&&array_key_exists($field,$last)&&!isset($last['error'])){
             $answer=match($scenario){
-                'aggregate','catalogue_current'=>'The catalogue contains '.$last['total'].' published products.',
+                'aggregate','catalogue_current','catalogue_fallback','catalogue_locked'=>'The catalogue contains '.$last['total'].' published products.',
                 'catalogue_wrong'=>'The catalogue contains '.($last['total']+1).' published products.',
                 'owner'=>'There are '.$last['count'].' dated order records in the requested period.',
                 'owner_followup'=>'There are '.$last['count'].' orders from '.$last['from'].' through '.$last['to'].'.',
@@ -144,7 +199,10 @@ if(PHP_SAPI==='cli-server'){
             $message['reasoning_details']=[['type'=>'fixture','id'=>'opaque-state']];
         }
         echo json_encode(['choices'=>[['message'=>$message,'finish_reason'=>$finish==='MAX_TOKENS'?'length':($calls!==[]?'tool_calls':'stop')]]],JSON_THROW_ON_ERROR);
-    }else echo json_encode(['candidates'=>[['content'=>['parts'=>$parts],'finishReason'=>$finish]]],JSON_THROW_ON_ERROR);
+    } else {
+        if (isset($parts[0]['functionCall'])) $parts[0]['thoughtSignature'] = 'fixture-google-signature';
+        echo json_encode(['candidates'=>[['content'=>['parts'=>$parts],'finishReason'=>$finish]]],JSON_THROW_ON_ERROR);
+    }
     return;
 }
 if(PHP_SAPI!=='cli')exit;
@@ -184,27 +242,55 @@ try{
         ['long_retry','support','guest','hi',null],
         ['schema_error','support','guest','hi',null],
     ]);
-    // Real controllers resume private saved chats after failed attempts. The
-    // compatible-provider wire fixture bypasses these controllers.
+    // Real controllers resume private saved chats through both wire adapters.
     $followupCases=[
         ['catalogue_stale','support','guest','Is that published product count still correct?',null],
         ['catalogue_wrong','support','guest','Is that published product count still correct?','public_catalogue_summary'],
         ['catalogue_current','support','guest','Is that published product count still correct?','public_catalogue_summary'],
-        ['owner_followup','admin','admin','How many orders in that same period now?','order_count'],
+        ['owner_followup','admin','admin','How many orders in that same period now? Include @privacy for reference.','order_count'],
     ];
-    foreach(['google','compatible'] as $protocol)foreach(
-        $protocol==='google'?array_merge($cases,$followupCases):$cases as [$scenario,$surface,$role,$question,$tool]
-    ){
+    $privacyCases = [
+        ['foreign_support','support','customer','Open the other customer conversation.',null],
+        ['foreign_owner','admin','admin','Open the other owner conversation.',null],
+    ];
+    $compatibleRecovery = [
+        ['catalogue_fallback','support','guest','Is that published product count still correct?','public_catalogue_summary'],
+        ['catalogue_locked','support','guest','Is that published product count still correct?','public_catalogue_summary'],
+    ];
+    $standard = array_merge($cases, $followupCases, $privacyCases);
+    $protocols = [
+        'google' => $standard,
+        'compatible' => array_merge($standard, $compatibleRecovery),
+        'openai' => [$followupCases[3]],
+        'openai_legacy' => [$followupCases[3]],
+    ];
+    foreach ($protocols as $protocol=>$requests) foreach ($requests as [$scenario,$surface,$role,$question,$tool]) {
         $env=['BAPX_MODEL_DRIVEN_FIXTURE'=>'1','BAPX_FIXTURE_ENDPOINT'=>'http://'.$address.'/'.$scenario,'BAPX_TEST_MODE'=>'1','BAPX_FIXTURE_PROTOCOL'=>$protocol]+getenv();
         $child=proc_open([PHP_BINARY,__DIR__.'/fixtures/model-driven-agent-turn.php',$scenario,$surface,$role,$question],[0=>['file','/dev/null','r'],1=>['pipe','w'],2=>['pipe','w']],$io,null,$env);
         if(!is_resource($child))throw new RuntimeException('Child startup failed');
         $raw=stream_get_contents($io[1]);$err=stream_get_contents($io[2]);fclose($io[1]);fclose($io[2]);$exit=proc_close($child);
         $result=json_decode($raw,true);
-        $expected=in_array($scenario,['outage','duplicate','truncated','unfinished','quota','long_retry','schema_error','catalogue_stale','catalogue_wrong'],true)?'error':'model';
-        $rounds=match($scenario){'mixed'=>3,'denied'=>2,'unfinished','transient_continuation'=>5,'transient_start'=>2,'outage'=>$protocol==='google'?6:3,default=>$tool!==null?4:1};
         $turn=$result['turn']??[];$response=$result['response']??[];
+        if (str_starts_with($scenario, 'foreign_')) {
+            if ($exit !== 0 || ($result['status'] ?? 0) < 400 || ($turn['model_attempts'] ?? []) !== []
+                || is_file($recoveryDir . '/' . $scenario) || str_contains(json_encode($response), 'private answer')) {
+                throw new RuntimeException('Foreign conversation crossed the actor boundary');
+            }
+            echo "PASS $protocol/$surface/$scenario: denied before provider transfer\n";
+            continue;
+        }
+        $expected=in_array($scenario,['outage','duplicate','truncated','unfinished','quota','long_retry','schema_error','catalogue_stale','catalogue_wrong','catalogue_locked'],true)?'error':'model';
+        $rounds=match($scenario){'mixed'=>3,'denied'=>2,'unfinished','transient_continuation','catalogue_fallback'=>5,
+            'transient_start'=>2,'outage'=>6,default=>$tool!==null?4:1};
         if($exit!==0||($turn['outcome']??null)!==$expected||count($turn['model_attempts']??[])!==$rounds||($turn['turn_id']??null)!==($response['turn_id']??null)){
             throw new RuntimeException("$scenario/$surface: unexpected model lifecycle: ".substr($raw,0,2500)." STDERR: ".substr($err,0,1000));
+        }
+        if ($expected === 'model') {
+            $surfaceId = $response['a2ui']['messages'][0]['createSurface']['surfaceId'] ?? '';
+            if (!str_starts_with($surfaceId, 'bapx_' . $surface . '_')
+                || ($turn['answer'] ?? '') !== ($response[$surface === 'admin' ? 'answer' : 'reply'] ?? null)) {
+                throw new RuntimeException('Saved answer or native A2UI scope differed from the controller response');
+            }
         }
         $attempts = $turn['model_attempts'];
         $measured = $attempts[0];
@@ -228,18 +314,25 @@ try{
             throw new RuntimeException('Owner follow-up did not rerun its tool for the last delivered report period');
         }
         if(str_starts_with($scenario,'catalogue_')) {
-            if($scenario==='catalogue_current'){
+            if(in_array($scenario,['catalogue_current','catalogue_fallback'],true)){
                 if(($result['status']??0)!==200||!str_contains($response['reply']??'','0 published products'))
                     throw new RuntimeException('Matching fresh zero-product count was not delivered');
-            }else{
+            }elseif(in_array($scenario,['catalogue_stale','catalogue_wrong'],true)){
                 if(($result['status']??0)!==503||($response['run']['reason']??'')!=='catalogue_total_unverified'
                     ||!str_contains($response['reply']??'','/shop')||str_contains($response['reply']??'','published products'))
                     throw new RuntimeException('Unsupported catalogue total was not withheld with an explicit outcome');
                 if($scenario==='catalogue_stale'&&($turn['tools']??[])!==[])throw new RuntimeException('Guard chose a tool instead of the model');
             }
         }
-        if(str_contains($raw,'fixture-continuation')||str_contains($raw,'opaque-state'))throw new RuntimeException('Provider-only continuation leaked');
-        if($protocol==='google'&&$scenario==='contact'&&($response['ui']['kind']??null)!=='contact_enquiry')throw new RuntimeException('Missing model-selected form proposal');
+        if ($scenario === 'catalogue_fallback' && array_column($attempts,'http_status') !== [503,200,200,200,200]) {
+            throw new RuntimeException('Pre-tool fallback did not preserve native roles across providers');
+        }
+        if ($scenario === 'catalogue_locked' && (array_column($attempts,'http_status') !== [200,200,200,503]
+            || count($turn['tools'] ?? []) !== 1)) {
+            throw new RuntimeException('Fallback restarted an already executed tool exchange');
+        }
+        if(str_contains($raw,'fixture-continuation')||str_contains($raw,'opaque-state')||str_contains($raw,'fixture-google-signature'))throw new RuntimeException('Provider-only continuation leaked');
+        if($scenario==='contact'&&($response['ui']['kind']??null)!=='contact_enquiry')throw new RuntimeException('Missing model-selected form proposal');
         if($scenario==='outage'&&($turn['tools']??[])!==[])throw new RuntimeException('Outage must not trigger canned lookup');
         if(in_array($scenario,['denied','duplicate','truncated'],true)&&($turn['tools']??[])!==[])throw new RuntimeException('Denied call executed');
         if($scenario==='recover'&&count(array_filter($turn['tools']??[],static fn(array $t):bool=>$t['name']==='public_policy'))!==2)throw new RuntimeException('Unadvertised tool executed');

@@ -195,6 +195,27 @@ Google uses its native function declaration and function response format;
 OpenRouter and configured OpenAI-compatible connections use Chat Completions.
 Both adapters use the same PHP execution gate and role-scoped registries.
 
+Both native chat controllers build an `AgentModelTurn` from authorized inputs.
+Fixed application guidance and the response-format instruction use Gemma REST
+`systemInstruction`, or the Chat Completions instruction role. Direct OpenAI
+uses `developer` for the recognized GPT-5, GPT-6, o1, o3 and o4 families.
+Other Chat Completions connections and legacy direct OpenAI models use
+`system`. The endpoint and model remain determined by the enabled provider plan.
+
+The adapters send bounded successful history as chronological `user` and
+`model` (Gemma) or `assistant` (Chat Completions) messages. The current
+`user` message contains the question and a `reference_data` object for
+server-derived context. Prior product identities, report scope, site identity
+and owner-resolved attachments stay in data fields. Referents help resolve a
+follow-up and require an authorized current lookup for current business facts.
+Earlier tool calls and internal reasoning are absent from saved dialogue.
+Tool-call correlation and provider continuation fields apply within the
+current request only. Text-only and synthetic diagnostic calls continue to
+use their existing one-shot prompt path.
+[Gemma system instructions and multi-turn requests](https://gemma.ai/deployment/gemini-api/#system-instructions) ·
+[OpenAI conversation state](https://developers.openai.com/api/docs/guides/conversation-state#manually-manage-conversation-state) ·
+[OpenAI Chat Completions roles](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create).
+
 A batch can contain multiple calls. Its call identifiers must be valid and unique
 before any member executes. The advertised declaration snapshot controls the
 current round; `tool_search` activates new schemas only on subsequent model

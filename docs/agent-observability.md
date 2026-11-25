@@ -275,8 +275,11 @@ References (patterns researched, not required installations):
 ## Follow-up contracts: context, action receipts, lifecycle and history
 
 - `contextForActor` authorizes the session first and supplies at most four prior
-  successful turns and an 8,000-byte JSON dialogue budget by default. Both agent
-  prompts use that dialogue as untrusted reference. Product slugs come from
+  successful turns and an 8,000-byte JSON dialogue budget by default. The
+  provider receives those pairs in chronological user and assistant/model
+  messages. The current question and scope data use the latest user message.
+  Fixed runtime guidance uses the provider's separate instruction field.
+  Product slugs come from
   turns inside the selected dialogue budget, and current details require a live
   scoped lookup. Enterprise can reuse the last successful report scope. Failed
   attempts remain visible in history and traces.

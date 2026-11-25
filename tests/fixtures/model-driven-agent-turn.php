@@ -4,16 +4,51 @@ namespace {
     if(PHP_SAPI!=='cli'||getenv('BAPX_MODEL_DRIVEN_FIXTURE')!=='1')exit(1);
 }
 namespace App\Services {
-    // Only the configured endpoint is substituted. The real AiClient, registries,
-    // instruction manifests, controllers and conversation persistence execute.
+    function fixtureEndpoint(): string {
+        $endpoint = (string)getenv('BAPX_FIXTURE_ENDPOINT');
+        if (!preg_match('~^http://127\.0\.0\.1:[0-9]+/[a-z_]+$~D', $endpoint)) {
+            throw new \RuntimeException('Only loopback fixtures permitted');
+        }
+        return $endpoint;
+    }
+
+    function fixtureCompatibleHost(): string {
+        return in_array(getenv('BAPX_FIXTURE_PROTOCOL'), ['openai','openai_legacy'], true)
+            ? 'api.openai.com' : 'provider.fixture.invalid';
+    }
+
+    // Local shims exercise AiClient's usual configured-endpoint route while
+    // permitting connections only to this fixture's temporary loopback server.
+    function dns_get_record(string $host, int $type): array {
+        if ($host !== fixtureCompatibleHost()) throw new \RuntimeException('Unexpected DNS lookup');
+        return [['ip'=>'93.184.216.34']];
+    }
+    function curl_init(?string $url = null): \CurlHandle|false {
+        $endpoint = fixtureEndpoint();
+        if ($url === $endpoint . '/fixture-model:generateContent') return \curl_init($url);
+        if ($url === 'https://' . fixtureCompatibleHost() . '/v1/chat/completions') {
+            return \curl_init($endpoint . '/chat/completions');
+        }
+        throw new \RuntimeException('Unexpected network destination');
+    }
+
     final class SecretService {
         public const PRIMARY_MODEL='fixture-model', FALLBACK_MODEL='fixture-model';
         public const GOOGLE_MODELS=['fixture-model'];
         public static function validModelId(string $model): bool {return $model==='fixture-model';}
         public function getProviderPlan(): array {
-            $endpoint=(string)getenv('BAPX_FIXTURE_ENDPOINT');
-            if(!preg_match('~^http://127\.0\.0\.1:[0-9]+/[a-z_]+$~D',$endpoint))throw new \RuntimeException('Only loopback fixtures permitted');
-            return [['provider'=>'google','endpoint'=>$endpoint,'apiKey'=>'fixture-only','models'=>['fixture-model'],'model'=>'fixture-model']];
+            $endpoint = fixtureEndpoint();
+            $google = ['provider'=>'google','endpoint'=>$endpoint,'apiKey'=>'fixture-only','models'=>['fixture-model'],'model'=>'fixture-model'];
+            $protocol = getenv('BAPX_FIXTURE_PROTOCOL');
+            if ($protocol === 'google') return [$google];
+            $model = match ($protocol) {
+                'openai' => 'gpt-5',
+                'openai_legacy' => 'gpt-4o',
+                default => 'fixture-model',
+            };
+            $compatible = ['provider'=>'openai_compatible','endpoint'=>'https://' . fixtureCompatibleHost() . '/v1',
+                'apiKey'=>'fixture-only','models'=>[$model],'model'=>$model,'configured'=>true];
+            return preg_match('~/catalogue_(?:fallback|locked)$~D',$endpoint) ? [$compatible,$google] : [$compatible];
         }
         public function getModelConfig(): array {return $this->getProviderPlan()[0];}
         public function all(): array {return [];}
@@ -39,6 +74,7 @@ namespace {
     $_POST=['message'=>$argv[4],'_csrf'=>'fixture','request_id'=>bin2hex(random_bytes(16))];
     $followupReport = $scenario === 'owner_followup';
     $followup = $followupReport || str_starts_with($scenario, 'catalogue_');
+    $foreign = in_array($scenario, ['foreign_support','foreign_owner'], true);
     $seedAnswer = null;
     if ($followup) {
         $conversations = new \App\Services\AgentConversationService();
@@ -52,12 +88,21 @@ namespace {
         $previous = $conversations->record($surface, $actor, null, $question, $seedAnswer,
             bin2hex(random_bytes(8)), 'model', reportContext:$report, knowledge:$knowledge);
         $_POST['conversation_id'] = $previous['conversation_id'];
+        $conversations->record($surface, $actor, $previous['conversation_id'], 'Can I ask a follow-up?',
+            'Yes, you can ask about the same subject.', bin2hex(random_bytes(8)), 'model');
         $failedReport = $followupReport ? ['tool'=>'order_count', 'from'=>'2024-01-08', 'to'=>'2024-01-14'] : null;
         for ($attempt = 0; $attempt < 4; $attempt++) {
             $conversations->record($surface, $actor, $previous['conversation_id'], 'Follow-up attempt.',
                 'Unsuccessful provider attempt.', bin2hex(random_bytes(8)), 'error',
                 reportContext:$failedReport, knowledge:$followupReport ? [] : ['public_product_slugs'=>['unaccepted']]);
         }
+    } elseif ($foreign) {
+        $conversations = new \App\Services\AgentConversationService();
+        $identity = $conversations::actor($surface, $_SESSION['user'] ?? null);
+        $identity['id'] = 'different-actor';
+        $previous = $conversations->record($surface, $identity, null, 'This is a different actor’s question.',
+            'Different actor’s private answer.', bin2hex(random_bytes(8)), 'model');
+        $_POST['conversation_id'] = $previous['conversation_id'];
     }
     ob_start();
     register_shutdown_function(static function()use($directory,$seedAnswer):void{
@@ -66,10 +111,10 @@ namespace {
         $turns=$files?(json_decode(file_get_contents($files[0]),true)['turns']??[]):[];
         $result=['status'=>http_response_code(),'response'=>$response,'turn'=>$turns[array_key_last($turns)]??[]];
         if ($seedAnswer !== null) {
-            $result['history_preserved'] = count($files) === 1 && count($turns) === 6
+            $result['history_preserved'] = count($files) === 1 && count($turns) === 7
                 && ($response['conversation_id'] ?? null) === $_POST['conversation_id']
                 && ($turns[0]['answer'] ?? null) === $seedAnswer
-                && array_column(array_slice($turns, 1, 4), 'outcome') === array_fill(0, 4, 'error');
+                && array_column(array_slice($turns, 2, 4), 'outcome') === array_fill(0, 4, 'error');
         }
         echo json_encode($result,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);
         foreach(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directory,\FilesystemIterator::SKIP_DOTS),\RecursiveIteratorIterator::CHILD_FIRST) as $entry){
@@ -77,27 +122,6 @@ namespace {
         }
         rmdir($directory);
     });
-    if(getenv('BAPX_FIXTURE_PROTOCOL')==='compatible'){
-        $actor=$_SESSION['user']??null;
-        $tools=new \App\Services\RuntimeAgentToolRegistry($surface,$actor,
-            $surface==='admin'?new \App\Services\EnterpriseToolRegistry(ownerQuestion:$argv[4]):new \App\Services\SupportToolRegistry($actor),$argv[4]);
-        $traceId=bin2hex(random_bytes(8));
-        \App\Services\AgentTraceService::begin($traceId,null,\App\Services\AiClient::agentLimits());
-        $client=new \App\Services\AiClient();
-        $config=(new \App\Services\SecretService())->getProviderPlan()[0];
-        $config['provider']='openai_compatible';$config['configured']=true;
-        $method=new ReflectionMethod(\App\Services\AiClient::class,'completeCompatibleLoop');
-        $answer=$method->invoke($client,$config,$tools->instructionPrompt()."\n".$argv[4],1024,null,$tools,4,hrtime(true)+110000000000,false,[CURLOPT_PROXY=>'',CURLOPT_FOLLOWLOCATION=>false]);
-        $outcome=\App\Services\AiClient::isError($answer)||trim($answer)===''?'error':'model';
-        $conversation=new \App\Services\AgentConversationService();
-        $identity=$conversation::actor($surface,$actor);
-        $prepared=$conversation->prepareTurn($surface,$identity,null,$argv[4],$traceId);
-        $business=$tools->activity();
-        $record=$conversation->record($surface,$identity,$prepared['conversation_id'],$argv[4],$answer,$traceId,$outcome,$business,null,null,$client->transferTimings(),$tools->retrieval());
-        http_response_code($outcome==='model'?200:502);
-        echo json_encode(['answer'=>$answer,'ticket_id'=>null]+$record,JSON_THROW_ON_ERROR);
-        exit;
-    }
     if($surface==='admin')(new \App\Controllers\AdminController())->agentAsk();
     else (new \App\Controllers\SupportController())->ask();
 }
