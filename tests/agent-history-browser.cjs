@@ -260,6 +260,25 @@ test('Failed question returns to the composer with the recorded turn and no auto
     }
 });
 
+test('An empty successful HTTP response shows an error and preserves the Enterprise question', async () => {
+    const page = await browser.newPage();
+    try {
+        await page.route(origin + '/admin/agent', route => route.fulfill({contentType:'text/html', body:view}));
+        await page.route(origin + '/admin/agent/ask', route => route.fulfill({json:{}}));
+        await page.goto(origin + '/admin/agent');
+        await page.addScriptTag({path:path.join(root, 'assets/agent-status.js')});
+        const input = page.getByRole('textbox', {name:'Message'});
+        await input.fill('Summarize orders');
+        await input.press('Enter');
+        await page.getByText('The server returned no answer.', {exact:true}).waitFor();
+        assert.equal(await page.locator('.ai-request-status[data-state=error]').count(), 1);
+        assert.equal(await page.locator('.agent-bubble--bot').count(), 0);
+        assert.equal(await input.inputValue(), 'Summarize orders');
+    } finally {
+        await page.close();
+    }
+});
+
 const presentations=JSON.parse(execFileSync('php',['tests/fixtures/a2ui-responses.php'],{cwd:root,encoding:'utf8'}));
 async function assertStructuredWidth(page) {
     const sizes=await page.locator('.bapx-a2ui--answer').evaluateAll(elements=>elements.map(element=>({

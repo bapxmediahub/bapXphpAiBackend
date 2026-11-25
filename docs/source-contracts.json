@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "d3ad36921767ce1fa7b7dd7e4b1128711e688a746d3bfdd3c924d802e374439b",
-            "references_sha256": "83319904182f71c17653bdb5cf329ffda8b53aedaa5d557187b0d79e9c6afffd",
-            "review_note": "Reviewed both agent loops for removed canned and regex reply paths, accepted-model-only history, actual tool scope, explicit error outcomes and 64 fixture provider cases. Updated runtime and observability guidance."
+            "source_sha256": "60066014b65d686f8fa203d984a13cac2390cafa7ff68d1b26d86a717a398d91",
+            "references_sha256": "b0dc1af45e5d5dd80e0408d032b5d166fa6ae5a5da3ae6203d06c2ca857b51b7",
+            "review_note": "Matched the documented auto-recovery and draft boundary to both browser handlers and tested empty HTTP 200 exchanges in Chromium. Visible error status remains separate from genuine answers and owner draft forms."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -28,9 +28,9 @@
             "review_note": "Verified native PHP application boundaries after pruning unused answer and broad context paths. Owner and Support keep authority in named typed tools and the same private conversation files."
         },
         "google-tags": {
-            "source_sha256": "cb62a05f8d83f991e38d6f1593e8ccb31a0006cfb3bed28033056679f7106f63",
+            "source_sha256": "152dd461a5222c692147758087c7bbf2384cce48dea9d735f1974c5ebf7d0aaf",
             "references_sha256": "327d47f02e4a8ad21085d0a1d09c4cc515fb2da60c56659fecfccebb0d4a40ef",
-            "review_note": "Cross-reviewed the public layout and frontend skill with the tag integration paths. The new session-scoped logic is inside the Support widget only and has no analytics payload."
+            "review_note": "Checked the public layout diff against the Google tagging boundary and Integrations guide. The changed chat reply handling leaves head markup, tag IDs, and consent configuration intact."
         },
         "http-errors": {
             "source_sha256": "2e2fee3211f50641844c05f86381f277f9c6c10b7fb60fb750c52937b0868e12",
@@ -38,9 +38,9 @@
             "review_note": "Reviewed the new hosting instructions against existing request-failure guidance. A transport receipt remains distinct from a rendering response, and the worker preserves the canonical queue before reporting an outcome."
         },
         "interface": {
-            "source_sha256": "9356d22785c878605c902ffb69e1443eb67504b0b289b9f75680abdcbdcd2b8b",
+            "source_sha256": "66c456cc57f8a6e9048ab4100adc0f61f30ae91d0e6ec1656dd55744564598e1",
             "references_sha256": "99cc04fc48e47c2686cc6efa23f470e7acc6d654dcc91336499ab570364cced6",
-            "review_note": "Cross-checked Design, Enterprise history and Support New chat against actual page markup and Chromium regressions for role scope, local recovery, keyboard and A2UI restoration."
+            "review_note": "Checked the shared Design request status contract and both UI skill recovery rules against the existing status component. Empty replies use the adjacent error state, with Enterprise input preserved and no fabricated answer."
         },
         "mail": {
             "source_sha256": "48ce3e94a6e75539434618c1eeb421e48ca391957baa42c6a5c8a0671416e7fc",
@@ -58,9 +58,9 @@
             "review_note": "Compared active-chat restoration and attachment changes with the media operator instructions, and confirmed upload and in-memory draft attachment regressions pass."
         },
         "operator-help": {
-            "source_sha256": "4cbf688d05379d8bf282e5dd605c4462bda972843ebbee55b6a115a0d8762cbf",
+            "source_sha256": "31681f8c207f56fa7bcfe082cbb15c5fc81f39e48103e2b96f30a2dcf3be76ca",
             "references_sha256": "0b6f98d469ec75bea6b386149fd46a6899cf15402fa354a3e92b2af9d05ebb40",
-            "review_note": "Checked the real Help page, task panel and operator guide tool against the revised Enterprise guide. Typed questions now use the model and the former local chat strings have been removed."
+            "review_note": "Reviewed the owner guide and its separate Help and Docs controls against the Enterprise conversation renderer. Empty answer envelopes display a request error and preserve the owner question for manual recovery."
         },
         "public-mcp": {
             "source_sha256": "06a7b8ef4b99e3c70cbae0dbf6ee2b7c97029aabb851906dc8e2e50d9f81c253",
@@ -68,9 +68,9 @@
             "review_note": "Checked removal of the question-to-A2UI heuristic alongside public MCP and A2UI details. Public and chat presenters consume typed authorized source evidence and selected published products."
         },
         "remote-commerce": {
-            "source_sha256": "1573658d95dac28bb53f540081e22a5f29e7121bf8d1acb2dfc72b6554b7d0b1",
+            "source_sha256": "dc6dbc4aca4150d6964d5e065e7b09eaa75fa6319434af30c5c85a7c7531a99c",
             "references_sha256": "135d6012b4cf58ce8c5942ea0f98245fd8e8e8c38175ea0c839e8a258777d287",
-            "review_note": "Reviewed Support New chat, actor-scoped transcript eviction, and pending controls against the independent checkout recovery contract. The populated receipt survives conversation reset in the browser regression."
+            "review_note": "Reviewed native Support checkout and WebMCP recovery against the public layout diff. The chat response validation leaves the canonical purchase and verification controls intact and records no assistant success for an empty reply."
         },
         "sales-channels": {
             "source_sha256": "36385e3d18e26f524d0efdd12d26cd8386e368fb5d27441460c688ffdff28b92",
