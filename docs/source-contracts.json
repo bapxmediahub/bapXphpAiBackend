@@ -78,9 +78,9 @@
             "review_note": "Reviewed SettingsService module resolution and Merchant feed guidance. Dropping a retired header slot leaves the saved catalog eligibility inputs intact."
         },
         "workflow": {
-            "source_sha256": "e43fe67f60dd25db07dd87426f6cb5a337ea7f6f1796d01f3054fd4deaf9ea69",
+            "source_sha256": "916168e32dd7086fca5fd23e94e2fbf6a8bd2b94dda0b62f1a5596b6d4f8c86d",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Verified the Testing and review procedure against the deployed customer UI base and new analytics checks. Route and generated maps remain grounded in source and require browser acceptance on both widths."
+            "review_note": "Verified current workflow guidance, including the newly released credential history fallback, against the analytics change and existing release tests. The separate Agent and Site sections use the existing approval and private test process."
         }
     }
 }
