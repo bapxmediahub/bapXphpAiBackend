@@ -1999,7 +1999,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AiClient.php",
-            "line": 642
+            "line": 652
         },
         {
             "from": "service:AiClient",
@@ -2007,7 +2007,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AiClient.php",
-            "line": 831
+            "line": 841
         },
         {
             "from": "service:AiClient",

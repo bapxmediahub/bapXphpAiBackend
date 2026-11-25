@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "bde2bde8a9de8bf32dc819c741e87a13e30ec696f95f2049814fee7028c63a73",
+            "source_sha256": "bcce800df0740538faa391ff1ee86947fb220ddbf7a43ba3b9df991f770fa809",
             "references_sha256": "eca25412da58ee1eef18bc49445b15a8adf04ca7a22a52eede085850e1bef285",
-            "review_note": "Reviewed backend skill updates alongside the fixed agent capability allowlists. The booking retry remains a private PHP form action."
+            "review_note": "Compared the provider status, selected connection, and allowlisted 401 and 403 guidance with the transfer and agent run contracts."
         },
         "auth": {
             "source_sha256": "c34a5b34bc904f36cda184c26113f91e2cf36afa2b506217d1f74e22e9e0cefd",
@@ -28,9 +28,9 @@
             "review_note": "Reviewed the one streamed audit SELECT, strict authenticated response and PDO cleanup alongside campaign booking persistence and protected storage."
         },
         "google-tags": {
-            "source_sha256": "366fdab983979cc3a1fec22fb6da4afb61072d6fd24cd0ba2271d67a0c063019",
-            "references_sha256": "655070d558837a1d942929e6860428b9d822cb9b89e2d0d95344fdfe5d88b87d",
-            "review_note": "Rechecked the current Site analytics, Google reporting and integration routes inherited from the merged base. Campaign booking changes add no tag or reporting behavior."
+            "source_sha256": "263f51e361869ee25bb077ed9f3ff72b880a9f6b2e74f834f5c97d39a71658d6",
+            "references_sha256": "48d9de95884de272bdca142b4a81ae2ef5ba3ed9bc5b739816915eb4921b6d02",
+            "review_note": "Reviewed the Integrations view and shared hook documentation after updating the AI diagnostic display and its direct links."
         },
         "http-errors": {
             "source_sha256": "0f920c297cfc4e216a87be02a35c20827cc254dd6934ba24a1fa9135520a0560",
@@ -38,9 +38,9 @@
             "review_note": "Reviewed sanitized provider failures and private booking responses against the existing dynamic response guard."
         },
         "interface": {
-            "source_sha256": "82b14d7ac04642c59d3078ae1c355cee4aa65d582a36ae6dff4fec93456f3f36",
+            "source_sha256": "9e7fe3ed1e5f69b923a0a368947d94dd44ef0e2130d59a49bed154aa1603489e",
             "references_sha256": "8a7bcf8667f4811a5ee194d0c42afeaef5a17bb1571f4f0ae570aa2cccfa256c",
-            "review_note": "Compared the Dashboard count states, authored checkout controls and normal owner redirect against the administrator guide and Design."
+            "review_note": "Compared the owner diagnostic result card with the existing settings layout and desktop and narrow viewport render checks."
         },
         "mail": {
             "source_sha256": "11a3b674d92d0714846359177499966c2f5ad2b1af5380a972280c64bb79b7b8",
@@ -49,8 +49,8 @@
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
-            "references_sha256": "73c4e7ed550ac139d52f0e560ab34a74738e8f4aa2ae6fc87c9e635c9dcd4d43",
-            "review_note": "Checked the merged Integrations guide against the local MCP client controller and form. The owner issues and revokes a paid-sales grant, and the trusted STDIO client receives it through its process environment."
+            "references_sha256": "d8bbac10e48af1a4eb7f72e4d6765f706f586b1e6f4a09d0bfa7c893d1f82557",
+            "review_note": "Reviewed the shared Integrations page contract. The owner model-test result displays provider and model details inside the existing admin route."
         },
         "media": {
             "source_sha256": "edc32a5a9f73cf7f2954eac135a2eaed1394089034bac24ea835af48c4d9600e",
@@ -58,9 +58,9 @@
             "review_note": "Checked retained campaign file descriptors and protected streaming against Media Library behavior. Booking authorization is scoped to the frozen private manifest."
         },
         "operator-help": {
-            "source_sha256": "812aedcf633861570ea8da4092d9be1803ae5b09ac9647b9707524982aeef17b",
+            "source_sha256": "8554045c52e1ef8c30f1bee0890f42a917356d1a2f4bbfa8578f7e6edb28a6f1",
             "references_sha256": "d7972865c18db0e7cab36b4fdf0cf22cf388c8fbde7bd5ae088de971afd212fe",
-            "review_note": "Reviewed the Dashboard count states and owner Pages documentation against their distinct dashboard and campaign booking routes."
+            "review_note": "Compared owner Integrations, its read-only test, the named credential field, and permission guidance with the operator help instructions."
         },
         "public-mcp": {
             "source_sha256": "737d1417edeec4f39402eaa1b659409d866db04476bf5f549d065deae57903f8",
