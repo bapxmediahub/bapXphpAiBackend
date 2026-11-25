@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{AuditLogService,MailQueueService,AuthService,BlogDraftService,BlogService,ConsultationService,EnvService,MailStorageService,MarkdownRenderer,MediaService,OrderService,ResourceService,SchemaService,SecretService,SettingsService,StoragePermissionService,StoreStatsService};
+use App\Services\{AuditLogService,MailQueueService,AuthService,AuthoredPageService,CampaignDownloadService,BlogDraftService,BlogService,ConsultationService,EnvService,MailStorageService,MarkdownRenderer,MediaService,OrderService,ResourceService,SchemaService,SecretService,SettingsService,StoragePermissionService,StoreStatsService};
 final class AdminController extends BaseController {
     protected string $layout = 'admin';
     public function __construct() {
@@ -1277,15 +1277,37 @@ final class AdminController extends BaseController {
     }
 
     public function saveAuthoredPage(): void {
-        $service = new \App\Services\AuthoredPageService();
+        $service = new AuthoredPageService();
+        $downloads = new CampaignDownloadService();
         $form = [];
         foreach (['title','slug','status','content','original_slug','expected_revision','header_image_url','header_image_alt'] as $name) {
             $form[$name] = is_string($_POST[$name] ?? null) ? $_POST[$name] : '';
         }
         $form['campaign_enabled'] = $_POST['campaign_enabled'] ?? null;
         $form['campaign_fields'] = $_POST['campaign_fields'] ?? [];
-        $preview = $error = null;
+        $downloadEditor = ($_POST['download_editor'] ?? null) === '1';
+        if ($downloadEditor) {
+            $form['download_enabled'] = $_POST['download_enabled'] ?? null;
+            $form['download_existing'] = $_POST['download_existing'] ?? [];
+        }
+        $preview = $error = $downloadNotice = null;
+        $stored = [];
         try {
+            $revision = $form['expected_revision'];
+            if (($revision === '0' && $form['original_slug'] !== '')
+                || ($revision !== '0' && $form['original_slug'] !== $form['slug'])) {
+                throw new \InvalidArgumentException('An existing page keeps its original address.');
+            }
+            $previous = $revision === '0' ? null : $service->find($form['slug']);
+            $form['campaign_downloads'] = CampaignDownloadService::manifest($previous ?? []);
+            $action = $_POST['action'] ?? '';
+            if ($action !== 'preview' && $action !== 'save') {
+                throw new \InvalidArgumentException('Choose Preview or Save page.');
+            }
+            if ($revision !== '0' && (!AuthoredPageService::validRevision($revision)
+                || ($previous['revision'] ?? null) !== $revision)) {
+                throw new \DomainException('The page changed. Reopen the saved page before continuing.');
+            }
             $form['campaign_form'] = \App\Services\CampaignLeadService::fromEditor(
                 $form['campaign_enabled'], $form['campaign_fields']);
             foreach (['header_image_url', 'header_image_alt'] as $field) {
@@ -1293,18 +1315,22 @@ final class AdminController extends BaseController {
                     throw new \InvalidArgumentException('Choose a header image and plain alternative text.');
                 }
             }
-            if (($form['expected_revision'] === '0' && $form['original_slug'] !== '')
-                || ($form['expected_revision'] !== '0' && $form['original_slug'] !== $form['slug'])) {
-                throw new \InvalidArgumentException('An existing page keeps its original address.');
+            $candidate = $form;
+            $uploads = [];
+            if ($downloadEditor) {
+                ['manifest'=>$candidate['campaign_downloads'], 'uploads'=>$uploads] = $downloads->prepare(
+                    $previous, $form['download_enabled'], $form['download_existing'], $_FILES['download_files'] ?? []);
             }
-            if (($_POST['action'] ?? '') === 'preview') {
-                $valid = $service::record($form);
+            $valid = $service::record($candidate);
+            if ($action === 'preview') {
                 if (isset($valid['header_image_url']) && !(new MediaService())->findPageHeaderUpload($valid['header_image_url'])) {
                     throw new \InvalidArgumentException('Choose an available uploaded image from the Media Library.');
                 }
+                if ($uploads) $downloadNotice = 'Select the new download files again before saving. Preview did not upload them.';
                 $preview = ['page'=>$valid, 'html'=>$service::renderContent($valid['content'])];
-            } elseif (($_POST['action'] ?? '') === 'save') {
-                $service->save($form);
+            } else {
+                $stored = $downloads->store($form['slug'], $uploads);
+                $service->save($candidate);
                 $draftToken = $_POST['browser_draft_token'] ?? '';
                 if (is_string($draftToken) && preg_match('/^[a-f0-9]{32}$/D', $draftToken)) {
                     $_SESSION['page_saved_draft_token'] = $draftToken;
@@ -1312,12 +1338,14 @@ final class AdminController extends BaseController {
                 (new AuditLogService())->record('save', 'authored_page', $form['slug'], ['status'=>$form['status']]);
                 $this->flash($form['status'] === 'published' ? 'Page published.' : 'Draft saved.', 'success');
                 $this->redirect('/admin/pages?edit='.rawurlencode($form['slug']));
-            } else { throw new \InvalidArgumentException('Choose Preview or Save page.'); }
+            }
         } catch (\InvalidArgumentException|\DomainException $exception) {
+            $downloads->discard($form['slug'], $stored);
             http_response_code($exception instanceof \DomainException ? 409 : 422);
             $error = $exception->getMessage();
         }
-        $this->render('admin/pages', ['pages'=>$service->all(), 'form'=>$form, 'preview'=>$preview, 'error'=>$error] + $this->pageDraftContext());
+        $this->render('admin/pages', ['pages'=>$service->all(), 'form'=>$form, 'preview'=>$preview,
+            'error'=>$error, 'downloadNotice'=>$downloadNotice] + $this->pageDraftContext());
     }
 
     public function blog(): void{

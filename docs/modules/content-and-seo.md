@@ -184,6 +184,24 @@ one receipt ID. The records keep the campaign slug and exact revision.
 Repeating an accepted submission preserves the existing receipt. Raw answers
 stay in the owner records. The public acknowledgement does not enqueue email.
 
+**Enable downloads** adds a file list beneath the published article and enquiry
+form. In Pages, add files, choose the positions of saved files, or select
+**Remove**. The ordered selection can contain up to 20 PDF, ZIP, TXT, PNG,
+JPG or WebP files totalling at most 5,000,000 bytes. Preview displays the
+file list without active links or stored uploads. New files must be selected
+again after preview. The page revision atomically owns the validated list.
+
+Visitors can download from a published page without an enquiry form. If the
+page has a form, a confirmed receipt unlocks downloads for that browser
+session for one hour. Each PHP link requires the current published revision
+and an exact file in the enabled selection. Editing, disabling or withdrawing
+the page invalidates old public download links and revision grants. Files are
+attachments with private, non-cacheable responses. The original file location
+remains outside the web root. This adapts the server-controlled delivery and
+direct-path protection in the
+[WooCommerce downloadable product guide](https://woocommerce.com/document/digital-downloadable-product-handling/#general-settings),
+with the bapX editor's combined byte limit and revision-based access rules.
+
 The dedicated About route uses the deployment-owned public story descriptor
 in config/about.php and a reusable PHP editorial view, with semantic theme
 tokens, approved image dimensions, and existing contact and module services.

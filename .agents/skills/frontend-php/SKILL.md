@@ -20,6 +20,9 @@ description: Use when editing public, account, shop, consultant, temple, cart, c
   Keep the native submission, preserve validated text on recoverable errors,
   and verify the focused error and receipt states at desktop and 375px.
   Keep owner previews visibly disabled.
+- Render campaign download names and URLs only after the controller confirms
+  access. Put locked-state guidance beside the article and preserve native
+  download and enquiry behavior at 375px without JavaScript.
 - Use the shared public site profile for the header, footer, About and Contact.
   Test absent contact methods, app metadata and module-off URLs in an
   independent synthetic deployment as well as the reference layout.

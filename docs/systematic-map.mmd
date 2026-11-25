@@ -14,10 +14,10 @@ flowchart LR
     legend_limits["No execution, autoload or dynamic reachability proof; gaps are inspection candidates"]:::arch
   end
 
-  subgraph ARCH["Architecture Overview — 184 routes, 18 controllers, 89 services, 75 views, 0 data files, 30 tools"]
-    arch_routes["> Routes: 184 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 185 routes, 18 controllers, 90 services, 75 views, 0 data files, 30 tools"]
+    arch_routes["> Routes: 185 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 18"]:::arch
-    arch_svc["> Services: 89"]:::arch
+    arch_svc["> Services: 90"]:::arch
     arch_views["> Views: 75"]:::arch
     arch_data["> Collections: 24 schema | 0 files"]:::arch
     arch_tools["> Tools: 30"]:::arch
@@ -31,6 +31,7 @@ flowchart LR
     route_get_search["GET /search — Search published storefront content"]:::route
     route_get_pages_slug["GET /pages/{slug}"]:::route
     route_post_pages_slug_enquiry["POST /pages/{slug}/enquiry"]:::route
+    route_get_pages_slug_downloads_revision_id["GET /pages/{slug}/downloads/{revision}/{id}"]:::route
     route_get_about["GET /about — About SPS — story, values, CTA"]:::route
     route_get_ai_assistants["GET /ai-assistants"]:::route
     route_get_llms_txt["GET /llms.txt"]:::route
@@ -281,6 +282,7 @@ flowchart LR
     service_blogconflictexception["BlogConflictException"]:::code
     service_blogdraftservice["BlogDraftService"]:::code
     service_blogservice["BlogService"]:::code
+    service_campaigndownloadservice["CampaignDownloadService"]:::code
     service_campaignleadservice["CampaignLeadService"]:::code
     service_cartservice["CartService"]:::code
     service_categoryservice["CategoryService"]:::code
@@ -520,12 +522,18 @@ flowchart LR
   controller_publiccontroller -. declared service .-> service_authoredpageservice
   controller_publiccontroller -. declared service .-> service_markdownrenderer
   controller_publiccontroller -. declared service .-> service_campaignleadservice
+  controller_publiccontroller -. declared service .-> service_campaigndownloadservice
   controller_publiccontroller -. declared related view .-> view_public_authored_page
   route_post_pages_slug_enquiry -- registered handler --> controller_publiccontroller
   controller_publiccontroller -. declared service .-> service_authoredpageservice
   controller_publiccontroller -. declared service .-> service_campaignleadservice
+  controller_publiccontroller -. declared service .-> service_campaigndownloadservice
   controller_publiccontroller -. declared service .-> service_contactservice
   controller_publiccontroller -. declared service .-> service_ratelimiter
+  controller_publiccontroller -. declared related view .-> view_public_authored_page
+  route_get_pages_slug_downloads_revision_id -- registered handler --> controller_publiccontroller
+  controller_publiccontroller -. declared service .-> service_authoredpageservice
+  controller_publiccontroller -. declared service .-> service_campaigndownloadservice
   controller_publiccontroller -. declared related view .-> view_public_authored_page
   route_get_about -- registered handler --> controller_publiccontroller
   controller_publiccontroller -. declared related view .-> view_public_about
@@ -1302,6 +1310,7 @@ flowchart LR
   route_post_admin_pages_save -- registered handler --> controller_admincontroller
   controller_admincontroller -. declared service .-> service_authoredpageservice
   controller_admincontroller -. declared service .-> service_campaignleadservice
+  controller_admincontroller -. declared service .-> service_campaigndownloadservice
   controller_admincontroller -. declared service .-> service_mediaservice
   controller_admincontroller -. declared service .-> service_auditlogservice
   controller_admincontroller -. declared service .-> service_authservice
@@ -1385,6 +1394,7 @@ flowchart LR
   controller_admincontroller -. source new .-> service_authoredpageservice
   controller_admincontroller -. source new .-> service_blogdraftservice
   controller_admincontroller -. source new .-> service_blogservice
+  controller_admincontroller -. source new .-> service_campaigndownloadservice
   controller_admincontroller -. source new .-> service_categoryservice
   controller_admincontroller -. source new .-> service_consultationservice
   controller_admincontroller -. source new .-> service_databaseservice
@@ -1414,7 +1424,9 @@ flowchart LR
   controller_admincontroller -. static reference .-> service_agenttraceservice
   controller_admincontroller -. static reference .-> service_aiclient
   controller_admincontroller -. static reference .-> service_auditlogservice
+  controller_admincontroller -. static reference .-> service_authoredpageservice
   controller_admincontroller -. static reference .-> service_blogdraftservice
+  controller_admincontroller -. static reference .-> service_campaigndownloadservice
   controller_admincontroller -. static reference .-> service_campaignleadservice
   controller_admincontroller -. static reference .-> service_enterprisetoolregistry
   controller_admincontroller -. static reference .-> service_gstregisterservice
@@ -1498,6 +1510,7 @@ flowchart LR
   controller_publiccontroller -. source new .-> service_authservice
   controller_publiccontroller -. source new .-> service_authoredpageservice
   controller_publiccontroller -. source new .-> service_blogservice
+  controller_publiccontroller -. source new .-> service_campaigndownloadservice
   controller_publiccontroller -. source new .-> service_categoryservice
   controller_publiccontroller -. source new .-> service_contactservice
   controller_publiccontroller -. source new .-> service_markdownrenderer
@@ -1511,6 +1524,7 @@ flowchart LR
   controller_publiccontroller -. source new .-> service_templeservice
   controller_publiccontroller -- extends --> controller_basecontroller
   controller_publiccontroller -. static reference .-> service_authoredpageservice
+  controller_publiccontroller -. static reference .-> service_campaigndownloadservice
   controller_publiccontroller -. static reference .-> service_campaignleadservice
   controller_publiccontroller -. static reference .-> service_contactservice
   controller_publiccontroller -. static reference .-> service_publicknowledgeservice
@@ -1605,12 +1619,14 @@ flowchart LR
   service_auditlogservice -. static reference .-> service_secretservice
   service_authoredpageservice -. source new .-> service_databaseservice
   service_authoredpageservice -. source new .-> service_markdownrenderer
+  service_authoredpageservice -. static reference .-> service_campaigndownloadservice
   service_authoredpageservice -. static reference .-> service_campaignleadservice
   service_authoredpageservice -. static reference .-> service_mediaservice
   service_blogdraftservice -. source new .-> service_markdownrenderer
   service_blogservice -. source new .-> service_blogconflictexception
   service_blogservice -. source new .-> service_markdownrenderer
   service_blogservice -. static reference .-> service_mediaservice
+  service_campaigndownloadservice -. static reference .-> service_authoredpageservice
   service_cartservice -. source new .-> service_productservice
   service_categoryservice -. source new .-> service_databaseservice
   service_consultationservice -. source new .-> service_databaseservice

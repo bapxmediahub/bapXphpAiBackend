@@ -4,48 +4,48 @@
     "reviews": {
         "agents": {
             "source_sha256": "160120446ef0d740a9f76c3a65d2459efbe35fc9d1c263ab61530ea0a9d7f7a0",
-            "references_sha256": "fb177fc551cf4a99f5f0779433c7c0cebf8fb9fc7408c583783f8290b83d6432",
-            "review_note": "Reviewed the updated developer persistence skill and generated tool reference against the customer and owner runtime agents; neither tool allowlist receives campaign answers or mutation access."
+            "references_sha256": "a905a11cb7101d5d6fe75540d3c902b882bbaf06d085f4d39222bc58c507735a",
+            "review_note": "Checked the updated developer persistence skill and new file storage references against the runtime role allowlists. Campaign file or lead grants are outside agent tool capabilities."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
-            "references_sha256": "e2412f540c3fe005a6d79e12514470e938b31a1718ba341ee6ddc2c1c28c8b43",
-            "review_note": "Checked campaign CSRF, session-bound submission token and owner Inbox authorization against existing login/account policy, including guest and customer access checks."
+            "references_sha256": "fb0ed91e79da831124c7268b88c9d77ce218d0b26de28b4773dd0d14acf89ce1",
+            "review_note": "Reviewed the owner constructor authorization, CSRF and session-bound public download grant against the authentication guides and actual guest/owner fixtures."
         },
         "commerce": {
             "source_sha256": "4d8f53718f4495182ccef03d41eacb3da729dbe5ff1b5db5b54cbfd88957749e",
-            "references_sha256": "079ae8d53b0448564cbc5195d8cfda515ef03890b278632a54ae868c15447db0",
-            "review_note": "Reviewed the campaign additions against the order and catalogue contracts; campaign validation and owner CRM records do not enter commerce order, checkout or revenue processing."
+            "references_sha256": "9f2b8970b34f4cc6e0a07951ebd67feafe3412ec41ee0a3fba803908621837a2",
+            "review_note": "Reviewed the downloaded file resolver and schema field against the source contracts for product orders and payments. This route uses the authored page publication and enquiry grant."
         },
         "content": {
-            "source_sha256": "f5828a98597000e5012e0fe8ec662c42c79cdf4822c2df80afc44f7d9c301618",
-            "references_sha256": "5fa5744fab349197760618e9289cd978941770f2a90ca8152ac4d4f2970f7375",
-            "review_note": "Reviewed authored page revision validation, fixed slots, PHP preview and real HTTP route together with browser recovery and owner publication guidance."
+            "source_sha256": "0427930a9f40f8d355b98cb0760cfcb809619f98d55a2e2b55f6db262703027e",
+            "references_sha256": "766dd3034f38ace521dae366bd4ce00f900f532da87a971218a07120e8ba36a0",
+            "review_note": "Reviewed the ordered hosted download manifest, real upload validation, private local bytes, revision and form gates, and native editor/public views against durable content and hosting docs."
         },
         "foundation": {
-            "source_sha256": "3a8cb6a86d557809d6992a449a28aae3b86e2e805631e3998a848c4f7385b7c2",
-            "references_sha256": "d662c82d5107cfdb842c2481427c6e4cf8c57154ff87dbc37b0ef533adc45622",
-            "review_note": "Reviewed schema, database-host transaction and safe transport boundary; Contact and Inbox remain hosted MySQL records while admission keeps existing private hashed state."
+            "source_sha256": "627974778abedfd786ca433cc4fb78c0402dafbbe562d764cfd34dc3c7bacb35",
+            "references_sha256": "edb833e6497897729ae4c0a1e1eca65934b466c547881885d7e8abb770eeda5b",
+            "review_note": "Compared the hosted page fields and private immutable binaries with the application and host storage contracts, deployment backup instructions and actual direct-path denial."
         },
         "google-tags": {
             "source_sha256": "47986bb64b609894dcba3d76df180c51043c20441d2e1ca1f99c3f37fc68c4a8",
-            "references_sha256": "ff26c92aaada1fc91c37e7bd793baa4307a33127f3ac97e61312da912c76dbfc",
-            "review_note": "Cross-checked the frontend skill addition against the existing reporting and public integration contracts; campaign feedback uses the authored form and introduces no tagging fields or requests."
+            "references_sha256": "fc812f134719a42d886789aff483cdf29626b4620b9dc248e137205625c5431d",
+            "review_note": "Compared the updated frontend skill and visual patterns against the public tag and reporting descriptions. Download attachments use the native link behavior."
         },
         "http-errors": {
-            "source_sha256": "63602cadbe59868b0d25a1b00729a589e75d1b31c6ea3a1b25c1e5a46fd06d50",
-            "references_sha256": "f5a7e88a8eb384a858c816522ae302bcdf67c8d8917ae1e887bacfbd6637c8c5",
-            "review_note": "Checked the native enquiry route failure handling against the HTTP response guard; unavailable writes are presented on-page and the campaign path logs a generic outcome."
+            "source_sha256": "0f920c297cfc4e216a87be02a35c20827cc254dd6934ba24a1fa9135520a0560",
+            "references_sha256": "08e0e1b9c8e9e4135e255ef70a7d950b288f711f2ad6c7104e7c195c34bde242",
+            "review_note": "Compared the front-controller and Apache path guards, private resolution and upload errors with the shared request-boundary documentation."
         },
         "interface": {
-            "source_sha256": "dd11560e1b247c591241c2c4c6b0c0220c060ae2a23b78febae3bb86e6f12bb5",
-            "references_sha256": "6df8a67178c9fbec7ab7b6e6f78e09b4f2921759494e9a546f3d3aefbfb40dc5",
-            "review_note": "Compared mobile field order, native controls and feedback focus, admin preview, draft recovery and owner Inbox details with the canonical design and frontend/admin skills."
+            "source_sha256": "08c42bf43942b305f5e64921b9c2eed6e66f808b572314592785c2a5dc408bf6",
+            "references_sha256": "cc1ad677639ea34dac3862560307197396b0cc4b23330e471f0bcab154f7448d",
+            "review_note": "Cross-reviewed the canonical UI notes with the mobile editor controls, native file selection, MIME and byte feedback, download preview and visitor lock state."
         },
         "mail": {
-            "source_sha256": "ed872a42554c8475d036fe00487332d240ef89da8cbe88fda940d164ec8e7407",
-            "references_sha256": "b1e04cedcc7e8a69e2df75ace16c7c08801fd8929d66ad6436b5cf4ca0f3ffa9",
-            "review_note": "Compared actual Contact and Inbox projection, source metadata, duplicate receipt and zero automatic queue writes with public enquiry containment and the owner Inbox guide."
+            "source_sha256": "99c91bf7d2741d01ebd734e348a22fbc5e3dd6258bb8b110b2da7965650be053",
+            "references_sha256": "5f7bb76e9a89eeb8e4bb8ec4a1c749eea3aee31fb9dd51411e657b1287ea8ffd",
+            "review_note": "Reviewed the download grant placement after a confirmed enquiry and the unchanged local receipt path against the documented held mail and owner Inbox boundary."
         },
         "mcp-clients": {
             "source_sha256": "38828d52259fbd6b6555d790e463ff775e79be85872a5d5b5aea78e599fba3ac",
@@ -54,23 +54,23 @@
         },
         "media": {
             "source_sha256": "edc32a5a9f73cf7f2954eac135a2eaed1394089034bac24ea835af48c4d9600e",
-            "references_sha256": "d7d3b0233cd2e30aa1a24d8fd5e82def1bf89d4b55443eeef62b86eb4351fab4",
-            "review_note": "Checked admin skill changes against current header picker and stored upload contract; campaign form options stay with the page revision and create no media references."
+            "references_sha256": "5bbc2402cfe7236749704cd242332e2f506e59801b5cedd1ae022569a8243675",
+            "review_note": "Reviewed the independent private download storage against the existing owner Media Library, header image and deletion documentation. Download files keep their own private root."
         },
         "operator-help": {
-            "source_sha256": "aa89836cb1ebf48fc2262c37b3ff4defc2be47305706e7a4130a8fa86b7ebf81",
-            "references_sha256": "4f54dbe281f40d6b79edc0ccbaa2fe6fe939c8e79e3bf105c5b1783f55d102ed",
-            "review_note": "Compared Pages settings, disabled draft preview, browser restore and Inbox campaign details with the publishing and email operator guides and their source references."
+            "source_sha256": "cfbaf2790d82f825d85fc6735404344032f778972230837700e2e6fd74da82e2",
+            "references_sha256": "098ac59a883aaad638beace1823984f356803f5eefb4b31be8b0960f942a3fe6",
+            "review_note": "Compared the actual Pages controls and preview with the operator steps for upload, file position, removal, browser recovery and temporary disable."
         },
         "public-mcp": {
-            "source_sha256": "84520963295097fbbd9b17609489d3c0fcbc9b4b2a347559fcc16f2b9198d43b",
-            "references_sha256": "dffe6c3f2848c483be1141280dc7fdaeace1304acd45927a3468fbb23dc45a33",
-            "review_note": "Checked route inventories and PHP developer instructions against the public MCP allowlist; campaign POST and owner records have no MCP capability or discovery exposure."
+            "source_sha256": "a84c3e4fae20b0b3792503754940cb771d0c6c29eef43971b9f9c2bbfce25088",
+            "references_sha256": "4e016c2896dbeb1b1c300436bc89b235e56245aa9cd9cade4fdd1c4605cf1e6a",
+            "review_note": "Compared the new public HTTP route with the MCP capability and discoverability contracts. Campaign assets do not extend the existing agent tool surface."
         },
         "remote-commerce": {
-            "source_sha256": "17d88f338244a814318d09e52f63b611a9de50ff7b59b5861b17e2c0f5d387ea",
-            "references_sha256": "22d8667e58cbf8badddcdfe74a61bb1938c6b62c32d76ecede85dc9e172366d2",
-            "review_note": "Reviewed the separately scoped campaign mutation on the database host, held-contact boundaries and schema fields; verified the documented checkout mutation contract remains accurate."
+            "source_sha256": "e0755245b57baa16fb628caac1cfa1fed3a8df988bc3ea75830214deaa5ca6f5",
+            "references_sha256": "8bd5ef0edd00315af8cb672462ab02c66c1f366f4e492539f438255b11fa753b",
+            "review_note": "Checked the authored-page revision write and schema addition against the remote-checkout contract. Validated public download links use the separate published-page resolver."
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",
@@ -78,9 +78,9 @@
             "review_note": "Compared the MediaService additions with the Merchant Feed and product image inspection contracts. Header choices are filtered only for the owner authored editor, and catalogue image eligibility and feed URLs retain their existing resolution."
         },
         "workflow": {
-            "source_sha256": "53ef150e70f1394c5f35fc671af1df54f66bc5317985c6b0b90d68ae6dc192b8",
+            "source_sha256": "0787ee2a190a1f52aff06f0ca2db3a5289574c571d02d49aecf7b024715206c4",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Checked source-first documentation areas, current schema and generated route maps, and verified the new campaign HTTP and Chromium checks are wired into existing CI."
+            "review_note": "Cross-checked the generated route inventory and revised content review dependencies. The existing campaign HTTP and browser CI entries exercise the new behaviors."
         }
     }
 }

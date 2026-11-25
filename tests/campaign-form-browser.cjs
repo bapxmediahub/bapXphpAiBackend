@@ -49,6 +49,7 @@ function php(operation, data) {
         $html = AuthoredPageService::renderContent($page['content']);
         if ($argv[1] === 'public') {
             $campaignState = $data['state'];
+            $campaignDownloadAccess = $data['downloadAccess'] ?? false;
             require app_path('views/public/authored-page.php');
             return;
         }
@@ -71,9 +72,10 @@ function html(body, admin = false) {
         + styles + '</head><body><main' + (admin ? ' class="admin-body"' : '') + '>' + body + '</main></body></html>';
 }
 
-async function startFixture() {
-    let page = {slug:'courtyard-guide', title:'Courtyard guide', content:'## Visiting the courtyard', status:'published', revision:'a'.repeat(32)};
+async function startFixture(initial = {}) {
+    let page = {slug:'courtyard-guide', title:'Courtyard guide', content:'## Visiting the courtyard', status:'published', revision:'a'.repeat(32), ...initial};
     let received = false;
+    let receivedRevision = '';
     let savedToken = '';
     const counts = {saved:0, submitted:0, leads:0};
     const editor = (options = {}) => {
@@ -83,7 +85,8 @@ async function startFixture() {
     };
     const publicPage = (state = {}) => ({
         contentType:'text/html',
-        body:html(php('public', {page, csrf, state:{token,...state}})),
+        body:html(php('public', {page, csrf, state:{token,...state},
+            downloadAccess: !Array.isArray(page.campaign_form) || receivedRevision === page.revision})),
     });
 
     const server = createServer(async (request,response) => {
@@ -120,6 +123,17 @@ async function startFixture() {
             const candidate = {...page};
             delete candidate.campaign_form;
             if (result.definition !== null) candidate.campaign_form = result.definition;
+            if (page.campaign_downloads) {
+                const downloadExisting = Object.fromEntries(page.campaign_downloads.files.map(file =>
+                    [file.id,payload.get('download_existing['+file.id+']')]));
+                const retained = page.campaign_downloads.files.filter(file => downloadExisting[file.id])
+                    .sort((left,right) => Number(downloadExisting[left.id])-Number(downloadExisting[right.id]));
+                const incoming = payload.getAll('download_files[]').filter(file => file.name).map((file,index) =>
+                    ({name:file.name, id:(index+10).toString(16).padStart(32,'c'), bytes:file.size, mime:file.type}));
+                form.download_enabled = payload.get('download_enabled');
+                form.download_existing = downloadExisting;
+                candidate.campaign_downloads = {enabled:form.download_enabled === '1',files:[...retained,...incoming]};
+            }
             if (payload.get('action') === 'preview') {
                 return send(editor({form,page:candidate,preview:true}));
             }
@@ -149,6 +163,7 @@ async function startFixture() {
             const validation = JSON.parse(php('validate', {definition:page.campaign_form,answers}));
             if (Object.keys(validation.errors).length) return send({status:422,...publicPage(validation)});
             counts.leads++;
+            receivedRevision = page.revision;
             received = true;
             return send({status:303,headers:{location:campaignPath+'#campaign-enquiry'}});
         }
@@ -162,7 +177,11 @@ async function startFixture() {
 async function readFields(request) {
     const chunks = [];
     for await (const chunk of request) chunks.push(chunk);
-    return new URLSearchParams(Buffer.concat(chunks).toString('utf8'));
+    const body = Buffer.concat(chunks);
+    const contentType = request.headers['content-type'];
+    return contentType?.startsWith('multipart/form-data')
+        ? new Response(body, {headers:{'Content-Type':contentType}}).formData()
+        : new URLSearchParams(body.toString('utf8'));
 }
 
 test('A completed enquiry receipt survives concurrent form withdrawal',()=>{
@@ -175,6 +194,15 @@ test('A completed enquiry receipt survives concurrent form withdrawal',()=>{
 async function fits(page) {
     const dimensions = await page.evaluate(()=>({content:document.documentElement.scrollWidth, viewport:innerWidth}));
     assert.ok(dimensions.content<=dimensions.viewport+1,JSON.stringify(dimensions));
+}
+
+async function requireFocus(locator) {
+    const deadline = Date.now() + 3000;
+    do {
+        if (await locator.evaluate(node => node === document.activeElement)) return;
+        await new Promise(resolve => setTimeout(resolve, 50));
+    } while (Date.now() < deadline);
+    assert.equal(await locator.evaluate(node => node === document.activeElement), true);
 }
 
 for (const width of [1280,375]) test('Campaign enquiry editor and public submission at '+width+'px',{timeout:30000},async()=>{
@@ -271,13 +299,13 @@ for (const width of [1280,375]) test('Campaign enquiry editor and public submiss
         await note.fill('Please share information about the accessible entrance.');
         await activate(submit);
         await enquiry.getByRole('alert').getByText('Check the highlighted fields', {exact:false}).waitFor();
-        assert.equal(await enquiry.evaluate(node=>node===document.activeElement),true);
+        await requireFocus(enquiry);
         assert.equal(await arrival.getAttribute('aria-invalid'),'true');
         assert.equal(await arrival.getAttribute('aria-describedby'),'campaign-field-detail_1-error');
         assert.equal(await email.inputValue(),'visitor@example.invalid');
         assert.equal(await note.inputValue(),'Please share information about the accessible entrance.');
         await activate(enquiry.getByRole('alert').getByRole('link',{name:'Arrival time'}));
-        assert.equal(await arrival.evaluate(node=>node===document.activeElement),true);
+        await requireFocus(arrival);
         await fits(visitor);
 
         await arrival.fill('10:30');
@@ -290,7 +318,7 @@ for (const width of [1280,375]) test('Campaign enquiry editor and public submiss
         });
         assert.equal(counts.submitted,2);
         assert.equal(counts.leads,1);
-        assert.equal(await receipt.evaluate(node=>node===document.activeElement),true);
+        await requireFocus(receipt);
         assert.equal(await receipt.locator('form,input').count(),0);
         assert.ok(!(await receipt.innerText()).includes('visitor@example.invalid'));
         await fits(visitor);
@@ -308,7 +336,7 @@ for (const width of [1280,375]) test('Campaign enquiry editor and public submiss
         const withdrawn = visitor.getByRole('region',{name:'Enquiry unavailable'});
         assert.equal(await withdrawn.getByRole('alert').innerText(),'This page’s enquiry form has closed.');
         assert.equal(await withdrawn.locator('form,input').count(),0);
-        assert.equal(await withdrawn.evaluate(node=>node===document.activeElement),true);
+        await requireFocus(withdrawn);
         assert.equal(counts.leads,1);
 
         await visitor.goto(origin+campaignPath);
@@ -316,5 +344,56 @@ for (const width of [1280,375]) test('Campaign enquiry editor and public submiss
     } finally {
         await browser.close();
         if (fixture) await new Promise(resolve=>fixture.server.close(resolve));
+    }
+});
+
+
+for (const width of [1280,375]) test('Protected campaign download controls at '+width+'px',{timeout:30000},async()=>{
+    const browser = await chromium.launch({executablePath:process.env.CHROMIUM_PATH||undefined,headless:true,args:['--no-sandbox']});
+    let fixture;
+    try {
+        const guide = {id:'e'.repeat(32),name:'Guide '+ 'x'.repeat(95)+'.txt',mime:'text/plain',bytes:5};
+        const remove = {id:'f'.repeat(32),name:'Previous notes.txt',mime:'text/plain',bytes:7};
+        fixture = await startFixture({campaign_downloads:{enabled:true,files:[guide,remove]}});
+        const {origin} = fixture;
+        const context = await browser.newContext({viewport:{width,height:850},javaScriptEnabled:width!==375});
+        context.setDefaultTimeout(5000);
+        await context.route('**/*', route=>new URL(route.request().url()).origin === origin ? route.continue() : route.abort());
+        const page = await context.newPage();
+        await page.goto(origin+campaignPath);
+        const open = page.getByRole('region',{name:'Downloads'});
+        assert.match(await open.getByRole('link',{name:guide.name}).getAttribute('href'), /\/downloads\/[a-f0-9]{32}\/[a-f0-9]{32}$/);
+        await fits(page);
+        await page.goto(origin+editorPath);
+        const downloads = page.getByRole('group',{name:'Downloads'});
+        assert.equal(await downloads.getByLabel('Enable downloads').isChecked(),true);
+        await downloads.getByLabel('Position for '+guide.name).selectOption('2');
+        await downloads.getByLabel('Position for '+remove.name).selectOption('');
+        const addition = {name:'Supplement.txt',mimeType:'text/plain',buffer:Buffer.from('Extra')};
+        await downloads.getByLabel('Add files').setInputFiles(addition);
+        if (width === 1280) assert.match(await downloads.getByRole('status').innerText(), /2 files selected. 10 bytes total./);
+        await page.getByRole('button',{name:'Preview',exact:true}).press('Enter');
+        const preview = page.getByRole('region',{name:'Unsaved preview'});
+        await preview.getByText('Supplement.txt').waitFor();
+        assert.equal(await preview.getByText(remove.name).count(),0);
+        assert.equal(await preview.locator('a[href*="/downloads/"]').count(),0);
+        await fits(page);
+        await page.getByLabel('Show an enquiry form on this page').press('Space');
+        await downloads.getByLabel('Add files').setInputFiles(addition);
+        await page.getByRole('button',{name:'Save page'}).press('Enter');
+        await page.waitForURL(/\/admin\/pages\?edit=courtyard-guide/);
+        await page.goto(origin+campaignPath);
+        const gated = page.getByRole('region',{name:'Downloads'});
+        assert.equal(await gated.getByRole('link',{name:'Go to enquiry form'}).getAttribute('href'),'#campaign-enquiry');
+        assert.equal(await gated.getByText(guide.name).count(),0);
+        assert.equal(await gated.locator('a[href*="/downloads/"]').count(),0);
+        await page.getByRole('textbox',{name:'Name (required)'}).fill('Fixture visitor');
+        await page.getByRole('textbox',{name:'Email (required)'}).fill('fixture@example.invalid');
+        await page.getByRole('button',{name:'Send enquiry'}).press('Enter');
+        await gated.getByRole('link',{name:addition.name}).waitFor();
+        await fits(page);
+    } finally {
+        await browser.close();
+        if (fixture) fixture.server.close();
     }
 });

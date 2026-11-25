@@ -165,6 +165,9 @@ target is absent, and state that absence as a finding.
   `.sps-media` directory beside the code checkout and retain public
   `/assets/images/media/…` URLs. `MediaService` writes metadata to hosted MySQL
   `media_files`; the shipped legacy media catalogue is an offline migration input. Installation-specific YAML remains read-only until its owner verifies migration. See `./bapXphp media:reconcile` and `docs/json-storage.md`.
+  Authored campaign download bytes live in the private sibling directory
+  `.sps-downloads`. The hosted page revision owns metadata. Serve bytes only
+  through the PHP entitlement check, and preserve the directory on deployment.
 - **Agents:** exactly two pure-PHP application surfaces — customer support and
   owner/admin chat. Support context uses `AgentContextService` and
   `SupportToolRegistry`; owner queries use `EnterpriseToolRegistry` with

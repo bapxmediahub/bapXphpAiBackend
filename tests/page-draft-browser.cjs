@@ -14,6 +14,12 @@ const uploadedImage='/assets/images/media/2026/11/fixture-upload.png';
 const raster=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jX1sAAAAASUVORK5CYII=','base64');
 const styles='<link rel="stylesheet" href="/assets/css/band.css"><link rel="stylesheet" href="/assets/css/admin-refinement.css">';
 
+async function pageFields(request) {
+    return Object.fromEntries(await new Response(request.postDataBuffer(), {
+        headers:{'Content-Type':request.headers()['content-type']},
+    }).formData());
+}
+
 function document(body, admin=true) {
     const main=admin ? '<main class="admin-body">' : '<main>';
     return '<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1">'+styles+'</head><body>'+main+body+'</main></body></html>';
@@ -90,14 +96,14 @@ for(const width of [375,1280]) test('authored page draft reload, isolation and s
     const page=await context.newPage();
     let revision=rev,owner='fixture-owner',saved='',posts=0;
     try{
-        await context.route('**/*',route=>{
+        await context.route('**/*',async route=>{
             const req=route.request(),u=new URL(req.url());
             assert.equal(u.origin,origin);
             const asset=fixtureAsset(route,u.pathname);
             if(asset)return asset;
             if(u.pathname==='/admin/pages/save'){
                 posts++;
-                const fields=Object.fromEntries(new URLSearchParams(req.postData()));
+                const fields=await pageFields(req);
                 assert.equal(fields.expected_revision,revision);
                 assert.equal(fields._csrf,'fixture');
                 assert.equal(fields.action,'save');
@@ -156,7 +162,7 @@ async function routeHeaderEditor(context) {
     const record={original_slug:'guide',slug:'guide',title:'Existing guide',content:'Original text',status:'draft',expected_revision:rev};
     const state={record, saves:[], previews:[], uploads:0};
     let savedToken='';
-    await context.route('**/*',route=>{
+    await context.route('**/*',async route=>{
         const request=route.request();
         const url=new URL(request.url());
         assert.equal(url.origin,origin);
@@ -180,7 +186,7 @@ async function routeHeaderEditor(context) {
         }
         if(url.pathname==='/admin/pages/save') {
             assert.equal(request.method(),'POST');
-            const fields=Object.fromEntries(new URLSearchParams(request.postData()));
+            const fields=await pageFields(request);
             assert.equal(fields._csrf,'fixture');
             assert.equal(fields.expected_revision,state.record.expected_revision);
             assert.ok(fields.header_image_url==='' || images.some(image=>image.url===fields.header_image_url));
