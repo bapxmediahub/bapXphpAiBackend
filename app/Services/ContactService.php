@@ -10,7 +10,11 @@ final class ContactService {
 
     public function all(): array {
         $items = $this->store->read('contact_submissions');
-        usort($items, fn($a, $b) => ($b['created_at'] ?? 0) <=> ($a['created_at'] ?? 0));
+        $timestamp = static function (array $contact): int {
+            $created = $contact['created_at'] ?? 0;
+            return is_numeric($created) ? (int)$created : (is_string($created) ? (int)strtotime($created) : 0);
+        };
+        usort($items, static fn($a, $b) => $timestamp($b) <=> $timestamp($a));
         return $items;
     }
 
@@ -46,6 +50,16 @@ final class ContactService {
         $this->store->upsert('contact_submissions', $data);
         (new MailStorageService($this->store))->recordInboxFromContact($data);
         return $id;
+    }
+
+    public function hasCampaignReceipt(string $id, string $slug, string $revision): bool {
+        $record = $this->store->find('contact_submissions', $id)
+            ?? $this->store->find('mail_inbox', 'in_'.$id);
+        return ($record['campaign_slug'] ?? null) === $slug && ($record['campaign_revision'] ?? null) === $revision;
+    }
+
+    public function saveCampaign(string $id, string $slug, string $revision, array $answers): string {
+        return $this->store->saveCampaignLead($id, $slug, $revision, $answers);
     }
 
     public function updateStatus(string $id, string $status): void {

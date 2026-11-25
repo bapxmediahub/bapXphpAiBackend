@@ -14,7 +14,8 @@ final class ProjectMapService {
         $routes = [
             ['method'=>'GET','path'=>'/','name'=>'home','page'=>'public/home','controller'=>'PublicController@home','services'=>['ProductService','TempleService','CategoryService']],
             ['method'=>'GET','path'=>'/search','name'=>'search','page'=>'public/search','controller'=>'PublicController@search','services'=>['AuthoredPageService','ProductService','BlogService','TempleService']],
-            ['method'=>'GET','path'=>'/pages/{slug}','name'=>'pages.show','page'=>'public/authored-page','controller'=>'PublicController@authoredPage','services'=>['AuthoredPageService','MarkdownRenderer']],
+            ['method'=>'GET','path'=>'/pages/{slug}','name'=>'pages.show','page'=>'public/authored-page','controller'=>'PublicController@authoredPage','services'=>['AuthoredPageService','MarkdownRenderer','CampaignLeadService']],
+            ['method'=>'POST','path'=>'/pages/{slug}/enquiry','name'=>'pages.enquiry','page'=>'public/authored-page','controller'=>'PublicController@campaignEnquiry','services'=>['AuthoredPageService','CampaignLeadService','ContactService','RateLimiter']],
             ['method'=>'GET','path'=>'/about','name'=>'about','page'=>'public/about','controller'=>'PublicController@about','services'=>[]],
             ['method'=>'GET','path'=>'/ai-assistants','name'=>'ai-assistants','page'=>'public/ai-assistants','controller'=>'PublicController@aiAssistants','services'=>['PublicMcpService','MarkdownRenderer']],
             ['method'=>'GET','path'=>'/llms.txt','name'=>'ai-assistants.text','page'=>'public/ai-assistants','controller'=>'PublicController@assistantInstructions','services'=>['PublicMcpService','MarkdownRenderer']],
@@ -186,7 +187,7 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/blog/category/{slug}','name'=>'blog.category','module'=>'blog','page'=>'public/blog','controller'=>'BlogController@category','services'=>['BlogService','MarkdownRenderer']],
             ['method'=>'GET','path'=>'/admin/pages','name'=>'admin.pages','page'=>'admin/pages','controller'=>'AdminController@pages','services'=>['AuthoredPageService','MediaService']],
             ['method'=>'POST','path'=>'/admin/pages/delete','name'=>'admin.pages.delete','page'=>'admin/pages','controller'=>'AdminController@deleteAuthoredPage','services'=>['AuthoredPageService','AuditLogService']],
-            ['method'=>'POST','path'=>'/admin/pages/save','name'=>'admin.pages.save','page'=>'admin/pages','controller'=>'AdminController@saveAuthoredPage','services'=>['AuthoredPageService','MediaService','AuditLogService']],
+            ['method'=>'POST','path'=>'/admin/pages/save','name'=>'admin.pages.save','page'=>'admin/pages','controller'=>'AdminController@saveAuthoredPage','services'=>['AuthoredPageService','CampaignLeadService','MediaService','AuditLogService']],
             ['method'=>'GET','path'=>'/admin/blog','name'=>'admin.blog','page'=>'admin/blog','controller'=>'AdminController@blog','services'=>['BlogService']],
             ['method'=>'POST','path'=>'/admin/blog/save','name'=>'admin.blog.save','page'=>'admin/blog','controller'=>'AdminController@saveBlog','services'=>['BlogService','AuditLogService']],
             ['method'=>'GET','path'=>'/admin/blog/history/{slug}','name'=>'admin.blog.history','page'=>'admin/blog-history','controller'=>'AdminController@blogHistory','services'=>['BlogService']],

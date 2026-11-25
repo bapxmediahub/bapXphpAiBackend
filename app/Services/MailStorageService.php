@@ -68,7 +68,7 @@ final class MailStorageService {
         $id = 'in_' . (string)($contact['id'] ?? bin2hex(random_bytes(6)));
         $createdAt = $contact['created_at'] ?? date('c');
         if (is_numeric($createdAt)) $createdAt = date('c', (int)$createdAt);
-        return $this->store->upsert('mail_inbox', [
+        $record = [
             'id' => $id,
             'from_email' => trim((string)($contact['email'] ?? '')),
             'from_name' => trim((string)($contact['name'] ?? '')),
@@ -79,7 +79,12 @@ final class MailStorageService {
             'source' => 'contact_submissions',
             'source_id' => (string)($contact['id'] ?? ''),
             'created_at' => $createdAt,
-        ]);
+        ];
+        if (isset($contact['campaign_slug'], $contact['campaign_revision'])) {
+            $record['campaign_slug'] = $contact['campaign_slug'];
+            $record['campaign_revision'] = $contact['campaign_revision'];
+        }
+        return $this->store->upsert('mail_inbox', $record);
     }
 
     public function recordQueuedOutbox(array $mail): array {

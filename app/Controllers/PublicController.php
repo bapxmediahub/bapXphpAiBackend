@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{SettingsService,AuthService,BlogService,ProductService,TempleService,CategoryService,SecretService,SeoService,ContactService,ReviewService,MarkdownRenderer};
+use App\Services\{SettingsService,AuthService,BlogService,ProductService,TempleService,CategoryService,SecretService,SeoService,ContactService,ReviewService,MarkdownRenderer,AuthoredPageService,CampaignLeadService,RateLimiter};
 final class PublicController extends BaseController {
     
     public function home(): void {
@@ -28,12 +28,109 @@ final class PublicController extends BaseController {
     
     public function authoredPage(string $slug): void {
         header('Cache-Control: no-store');
-        $page = (new \App\Services\AuthoredPageService())->findPublic($slug);
+        $page = (new AuthoredPageService())->findPublic($slug);
         if ($page === null) { $this->renderNotFound(); return; }
-        $html = \App\Services\AuthoredPageService::renderContent($page['content']);
-        $this->seoOverrides = ['title'=>$page['title'], 'canonical'=>$this->siteUrl('/pages/'.$slug),
+        $received = ($_SESSION['campaign_enquiry_received'] ?? null) === $slug;
+        if ($received) unset($_SESSION['campaign_enquiry_received']);
+        $this->renderAuthoredPage($page, ['received'=>$received]);
+    }
+
+    public function campaignEnquiry(string $slug): void {
+        header('Cache-Control: no-store');
+        $pages = new AuthoredPageService();
+        $page = $pages->findPublic($slug);
+        if ($page === null) { $this->renderNotFound(); return; }
+
+        $definition = CampaignLeadService::pageDefinition($page);
+        $csrf = $_POST['_csrf'] ?? null;
+        $expected = $_SESSION['csrf_token'] ?? '';
+        $csrfMatches = is_string($csrf) && $csrf !== '' && hash_equals($expected, $csrf);
+        $revision = $_POST['revision'] ?? null;
+        $token = $_POST['submission_token'] ?? null;
+        $id = AuthoredPageService::validRevision($revision)
+            ? CampaignLeadService::submissionId($slug, $revision, $token, $_SESSION['campaign_lead_key'] ?? '')
+            : null;
+        if ($definition === null && (!$csrfMatches || $id === null)) {
+            $this->renderNotFound();
+            return;
+        }
+        if (!$csrfMatches) {
+            $this->campaignFormError($page, 419, 'This form expired. Review it and try again.');
+            return;
+        }
+
+        $contacts = new ContactService();
+        try {
+            if ($id !== null && $contacts->hasCampaignReceipt($id, $slug, $revision)) $this->campaignReceived($slug);
+            if ($definition === null || $revision !== ($page['revision'] ?? null)) {
+                $this->campaignFormError($page, 409, self::campaignChangedMessage($definition));
+                return;
+            }
+            if ($id === null) {
+                $this->campaignFormError($page, 419, 'This form expired. Review it and try again.');
+                return;
+            }
+            ['values'=>$values, 'errors'=>$errors] = CampaignLeadService::validate($definition, $_POST['answers'] ?? null);
+            if ($errors) {
+                http_response_code(422);
+                $this->renderAuthoredPage($page, compact('values','errors','token'));
+                return;
+            }
+            if (!RateLimiter::consumeContact((string)($_SERVER['REMOTE_ADDR'] ?? 'unknown'), $values['email'])) {
+                $this->campaignFormError($page, 429, 'The enquiry limit has been reached. Please try later.', compact('values','token'));
+                return;
+            }
+            $outcome = $contacts->saveCampaign($id, $slug, $revision, $values);
+        } catch (\Throwable) {
+            error_log('Campaign enquiry could not be confirmed.');
+            $state = isset($values) ? compact('values','token') : compact('token');
+            $this->campaignFormError($page, 503, 'The enquiry could not be confirmed. Please try again.', $state);
+            return;
+        }
+        if ($outcome === 'stale') {
+            $current = $pages->findPublic($slug);
+            if ($current === null) { $this->renderNotFound(); return; }
+            $this->campaignFormError($current, 409, self::campaignChangedMessage(CampaignLeadService::pageDefinition($current)));
+            return;
+        }
+        if ($outcome !== 'received') {
+            $this->campaignFormError($page, 422, 'Review the enquiry fields and try again.', compact('values','token'));
+            return;
+        }
+        $this->campaignReceived($slug);
+    }
+
+    private static function campaignChangedMessage(?array $definition): string {
+        return $definition === null
+            ? 'This page’s enquiry form has closed.'
+            : 'This form changed. Review the current fields and try again.';
+    }
+
+    private function campaignReceived(string $slug): never {
+        $_SESSION['campaign_enquiry_received'] = $slug;
+        http_response_code(303);
+        $this->redirect('/pages/'.$slug);
+    }
+
+    private function campaignFormError(array $page, int $status, string $message, array $state = []): void {
+        http_response_code($status);
+        $this->renderAuthoredPage($page, $state + ['errors'=>['form'=>$message]]);
+    }
+
+    private function renderAuthoredPage(array $page, array $campaignState): void {
+        $definition = CampaignLeadService::pageDefinition($page);
+        if ($definition === null || !AuthoredPageService::validRevision($page['revision'] ?? null)) {
+            unset($page['campaign_form']);
+        } else {
+            $page['campaign_form'] = $definition;
+            $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16));
+            $key = $_SESSION['campaign_lead_key'] ??= bin2hex(random_bytes(32));
+            $campaignState['token'] ??= CampaignLeadService::issueToken($page['slug'], $page['revision'], $key);
+        }
+        $html = AuthoredPageService::renderContent($page['content']);
+        $this->seoOverrides = ['title'=>$page['title'], 'canonical'=>$this->siteUrl('/pages/'.$page['slug']),
             'description'=>mb_substr(trim(preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags($html))) ?? ''), 0, 160)];
-        $this->render('public/authored-page', ['page'=>$page, 'html'=>$html]);
+        $this->render('public/authored-page', compact('page','html','campaignState'));
     }
 
     public function search(): void {

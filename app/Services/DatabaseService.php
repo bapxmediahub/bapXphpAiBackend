@@ -600,19 +600,37 @@ final class DatabaseService {
             $merged = array_merge($existing, $record);
             $owner = $merged['customer_email'] ?? $merged['email'] ?? $merged['user_id'] ?? null;
             $status = $merged['status'] ?? null;
-            $updated = $merged['updated_at'] ?? date('c');
+            $updated = self::campaignSqlTimestamp($table, $merged, $merged['updated_at'] ?? date('c'));
             $stmt = $this->db()->prepare("UPDATE {$clean} SET _data = ?, _owner = ?, _status = ?, _updated_at = ? WHERE id = ?");
             $stmt->execute([json_encode($merged), $owner, $status, $updated, $id]);
         } else {
             $owner = $record['customer_email'] ?? $record['email'] ?? $record['user_id'] ?? null;
             $status = $record['status'] ?? null;
-            $created = $record['created_at'] ?? date('c');
-            $updated = $record['updated_at'] ?? $created;
+            $created = self::campaignSqlTimestamp($table, $record, $record['created_at'] ?? date('c'));
+            $updated = self::campaignSqlTimestamp($table, $record, $record['updated_at'] ?? $created);
             $stmt = $this->db()->prepare("INSERT INTO {$clean} (id, _data, _owner, _status, _created_at, _updated_at) VALUES (?, ?, ?, ?, ?, ?)");
             $stmt->execute([$id, json_encode($record), $owner, $status, $created, $updated]);
         }
         return $record;
     }
+
+    /** Keep campaign dates in JSON and bind a portable UTC DATETIME for their CRM rows. */
+    private static function campaignSqlTimestamp(string $table, array $record, mixed $value): mixed {
+        $slug = $record['campaign_slug'] ?? null;
+        if (!in_array($table, ['contact_submissions', 'mail_inbox'], true)
+            || !is_string($slug)
+            || !AuthoredPageService::validSlug($slug)
+            || !AuthoredPageService::validRevision($record['campaign_revision'] ?? null)
+            || !is_string($value)
+            || !preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})$/D', $value)) {
+            return $value;
+        }
+        // https://mariadb.com/docs/server/reference/sql-structure/sql-language-structure/date-and-time-literals
+        $parsed = \DateTimeImmutable::createFromFormat(\DateTimeInterface::ATOM, $value);
+        if ($parsed === false || \DateTimeImmutable::getLastErrors() !== false) return $value;
+        return gmdate('Y-m-d H:i:s', $parsed->getTimestamp());
+    }
+
     /** Independent owner forms patch the canonical settings row under one row lock. */
     private function upsertApplicationSettings(array $record): array {
         $id = SettingsService::SETTINGS_ID;
@@ -777,6 +795,65 @@ final class DatabaseService {
         return $query->rowCount() === 1;
     }
 
+    /** Store a validated campaign contact and its Inbox projection together on the DB host. */
+    public function saveCampaignLead(string $id, string $slug, string $revision, array $answers): string {
+        if (!preg_match('/^lead_[a-f0-9]{24}$/D', $id) || !AuthoredPageService::validSlug($slug)
+            || !AuthoredPageService::validRevision($revision)) {
+            throw new \InvalidArgumentException('Invalid campaign submission identity.');
+        }
+        if ($this->isTestMode()) throw new \LogicException('Campaign leads require an isolated database.');
+        if ($this->isRemote()) {
+            $result = $this->remoteMutation('save_campaign_lead', 'contact_submissions', compact('id','slug','revision','answers'));
+            $outcome = $result['outcome'] ?? null;
+            if (!in_array($outcome, ['received','stale','invalid'], true)) {
+                throw new \RuntimeException('Campaign submission was not confirmed.');
+            }
+            return $outcome;
+        }
+
+        $pdo = $this->db();
+        $pdo->beginTransaction();
+        try {
+            // A concurrent editor must not replace or withdraw the definition during an accepted lead write.
+            $rows = $this->query('SELECT _data FROM settings WHERE id = ? FOR UPDATE', ['pg:'.$slug]);
+            $page = $rows === [] ? [] : json_decode($rows[0]['_data'], true, flags: JSON_THROW_ON_ERROR);
+            $definition = CampaignLeadService::pageDefinition($page);
+            if (($page['slug'] ?? null) !== $slug || ($page['revision'] ?? null) !== $revision
+                || ($page['status'] ?? null) !== 'published' || $definition === null) {
+                $pdo->rollBack();
+                return 'stale';
+            }
+
+            // A retained Inbox receipt also prevents a replay after owner deletion from Contacts.
+            $contacts = new ContactService($this);
+            if ($contacts->hasCampaignReceipt($id, $slug, $revision)) {
+                $pdo->commit();
+                return 'received';
+            }
+
+            $validation = CampaignLeadService::validate($definition, $answers);
+            if ($validation['errors']) {
+                $pdo->rollBack();
+                return 'invalid';
+            }
+            $contact = CampaignLeadService::contactRecord($id, $slug, $revision, $definition, $validation['values']);
+            if (ContactService::validationErrors($contact, ['Campaign enquiry'=>'Campaign enquiry'])) {
+                $pdo->rollBack();
+                return 'invalid';
+            }
+            if ($this->insertIfAbsent('contact_submissions', $contact)['inserted']) {
+                (new MailStorageService($this))->recordInboxFromContact($contact);
+            } elseif (!$contacts->hasCampaignReceipt($id, $slug, $revision)) {
+                throw new \RuntimeException('Campaign submission was not confirmed.');
+            }
+            $pdo->commit();
+            return 'received';
+        } catch (\Throwable $error) {
+            if ($pdo->inTransaction()) $pdo->rollBack();
+            throw $error;
+        }
+    }
+
     /** A single settings record owns public header order, independently of the general settings forms. */
     public function saveHeaderMenu(array $items, int $revision): bool {
         SettingsService::validateMenuItems($items);
@@ -830,8 +907,8 @@ final class DatabaseService {
         $clean = preg_replace('/[^a-z_]/', '', $table);
         $owner = $record['customer_email'] ?? $record['email'] ?? $record['user_id'] ?? null;
         $status = $record['status'] ?? null;
-        $created = $record['created_at'] ?? date('c');
-        $updated = $record['updated_at'] ?? $created;
+        $created = self::campaignSqlTimestamp($table, $record, $record['created_at'] ?? date('c'));
+        $updated = self::campaignSqlTimestamp($table, $record, $record['updated_at'] ?? $created);
         $stmt = $this->db()->prepare("INSERT IGNORE INTO {$clean} (id, _data, _owner, _status, _created_at, _updated_at) VALUES (?, ?, ?, ?, ?, ?)");
         $stmt->execute([$id, json_encode($record), $owner, $status, $created, $updated]);
         $inserted = $stmt->rowCount() === 1;
