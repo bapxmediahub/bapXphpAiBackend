@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "0cfdd2d4b867020f3a7733093f3ac152b9f97292fae0bc21025fc73cbee96de9",
-            "references_sha256": "57f1008d0d400462339e81b0bda1b2f023ddbf86826b0eabd0c0c1da4d91bc83",
-            "review_note": "Rechecked the runtime and monitoring guides against the exact PHP adapter and dashboard patch. The malformed tool batch guard and Luna configuration remain in the native adapter, and monitoring keeps provider, tool and review receipts in the agent workspace."
+            "source_sha256": "bde2bde8a9de8bf32dc819c741e87a13e30ec696f95f2049814fee7028c63a73",
+            "references_sha256": "712cfa82eeaf1799825bf88c52ccd4fc11eb229ca750401d97e1d77bbd037bbb",
+            "review_note": "Read the exact bounded provider readiness and monitoring paths. The new synchronous short-hold recovery uses the prescribed actor and tool boundaries, and the Vinod screen continues to show only sanitized agent run and quality evidence."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
