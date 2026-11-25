@@ -108,10 +108,12 @@ region for arrow-key scrolling; public website pages and external MCP App
 hosts retain their own layouts, and unconnected web-search hosts do not gain
 write permissions.
 
-The native Support panel reserves most of its bounded viewport for the
-conversation and gives its composer a compact, accessible single-row message +
-Send layout. The Enterprise bot answer uses the available safe width for
-evidence and report cards without overflowing 375px mobile. None of these
+The native Support panel gives the conversation a focusable scroll region and
+keeps the message field and Send button on one row. Opening focuses the active
+pane heading. Close and Escape return focus to the launcher, and Back to chat
+from an enquiry returns to the link that opened it. The compact composer stays
+reachable in short viewports. The Enterprise bot answer uses the available
+width for evidence and report cards without overflowing 375px mobile. None of these
 presentation-only changes call tools, create a cart, submit a contact message,
 or change the RBAC/CSRF/model configuration.
 

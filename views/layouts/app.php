@@ -182,6 +182,9 @@ main{padding-bottom:0}
 .astrologer-card,.panel{border-color:var(--color-border-light);border-radius:var(--radius-md);box-shadow:none}
 .astrologer-card:hover,.panel:hover{transform:none;border-color:var(--color-border);box-shadow:var(--shadow-md)}
 .support-fab{background:var(--color-maroon);box-shadow:var(--shadow-md)}
+.site-skip-link{position:fixed;z-index:1300;top:12px;left:12px;transform:translateY(calc(-100% - 16px));display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border:1px solid var(--color-gold);border-radius:var(--radius-sm);background:var(--color-maroon);color:var(--color-white);font-weight:700}
+.site-skip-link:focus{transform:none;outline:2px solid var(--color-gold);outline-offset:2px}
+#site-main{scroll-margin-top:var(--header-height,80px)}
 .site-footer{background:var(--color-maroon);color:var(--color-gold-light);padding:var(--space-2xl) 0 var(--space-md);font-size:0.85rem;border-top:1px solid var(--color-gold)}
 .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:var(--space-xl);margin-bottom:var(--space-xl)}
 .footer-brand{font-family:Inter,system-ui,sans-serif;font-size:1.2rem;color:var(--color-gold);font-weight:600;display:block;margin-bottom:var(--space-xs)}
@@ -394,9 +397,10 @@ catch (\RuntimeException) { $__publicProductsOrigin=null; }
 <body>
 <?php $currentPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/'; ?>
 <?php $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
+<a class="site-skip-link" href="#site-main">Skip to content</a>
 <header class="site-header" id="site-header" tabindex="-1">
     <a href="/" class="brand">
-        <?php if ($__logo !== ''): ?><img src="<?= e($__logo) ?>" width="52" height="52" alt="<?= e($__siteName . ' logo') ?>"><?php endif; ?>
+        <?php if ($__logo !== ''): ?><img src="<?= e($__logo) ?>" width="52" height="52" alt=""><?php endif; ?>
         <span><?= e($__siteName) ?></span>
     </a>
     <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" aria-label="Menu">
@@ -461,7 +465,7 @@ catch (\RuntimeException) { $__publicProductsOrigin=null; }
         </button>
     </form>
 </dialog>
-<main class="<?= $currentPath === '/' ? 'home-main' : ($currentPath === '/about' ? 'about-main' : '') ?>">
+<main id="site-main" tabindex="-1" class="<?= $currentPath === '/' ? 'home-main' : ($currentPath === '/about' ? 'about-main' : '') ?>">
 <?php
 $__flash = $_SESSION['flash'] ?? null;
 if ($__flash):
@@ -504,14 +508,16 @@ if ($__flash):
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>
     <span class="sr-only">Support</span>
 </button>
-<section class="support-panel" id="support-panel" data-support-key="<?= e($__supportKey) ?>" hidden>
+<section class="support-panel" id="support-panel" aria-labelledby="support-title" data-support-key="<?= e($__supportKey) ?>" hidden>
     <div class="support-panel__head">
-        <strong>Support</strong>
+        <h2 id="support-title" tabindex="-1">Support</h2>
         <button type="button" id="support-commerce-toggle" class="support-commerce-toggle" aria-controls="support-commerce" aria-expanded="false" disabled><?= $__modules['shop'] ? 'Cart &amp; checkout' : 'Checkout status' ?></button>
         <button type="button" id="support-new-chat" class="btn btn-ghost btn-sm support-panel__new" disabled>New chat</button>
-        <button type="button" class="support-panel__close" aria-label="Close support">×</button>
+        <button type="button" class="support-panel__close" aria-label="Close support">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+        </button>
     </div>
-    <div class="support-panel__body" id="support-log" aria-live="polite">
+    <div class="support-panel__body" id="support-log" aria-live="polite" tabindex="0" role="region" aria-label="Support conversation">
         <p>Ask about products, delivery, orders, or support tickets.</p>
         <?php if(empty($_SESSION['user'])): ?><p>Guest mode: you can ask about products and policies. Sign in only to check your own orders or support tickets.</p><?php endif; ?>
     </div>
@@ -544,53 +550,48 @@ if ($__flash):
 <footer class="site-footer" role="contentinfo">
     <div class="container">
         <div class="footer-grid">
-            <div>
+            <div class="footer-identity">
                 <span class="footer-brand"><?= e($__siteName) ?></span>
                 <?php if ($__footerDescription !== ''): ?><p class="footer-desc"><?= e($__footerDescription) ?></p><?php endif; ?>
             </div>
             <div>
-                <h4 class="footer-heading">Shop</h4>
+                <h2 class="footer-heading">Explore</h2>
                 <ul class="footer-links">
-                    <?php if ($__modules['shop']): ?><li><a href="/shop">All Products</a></li><?php endif; ?>
+                    <?php if ($__modules['shop']): ?><li><a href="/shop">All products</a></li><?php endif; ?>
                     <li><a href="/temples">Temples</a></li>
                     <li><a href="/about"><?= e($__aboutLabel) ?></a></li>
-                    <?php if ($__modules['blog']): ?><li><a href="/blog">Blog</a></li><?php endif; ?>
-                    <li><a href="/contact">Contact</a></li>
-                    <li><a href="/terms">Terms</a></li>
-                    <li><a href="/privacy">Privacy</a></li>
                     <li><a href="/ai-assistants">AI assistants</a></li>
                 </ul>
             </div>
+            <?php if ($__modules['blog']): ?>
             <div>
-                <h4 class="footer-heading">Explore</h4>
-            <ul class="footer-links">
-                <li><a href="/temples">Temples</a></li>
-                <?php if ($__modules['blog']): ?>
-                <li><a href="/blog">Blog</a></li>
-                <?php foreach ($__blogCats as $__cat): ?>
-                <li><a href="/blog/category/<?= e($__cat['slug'] ?? '') ?>"><?= e($__cat['name'] ?? '') ?></a></li>
-                <?php endforeach; ?>
-                <?php endif; ?>
-                <li><a href="/about"><?= e($__aboutLabel) ?></a></li>
-                <li><a href="/contact">Contact</a></li>
-            </ul>
-            </div>
-            <div>
-                <h4 class="footer-heading">Customer Support</h4>
+                <h2 class="footer-heading">Journal</h2>
                 <ul class="footer-links">
+                    <li><a href="/blog">All articles</a></li>
+                    <?php foreach ($__blogCats as $__cat): ?>
+                    <li><a href="/blog/category/<?= e(rawurlencode((string) ($__cat['slug'] ?? ''))) ?>"><?= e($__cat['name'] ?? '') ?></a></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+            <?php endif; ?>
+            <div>
+                <h2 class="footer-heading">Customer support</h2>
+                <ul class="footer-links">
+                    <li><a href="/contact">Contact us</a></li>
                     <?php foreach ($__siteContact['phones'] as $phone): ?>
                     <li><a href="tel:<?= e($phone['number']) ?>"><?= e($phone['label']) ?></a></li>
                     <?php endforeach; ?>
                     <?php if (isset($__siteContact['email'])): ?>
                     <li><a href="mailto:<?= e($__siteContact['email']) ?>"><?= e($__siteContact['email']) ?></a></li>
                     <?php endif; ?>
-                    <?php if (!$__siteContact['phones'] && !isset($__siteContact['email'])): ?>
-                    <li><a href="/contact#contact-form">Send an enquiry</a></li>
-                    <?php endif; ?>
                 </ul>
             </div>
         </div>
-        <div class="footer-bottom">&copy; <?= date('Y') ?> <?= e($__siteName) ?> &middot; <a href="/terms">Terms</a> &middot; <a href="/privacy">Privacy</a> &middot; developed with &#10084;&#65039; by <a href="https://mediahub.bapx.in/" target="_blank" rel="noopener noreferrer">@bapxmediahub</a></div>
+        <div class="footer-bottom">
+            <span>&copy; <?= date('Y') ?> <?= e($__siteName) ?></span>
+            <nav class="footer-legal" aria-label="Legal"><a href="/terms">Terms</a><a href="/privacy">Privacy</a></nav>
+            <span>Developed by <a href="https://mediahub.bapx.in/" target="_blank" rel="noopener noreferrer">bapxmediahub</a></span>
+        </div>
     </div>
 </footer>
 <?php endif; ?>
@@ -635,14 +636,25 @@ if ('serviceWorker' in navigator) {
     var swScope = '/';
     navigator.serviceWorker.register(swPath, { scope: swScope }).catch(function(){});
 }
-document.getElementById('site-header').querySelector('.menu-toggle').addEventListener('click',function(){
-    var n=document.getElementById('primary-nav');n.classList.toggle('open');
-    this.setAttribute('aria-expanded',n.classList.contains('open')?'true':'false');
-});
-document.addEventListener('click',function(e){
-    var n=document.getElementById('primary-nav'),t=document.querySelector('.menu-toggle');
-    if(!n.contains(e.target)&&!t.contains(e.target)){n.classList.remove('open');t.setAttribute('aria-expanded','false');}
-});
+(() => {
+    const header = document.getElementById('site-header');
+    const toggle = header.querySelector('.menu-toggle');
+    const menu = document.getElementById('primary-nav');
+    const setMenu = (open) => {
+        menu.classList.toggle('open', open);
+        toggle.setAttribute('aria-expanded', String(open));
+    };
+    toggle.addEventListener('click', () => setMenu(!menu.classList.contains('open')));
+    document.addEventListener('click', (event) => {
+        if (!menu.contains(event.target) && !toggle.contains(event.target)) setMenu(false);
+    });
+    header.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape' || !menu.classList.contains('open')) return;
+        event.preventDefault();
+        setMenu(false);
+        toggle.focus();
+    });
+})();
 // Shared progressive motion is installed by assets/site-motion.js.
 document.addEventListener('error',function(event){
     var image=event.target;
@@ -651,7 +663,7 @@ document.addEventListener('error',function(event){
     image.src=image.dataset.productImageFallback;
 },true);
 var supportFab=document.querySelector('.support-fab'),supportPanel=document.getElementById('support-panel'),supportClose=document.querySelector('.support-panel__close'),supportForm=document.getElementById('support-form'),supportLog=document.getElementById('support-log'),supportConversationId=null;
-var supportNewChat=document.getElementById('support-new-chat'),supportInitialLog=supportLog?.innerHTML||'';
+var supportNewChat=document.getElementById('support-new-chat'),supportTitle=document.getElementById('support-title'),supportInitialLog=supportLog?.innerHTML||'';
 var supportCacheKey=supportPanel?.dataset.supportKey||'',supportCacheScope='sps-support-chat:active';
 var supportPendingRequest=null,supportFeedbackPending=false,supportSessionChanged=false;
 function supportRandomId(){var bytes=new Uint8Array(16);crypto.getRandomValues(bytes);return Array.from(bytes,function(x){return x.toString(16).padStart(2,'0');}).join('');}
@@ -662,7 +674,8 @@ var supportEnquiry=document.getElementById('support-enquiry'),
     supportEnquiryBack=document.getElementById('support-enquiry-back'),
     supportEnquiryStatus=document.getElementById('support-enquiry-status'),
     supportEnquiryContainer=document.getElementById('support-enquiry-form-container'),
-    supportEnquiryLoading=false;
+    supportEnquiryLoading=false,
+    supportEnquiryTrigger=null;
 function supportCloseEnquiry(){
     if(!supportEnquiry||!supportPanel)return;
     supportPanel.dataset.enquiryOpen='false'; supportEnquiry.hidden=true;
@@ -701,7 +714,11 @@ async function supportOpenEnquiry(){
         supportEnquiryContainer.replaceChildren(fallback);
     }finally{supportEnquiryLoading=false;}
 }
-supportEnquiryBack?.addEventListener('click',function(){supportCloseEnquiry();supportLog?.focus?.();});
+supportEnquiryBack?.addEventListener('click',function(){
+    supportCloseEnquiry();
+    (supportEnquiryTrigger?.isConnected ? supportEnquiryTrigger : supportLog)?.focus();
+    supportEnquiryTrigger=null;
+});
 document.getElementById('support-commerce-toggle')?.addEventListener('click',supportCloseEnquiry);
 supportLog?.addEventListener('click',function(event){
     var anchor=event.target instanceof Element?event.target.closest('a[href]'):null;
@@ -709,7 +726,9 @@ supportLog?.addEventListener('click',function(event){
     try{
         var dest=new URL(anchor.href,location.href);
         if(dest.origin===location.origin&&dest.pathname==='/contact'){
-            event.preventDefault();void supportOpenEnquiry();
+            event.preventDefault();
+            supportEnquiryTrigger=anchor;
+            void supportOpenEnquiry();
         }
     }catch(_){}
 });
@@ -749,7 +768,13 @@ function supportRenderAnswer(answer){
     if(!rendered)block.innerHTML='<p><strong>Support:</strong> '+supportReplyHtml(answer.reply||answer.error)+'</p>'+(answer.actions?supportActionsHtml(answer.actions):'');
     supportLog.appendChild(block);
 }
-function supportToggle(open){if(!supportPanel||!supportFab)return;supportPanel.hidden=!open;supportFab.setAttribute('aria-expanded',open?'true':'false');}
+function supportToggle(open){
+    if(!supportPanel||!supportFab||supportPanel.hidden===!open)return;
+    supportPanel.hidden=!open;
+    supportFab.setAttribute('aria-expanded',String(open));
+    var activePane=supportPanel.querySelector('#support-commerce:not([hidden]) h2,#support-enquiry:not([hidden]) h2');
+    (open ? activePane ?? supportTitle : supportFab)?.focus({preventScroll:true});
+}
 function supportSaveLog(){
     try{
         if(!supportCacheKey||!supportLog||sessionStorage.getItem(supportCacheScope)!==supportCacheKey)return;
@@ -793,9 +818,16 @@ if(supportNewChat&&supportForm&&supportLog){
     });
     supportSyncNewChat();
 }
-if(supportFab&&supportPanel){supportLoadLog();
-supportFab.addEventListener('click',function(){supportToggle(supportPanel.hidden);});
-supportClose.addEventListener('click',function(){supportToggle(false);});}
+if(supportFab&&supportPanel){
+    supportLoadLog();
+    supportFab.addEventListener('click',function(){supportToggle(supportPanel.hidden);});
+    supportClose.addEventListener('click',function(){supportToggle(false);});
+    supportPanel.addEventListener('keydown',function(event){
+        if(event.key!=='Escape'||event.defaultPrevented||event.isComposing)return;
+        event.preventDefault();
+        supportToggle(false);
+    });
+}
 if(supportForm){supportForm.addEventListener('submit',async function(e){
     e.preventDefault();
     if(supportSessionChanged||supportForm.dataset.busy==='true')return;
