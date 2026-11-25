@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "940c2b1b8c884af745fc6a21657be2384cbbe1f942558fce334d16773a3579a7",
-            "references_sha256": "089774a2b9818a0e14fbb4c1a0c3d5b7d664afebb0ac70d4b2256e04efd06ae8",
-            "review_note": "Compared Support prompt, same-turn catalogue tool evidence, recognized reply forms, error event and persistent turn behavior against the agent runtime and monitoring guides."
+            "source_sha256": "713a58ac7ced3d1afc6a991ee4c85b42b27b4effd5efd0464047050991bc3321",
+            "references_sha256": "327982b8cd1a6ce869e72a9d144ccb24e7d20a8bf8b3c77f31a37c6b9ba936e5",
+            "review_note": "Compared cURL measurement, trace sanitation, operational aggregation and attempt presentation to the documented timeout stages and the preserved inference policy."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -23,9 +23,9 @@
             "review_note": "Read the account help Markdown and its source view. The article explains the picture placeholder beside the email."
         },
         "foundation": {
-            "source_sha256": "99b0aba85d1f7d8d956cafda9e13da088ae367f789f09350a1c068d65732a1c6",
+            "source_sha256": "48d61c6654d04580b279d46cafd418d53fb34f43105ad96a276a8072883dd364",
             "references_sha256": "6eba6651fd8e747d8053034a7812f9d41e6dba5a405bc1d1ed669556c8f2474b",
-            "review_note": "Reviewed the controller and regression diff. The owner route continues to read existing account and matched order records without a schema or persistence change."
+            "review_note": "Checked existing private trace and audit storage boundaries. Only numeric allowlisted observations are added to the two existing stores."
         },
         "google-tags": {
             "source_sha256": "187c8971da4cad73fccba340fb2f7424e60c4cb704bed864594f6c2dd3308c72",
@@ -38,9 +38,9 @@
             "review_note": "Reviewed the new hosting instructions against existing request-failure guidance. A transport receipt remains distinct from a rendering response, and the worker preserves the canonical queue before reporting an outcome."
         },
         "interface": {
-            "source_sha256": "5e87ceec9ddc669b7c1128c21b53134ed9aaea494f51bb877d07ebab8c389e6d",
-            "references_sha256": "231cf2ca4f26baab840682fd1b8bd75517d3297dbe29016cd871db7137e5a7af",
-            "review_note": "Compared the Profile layout, photo load event and fallback to Design and the frontend skill, including long-email wrapping at 375px."
+            "source_sha256": "b7aec02a54650d5fd49d58e5e598b61d6a9f2479e06b2b2f56624ed0751abb38",
+            "references_sha256": "07e5bb03094f47cc2736846551c93170f66226fc652239a204862e5dcfa50646",
+            "review_note": "Checked responsive milestone labels, the timeout result and the existing Monitoring details disclosure against Design and the Admin UI skill."
         },
         "mail": {
             "source_sha256": "302f0faf2a0313a87273606cc8c15bcd816d4c1df8780ea6da482ee60b8d3cd3",
@@ -48,19 +48,19 @@
             "review_note": "The AdminController delta is isolated to the Users GET action. Compared with the existing mail dependency and guide; queue and delivery behavior does not change."
         },
         "mcp-clients": {
-            "source_sha256": "8e5f932402eee0b3b101cd5e6e86a1b49c095eba78f356fc843bdf31ad7b9551",
+            "source_sha256": "38828d52259fbd6b6555d790e463ff775e79be85872a5d5b5aea78e599fba3ac",
             "references_sha256": "d19b8a3fce5a93fac4c742428a288b1d7f06777b4ec6c2c1cff72a5fff2760b9",
-            "review_note": "Verified this validation is applied only by the native Support reply path. Shared public MCP data and tool contracts remain as documented."
+            "review_note": "Reviewed provider transport diff alongside the MCP operator guides. Measurement goes into the existing trace allowlist and does not affect model protocol or client authorization."
         },
         "media": {
             "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
-            "references_sha256": "cd112dea5ce8e98918b31fe4218f8e50e0eaadfd2534ccf4ca14006a8d8a57dd",
-            "review_note": "Reviewed the changed Admin UI skill against the media guide and guardrails. The new verification instructions apply only to Users and leave the media flows unchanged."
+            "references_sha256": "5a70bf9c76ac5e1b2168e586700c2df8cbf038197486da7030d17b27124a6200",
+            "review_note": "Read the Admin UI skill change with the media guide. This addition concerns the Monitoring attempt list only."
         },
         "operator-help": {
-            "source_sha256": "d34d47d3a1865992040446d3f81cc7d01b2ab4a377a0662b301f019b5e067ecd",
-            "references_sha256": "99fd0cfb0ea114e69da86d519db8afb53c3d8b4c4e5df3075ff0e6b8006b9635",
-            "review_note": "Compared the customer profile guide to the rendered avatar and unchanged profile form. The guide describes the saved-photo and initial states."
+            "source_sha256": "7e0c85d5dcfb4a2e871f6420c09499c1322fbb6d9a9bd56209f2b373ffae417c",
+            "references_sha256": "c3ef78820bd002599520bbced0aa399ba7d4e606853ea51a66fc2b4461e0ceec",
+            "review_note": "Matched Monitoring help to the owner attempt list and its measured transfer-start and first-byte evidence."
         },
         "public-mcp": {
             "source_sha256": "e5d2bb67604d7b9c3588dba3d04e75ad9925c1c686f3a4d13dffd1dc8dd99325",
@@ -69,8 +69,8 @@
         },
         "remote-commerce": {
             "source_sha256": "20def67683e671cd66be902f690208bfe1c5638987528b10e3889b195954274b",
-            "references_sha256": "3fe064f00cb256b98aea325c6a990a2b13c0fd86c3d3113346b5253892797a76",
-            "review_note": "Reviewed the shared frontend skill and Design diff alongside checkout guidance. The new styling and recovery behavior is scoped to the authenticated Profile view."
+            "references_sha256": "f0a1f0eb9b2272aabc55afdd54d9a8239defa648529a6d4112836421d733a582",
+            "review_note": "Checked Design changes against checkout and remote commerce guidance. The new wrapping measurement row is limited to Agent Monitoring."
         },
         "sales-channels": {
             "source_sha256": "6e5ee7b44dd92cc4dadec7a3c02f4bb9da797ba98d4e541e9f956687db236142",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed the optional canonical catalogue fields against the merchant feed projection. Published product, price and inventory fields remain as documented."
         },
         "workflow": {
-            "source_sha256": "2c0b7fa39826e3c8168e7a378dbc294ecdaf6a328d05ebce202dbab690abe9cf",
+            "source_sha256": "758f549daa4ba7d7b549f13fa687d493d779b3e24b42c549942d81165518f02c",
             "references_sha256": "7770887213db03241a85f7bbee17bf25b2c58350058ebc59e25fd76b29ad80df",
-            "review_note": "Reviewed the existing Chromium workflow. The isolated profile fixture uses the installed browser and inserts no production fixture or browser dependency."
+            "review_note": "Reviewed the new Chrome breakpoint guidance and PHP fixture assertions within the existing verification workflow."
         }
     }
 }

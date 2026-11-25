@@ -195,6 +195,18 @@ try{
         if($exit!==0||($turn['outcome']??null)!==$expected||count($turn['model_attempts']??[])!==$rounds||($turn['turn_id']??null)!==($response['turn_id']??null)){
             throw new RuntimeException("$scenario/$surface: unexpected model lifecycle: ".substr($raw,0,2500)." STDERR: ".substr($err,0,1000));
         }
+        $attempts = $turn['model_attempts'];
+        $measured = $attempts[0];
+        if (($measured['connect_ms'] ?? 0) <= 0 || ($measured['ready_ms'] ?? 0) <= 0 || ($measured['first_byte_ms'] ?? 0) <= 0) {
+            throw new RuntimeException('Loopback request milestones missing from private attempt evidence');
+        }
+        if ($protocol === 'google' && ($scenario === 'policy' || $scenario === 'owner')) {
+            $spans = array_values(array_filter($turn['trace']['spans'] ?? [],
+                static fn(array $span): bool => ($span['type'] ?? '') === 'model_attempt'));
+            if (($spans[0]['ready_ms'] ?? null) !== $measured['ready_ms']) {
+                throw new RuntimeException('Transfer start not retained in the observed model span');
+            }
+        }
         foreach((array)$tool as $selected)if(!in_array($selected,array_column($turn['tools']??[],'name'),true))throw new RuntimeException("Missing selected tool: $selected");
         if(!empty($response['ticket_id']))throw new RuntimeException('Unapproved ticket creation');
         if(str_starts_with($scenario,'catalogue_')) {

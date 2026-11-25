@@ -335,6 +335,7 @@ $tests['monitoring separates transfers, answer checks and local stops without ad
         ['event'=>'agent.run','created_at'=>gmdate('c', $now),'meta'=>[
             'surface'=>'admin','outcome'=>'error','reason'=>'empty_response','provider_attempts'=>[
                 ['model'=>'fixture','status'=>200,'curl_error'=>0,'total_ms'=>600,'timeout_ms'=>7000,
+                    'dns_ms'=>14.2533,'connect_ms'=>27.25,'ready_ms'=>53.33,
                     'first_byte_ms'=>520.7,'response_body'=>'private-body'],
             ],
         ]],
@@ -348,13 +349,21 @@ $tests['monitoring separates transfers, answer checks and local stops without ad
     assertSame(0, $metrics['provider_error_count'], 'A successful HTTP transfer can return an empty answer');
     assertSame(['empty_response'=>1,'request_deadline'=>1], $metrics['reasons'], 'Local and content failures remain distinct');
     $attempt = $metrics['recent_runs'][0]['attempts'][0];
-    assertSame([7000,520.7], [$attempt['timeout_ms'],$attempt['first_byte_ms']], 'Observed timing and timeout cap survive sanitizing and aggregation');
+    assertSame([7000,14.253,27.25,53.33,520.7],
+        [$attempt['timeout_ms'],$attempt['dns_ms'],$attempt['connect_ms'],$attempt['ready_ms'],$attempt['first_byte_ms']],
+        'Observed transport milestones survive sanitizing and aggregation');
     assertTrue(!str_contains(json_encode($metrics),'private-body'), 'Provider body excluded');
     foreach ([[200,28,'transfer_timeout'],[0,6,'transport_error'],[0,0,'no_http'],[403,0,'access_denied'],[400,0,'request_error']] as [$status,$curl,$expected]) {
         assertSame($expected, \App\Services\AuditLogService::attemptDiagnosis(['status'=>$status,'curl_error'=>$curl]), 'Transfer diagnosis uses the observed HTTP and cURL evidence');
     }
 
     $trace = \App\Services\AgentTraceService::class;
+    assertSame([], $trace::attemptTimings(['dns_ms'=>0,'connect_ms'=>INF,'ready_ms'=>120001,'first_byte_ms'=>NAN]),
+        'Unobserved and invalid cumulative milestones stay absent');
+    assertSame('timeout_before_first_byte', \App\Services\AuditLogService::attemptDiagnosis(
+        ['status'=>0,'curl_error'=>28,'ready_ms'=>53.33]), 'Transfer start precedes an unobserved response');
+    assertSame('timeout_after_first_byte', \App\Services\AuditLogService::attemptDiagnosis(
+        ['status'=>200,'curl_error'=>28,'first_byte_ms'=>520.7]), 'A measured first byte precedes the timeout');
     foreach (['model_calls','observed_tokens','deadline','trace_steps'] as $limit) {
         $saved = [];
         $trace::begin(bin2hex(random_bytes(8)), static function(array $snapshot) use (&$saved) { $saved=$snapshot; },

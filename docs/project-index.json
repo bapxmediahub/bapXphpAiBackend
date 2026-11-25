@@ -1919,7 +1919,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/AuditLogService.php",
-            "line": 59
+            "line": 63
         },
         {
             "from": "service:AuditLogService",
@@ -1927,7 +1927,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AuditLogService.php",
-            "line": 119
+            "line": 123
         },
         {
             "from": "service:AuditLogService",
@@ -1935,7 +1935,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AuditLogService.php",
-            "line": 69
+            "line": 73
         },
         {
             "from": "service:AuditLogService",
@@ -1943,7 +1943,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AuditLogService.php",
-            "line": 52
+            "line": 56
         },
         {
             "from": "service:AuditLogService",
@@ -1951,7 +1951,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AuditLogService.php",
-            "line": 105
+            "line": 109
         },
         {
             "from": "service:AuthoredPageService",

@@ -222,7 +222,9 @@ come from private chat JSON, so staff can match failed lookups even when an
 operational audit write was unavailable. Only recorded MySQL events contribute
 to the 24-hour operational metrics.
 
-Each attempt in Recent runs displays the observed HTTP status, cURL error and elapsed duration. New attempts can also carry the effective transfer timeout and a positive measured first-byte time. cURL 28 identifies a client-side timeout and does not determine which network hop or upstream component delayed the request. HTTP 5xx establishes an upstream error response. HTTP 429 directs the operator to provider quota and rate limits. A successful transfer can still produce an unusable answer. Each run keeps its own outcome, independently of its attempt counts.
+Each attempt in Recent runs displays the observed HTTP status, cURL error and elapsed duration. New attempts can also carry the effective timeout and positive cURL milestones for DNS resolution, connection, transfer start and the first response byte. Each milestone measures cumulative elapsed time from the start of that transfer. An absent measurement remains unknown. For cURL 28, a recorded first byte indicates the response had begun. If transfer start was recorded and there is no HTTP status or first byte, the timeout happened before a response was observed. Older evidence can still show a generic timeout. These observations identify the stage reached and leave the network or upstream cause undetermined. [libcurl transfer start](https://curl.se/libcurl/c/CURLINFO_PRETRANSFER_TIME.html) · [libcurl first byte](https://curl.se/libcurl/c/CURLINFO_STARTTRANSFER_TIME.html)
+
+HTTP 5xx establishes an upstream error response. HTTP 429 directs the operator to provider quota and rate limits. A successful transfer can still produce an unusable answer. Each run keeps its own outcome, independently of its attempt counts.
 
 The deployment-local health file stores only hashed model/connection identities,
 bounded expiry timestamps and a provider-hold flag. Ordinary transient server

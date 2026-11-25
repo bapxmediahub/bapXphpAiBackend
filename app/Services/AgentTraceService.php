@@ -390,8 +390,9 @@ final class AgentTraceService
         if (is_int($attempt['timeout_ms'] ?? null) && $attempt['timeout_ms'] > 0) {
             $timings['timeout_ms'] = $attempt['timeout_ms'];
         }
-        if (is_numeric($attempt['first_byte_ms'] ?? null) && is_finite((float)$attempt['first_byte_ms']) && $attempt['first_byte_ms'] > 0) {
-            $timings['first_byte_ms'] = round((float)$attempt['first_byte_ms'], 3);
+        foreach (['dns_ms','connect_ms','ready_ms','first_byte_ms'] as $key) {
+            $value = is_numeric($attempt[$key] ?? null) ? round((float)$attempt[$key], 3) : 0;
+            if ($value > 0 && $value <= 120000) $timings[$key] = $value;
         }
         if(in_array($attempt['request_error_hint']??null,AiClient::REQUEST_ERROR_HINTS,true))
             $timings['request_error_hint']=$attempt['request_error_hint'];
