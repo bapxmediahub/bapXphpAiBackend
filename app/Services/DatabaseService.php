@@ -21,9 +21,9 @@ final class DatabaseService {
         return getenv('BAPX_TEST_MODE') === '1';
     }
 
-    private function remoteCall(string $sql, array $params = [], bool $cache = true): array {
+    private function remoteCall(string $sql, array $params = []): array {
         $cacheKey = hash('sha256', (string)$this->cfg['remote_url'] . "\0" . $sql . "\0" . serialize($params));
-        if ($cache && array_key_exists($cacheKey, self::$remoteQueryCache)) return self::$remoteQueryCache[$cacheKey];
+        if (array_key_exists($cacheKey, self::$remoteQueryCache)) return self::$remoteQueryCache[$cacheKey];
 
         $payload = json_encode(array_filter(['query' => $sql, 'params' => $params, 'password' => $this->cfg['pass'] ?? '']), JSON_THROW_ON_ERROR);
         $ch = curl_init($this->cfg['remote_url']);
@@ -45,11 +45,10 @@ final class DatabaseService {
         if (!is_array($result) || empty($result['success']) || !isset($result['data']) || !is_array($result['data'])) {
             throw new \RuntimeException('Remote database returned an invalid response.');
         }
-        if ($cache) self::$remoteQueryCache[$cacheKey] = $result['data'];
-        return $result['data'];
+        return self::$remoteQueryCache[$cacheKey] = $result['data'];
     }
 
-    private function remoteMutation(string $action, string $table, array $payload): array {
+    private function remoteMutation(string $action, string $table, array $payload, bool $invalidateCache = true): array {
         $payload['password'] = $this->cfg['pass'] ?? '';
         $body = json_encode(['action' => $action, 'collection' => preg_replace('/[^a-z_]/', '', $table)] + $payload);
         $ch = curl_init($this->cfg['remote_url']);
@@ -64,7 +63,7 @@ final class DatabaseService {
         if ($body === false || $code < 200 || $code >= 300 || empty($result['success'])) {
             throw new \RuntimeException((string)($result['error'] ?? 'Remote mutation failed.'));
         }
-        self::$remoteQueryCache = [];
+        if ($invalidateCache) self::$remoteQueryCache = [];
         return $result;
     }
 
@@ -1002,23 +1001,35 @@ final class DatabaseService {
         $stmt->execute($params);
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
-    /** Project only the keys needed to count the two storefront actions. */
-    public function storefrontActivityCandidates(int $since): \Generator {
-        if ($this->isTestMode()) return;
+    /** Count storefront actions on the database host, preserving the PHP cutoff. */
+    public function storefrontActivitySince(int $since): array {
+        if ($this->isTestMode()) return SiteTelemetryService::counts([], $since);
+        if (!$this->isRemote()) {
+            return SiteTelemetryService::counts($this->storefrontActivityCandidates($since), $since);
+        }
 
+        $response = $this->remoteMutation('count_storefront_activity', 'audit_events', ['since' => $since], invalidateCache: false);
+        $counts = $response['result'] ?? null;
+        if (!is_array($counts) || count($counts) !== 2
+            || !is_int($counts['cart_add'] ?? null) || $counts['cart_add'] < 0
+            || !is_int($counts['checkout_initiated'] ?? null) || $counts['checkout_initiated'] < 0) {
+            throw new \RuntimeException('Database returned invalid storefront activity counts.');
+        }
+        return $counts;
+    }
+
+    private function storefrontActivityCandidates(int $since): \Generator {
         // Only discard unmistakably old date('c') shapes. Four days cover both
         // PHP's short-month date normalization and the explicit offset. Keep any
         // other format for the same PHP parser used before this filtered read.
         $oldestDate = gmdate('Y-m-d', $since - 4 * 86400);
         $sql = <<<'SQL'
-            SELECT id, event_name, recorded_at
+            SELECT event_name, recorded_at
             FROM (
-                SELECT id,
-                       JSON_UNQUOTE(JSON_EXTRACT(_data, '$.meta.event')) AS event_name,
+                SELECT JSON_UNQUOTE(JSON_EXTRACT(_data, '$.meta.event')) AS event_name,
                        JSON_EXTRACT(_data, '$.created_at') AS recorded_at
                 FROM audit_events
                 WHERE CAST(JSON_UNQUOTE(JSON_EXTRACT(_data, '$.event')) AS BINARY) = CAST('commerce.event' AS BINARY)
-                  AND (? IS NULL OR id > ?)
             ) AS storefront_events
             WHERE CAST(event_name AS BINARY) IN (CAST('cart_add' AS BINARY), CAST('checkout_initiated' AS BINARY))
               AND JSON_TYPE(recorded_at) NOT IN ('NULL', 'OBJECT', 'ARRAY')
@@ -1027,37 +1038,30 @@ final class DatabaseService {
                   AND JSON_UNQUOTE(recorded_at) REGEXP '^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])T([01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9][+-]([01][0-9]|2[0-3]):[0-5][0-9]$'
                   AND LEFT(JSON_UNQUOTE(recorded_at), 10) < ?
               )
-            ORDER BY id
-            LIMIT 500
             SQL;
-        $after = null;
-        do {
-            $params = [$after, $after, $oldestDate];
-            // Pages are consumed once. Caching each remote response would retain
-            // the entire result set in PHP and defeat bounded reads.
-            $rows = $this->isRemote() ? $this->remoteCall($sql, $params, cache: false) : $this->query($sql, $params);
-            if (!array_is_list($rows) || count($rows) > 500) {
-                throw new \RuntimeException('Database returned an invalid storefront activity page.');
+        $pdo = $this->db();
+        $bufferedAttribute = defined('Pdo\Mysql::ATTR_USE_BUFFERED_QUERY')
+            ? \Pdo\Mysql::ATTR_USE_BUFFERED_QUERY
+            : \PDO::MYSQL_ATTR_USE_BUFFERED_QUERY;
+        $wasBuffered = $pdo->getAttribute($bufferedAttribute);
+        $stmt = null;
+        try {
+            if (!$pdo->setAttribute($bufferedAttribute, false)) {
+                throw new \RuntimeException('Could not stream the storefront activity result.');
             }
-            $previous = $after;
-            foreach ($rows as $row) {
-                if (!is_array($row) || count($row) !== 3
-                    || !is_string($row['id'] ?? null) || $row['id'] === $after
-                    || !in_array($row['event_name'] ?? null, ['cart_add', 'checkout_initiated'], true)
-                    || !is_string($row['recorded_at'] ?? null)) {
-                    throw new \RuntimeException('Database returned an invalid storefront activity record.');
-                }
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$oldestDate]);
+            while (($row = $stmt->fetch(\PDO::FETCH_ASSOC)) !== false) {
                 $timestamp = json_decode($row['recorded_at'], true, flags: JSON_THROW_ON_ERROR);
-                if (!is_scalar($timestamp)) {
-                    throw new \RuntimeException('Database returned an invalid storefront activity timestamp.');
-                }
-                $after = $row['id'];
                 yield ['event' => 'commerce.event', 'meta' => ['event' => $row['event_name']], 'created_at' => $timestamp];
             }
-            if (count($rows) === 500 && $after === $previous) {
-                throw new \RuntimeException('Database did not advance the storefront activity page.');
+        } finally {
+            try {
+                $stmt?->closeCursor();
+            } finally {
+                $pdo->setAttribute($bufferedAttribute, $wasBuffered);
             }
-        } while (count($rows) === 500);
+        }
     }
 
     public function connection(): \PDO {

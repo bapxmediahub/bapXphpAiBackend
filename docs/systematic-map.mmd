@@ -1523,6 +1523,7 @@ flowchart LR
   controller_remotecheckoutcontroller -. source new .-> service_remotecheckoutservice
   controller_remotedbcontroller -. source new .-> service_addressservice
   controller_remotedbcontroller -. source new .-> service_databaseservice
+  controller_remotedbcontroller -. static reference .-> service_sitetelemetryservice
   controller_reviewcontroller -. source new .-> service_authservice
   controller_reviewcontroller -. source new .-> service_reviewservice
   controller_reviewcontroller -- extends --> controller_basecontroller
@@ -1635,6 +1636,7 @@ flowchart LR
   service_databaseservice -. static reference .-> service_remotecheckoutservice
   service_databaseservice -. static reference .-> service_remotecheckoutstateservice
   service_databaseservice -. static reference .-> service_settingsservice
+  service_databaseservice -. static reference .-> service_sitetelemetryservice
   service_databaseservice -. static reference .-> service_supportticketservice
   service_docsmapservice -. static reference .-> service_projectmapservice
   service_enterprisetoolregistry -- extends --> service_agenttoolregistry

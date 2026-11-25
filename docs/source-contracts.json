@@ -18,14 +18,14 @@
             "review_note": "Reviewed the campaign additions against the order and catalogue contracts; campaign validation and owner CRM records do not enter commerce order, checkout or revenue processing."
         },
         "content": {
-            "source_sha256": "08967daec8c35bc885c34c3e6e44a7de6e53a2e4a407d8c5e3e78abde74cf8f9",
+            "source_sha256": "ea91cadc20eac49a971699378266b4988947c9de2a1e7d920e8231d72ad771f4",
             "references_sha256": "ed431946047cc8f0b267edd928ec8d38a59571da585e175c8c81a90a3634ce09",
-            "review_note": "Compared the published campaign path and owner form with Content and SEO guidance. The Dashboard read leaves authored settings, page revisions and contact writes in their current paths."
+            "review_note": "Reviewed the merged database service and controller boundaries against authored pages and campaign guidance. The storefront action uses a separate audit query and does not change campaign receipts or revisions."
         },
         "foundation": {
-            "source_sha256": "23cf9e476391b429c983c46a8afe8674237747f53b03b6aa176ffd911a9686d8",
-            "references_sha256": "fdf60f1beaea1ec2c5352461d74e5a207f0082cbd6b68a9737cb832b85ee6390",
-            "review_note": "Compared the fixed audit projection and PHP cutoff with the storage guide. The authored settings, media locks and CRM writes use their existing direct and authenticated paths."
+            "source_sha256": "8d03cf930ba59d4efe0d38f35afd8b9ebd03dd39f7e8e168b32b748592521a69",
+            "references_sha256": "55f827076a8b777979fb1dfe4e7bd8de7dd3c9770a0a5589a5d037af8f1666cf",
+            "review_note": "Compared the one unbuffered MySQL query, PDO cleanup and fixed authenticated response with the storage guide and exact cutoff fixture."
         },
         "google-tags": {
             "source_sha256": "366fdab983979cc3a1fec22fb6da4afb61072d6fd24cd0ba2271d67a0c063019",
@@ -68,9 +68,9 @@
             "review_note": "Cross-checked Dashboard and authored page route associations with Public MCP and A2UI. The new Dashboard query uses the authenticated database bridge."
         },
         "remote-commerce": {
-            "source_sha256": "0b0ff038037c5bcd2f8c21e025aa6785060500989233907d5449a27ac7c36282",
+            "source_sha256": "ee5beeae0e0dda8a1938f86b2da7074dd3fb48a7f045dbd72083677f5660f19b",
             "references_sha256": "248cb29bdb4f8186da9b74c3e14cfe0742e7a6431faa623bd7c480032e63d472",
-            "review_note": "Reviewed the fixed dashboard read alongside Checkout and authored page actions. Cart and checkout writes retain the documented inputs and persistence contracts."
+            "review_note": "Reviewed the fixed authenticated storefront read alongside the existing cart and checkout contracts. It returns two counts and issues no writes."
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",

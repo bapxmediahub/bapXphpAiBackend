@@ -21,14 +21,17 @@ final class SiteTelemetryService {
             error_log('Commerce telemetry failed: '.$error::class);
         }
     }
+    public static function recentCutoff(): int {
+        return time() - self::WINDOW_SECONDS;
+    }
+
     public static function recentCounts(): array {
-        $since = time() - self::WINDOW_SECONDS;
-        return self::counts((new DatabaseService())->storefrontActivityCandidates($since), $since);
+        return (new DatabaseService())->storefrontActivitySince(self::recentCutoff());
     }
 
     /** Pure aggregate over sanitized persisted events. */
     public static function counts(iterable $events, ?int $since = null): array {
-        $since ??= time() - self::WINDOW_SECONDS;
+        $since ??= self::recentCutoff();
         $counts = array_fill_keys(self::EVENTS,0);
         foreach ($events as $row) {
             if (($row['event']??'') !== 'commerce.event') continue;
