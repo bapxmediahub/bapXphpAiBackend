@@ -596,6 +596,12 @@ if ($__flash):
         popup.showModal();
     });
     popup.querySelector('.site-search-popup__close').addEventListener('click', () => popup.close());
+    popup.querySelector('.site-search-popup__input').addEventListener('keydown', event => {
+        if (event.key !== 'Escape' || event.isComposing) return;
+        // Chromium otherwise clears a filled search field before the dialog can dismiss.
+        event.preventDefault();
+        popup.close();
+    });
 
     // Older dialog implementations support Escape but do not light-dismiss with closedby.
     if (!('closedBy' in popup)) {

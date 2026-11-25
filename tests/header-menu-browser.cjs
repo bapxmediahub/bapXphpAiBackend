@@ -158,10 +158,12 @@ test('owner edits the public header through remotedb with native controls and co
         await popup.waitFor();
         const field = popup.getByRole('searchbox');
         assert.equal(await field.evaluate(el=>el === document.activeElement), true);
+        await field.fill('festival');
         await shopper.keyboard.press('Escape');
         await popup.waitFor({state:'hidden'});
         assert.equal(await trigger.evaluate(el=>el === document.activeElement), true);
         await trigger.click();
+        assert.equal(await field.inputValue(), 'festival');
         await shopper.mouse.click(8,240);
         await popup.waitFor({state:'hidden'});
         await enhanced.close();
