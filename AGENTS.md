@@ -233,14 +233,16 @@ that is not there.
 - The default Google provider uses its two hosted Gemma 4 models:
   `gemma-4-31b-it` is primary and `gemma-4-26b-a4b-it` is the automatic fallback for a transient failure. OpenRouter Free is the final fallback when enabled and configured. Each eligible model receives three attempts for recoverable inference failures before switching; the synchronous fallback loop repeats from the first eligible model for a second bounded cycle. Stop on success or budget exhaustion. Use documented exponential backoff (1s, 2s, then 4s before switching, plus jitter), honor Retry-After, and never blindly retry terminal errors or a held model; once a tool exchange begins, retry only its identical inference payload on the same model, never re-execute completed tools. Google does not publish a hosted Gemma 4 27B identifier.
   Proof: <https://ai.google.dev/gemma/docs/core/gemma_on_gemini_api#supported-models>.
-- It is a **reasoning model**. Its reply may contain the model thinking out loud, either
-  as parts flagged `"thought": true` or as prose before the answer. Read the answer with
-  `AiClient::answerFromParts()`; never take `parts[0]`, which is usually the reasoning.
-  Reference: <https://github.com/google-gemini/cookbook/issues/1198>.
-- Gemma 4 on the Gemini API supports `MINIMAL` and `HIGH` through
-  `generationConfig.thinkingConfig.thinkingLevel`. `AiClient` uses `MINIMAL` and
-  still filters any reasoning from the returned text. Reference:
-  <https://ai.google.dev/gemma/docs/core/gemma_on_gemini_api#thinking>.
+- All three connections use the Chat Completions HTTP format. Google uses
+  `https://generativelanguage.googleapis.com/v1beta/openai` with its saved Google
+  API key as the Bearer credential. OpenRouter uses `https://openrouter.ai/api/v1`
+  and its own key. An owner can optionally configure direct OpenAI or another
+  compatible provider through the custom HTTPS URL, model and key fields.
+  See [Google compatibility](https://aistudio.google.com/docs/openai) and the
+  [Chat Completions HTTP reference](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create).
+- Verify each configured model's text response and tool continuation separately
+  on its actual endpoint before claiming support. Keep provider reasoning
+  fields out of visible answers and persisted conversations.
 
 The owner configures independent Google, OpenRouter and compatible provider
 connections in Admin → Integrations. Google and OpenRouter model IDs are
@@ -248,9 +250,9 @@ editable; Google models can be disabled individually. OpenRouter defaults to
 openrouter/free and off. The existing encrypted key per connection is preserved
 on blank input. Use the ordered enabled/configured provider plan in SecretService,
 with one shared deadline and no cross-provider replay after a tool exchange.
-Google uses parametersJsonSchema for canonical JSON Schema; do not weaken
-server-side input validation to satisfy a provider wire format.
-See docs/pages/integrations.md and https://ai.google.dev/api/generate-content#FunctionDeclaration .
+Send canonical JSON Schema in `tools[].function.parameters` and enforce the
+same server-side validation and authorization on returned tool calls.
+See [Integrations](docs/pages/integrations.md).
 
 The general rule: when a fact about an external service decides what you change, verify
 it against that service's own documentation and record the URL beside the code.
