@@ -28,7 +28,19 @@ expect($plan[0]['models']===['other-google-model'],'Disabled Google model is exc
 expect($plan[2]['models']===['openrouter/free','vendor/model:free'],'OpenRouter model IDs are editable');
 $settings['ai_google_enabled']='0';
 expect(array_column($s->providerPlan($settings),'provider')===['openai_compatible','openrouter'],'Disabled Google does not run as a hidden fallback');
-$settings['ai_openrouter_enabled']='0';$settings['ai_compatible_enabled']='0';
+$settings['ai_openrouter_enabled']='0';
+$settings['ai_provider']='openai_compatible';
+$settings['ai_compatible_url']='https://api.openai.com/v1/chat/completions';
+$settings['ai_compatible_models']="gpt-4.1-mini\ngpt-4o-mini";
+$plan=$s->providerPlan($settings);
+expect(count($plan)===1 && $plan[0]['provider']==='openai_compatible' && $plan[0]['endpoint']==='https://api.openai.com/v1'
+    && $plan[0]['models']===['gpt-4.1-mini','gpt-4o-mini'],'Both agents can use only the saved Chat Completions connection and its ordered model IDs');
+expect($plan[0]['tokenField'] === null, 'Existing settings use automatic token field selection');
+$settings['ai_compatible_token_field'] = 'max_completion_tokens';
+expect($s->providerPlan($settings)[0]['tokenField'] === 'max_completion_tokens', 'Custom endpoints can request the current token limit field');
+$settings['ai_compatible_token_field'] = 'max_tokens';
+expect($s->providerPlan($settings)[0]['tokenField'] === 'max_tokens', 'Legacy endpoints can explicitly retain their token limit field');
+$settings['ai_compatible_enabled']='0';
 expect($s->providerPlan($settings)===[],'All disabled providers produce no route');
 expect(AiClient::googleAttemptPlan('other-google-model',false,['other-google-model','gemma-4-31b-it'])[0]['model']==='other-google-model','Custom Google model ID reaches route');
 expect(AiClient::googleAttemptPlan('other-google-model',true,['other-google-model','gemma-4-31b-it'])===[['model'=>'other-google-model','timeout_ms'=>12000]],'Tool exchange stays locked');

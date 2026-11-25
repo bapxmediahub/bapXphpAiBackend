@@ -126,6 +126,14 @@
             <small role="status"><?= e(\App\Services\SecretService::savedKeyLabel((string)($secrets['ai_compatible_key']??''))) ?></small>
             <label>Model IDs in fallback order<textarea name="ai_compatible_models" rows="3" aria-describedby="compatible-model-help" spellcheck="false"><?= e($secrets['ai_compatible_models']??'') ?></textarea></label>
             <p id="compatible-model-help">Enter one to five exact model IDs, one per line. Use a key issued for this HTTPS endpoint. Changing the endpoint requires its own key.</p>
+            <?php $tokenField = $secrets['ai_compatible_token_field'] ?? 'auto'; ?>
+            <label>Chat Completions token limit field
+                <select name="ai_compatible_token_field">
+                    <option value="auto" <?= $tokenField === 'auto' ? 'selected' : '' ?>>Automatic</option>
+                    <option value="max_completion_tokens" <?= $tokenField === 'max_completion_tokens' ? 'selected' : '' ?>>max_completion_tokens</option>
+                    <option value="max_tokens" <?= $tokenField === 'max_tokens' ? 'selected' : '' ?>>max_tokens (legacy)</option>
+                </select>
+            </label>
         </fieldset>
         <button type="submit" name="save_ai_only" value="1" class="btn btn-primary">Save AI Provider Settings</button>
         </section>

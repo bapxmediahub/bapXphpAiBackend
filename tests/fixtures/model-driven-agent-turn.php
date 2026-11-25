@@ -48,6 +48,8 @@ namespace App\Services {
             };
             $compatible = ['provider'=>'openai_compatible','endpoint'=>'https://' . fixtureCompatibleHost() . '/v1',
                 'apiKey'=>'fixture-only','models'=>[$model],'model'=>$model,'configured'=>true];
+            if ($protocol === 'openrouter') $compatible['provider'] = 'openrouter';
+            if ($protocol === 'compatible_modern') $compatible['tokenField'] = 'max_completion_tokens';
             return preg_match('~/catalogue_(?:fallback|locked)$~D',$endpoint) ? [$compatible,$google] : [$compatible];
         }
         public function getModelConfig(): array {return $this->getProviderPlan()[0];}
