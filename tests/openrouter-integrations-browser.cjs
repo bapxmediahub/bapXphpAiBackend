@@ -10,10 +10,15 @@ const {chromium}=require('playwright');
 const root=path.resolve(__dirname,'..');
 const origin='http://router-settings.example.test';
 const fakeKey='sk-or-v1-'+('b'.repeat(64));
+const longGoogleModel='model'+('x'.repeat(190));
+const longCompatibleUrl='https://ai.example.test/'+('x'.repeat(170))+'/v1';
+const googleModels=['gemma-4-31b-it','gemma-4-26b-a4b-it',longGoogleModel].join('\n');
+const updatedGoogleModels=googleModels+'\ncustom-google-model';
 const render=enabled=>execFileSync(process.env.PHP_BINARY||'php',['-r',[
     "putenv('BAPX_TEST_MODE=1'); require 'app/bootstrap.php';",
     "$csrf='fixture-only'; $comparisonModels=[['target'=>'google|shared-model','provider'=>'google','model'=>'shared-model'],['target'=>'openai_compatible|shared-model','provider'=>'openai_compatible','model'=>'shared-model']];",
     "$secrets=['ai_provider'=>'google','ai_api_key'=>'fixture-google-key',",
+    "'ai_google_models'=>"+JSON.stringify(googleModels)+",'ai_compatible_url'=>"+JSON.stringify(longCompatibleUrl)+",",
     "'ai_openrouter_enabled'=>'"+(enabled?'1':'0')+"','ai_openrouter_key'=>'"+fakeKey+"'];",
     "$fixture=new class extends \\App\\Controllers\\BaseController { public function show($secrets,$csrf,$comparisonModels){ include 'views/admin/integrations.php'; } };",
     "$fixture->show($secrets,$csrf,$comparisonModels);"
@@ -23,6 +28,44 @@ const renderPage=enabled=>'<!doctype html><html lang="en"><head>'
     +'<link rel="stylesheet" href="/assets/css/band.css">'
     +'<link rel="stylesheet" href="/assets/css/admin-refinement.css">'
     +'</head><body><main class="admin-body">'+render(enabled)+'</main></body></html>';
+
+async function submitAndWaitForLoad(page, submit) {
+    // Repeated fixture saves return a new document at the same URL. Wait for its stylesheet loads.
+    await Promise.all([page.waitForEvent('load', {timeout: 30_000}), submit()]);
+}
+
+async function assertIntegrationsFit(page, width, stage) {
+    const layout = await page.evaluate(() => {
+        const fieldsets = [...document.querySelectorAll('#ai-providers fieldset')];
+        const providerContent = [...document.querySelectorAll(
+            '#ai-providers fieldset, .ai-provider-endpoint code, .ai-model-switches label'
+        )];
+        const offenders = [...document.querySelectorAll('body *')].filter(element => {
+            const bounds = element.getBoundingClientRect();
+            return bounds.width > 0 && bounds.right > innerWidth + 1;
+        }).slice(0, 8).map(element => ({
+            tag: element.tagName,
+            className: String(element.className || '').slice(0, 70),
+            right: Math.round(element.getBoundingClientRect().right),
+        }));
+
+        return {
+            viewport: innerWidth,
+            scrollWidth: document.documentElement.scrollWidth,
+            styledFieldsets: fieldsets.filter(element => getComputedStyle(element).display === 'grid').length,
+            clippedProviderContent: providerContent.filter(element => element.scrollWidth > element.clientWidth + 1)
+                .map(element => ({tag: element.tagName, className: element.className})),
+            offenders,
+        };
+    });
+    assert.equal(layout.viewport, width);
+    assert.equal(layout.styledFieldsets, 3, 'All provider fieldsets must use the loaded admin styles.');
+    assert.equal(layout.scrollWidth <= layout.viewport + 1, true,
+        'Integrations must fit the '+width+'px viewport '+stage+': '+JSON.stringify(layout));
+    assert.deepEqual(layout.offenders, [], 'Visible controls and labels must stay inside the viewport '+stage+'.');
+    assert.deepEqual(layout.clippedProviderContent, [], 'Provider endpoints and model switches must fit inside their fields '+stage+'.');
+}
+
 for(const width of [1280,375]) test('owner OpenRouter toggle and masked save at '+width+'px',async()=>{
     const html=render(false);
     assert.ok(!html.includes(fakeKey),'Rendered admin HTML cannot expose the saved key.');
@@ -68,6 +111,12 @@ for(const width of [1280,375]) test('owner OpenRouter toggle and masked save at 
             return route.fulfill({status:404,body:'Fixture route not available'});
         });
         await page.goto(origin+'/admin/integrations');
+        const longModelSwitch=page.getByRole('checkbox',{name:longGoogleModel,exact:true});
+        assert.equal(await longModelSwitch.isChecked(),true);
+        assert.equal(await page.getByLabel('API Base URL',{exact:true}).inputValue(),longCompatibleUrl);
+        await assertIntegrationsFit(page,width,'on initial load');
+        await longModelSwitch.press('Space');
+        assert.equal(await longModelSwitch.isChecked(),false,'The long model switch is keyboard operable.');
         const enabled=page.getByRole('checkbox',{name:'Enable OpenRouter Free'});
         const key=page.getByLabel('OpenRouter API Key',{exact:true});
         assert.equal(await enabled.isChecked(),false,'Provider must default off.');
@@ -76,42 +125,32 @@ for(const width of [1280,375]) test('owner OpenRouter toggle and masked save at 
         const google=page.getByRole('checkbox',{name:'Enable Google models'});
         assert.equal(await google.isChecked(),true);
         await page.getByRole('checkbox',{name:'gemma-4-31b-it',exact:true}).uncheck();
-        await page.getByLabel('Google model IDs in fallback order').fill('gemma-4-31b-it\ngemma-4-26b-a4b-it\ncustom-google-model');
+        await page.getByLabel('Google model IDs in fallback order').fill(updatedGoogleModels);
         await page.getByLabel('OpenRouter model IDs in fallback order').fill('openrouter/free\nvendor/model:free');
         await enabled.check();
         await key.fill(fakeKey);
-        await page.getByRole('button',{name:'Save Integrations'}).click();
-        assert.deepEqual(sent,[{enabled:'1',keyMatches:true,keyEmpty:false,csrf:true,provider:'google',googleModel:'0',googleIds:'gemma-4-31b-it\ngemma-4-26b-a4b-it\ncustom-google-model',routerIds:'openrouter/free\nvendor/model:free'}]);
+        await submitAndWaitForLoad(page, () => page.getByRole('button',{name:'Save Integrations'}).click());
+        assert.deepEqual(sent,[{enabled:'1',keyMatches:true,keyEmpty:false,csrf:true,provider:'google',googleModel:'0',googleIds:updatedGoogleModels,routerIds:'openrouter/free\nvendor/model:free'}]);
         assert.equal(await page.getByRole('checkbox',{name:'Enable OpenRouter Free'}).isChecked(),true);
         assert.equal(await page.getByLabel('OpenRouter API Key',{exact:true}).inputValue(),'');
         await page.getByRole('checkbox',{name:'Enable OpenRouter Free'}).uncheck();
-        await page.getByRole('button',{name:'Save Integrations'}).click();
+        await submitAndWaitForLoad(page, () => page.getByRole('button',{name:'Save Integrations'}).click());
         assert.equal(sent.length,2);
         assert.equal(sent[1].enabled,'0');
         assert.equal(sent[1].keyEmpty,true,'Blank input preserves the saved key in the backend.');
         assert.equal(sent[1].csrf,true);
         await page.getByLabel('SMTP Host',{exact:true}).fill('smtp.fixture.example');
-        await page.getByLabel('SMTP Host',{exact:true}).press('Enter');
+        await submitAndWaitForLoad(page, () => page.getByLabel('SMTP Host',{exact:true}).press('Enter'));
         assert.deepEqual(submissions[2],{aiOnly:null,smtpHost:'smtp.fixture.example',tokenField:'auto'},
             'Implicit keyboard submit must save the full integration form with automatic token field selection.');
         await page.getByLabel('Chat Completions token limit field').selectOption('max_completion_tokens');
-        await page.getByRole('button',{name:'Save AI Provider Settings'}).click();
+        await submitAndWaitForLoad(page, () => page.getByRole('button',{name:'Save AI Provider Settings'}).click());
         assert.equal(submissions[3].aiOnly,'1','Explicit AI-only action retains its scoped submission.');
         assert.equal(submissions[3].tokenField,'max_completion_tokens','The custom token field is included in the AI-only save.');
-        const overflow=await page.evaluate(()=>({
-            viewport:innerWidth,
-            width:document.documentElement.scrollWidth,
-            offenders:[...document.querySelectorAll('body *')].filter(element=>{
-                const bounds=element.getBoundingClientRect(),display=getComputedStyle(element).display;
-                return display!=='none' && bounds.width>0 && bounds.right>innerWidth+1;
-            }).slice(0,8).map(element=>({tag:element.tagName,id:element.id,
-                className:String(element.className||'').slice(0,70),right:Math.round(element.getBoundingClientRect().right)}))
-        }));
-        assert.equal(overflow.width<=overflow.viewport+1,true,
-            'Integrations must fit the phone viewport: '+JSON.stringify(overflow));
+        await assertIntegrationsFit(page,width,'after saving AI provider settings');
         await page.getByLabel('Connection to test').selectOption('openai_compatible|shared-model');
         await page.getByLabel('Diagnostic',{exact:true}).selectOption('tools');
-        await page.getByRole('button',{name:'Test AI Connection'}).click();
+        await submitAndWaitForLoad(page, () => page.getByRole('button',{name:'Test AI Connection'}).click());
         assert.deepEqual(probes,[{target:'openai_compatible|shared-model',mode:'tools',csrf:'fixture-only'}]);
         assert.deepEqual(errors,[]);
     }finally{await context.close();await browser.close();}
