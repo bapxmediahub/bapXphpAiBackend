@@ -4,8 +4,8 @@
     "reviews": {
         "agents": {
             "source_sha256": "bcce800df0740538faa391ff1ee86947fb220ddbf7a43ba3b9df991f770fa809",
-            "references_sha256": "eca25412da58ee1eef18bc49445b15a8adf04ca7a22a52eede085850e1bef285",
-            "review_note": "Compared the provider status, selected connection, and allowlisted 401 and 403 guidance with the transfer and agent run contracts."
+            "references_sha256": "7877fc3fefee280d90bd141197a06fdaeccf234a4c6cef9a67a2050535dce3ce",
+            "review_note": "Compared Support failure references and replay with the evaluated HTTP 503 contract, and checked Integrations 401 and 403 guidance against the selected provider and observed status."
         },
         "auth": {
             "source_sha256": "c34a5b34bc904f36cda184c26113f91e2cf36afa2b506217d1f74e22e9e0cefd",
@@ -18,9 +18,9 @@
             "review_note": "Reviewed provider parsing and existing product checkout and verified-order tests. A typed provider refusal preserves the existing numeric error for shop checkout."
         },
         "content": {
-            "source_sha256": "89e2c9c40b2e436ba267806cde1720adf7ea63ec487d007a280f56f2056f84f4",
+            "source_sha256": "6f6aee47caea344734b1f2662269fbcebf1615d4f4ecabe1a79e2a7818206e24",
             "references_sha256": "bc4237849522973bf57590ab57c0b411f1d89999bfce542f2e4260ee65788177",
-            "review_note": "Reviewed campaign booking routes, campaign asset entitlements and their storage guidance alongside the distinct audit projection used by the dashboard."
+            "review_note": "Compared published Support guidance with the contact link and validated reference in the widget. Campaign content and payment flows were preserved by the merge."
         },
         "foundation": {
             "source_sha256": "bc9602b5740065d44e0df045268297befe83f5b9c42a2330686d71e4100f2709",
@@ -28,9 +28,9 @@
             "review_note": "Reviewed the one streamed audit SELECT, strict authenticated response and PDO cleanup alongside campaign booking persistence and protected storage."
         },
         "google-tags": {
-            "source_sha256": "263f51e361869ee25bb077ed9f3ff72b880a9f6b2e74f834f5c97d39a71658d6",
-            "references_sha256": "48d9de95884de272bdca142b4a81ae2ef5ba3ed9bc5b739816915eb4921b6d02",
-            "review_note": "Reviewed the Integrations view and shared hook documentation after updating the AI diagnostic display and its direct links."
+            "source_sha256": "31cc53b5ce4ddd826a3c5a3d5b2fdd7c623005fc74a63f4d2598eeb8f345ea9e",
+            "references_sha256": "4a313261f50607bef910628e450d1ce4482bdca623ba5d77c09b4c85dc5a3f50",
+            "review_note": "Reviewed the shared layout and Integrations docs with the Support reference and safe AI diagnostic result. Google tag and reporting fields keep their existing configuration."
         },
         "http-errors": {
             "source_sha256": "0f920c297cfc4e216a87be02a35c20827cc254dd6934ba24a1fa9135520a0560",
@@ -38,9 +38,9 @@
             "review_note": "Reviewed sanitized provider failures and private booking responses against the existing dynamic response guard."
         },
         "interface": {
-            "source_sha256": "9e7fe3ed1e5f69b923a0a368947d94dd44ef0e2130d59a49bed154aa1603489e",
-            "references_sha256": "8a7bcf8667f4811a5ee194d0c42afeaef5a17bb1571f4f0ae570aa2cccfa256c",
-            "review_note": "Compared the owner diagnostic result card with the existing settings layout and desktop and narrow viewport render checks."
+            "source_sha256": "16d1d84ab9413ed744d82606a7721d827acc68a4707854984b37af6ab4f6653e",
+            "references_sha256": "faf87e5a40e578bf97ed14d1f78efeec4269acf2fa897a74d9ef8e19351e4527",
+            "review_note": "Compared the Support error reference, keyboard recovery, and owner diagnostic card with the shared layout and both desktop and narrow viewport fixtures."
         },
         "mail": {
             "source_sha256": "11a3b674d92d0714846359177499966c2f5ad2b1af5380a972280c64bb79b7b8",
@@ -49,8 +49,8 @@
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
-            "references_sha256": "d8bbac10e48af1a4eb7f72e4d6765f706f586b1e6f4a09d0bfa7c893d1f82557",
-            "review_note": "Reviewed the shared Integrations page contract. The owner model-test result displays provider and model details inside the existing admin route."
+            "references_sha256": "c652f239fa00ea207372277d2ba9782891dc88a65244b3bd69d855cef90276fc",
+            "review_note": "Checked the Integrations connection test guidance alongside the separate local reporting client grant flow and its configuration."
         },
         "media": {
             "source_sha256": "edc32a5a9f73cf7f2954eac135a2eaed1394089034bac24ea835af48c4d9600e",
@@ -58,9 +58,9 @@
             "review_note": "Checked retained campaign file descriptors and protected streaming against Media Library behavior. Booking authorization is scoped to the frozen private manifest."
         },
         "operator-help": {
-            "source_sha256": "8554045c52e1ef8c30f1bee0890f42a917356d1a2f4bbfa8578f7e6edb28a6f1",
-            "references_sha256": "d7972865c18db0e7cab36b4fdf0cf22cf388c8fbde7bd5ae088de971afd212fe",
-            "review_note": "Compared owner Integrations, its read-only test, the named credential field, and permission guidance with the operator help instructions."
+            "source_sha256": "bad40e8687f42b9c69dcb8d4fd16d0f8717492b879ba9bc2cf14618b5d140538",
+            "references_sha256": "290f76393a7f1ff5ba583e3da9f3ac9d8b3f6580c1cdee7db531e981e2e1d99f",
+            "review_note": "Checked the public Support reference and contact instructions alongside the owner API key and access guidance shown by the read-only connection test."
         },
         "public-mcp": {
             "source_sha256": "737d1417edeec4f39402eaa1b659409d866db04476bf5f549d065deae57903f8",
@@ -68,9 +68,9 @@
             "review_note": "Compared the regenerated route associations with Public MCP and A2UI. The Dashboard read stays on the authenticated database bridge."
         },
         "remote-commerce": {
-            "source_sha256": "f541df859922b44d079b56a4b87b10efb2ab6bf29a02931c0960d7113b282331",
-            "references_sha256": "acdbab8bdbef2062372a3ebbf9026ce81ea5e60355e45c35c744aa25e108dee5",
-            "review_note": "Verified the read-only storefront bridge coexists with the existing checkout reconciler and campaign booking writes. The workflow retains tests for each path."
+            "source_sha256": "d9f1cadce366732ff62a1bc27cf619f0070f6eb1e5d432bc3015cee9673beed7",
+            "references_sha256": "0690a75fa3933ee49adb37677a6972a957f6bfc982431a03783492ae4c284993",
+            "review_note": "Reviewed the shared checkout layout and existing recovery paths after the Support transcript added an opaque failure reference."
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",
@@ -78,9 +78,9 @@
             "review_note": "Compared the MediaService additions with the Merchant Feed and product image inspection contracts. Header choices are filtered only for the owner authored editor, and catalogue image eligibility and feed URLs retain their existing resolution."
         },
         "workflow": {
-            "source_sha256": "186f7ac2a22956ea562a8ea49c29156570bd9b83eba35c34e54c67b3c7d65527",
+            "source_sha256": "c306c4c6f58db94c66973cc7d34658a8a747f6118f50a9299a495671bcec4545",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Reviewed regenerated maps and combined MySQL and MariaDB workflows. Both storefront analytics and campaign booking tests run on the isolated database families."
+            "review_note": "Reviewed the browser fixture with the repository release gate. It intercepts synthetic failures and never submits any production agent request."
         }
     }
 }

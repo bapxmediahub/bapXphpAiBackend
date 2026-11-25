@@ -78,7 +78,7 @@ response; the tool test calls an isolated read-only synthetic tool and verifies
 the returned challenge. No order, customer or product data is sent by this
 diagnostic. It displays the attempted provider, model, and safe status. A 401
 names the API key field for the rejected connection. A 403 points to that
-connection's access settings. The diagnostic result omits endpoints, keys,
+connection's access settings. The browser result card omits endpoints, keys
 and provider response bodies. [OpenAI API error codes](https://developers.openai.com/api/docs/guides/error-codes).
 Run the same tests locally
 with bapXphp ai:probe text or bapXphp ai:probe tools, optionally followed by a
