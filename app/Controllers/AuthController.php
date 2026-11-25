@@ -109,10 +109,20 @@ final class AuthController extends BaseController {
         if (password_verify($password, $admin['password'])) {
             session_regenerate_id(true);
             $_SESSION['user'] = ['sub'=>'env-admin','email'=>$admin['email'],'name'=>$admin['username'] ?: 'Admin','role'=>'admin'];
-            try { (new MailQueueService())->enqueueLoginNotification($admin['email'], $admin['username'] ?: 'Admin', 'admin'); }
-            catch (\Throwable $e) { error_log('Login notification failed: ' . $e->getMessage()); }
             $this->flash('Signed in.','success');
-            $this->redirect('/admin');
+            session_write_close();
+            header('Location: /admin');
+            // Finish the response after releasing the session lock, before the same notice attempt.
+            // https://docs.litespeedtech.com/lsws/extapp/php/changelog/
+            // https://www.php.net/manual/en/function.fastcgi-finish-request.php
+            if (function_exists('litespeed_finish_request')) {
+                litespeed_finish_request();
+            } elseif (function_exists('fastcgi_finish_request')) {
+                fastcgi_finish_request();
+            }
+            try { (new MailQueueService())->enqueueLoginNotification($admin['email'], $admin['username'] ?: 'Admin', 'admin'); }
+            catch (\Throwable) { error_log('Owner login notification could not be confirmed.'); }
+            exit;
         }
     }
     $store = new DatabaseService();
