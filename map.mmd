@@ -1282,6 +1282,7 @@ flowchart LR
   controller_blogcontroller -. declared related view .-> view_public_blog
   route_get_admin_pages -- registered handler --> controller_admincontroller
   controller_admincontroller -. declared service .-> service_authoredpageservice
+  controller_admincontroller -. declared service .-> service_mediaservice
   controller_admincontroller -. declared service .-> service_authservice
   controller_admincontroller -. declared related view .-> view_admin_pages
   route_post_admin_pages_delete -- registered handler --> controller_admincontroller
@@ -1291,6 +1292,7 @@ flowchart LR
   controller_admincontroller -. declared related view .-> view_admin_pages
   route_post_admin_pages_save -- registered handler --> controller_admincontroller
   controller_admincontroller -. declared service .-> service_authoredpageservice
+  controller_admincontroller -. declared service .-> service_mediaservice
   controller_admincontroller -. declared service .-> service_auditlogservice
   controller_admincontroller -. declared service .-> service_authservice
   controller_admincontroller -. declared related view .-> view_admin_pages
@@ -1591,6 +1593,7 @@ flowchart LR
   service_auditlogservice -. static reference .-> service_secretservice
   service_authoredpageservice -. source new .-> service_databaseservice
   service_authoredpageservice -. source new .-> service_markdownrenderer
+  service_authoredpageservice -. static reference .-> service_mediaservice
   service_blogdraftservice -. source new .-> service_markdownrenderer
   service_blogservice -. source new .-> service_blogconflictexception
   service_blogservice -. source new .-> service_markdownrenderer
@@ -1603,6 +1606,7 @@ flowchart LR
   service_contactservice -. source new .-> service_databaseservice
   service_contactservice -. source new .-> service_mailstorageservice
   service_couponservice -. source new .-> service_databaseservice
+  service_databaseservice -. source new .-> service_mediaservice
   service_databaseservice -. source new .-> service_remotecartexception
   service_databaseservice -. source new .-> service_taxservice
   service_databaseservice -. static reference .-> service_authoredpageservice

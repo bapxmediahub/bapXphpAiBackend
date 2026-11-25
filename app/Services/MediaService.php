@@ -39,6 +39,27 @@ final class MediaService {
         return is_file($legacy) && is_readable($legacy) ? $legacy : null;
     }
 
+    /** Authored headers accept the exact local URL of a database-owned raster upload. */
+    public static function isPageHeaderPath(mixed $url): bool {
+        return is_string($url) && strlen($url) <= 512 && !str_contains($url, '..')
+            && preg_match('#^/assets/images/media/[0-9]{4}/[0-9]{2}/[a-z0-9][a-z0-9._-]*\.(?:png|jpe?g|webp|gif)$#iD', $url) === 1;
+    }
+
+    public function pageHeaderChoices(): array {
+        return array_values(array_filter($this->all(), static fn(array $record): bool =>
+            self::isPageHeaderPath($record['url'] ?? null) && self::canDeleteRecord($record)));
+    }
+
+    public function findPageHeaderUpload(string $url): ?array {
+        if (!self::isPageHeaderPath($url)) return null;
+        $rows = $this->store->query("SELECT id, _data FROM media_files
+            WHERE BINARY JSON_UNQUOTE(JSON_EXTRACT(_data, '$.url')) = BINARY ? LIMIT 2", [$url]);
+        if (count($rows) !== 1) return null;
+        $row = $rows[0];
+        $record = ['id'=>$row['id']] + json_decode($row['_data'], true, flags: JSON_THROW_ON_ERROR);
+        return self::canDeleteRecord($record) ? $record : null;
+    }
+
     /** Inspect the actual hosted files behind product records; URLs alone do not
      * prove an upload survived. Only administrators receive this inventory. */
     public function productImageHealth(array $products): array {

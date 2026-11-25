@@ -28,8 +28,19 @@ final class AuthoredPageService
         if (!in_array($input['status'] ?? null, ['draft','published'], true)) {
             throw new \InvalidArgumentException('Review the publication status and reload the editor if necessary.');
         }
-        return ['id'=>'pg:'.$slug, 'slug'=>$slug, 'title'=>$title, 'content'=>$content,
+        $record = ['id'=>'pg:'.$slug, 'slug'=>$slug, 'title'=>$title, 'content'=>$content,
             'status'=>$input['status'], 'revision'=>bin2hex(random_bytes(16))];
+        $url = $input['header_image_url'] ?? '';
+        if ($url === '') return $record;
+        if (!MediaService::isPageHeaderPath($url)) {
+            throw new \InvalidArgumentException('Choose a header image from uploaded Media Library images.');
+        }
+        $alt = $input['header_image_alt'] ?? '';
+        if (!is_string($alt) || !mb_check_encoding($alt, 'UTF-8') || mb_strlen(trim($alt)) > 255
+            || preg_match('/[\x00-\x1F\x7F]/u', $alt)) {
+            throw new \InvalidArgumentException('Enter plain alternative text of up to 255 characters.');
+        }
+        return $record + ['header_image_url'=>$url, 'header_image_alt'=>trim($alt)];
     }
 
     /** Indexes and menus only need metadata. The public predicate is applied before searching. */

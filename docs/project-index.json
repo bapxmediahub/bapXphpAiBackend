@@ -207,7 +207,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1494
+            "line": 1506
         },
         {
             "from": "controller:AdminController",
@@ -279,7 +279,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1469
+            "line": 1481
         },
         {
             "from": "controller:AdminController",
@@ -455,7 +455,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1520
+            "line": 1532
         },
         {
             "from": "controller:AdminController",
@@ -471,7 +471,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1545
+            "line": 1557
         },
         {
             "from": "controller:AdminController",
@@ -503,7 +503,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1660
+            "line": 1672
         },
         {
             "from": "controller:AdminController",
@@ -1295,7 +1295,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/RemoteDbController.php",
-            "line": 157
+            "line": 163
         },
         {
             "from": "controller:RemoteDbController",
@@ -1959,7 +1959,15 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/AuthoredPageService.php",
-            "line": 98
+            "line": 109
+        },
+        {
+            "from": "service:AuthoredPageService",
+            "to": "service:MediaService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/AuthoredPageService.php",
+            "line": 35
         },
         {
             "from": "service:BlogDraftService",
@@ -2059,6 +2067,14 @@
         },
         {
             "from": "service:DatabaseService",
+            "to": "service:MediaService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/DatabaseService.php",
+            "line": 753
+        },
+        {
+            "from": "service:DatabaseService",
             "to": "service:RemoteCartException",
             "relation": "constructs",
             "provenance": "source_token",
@@ -2079,7 +2095,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 732
+            "line": 729
         },
         {
             "from": "service:DatabaseService",
@@ -2095,7 +2111,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 543
+            "line": 540
         },
         {
             "from": "service:DatabaseService",
@@ -2111,7 +2127,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 705
+            "line": 702
         },
         {
             "from": "service:DatabaseService",
@@ -2143,7 +2159,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 596
+            "line": 593
         },
         {
             "from": "service:DatabaseService",
@@ -2343,7 +2359,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/MediaService.php",
-            "line": 522
+            "line": 543
         },
         {
             "from": "service:MediaService",
@@ -2367,7 +2383,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/MediaService.php",
-            "line": 205
+            "line": 226
         },
         {
             "from": "service:MerchantFeedService",
@@ -4575,6 +4591,7 @@
             "provenance": "route_registry",
             "services": [
                 "AuthoredPageService",
+                "MediaService",
                 "AuthService"
             ]
         },
@@ -4602,6 +4619,7 @@
             "provenance": "route_registry",
             "services": [
                 "AuthoredPageService",
+                "MediaService",
                 "AuditLogService",
                 "AuthService"
             ]

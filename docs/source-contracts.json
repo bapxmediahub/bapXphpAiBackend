@@ -4,48 +4,48 @@
     "reviews": {
         "agents": {
             "source_sha256": "bde2bde8a9de8bf32dc819c741e87a13e30ec696f95f2049814fee7028c63a73",
-            "references_sha256": "712cfa82eeaf1799825bf88c52ccd4fc11eb229ca750401d97e1d77bbd037bbb",
-            "review_note": "Reviewed the merged operator monitoring and provider recovery references. The published analytics group and validated short-hold behavior match the source, and no request or provider secrets enter navigation or review evidence."
+            "references_sha256": "b2783dd1a3a37bfb317c2028b6e879024d3bc523bc1b3ee1be85a94a93a34859",
+            "review_note": "Compared the inherited ready-model selection, strict assistant tool-call response and Luna reasoning setting with the runtime and observability guides."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
-            "references_sha256": "3a5c9d23740782e0276c02c9ca6e6dbc0722cca4a6b91b24993c4039b17207dd",
-            "review_note": "Compared the profile rendering and saved HTTPS picture check to the authentication module guide. The guide documents the photo loading and JavaScript fallback cases."
+            "references_sha256": "54af9d4d2d11ada9af9ae5548b5b4b639b47b8226d6dd67ad5d40dad20fba125",
+            "review_note": "Verified the authored header controls remain on the existing owner admin GET and CSRF-guarded POST, with published-only guest content. The backend guidance retains the existing role and account isolation described in authentication docs."
         },
         "commerce": {
             "source_sha256": "4d8f53718f4495182ccef03d41eacb3da729dbe5ff1b5db5b54cbfd88957749e",
-            "references_sha256": "49ed13d7bb4503ead03763ce9c02b37edb4aed8e340ec2ac68dea584dd2d8f35",
-            "review_note": "Compared canonical optional fields, verified payment snapshots, historical flags, HSN groups and CSV review aggregation with the GST commerce guide."
+            "references_sha256": "c954dba2a6dbbaac3a7592de46f23b2ed712d3027a5c1e3a1f47586e65f6d611",
+            "review_note": "Reviewed the authored-page data section added to the backend skill alongside catalogue, orders and tax references. The new optional settings fields and upload row lock apply to authored headers, leaving the documented commerce record and payment flows intact."
         },
         "content": {
-            "source_sha256": "9ca1ff8cd0fcc4302ca466ff646e1363396bac0780b7b40b2684486f3e87e465",
-            "references_sha256": "d283e57698fc4ae10cba725749a1723c0f5bea1825f89812b2bf7a15fb2daa20",
-            "review_note": "Reviewed published Markdown guides, search navigation and module filters against the merged catalogue and account source."
+            "source_sha256": "aa44287c8d53c64b1a58281a876b43c890556429951832e221b9a93de2748666",
+            "references_sha256": "647a11458f42133b5bd573d7015abfde7140a81dac515569339d4d9ac74c3f42",
+            "review_note": "Compared the published search and Blog module guidance with the merged templates. The authored view keeps the released document structure and renders the same image and Markdown during preview and after publication."
         },
         "foundation": {
-            "source_sha256": "4013157784db89ccea40b207b391c0ae95de547ea28e251e49b71244a1cd8e68",
-            "references_sha256": "33ad3f16fad5ebb9b4767e425b9a34b49dbfd131d607107f01bf143c01e708d2",
-            "review_note": "Cross-checked the fixed audit projection, keyset pages and legacy date parsing with the storage guide and existing direct and bridge paths."
+            "source_sha256": "7e96bf6bd1af63b9d6073f608258fd57ccc8af1d73283e67c941d07953868855",
+            "references_sha256": "d9799c8ba92c6de1b016883f5fa1d91b91d301826b04ad19ec9da46c6d3c8984",
+            "review_note": "Compared the fixed audit projection and PHP cutoff with the storage guide. Authored page validation and media locks use their existing direct and authenticated bridge paths."
         },
         "google-tags": {
-            "source_sha256": "4834fd90479519dba801e19dbd3c1e434d62cf7cb6a4915eed9905f1c21bb8b5",
+            "source_sha256": "366fdab983979cc3a1fec22fb6da4afb61072d6fd24cd0ba2271d67a0c063019",
             "references_sha256": "ac5f69a9cfd73428a1702be69cd944a1ee4f8ed3211c040ed755356134044065",
-            "review_note": "Checked the dashboard and Site analytics links against the Google reporting and PageSpeed guides. The views expose the existing connection, data window and unavailable states, and the Luna example applies to the separate AI connection."
+            "review_note": "Reviewed the merged Integrations provider guidance alongside the existing Google reporting controls and public head layout."
         },
         "http-errors": {
             "source_sha256": "63602cadbe59868b0d25a1b00729a589e75d1b31c6ea3a1b25c1e5a46fd06d50",
-            "references_sha256": "d309fba94f0e9ed81e83cce280b9c5ac3560d4726227d058c866ee0ea4b12cd2",
-            "review_note": "Compared the layout-specific title assignment with the request-error boundary. Website error status, sanitized error text and public not-found rendering follow their existing handlers."
+            "references_sha256": "0328e92ddba3b69d790e8c4c69158891f80a8888b510be88c4a855ef9f4c609b",
+            "review_note": "Compared the admin heading selection and authored page validation with canonical error rendering. Header eligibility failures remain expected owner form feedback, and transport and handler failures retain sanitized status and correlation behavior."
         },
         "interface": {
-            "source_sha256": "738e38a60e1cf8946e57026804877aec36c9effa52f9f190db1702b5f8a695a0",
-            "references_sha256": "3221b47348acdba484740fe39f1c65c4114344dff8065f589d04ff2fe1722826",
-            "review_note": "Verified the Dashboard view keeps both storefront counters and its unavailable status. The admin guide now describes a valid zero and failed read."
+            "source_sha256": "04086ba16f36c41801ab52e38c972e71f72ca7f3823cdea576fb201618a0ef62",
+            "references_sha256": "743ab96219cb178ba359cf1f40b61d7a311374b75a545bf67a0687a6c232822a",
+            "review_note": "Reviewed the dashboard values and unavailable state against the admin guide and checked the authored header picker and preview against Design."
         },
         "mail": {
-            "source_sha256": "854044fb01727487fe4398e5a5a3f00c73b6cc5973287d1eedb21a84832c8a19",
-            "references_sha256": "903e7da848c1e0472ce9a1823b94afc21004e564d12041ee0456918176a6cc72",
-            "review_note": "Checked the AdminController change against the mail setup guide. The dashboard reader sits outside the mail actions and delivery-state paths."
+            "source_sha256": "8e8c5c0a0e3088159ce4c0a6f32ecae9771085f8e2813aaf6e516c6832cd6e89",
+            "references_sha256": "d4dbc02c5a391de33b25b183a057d6f6c84d8cabacd508b79e5ac2b389875f41",
+            "review_note": "Checked the merged AdminController dashboard and authored page paths against the mail guide. Existing queue and delivery actions retain their documented behavior."
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
@@ -53,34 +53,34 @@
             "review_note": "Checked the merged Integrations guide against the local MCP client controller and form. The owner issues and revokes a paid-sales grant, and the trusted STDIO client receives it through its process environment."
         },
         "media": {
-            "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
-            "references_sha256": "743e6fad151e2f5729436c3d42b7a23bbd7b1ccde63ec7b26823c4e0cb505c95",
-            "review_note": "Reviewed the owner skill changes against media selection, deletion and metadata guidance. The new analytics section describes navigation and owner counts, and the media controls follow their documented path."
+            "source_sha256": "edc32a5a9f73cf7f2954eac135a2eaed1394089034bac24ea835af48c4d9600e",
+            "references_sha256": "a2db070f8970b9549f912577bf0603781cbab7f0ce25bcf46bc2246cc152eea5",
+            "review_note": "Checked the combined admin skill against guarded Media Library deletion and the authored header attach lock. The public renderer reads only the selected owned image URL."
         },
         "operator-help": {
-            "source_sha256": "369beb12a93cc67dbef1a6852d3f914f1b486fa728b3e17097bf7a62ac2402bc",
-            "references_sha256": "9c949b4806f5ffa9c5ff122c863e4b2af50516fff6d0ea5e6201d543c147b4a3",
-            "review_note": "Cross-checked the existing Commerce Dashboard section and reports guide. The storefront counters keep their 30-day window, valid zero and unavailable states."
+            "source_sha256": "dc8e609becba66a658b2f4abdd3af2b93d1c3dea8fa4c857257d10efd94b7a25",
+            "references_sha256": "eac498d861f24877bfaf4a708ac47a5bacb1c2bd09384206c2fe3584caba2d3f",
+            "review_note": "Compared the 30-day storefront counters and unavailable status with the Reports guide. The authored Pages guide still matches the owner header picker and preview."
         },
         "public-mcp": {
-            "source_sha256": "7001f1f32f514052478f62575a5c027d87e97873181ae7682de7f77e039b036e",
-            "references_sha256": "d1e0824e500f825020b2cccfaad7fd435a8fefbe73d61e1b5f05fd54fed0b829",
-            "review_note": "Reviewed the Dashboard route association against the public MCP and A2UI source boundaries. This owner analytics read uses only the authenticated database transport."
+            "source_sha256": "3c70444964a9233805c246329cc0dcf58d4ea2c2b52d70cd0007d322f07fe282",
+            "references_sha256": "49f145b54368e95240f2bfe5b347b3b18ac1b2b09931a252aaf9f69d8ffc5d31",
+            "review_note": "Cross-checked the dashboard and authored page map entries against Public MCP and A2UI. The owner audit projection uses the authenticated database bridge."
         },
         "remote-commerce": {
-            "source_sha256": "d9c5f34a244b4d64632a7d7fc9f2d2f353b37f633474f4d02a1e115d3de59e9e",
-            "references_sha256": "1b5573df9e0031b30d2aff8a41f9b249a03ed67030455440ea9edcbbaeb24892",
-            "review_note": "Compared the storefront telemetry read with the cart and checkout contracts. The existing cart and checkout writes continue through the documented paths."
+            "source_sha256": "e549a00be6ab7bf2fbad348279cab045e69d974db1ec7e2be4bcdf6757e8854c",
+            "references_sha256": "53fcc73a6890d25e8e5129b8e252f569e1aad52fd1548ca6e719bea9cc6d5450",
+            "review_note": "Reviewed the fixed, read-only dashboard projection alongside Checkout and authored header locking. The existing cart and checkout paths retain their documented inputs and actions."
         },
         "sales-channels": {
-            "source_sha256": "36385e3d18e26f524d0efdd12d26cd8386e368fb5d27441460c688ffdff28b92",
+            "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",
             "references_sha256": "ed194e15ddaa5ac6ee1118994fceeb94723165cedba02bc92ad745a196a18fd1",
-            "review_note": "Reviewed SettingsService module resolution and Merchant feed guidance. Dropping a retired header slot leaves the saved catalog eligibility inputs intact."
+            "review_note": "Compared the MediaService additions with the Merchant Feed and product image inspection contracts. Header choices are filtered only for the owner authored editor, and catalogue image eligibility and feed URLs retain their existing resolution."
         },
         "workflow": {
-            "source_sha256": "71a41862a468c8e0a0dbf1645b785f70cfcc104c526f3fed7f113aa58eef24a2",
+            "source_sha256": "72ca250bdb3f3064478f64a6892fc89ee90effabad5fba0f70b6f2203a2020a2",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Reviewed CI and the generated call graph against the workflow guide. The isolated MySQL and MariaDB jobs exercise the exact PHP timestamp cutoff with direct and bridge reads."
+            "review_note": "Reviewed the regenerated route inventory and CI. MySQL and MariaDB jobs cover storefront reads while existing checks cover authored pages."
         }
     }
 }

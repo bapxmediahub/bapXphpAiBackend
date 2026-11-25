@@ -1258,7 +1258,11 @@ final class AdminController extends BaseController {
         $owner = (string)($_SESSION['user']['sub'] ?? '');
         $saved = $_SESSION['page_saved_draft_token'] ?? '';
         unset($_SESSION['page_saved_draft_token']);
-        return ['pageDraftOwner'=>$owner !== '' ? hash('sha256', $owner) : '', 'savedPageDraftToken'=>$saved];
+        return [
+            'pageDraftOwner'=>$owner !== '' ? hash('sha256', $owner) : '',
+            'savedPageDraftToken'=>$saved,
+            'headerImages'=>(new MediaService())->pageHeaderChoices(),
+        ];
     }
 
     public function deleteAuthoredPage(): void {
@@ -1279,18 +1283,26 @@ final class AdminController extends BaseController {
     public function saveAuthoredPage(): void {
         $service = new \App\Services\AuthoredPageService();
         $form = [];
-        foreach (['title','slug','status','content','original_slug','expected_revision'] as $name) {
+        foreach (['title','slug','status','content','original_slug','expected_revision','header_image_url','header_image_alt'] as $name) {
             $form[$name] = is_string($_POST[$name] ?? null) ? $_POST[$name] : '';
         }
         $preview = $error = null;
         try {
+            foreach (['header_image_url', 'header_image_alt'] as $field) {
+                if (isset($_POST[$field]) && !is_string($_POST[$field])) {
+                    throw new \InvalidArgumentException('Choose a header image and plain alternative text.');
+                }
+            }
             if (($form['expected_revision'] === '0' && $form['original_slug'] !== '')
                 || ($form['expected_revision'] !== '0' && $form['original_slug'] !== $form['slug'])) {
                 throw new \InvalidArgumentException('An existing page keeps its original address.');
             }
             if (($_POST['action'] ?? '') === 'preview') {
                 $valid = $service::record($form);
-                $preview = $service::renderContent($valid['content']);
+                if (isset($valid['header_image_url']) && !(new MediaService())->findPageHeaderUpload($valid['header_image_url'])) {
+                    throw new \InvalidArgumentException('Choose an available uploaded image from the Media Library.');
+                }
+                $preview = ['page'=>$valid, 'html'=>$service::renderContent($valid['content'])];
             } elseif (($_POST['action'] ?? '') === 'save') {
                 $service->save($form);
                 $draftToken = $_POST['browser_draft_token'] ?? '';
