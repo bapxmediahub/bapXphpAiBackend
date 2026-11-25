@@ -15,6 +15,9 @@ const fieldIds = ['detail_1', 'detail_2', 'detail_3'];
 const campaignPath = '/pages/courtyard-guide';
 const editorPath = '/admin/pages?edit=courtyard-guide';
 const longLabel = 'DescribeYourArrivalPreferencesAndAnyAccessibilityRequirements';
+const headerImage = '/assets/images/media/2026/11/courtyard-fixture.png';
+const headerAlt = 'The shaded courtyard';
+const raster = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jX1sAAAAASUVORK5CYII=', 'base64');
 
 function php(operation, data) {
     // Load the production view and pure validation methods in PHP without bootstrap,
@@ -54,6 +57,7 @@ function php(operation, data) {
         }
         $pages = [$page];
         $form = $data['form'];
+        $headerImages = $data['headerImages'];
         $pageDraftOwner = 'fixture-campaign-owner';
         $savedPageDraftToken = $data['savedToken'];
         $error = $data['error'] ?? null;
@@ -72,13 +76,15 @@ function html(body, admin = false) {
 }
 
 async function startFixture() {
-    let page = {slug:'courtyard-guide', title:'Courtyard guide', content:'## Visiting the courtyard', status:'published', revision:'a'.repeat(32)};
+    let page = {slug:'courtyard-guide', title:'Courtyard guide', content:'## Visiting the courtyard', status:'published',
+        revision:'a'.repeat(32), header_image_url:headerImage, header_image_alt:headerAlt};
     let received = false;
     let savedToken = '';
     const counts = {saved:0, submitted:0, leads:0};
     const editor = (options = {}) => {
         const form = options.form ?? {...page, original_slug:page.slug, expected_revision:page.revision};
-        const document = php('admin', {page, form, csrf, savedToken, ...options});
+        const headerImages = [{url:headerImage, original_name:'Courtyard fixture'}];
+        const document = php('admin', {page, form, csrf, savedToken, headerImages, ...options});
         return {contentType:'text/html', body:html(document,true)};
     };
     const publicPage = (state = {}) => ({
@@ -98,6 +104,7 @@ async function startFixture() {
         }
     });
     async function reply(pathname, request, send) {
+        if (pathname === headerImage) return send({contentType:'image/png', body:raster});
         if (['/assets/css/band.css', '/assets/css/admin-refinement.css', '/assets/page-draft.js'].includes(pathname)) {
             const contentType = pathname.endsWith('.css') ? 'text/css' : 'application/javascript';
             return send({contentType, body:readFileSync(path.join(root,pathname))});
@@ -108,6 +115,8 @@ async function startFixture() {
             const payload = await readFields(request);
             assert.equal(payload.get('_csrf'),csrf);
             assert.equal(payload.get('expected_revision'),page.revision);
+            assert.equal(payload.get('header_image_url'),headerImage);
+            assert.equal(payload.get('header_image_alt'),headerAlt);
             const fields = Object.fromEntries(fieldIds.map(id => [id,Object.fromEntries(
                 ['type','label','required'].filter(key=>payload.has('campaign_fields['+id+']['+key+']'))
                     .map(key=>[key,payload.get('campaign_fields['+id+']['+key+']')]),
@@ -150,7 +159,7 @@ async function startFixture() {
             if (Object.keys(validation.errors).length) return send({status:422,...publicPage(validation)});
             counts.leads++;
             received = true;
-            return send({status:303,headers:{location:campaignPath+'#campaign-enquiry'}});
+            return send({status:303,headers:{location:campaignPath}});
         }
         return send({status:404,body:''});
     }
@@ -237,6 +246,7 @@ for (const width of [1280,375]) test('Campaign enquiry editor and public submiss
 
         await editor.getByRole('button',{name:'Preview',exact:true}).press('Enter');
         await preview.getByRole('textbox',{name:'Arrival time (required)'}).waitFor();
+        assert.equal(await preview.getByRole('img',{name:headerAlt}).getAttribute('src'),headerImage);
         assert.equal(await preview.getByRole('textbox').count(),5);
         assert.equal(await preview.getByRole('textbox',{name:longLabel+' (optional)'}).isDisabled(),true);
         assert.equal(await preview.getByRole('button',{name:'Send enquiry'}).isDisabled(),true);
@@ -253,6 +263,14 @@ for (const width of [1280,375]) test('Campaign enquiry editor and public submiss
         await visitor.bringToFront();
         await visitor.reload();
         const enquiry = visitor.getByRole('region',{name:'Send an enquiry'});
+        const header = await visitor.locator('.document-page__header').boundingBox();
+        const article = await visitor.locator('.document-page__content').boundingBox();
+        const form = await enquiry.boundingBox();
+        assert.ok(Math.abs(header.x-article.x)<=1 && Math.abs(article.x-form.x)<=1);
+        assert.ok(Math.abs(header.width-article.width)<=1 && Math.abs(article.width-form.width)<=1);
+        assert.ok(form.y>=article.y+article.height);
+        const image = visitor.getByRole('img',{name:headerAlt});
+        assert.ok(await image.evaluate(async node=>{ await node.decode(); return node.naturalWidth>0; }));
         const name = enquiry.getByRole('textbox',{name:'Name (required)'});
         const email = enquiry.getByRole('textbox',{name:'Email (required)'});
         const arrival = enquiry.getByRole('textbox',{name:'Arrival time (required)'});
@@ -271,7 +289,7 @@ for (const width of [1280,375]) test('Campaign enquiry editor and public submiss
         await note.fill('Please share information about the accessible entrance.');
         await activate(submit);
         await enquiry.getByRole('alert').getByText('Check the highlighted fields', {exact:false}).waitFor();
-        assert.equal(await enquiry.evaluate(node=>node===document.activeElement),true);
+        await visitor.waitForFunction(()=>document.activeElement?.id==='campaign-enquiry');
         assert.equal(await arrival.getAttribute('aria-invalid'),'true');
         assert.equal(await arrival.getAttribute('aria-describedby'),'campaign-field-detail_1-error');
         assert.equal(await email.inputValue(),'visitor@example.invalid');
@@ -290,7 +308,7 @@ for (const width of [1280,375]) test('Campaign enquiry editor and public submiss
         });
         assert.equal(counts.submitted,2);
         assert.equal(counts.leads,1);
-        assert.equal(await receipt.evaluate(node=>node===document.activeElement),true);
+        await visitor.waitForFunction(()=>document.activeElement?.id==='campaign-enquiry');
         assert.equal(await receipt.locator('form,input').count(),0);
         assert.ok(!(await receipt.innerText()).includes('visitor@example.invalid'));
         await fits(visitor);
@@ -308,7 +326,7 @@ for (const width of [1280,375]) test('Campaign enquiry editor and public submiss
         const withdrawn = visitor.getByRole('region',{name:'Enquiry unavailable'});
         assert.equal(await withdrawn.getByRole('alert').innerText(),'This page’s enquiry form has closed.');
         assert.equal(await withdrawn.locator('form,input').count(),0);
-        assert.equal(await withdrawn.evaluate(node=>node===document.activeElement),true);
+        await visitor.waitForFunction(()=>document.activeElement?.id==='campaign-enquiry');
         assert.equal(counts.leads,1);
 
         await visitor.goto(origin+campaignPath);

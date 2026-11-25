@@ -7,17 +7,17 @@ $campaignErrors = $authoredPreview ? [] : ($campaignState['errors'] ?? []);
 $campaignReceived = !$authoredPreview && !empty($campaignState['received']);
 $campaignWithdrawn = $campaignDefinition === null && isset($campaignErrors['form']);
 ?>
-<section class="section authored-page<?= $authoredPreview ? ' authored-page--preview' : '' ?>">
-    <article class="container document-page__content">
-        <header>
-            <?php if ($authoredPreview): ?><h3 class="authored-page__title"><?= e($page['title']) ?></h3>
-            <?php else: ?><h1 class="authored-page__title"><?= e($page['title']) ?></h1><?php endif; ?>
+<section class="section document-page<?= $authoredPreview ? ' authored-page--preview' : '' ?>">
+    <div class="container container--narrow">
+        <header class="document-page__header">
+            <?php if ($authoredPreview): ?><h3 class="section-title"><?= e($page['title']) ?></h3>
+            <?php else: ?><h1 class="section-title"><?= e($page['title']) ?></h1><?php endif; ?>
             <?php if (\App\Services\MediaService::isPageHeaderPath($headerUrl)): ?>
                 <img class="authored-page__image" src="<?= e($headerUrl) ?>"
                     alt="<?= e(is_string($page['header_image_alt'] ?? null) ? $page['header_image_alt'] : '') ?>" decoding="async">
             <?php endif; ?>
         </header>
-        <div class="blog-post__body"><?= $html ?></div>
+        <article class="document-page__content"><?= $html ?></article>
         <?php if ($campaignReceived || $campaignDefinition !== null || $campaignWithdrawn): ?>
             <section class="contact-form-card campaign-enquiry" id="campaign-enquiry" aria-labelledby="campaign-enquiry-title" tabindex="-1"
                 <?= $campaignReceived || $campaignErrors ? 'autofocus' : '' ?>>
@@ -54,7 +54,7 @@ $campaignWithdrawn = $campaignDefinition === null && isset($campaignErrors['form
                         </div>
                     <?php endif; ?>
                     <?php if (!$authoredPreview): ?>
-                        <form class="contact-form" method="post" action="/pages/<?= e(rawurlencode($page['slug'])) ?>/enquiry#campaign-enquiry">
+                        <form class="contact-form" method="post" action="/pages/<?= e(rawurlencode($page['slug'])) ?>/enquiry">
                             <input type="hidden" name="_csrf" value="<?= e($_SESSION['csrf_token'] ??= bin2hex(random_bytes(16))) ?>">
                             <input type="hidden" name="revision" value="<?= e($page['revision']) ?>">
                             <input type="hidden" name="submission_token" value="<?= e($campaignState['token'] ?? '') ?>">
@@ -96,5 +96,5 @@ $campaignWithdrawn = $campaignDefinition === null && isset($campaignErrors['form
                 <?php endif; ?>
             </section>
         <?php endif; ?>
-    </article>
+    </div>
 </section>

@@ -135,7 +135,7 @@ try {
         $doc->loadHTML($markup, LIBXML_NOERROR | LIBXML_NOWARNING);
         $query = new DOMXPath($doc);
         $inputs = [];
-        foreach ($query->query('//form[@action="/pages/campaign/enquiry#campaign-enquiry"]/input[@type="hidden"]') as $input) {
+        foreach ($query->query('//form[@action="/pages/campaign/enquiry"]/input[@type="hidden"]') as $input) {
             $inputs[$input->getAttribute('name')] = $input->getAttribute('value');
         }
         return $inputs;
@@ -162,7 +162,7 @@ try {
         'Validation errors preserve accepted field text and expose accessible feedback');
     $check(!str_contains($invalid, 'unexpected') && $read()['calls'] === 0, 'Unexpected answers stay out of the form and storage');
     [$status,,$headers] = $submit();
-    $check($status === 303 && str_contains($headers, 'Location: /pages/campaign#campaign-enquiry'), 'Successful POST redirects to its receipt');
+    $check($status === 303 && preg_match('#^Location: /pages/campaign\r?$#mi', $headers) === 1, 'Successful POST redirects to its receipt');
     $check(str_contains($request('/pages/campaign')[1], 'Enquiry received'), 'Native GET shows a receipt without customer answers');
     $check($submit(['answers'=>['name'=>'Changed on replay']])[0] === 303 && $read()['calls'] === 1, 'Repeating the accepted token creates no new mutation');
     $check(str_contains($request('/pages/campaign')[1], 'Enquiry received'), 'Replay shows the same acknowledgement');

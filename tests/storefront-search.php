@@ -85,10 +85,10 @@ try {
     [$first, $xpath] = $search(['q' => 'lotus']);
     $expected = array_map(static fn(int $n): string => "/product/item-$n", range(1, 19));
     $equal($first, [...$expected, '/blog/guide'], 'page one ends at the first published article');
-    $equal($xpath->evaluate('string(//main//nav/a/@href)'), '/search?q=lotus&page=2', 'next preserves the search');
+    $equal($xpath->evaluate('string(//main//nav[@aria-label="Search results pages"]//a/@href)'), '/search?q=lotus&page=2', 'next preserves the search');
     [$last, $xpath] = $search(['q' => 'lotus', 'page' => 2]);
     $equal($last, ['/blog/shop-guide', '/temples/temple'], 'remaining published article and temple');
-    $equal($xpath->evaluate('string(//main//nav/a/@href)'), '/search?q=lotus&page=1', 'previous preserves the search');
+    $equal($xpath->evaluate('string(//main//nav[@aria-label="Search results pages"]//a/@href)'), '/search?q=lotus&page=1', 'previous preserves the search');
     $equal($search(['q' => 'lotus', 'page' => 999])[0], $last, 'page past the end');
     $equal($search(['q' => 'lotus', 'page' => []])[0], $first, 'invalid page');
     $equal($search(['q' => "\u{2003}"])[0], [], 'Unicode blank query');
