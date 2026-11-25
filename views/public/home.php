@@ -89,17 +89,20 @@
             </a>
         </div>
         <div data-section-index hidden></div>
-        <div data-home-rail>
-        <?php if (count($bestSellers ?? []) > 1): ?>
-            <?php $railId = 'home-bestseller-rail'; require __DIR__ . '/home-rail-controls.php'; ?>
+        <?php if (!empty($bestSellers)): ?>
+            <div data-home-rail>
+                <?php if (count($bestSellers) > 1): ?>
+                    <?php $railId = 'home-bestseller-rail'; require __DIR__ . '/home-rail-controls.php'; ?>
+                <?php endif; ?>
+                <div class="product-grid home-product-rail" id="home-bestseller-rail" data-home-track tabindex="0" role="region" aria-label="Top selling products">
+                    <?php foreach ($bestSellers as $item): ?>
+                        <?php require __DIR__ . '/home-product-card.php'; ?>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        <?php else: ?>
+            <p class="home-bestsellers__empty">Our top sellers will appear here as orders are completed.</p>
         <?php endif; ?>
-        <div class="product-grid home-product-rail" id="home-bestseller-rail" data-home-track tabindex="0" role="region" aria-label="Top selling products">
-        <?php foreach(($bestSellers ?? []) as $item): ?>
-            <?php require __DIR__ . '/home-product-card.php'; ?>
-        <?php endforeach; ?>
-        <?php if (empty($bestSellers)): ?><p>Our top sellers will appear here as orders are completed. <a href="/shop">Browse all products</a>.</p><?php endif; ?>
-    </div>
-        </div>
     </div>
 </section>
 <?php endif; ?>

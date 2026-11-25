@@ -3,6 +3,8 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {execFileSync}=require('node:child_process');
 const {randomBytes}=require('node:crypto');
+const {once}=require('node:events');
+const {createServer}=require('node:http');
 const {setTimeout:pause}=require('node:timers/promises');
 const {readFileSync}=require('node:fs');
 const path=require('node:path');
@@ -14,10 +16,8 @@ const uploadedImage='/assets/images/media/2026/11/fixture-upload.png';
 const raster=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jX1sAAAAASUVORK5CYII=','base64');
 const styles='<link rel="stylesheet" href="/assets/css/band.css"><link rel="stylesheet" href="/assets/css/admin-refinement.css">';
 
-async function pageFields(request) {
-    return Object.fromEntries(await new Response(request.postDataBuffer(), {
-        headers:{'Content-Type':request.headers()['content-type']},
-    }).formData());
+async function pageFields(body, contentType) {
+    return Object.fromEntries(await new Response(body, {headers:{'Content-Type':contentType}}).formData());
 }
 
 function document(body, admin=true) {
@@ -25,13 +25,13 @@ function document(body, admin=true) {
     return '<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1">'+styles+'</head><body>'+main+body+'</main></body></html>';
 }
 
-function fixtureAsset(route, pathname) {
+function fixtureAsset(pathname) {
     if ([libraryImage,uploadedImage].includes(pathname)) {
-        return route.fulfill({contentType:'image/png',body:raster});
+        return {contentType:'image/png',body:raster};
     }
     if (['/assets/page-draft.js','/assets/css/band.css','/assets/css/admin-refinement.css'].includes(pathname)) {
         const contentType=pathname.endsWith('.js') ? 'application/javascript' : 'text/css';
-        return route.fulfill({contentType,body:readFileSync(path.join(root,pathname))});
+        return {contentType,body:readFileSync(path.join(root,pathname))};
     }
     return null;
 }
@@ -99,11 +99,11 @@ for(const width of [375,1280]) test('authored page draft reload, isolation and s
         await context.route('**/*',async route=>{
             const req=route.request(),u=new URL(req.url());
             assert.equal(u.origin,origin);
-            const asset=fixtureAsset(route,u.pathname);
-            if(asset)return asset;
+            const asset=fixtureAsset(u.pathname);
+            if(asset)return route.fulfill(asset);
             if(u.pathname==='/admin/pages/save'){
                 posts++;
-                const fields=await pageFields(req);
+                const fields=await pageFields(req.postDataBuffer(), req.headers()['content-type']);
                 assert.equal(fields.expected_revision,revision);
                 assert.equal(fields._csrf,'fixture');
                 assert.equal(fields.action,'save');
@@ -157,73 +157,104 @@ for(const width of [375,1280]) test('authored page draft reload, isolation and s
 });
 
 
-async function routeHeaderEditor(context) {
+async function startHeaderEditor(t) {
     const images=[{url:libraryImage,original_name:'Library courtyard'}];
     const record={original_slug:'guide',slug:'guide',title:'Existing guide',content:'Original text',status:'draft',expected_revision:rev};
     const state={record, saves:[], previews:[], uploads:0};
     let savedToken='';
-    await context.route('**/*',async route=>{
-        const request=route.request();
-        const url=new URL(request.url());
-        assert.equal(url.origin,origin);
-        const asset=fixtureAsset(route,url.pathname);
-        if(asset)return asset;
+    let fixtureError;
+    const server=createServer(async (request,response)=>{
+        function send(status,contentType,body) {
+            response.writeHead(status,{'Content-Type':contentType}).end(body);
+        }
+        try {
+            const url=new URL(request.url,origin);
+            const asset=fixtureAsset(url.pathname);
+            if(asset)return send(200,asset.contentType,asset.body);
 
-        if(url.pathname==='/admin/pages') {
-            return route.fulfill({contentType:'text/html',body:document(renderHeader({form:state.record,images,savedToken}))});
-        }
-        if(url.pathname==='/admin/media/upload') {
-            assert.equal(request.method(),'POST');
-            assert.match(request.headers()['content-type'],/^multipart\/form-data; boundary=/);
-            assert.equal(request.headers().accept,'application/json');
-            const body=request.postDataBuffer().toString('latin1');
-            assert.ok(body.includes('name="media_files[]"; filename="page-upload.png"'));
-            assert.ok(body.includes('name="context"\r\n\r\nshared\r\n'));
-            assert.ok(body.includes('name="_csrf"\r\n\r\nfixture\r\n'));
-            state.uploads++;
-            images.push({url:uploadedImage,original_name:'page-upload.png'});
-            return route.fulfill({status:201,json:{files:[{url:uploadedImage}]}});
-        }
-        if(url.pathname==='/admin/pages/save') {
-            assert.equal(request.method(),'POST');
-            const fields=await pageFields(request);
-            assert.equal(fields._csrf,'fixture');
-            assert.equal(fields.expected_revision,state.record.expected_revision);
-            assert.ok(fields.header_image_url==='' || images.some(image=>image.url===fields.header_image_url));
-            if(fields.action==='preview') {
-                state.previews.push(fields);
-                return route.fulfill({contentType:'text/html',body:document(renderHeader({form:fields,images,preview:true}))});
+            if(url.pathname==='/admin/pages') {
+                assert.equal(request.method,'GET');
+                return send(200,'text/html',document(renderHeader({form:state.record,images,savedToken})));
             }
-            assert.equal(fields.action,'save');
-            savedToken=fields.browser_draft_token;
-            assert.match(savedToken,/^[a-f0-9]{32}$/);
-            state.saves.push(fields);
-            state.record={...fields,expected_revision:randomBytes(16).toString('hex')};
-            if(!fields.header_image_url) {
-                delete state.record.header_image_url;
-                delete state.record.header_image_alt;
+            if(url.pathname==='/pages/guide') {
+                if(state.record.status!=='published') {
+                    return send(404,'text/html',document('<h1>Page not found</h1>',false));
+                }
+                return send(200,'text/html',document(renderHeader({form:state.record,published:true}),false));
             }
-            return route.fulfill({status:303,headers:{location:origin+'/admin/pages?edit=guide'}});
-        }
-        if(url.pathname==='/pages/guide') {
-            if(state.record.status!=='published') {
-                return route.fulfill({status:404,contentType:'text/html',body:document('<h1>Page not found</h1>',false)});
+            if(url.pathname==='/admin/media/upload') {
+                assert.equal(request.method,'POST');
+                assert.match(request.headers['content-type'],/^multipart\/form-data; boundary=/);
+                assert.equal(request.headers.accept,'application/json');
+                const body=(await requestBody(request)).toString('latin1');
+                assert.ok(body.includes('name="media_files[]"; filename="page-upload.png"'));
+                assert.ok(body.includes('name="context"\r\n\r\nshared\r\n'));
+                assert.ok(body.includes('name="_csrf"\r\n\r\nfixture\r\n'));
+                state.uploads++;
+                images.push({url:uploadedImage,original_name:'page-upload.png'});
+                return send(201,'application/json',JSON.stringify({files:[{url:uploadedImage}]}));
             }
-            return route.fulfill({contentType:'text/html',body:document(renderHeader({form:state.record,published:true}),false)});
+            if(url.pathname==='/admin/pages/save') {
+                assert.equal(request.method,'POST');
+                const fields=await pageFields(await requestBody(request), request.headers['content-type']);
+                assert.equal(fields._csrf,'fixture');
+                assert.equal(fields.expected_revision,state.record.expected_revision);
+                assert.ok(fields.header_image_url==='' || images.some(image=>image.url===fields.header_image_url));
+                if(fields.action==='preview') {
+                    state.previews.push(fields);
+                    return send(200,'text/html',document(renderHeader({form:fields,images,preview:true})));
+                }
+                assert.equal(fields.action,'save');
+                savedToken=fields.browser_draft_token;
+                assert.match(savedToken,/^[a-f0-9]{32}$/);
+                state.saves.push(fields);
+                state.record={...fields,expected_revision:randomBytes(16).toString('hex')};
+                if(!fields.header_image_url) {
+                    delete state.record.header_image_url;
+                    delete state.record.header_image_alt;
+                }
+                return response.writeHead(302,{Location:'/admin/pages?edit=guide'}).end();
+            }
+            return send(404,'text/plain','');
+        } catch(error) {
+            fixtureError=error;
+            return send(500,'text/plain','Invalid fixture request');
         }
-        return route.fulfill({status:404,body:''});
     });
-    return state;
+    // Playwright route handlers skip redirect targets. Serve the fixture so Chrome follows the real redirect.
+    server.listen(0,'127.0.0.1');
+    await once(server,'listening');
+    t.after(async()=>{
+        await new Promise((resolve,reject)=>server.close(error=>error ? reject(error) : resolve()));
+        if(fixtureError) throw fixtureError;
+    });
+    return {origin:'http://127.0.0.1:'+server.address().port,state};
 }
 
-for(const width of [375,1280]) test('authored header selection, upload, preview, save and clear at '+width+'px',async()=>{
+async function requestBody(request) {
+    const chunks=[];
+    for await(const chunk of request)chunks.push(chunk);
+    return Buffer.concat(chunks);
+}
+
+async function saveHeader(editor,state) {
+    const [response]=await Promise.all([
+        editor.waitForResponse(response=>response.url().endsWith('/admin/pages?edit=guide')
+            && response.request().redirectedFrom()?.method()==='POST'),
+        editor.getByRole('button',{name:'Save page'}).click(),
+    ]);
+    assert.equal(response.status(),200);
+    await editor.locator('#page-draft-form [name=expected_revision][value="'+state.record.expected_revision+'"]').waitFor({state:'attached'});
+}
+
+for(const width of [375,1280]) test('authored header selection, upload, preview, save and clear at '+width+'px',async(t)=>{
+    const {origin,state}=await startHeaderEditor(t);
     const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||undefined,headless:true,args:['--no-sandbox']});
     const context=await browser.newContext({viewport:{width,height:850}});
-    const state=await routeHeaderEditor(context);
     const editor=await context.newPage();
     const reader=await context.newPage();
     const alt='Cool shade beside the courtyard';
-    const title='Courtyard visiting guide';
+    const title='Courtyard visiting guide '+'Reference'.repeat(12);
     const markup='## Opening hours\n\n**Bring water.** <script>window.fixtureExecuted=true</script>';
     try {
         await editor.goto(origin+'/admin/pages?edit=guide');
@@ -249,7 +280,7 @@ for(const width of [375,1280]) test('authored header selection, upload, preview,
         assert.equal(await preview.getByRole('heading',{name:'Opening hours'}).count(),1);
         assert.equal(await preview.locator('strong').innerText(),'Bring water.');
         assert.equal(await preview.locator('script').count(),0);
-        const renderedMarkdown=await preview.locator('.blog-post__body').innerHTML();
+        const renderedMarkdown=await preview.locator('.document-page__content').innerHTML();
         assert.equal(state.previews.length,1);
         assert.equal(state.saves.length,0);
         assert.equal(state.record.title,'Existing guide');
@@ -265,8 +296,7 @@ for(const width of [375,1280]) test('authored header selection, upload, preview,
         assert.equal(state.saves.length,0);
 
         await editor.getByLabel('Visibility').selectOption('published');
-        await editor.getByRole('button',{name:'Save page'}).click();
-        await editor.waitForURL('**/admin/pages?edit=guide');
+        await saveHeader(editor,state);
         assert.equal(state.saves.length,1);
         assert.equal(state.record.header_image_url,uploadedImage);
         assert.equal(await editor.getByLabel('Choose uploaded image').inputValue(),uploadedImage);
@@ -277,12 +307,14 @@ for(const width of [375,1280]) test('authored header selection, upload, preview,
         assert.equal((await reader.reload()).status(),200);
         assert.equal(await reader.getByRole('heading',{name:title,level:1}).count(),1);
         await requireImage(reader.getByRole('img',{name:alt}),uploadedImage);
-        assert.equal(await reader.locator('.blog-post__body').innerHTML(),renderedMarkdown);
+        assert.equal(await reader.locator('.document-page__content').innerHTML(),renderedMarkdown);
+        const header=await reader.locator('.document-page__header').boundingBox();
+        const body=await reader.locator('.document-page__content').boundingBox();
+        assert.ok(Math.abs(header.x-body.x)<=1 && Math.abs(header.width-body.width)<=1);
         await requireNoOverflow(reader);
 
         await editor.getByLabel('Choose uploaded image').selectOption('');
-        await editor.getByRole('button',{name:'Save page'}).click();
-        await editor.waitForURL('**/admin/pages?edit=guide');
+        await saveHeader(editor,state);
         assert.equal(state.saves.length,2);
         assert.equal(state.saves[1].header_image_url,'');
         assert.equal(await editor.getByLabel('Choose uploaded image').inputValue(),'');
@@ -290,14 +322,14 @@ for(const width of [375,1280]) test('authored header selection, upload, preview,
         assert.equal(await editor.locator('#page-header-thumbnail').isVisible(),false);
         assert.equal((await reader.reload()).status(),200);
         assert.equal(await reader.locator('.authored-page__image').count(),0);
-        assert.equal(await reader.locator('.blog-post__body').innerHTML(),renderedMarkdown);
+        assert.equal(await reader.locator('.document-page__content').innerHTML(),renderedMarkdown);
     } finally {await browser.close();}
 });
 
-test('native header selection and preview work without JavaScript at 375px',async()=>{
+test('native header selection and preview work without JavaScript at 375px',async(t)=>{
+    const {origin,state}=await startHeaderEditor(t);
     const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||undefined,headless:true,args:['--no-sandbox']});
     const context=await browser.newContext({viewport:{width:375,height:850},javaScriptEnabled:false});
-    const state=await routeHeaderEditor(context);
     const editor=await context.newPage();
     try {
         await editor.goto(origin+'/admin/pages?edit=guide');

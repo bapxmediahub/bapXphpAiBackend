@@ -156,7 +156,7 @@ try {
         $doc->loadHTML($markup, LIBXML_NOERROR | LIBXML_NOWARNING);
         $query = new DOMXPath($doc);
         $inputs = [];
-        foreach ($query->query('//form[@action="/pages/campaign/enquiry#campaign-enquiry"]/input[@type="hidden"]') as $input) {
+        foreach ($query->query('//form[@action="/pages/campaign/enquiry"]/input[@type="hidden"]') as $input) {
             $inputs[$input->getAttribute('name')] = $input->getAttribute('value');
         }
         return $inputs;
@@ -188,7 +188,7 @@ try {
         'Validation errors preserve accepted field text and expose accessible feedback');
     $check(!str_contains($invalid, 'unexpected') && $read()['calls'] === 0, 'Unexpected answers stay out of the form and storage');
     [$status,,$headers] = $submit();
-    $check($status === 303 && str_contains($headers, 'Location: /pages/campaign#campaign-enquiry'), 'Successful POST redirects to its receipt');
+    $check($status === 303 && preg_match('#^Location: /pages/campaign\r?$#mi', $headers) === 1, 'Successful POST redirects to its receipt');
     $receipt = $request('/pages/campaign')[1];
     $check(str_contains($receipt, 'Enquiry received') && str_contains($receipt, $downloadPath), 'Accepted enquiry unlocks the revision in this session');
     [$status,$downloaded,$headers] = $request($downloadPath);

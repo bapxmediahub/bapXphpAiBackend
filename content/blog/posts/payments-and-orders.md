@@ -16,7 +16,7 @@ source_url: /checkout
 
 ## Product payments
 
-Product orders use the secure live payment option shown at checkout. Review the amount and delivery address before approving payment.
+Product orders use the secure live payment option shown at checkout. Use **Order review** to check the amount before approving payment. On a phone, **Review order** jumps to the summary. Check the delivery address in **Shipping details**.
 
 ## After payment
 

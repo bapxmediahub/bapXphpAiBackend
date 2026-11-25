@@ -1,8 +1,8 @@
 ## Start with the task
 
-The sidebar groups daily work into Services, Commerce, Enterprise Agent, Email, Appearance and Settings. Select **Help & Docs** whenever you need instructions. **Help for this page** takes you to the guide for the section you are using.
+The sidebar separates Services, Commerce, Enterprise Agent, Site analytics, Email, Appearance and Settings. Select **Help & Docs** whenever you need instructions. **Help for this page** takes you to the guide for the section you are using.
 
-Open Dashboard for an overview. Its 7, 30 or 90 day selector changes the paid-commerce period. An empty period is valid; a zero card is not a database failure. Use Commerce Reports for explicit from/to dates and deeper filters.
+Open Dashboard for an overview. Its 7, 30 or 90 day selector changes the paid-commerce period. An empty period is valid; a zero card is not a database failure. Use Commerce Reports for explicit from/to dates and deeper filters. Commerce overview also shows recorded storefront cart and checkout actions over the last 30 days. Open Site analytics for traffic, search and PageSpeed. Open Agent Monitoring from the Enterprise Agent group to inspect model runs and quality evidence.
 
 ## Work safely
 

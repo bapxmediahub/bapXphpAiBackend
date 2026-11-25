@@ -448,6 +448,23 @@
     .enterprise-chat .agent-suggestions { grid-template-columns: minmax(0, 1fr); }
 }
 
+/* Owner dashboard evidence */
+.storefront-activity h3, .site-analytics h3 { margin: 0 0 .45rem; font-size: 1rem; }
+.storefront-activity__totals {
+    display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 1rem; margin: 0; padding-top: .7rem; border-top: 1px solid var(--color-border-light);
+}
+.storefront-activity__totals dt { color: var(--color-text-muted); font-size: .83rem; }
+.storefront-activity__totals dd {
+    margin: .25rem 0 0; color: var(--color-maroon);
+    font-size: 1.4rem; font-weight: 700; font-variant-numeric: tabular-nums;
+}
+.site-analytics__actions { margin: .75rem 0 1.2rem; }
+.site-analytics__tag-actions { margin-top: .75rem; }
+.site-analytics :is(.site-analytics__actions, .site-analytics__tag-actions) .btn { min-height: 44px; }
+.site-analytics #google-tag-status { min-width: 0; }
+.site-analytics #google-tag-status .table-wrap + p { margin-top: .8rem; }
+
 .google-reporting__callback { overflow-wrap: anywhere; }
 
 .google-reporting .btn { max-inline-size: 100%; white-space: normal; text-align: center; }

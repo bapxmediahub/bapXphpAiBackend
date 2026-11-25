@@ -704,6 +704,12 @@ $tests['admin dashboard resolves all services and renders its actual zero-data p
         assertTrue(str_contains($html,'<h2 id="dashboard-commerce-title"'),'Commerce overview is a section heading');
         assertTrue(str_contains($html,'revenue-chart-title'),'Real dashboard controller reaches its chart template');
         assertTrue(str_contains($html,'No paid orders in this period.'),'Zero-data rendering remains safe through the full controller');
+        assertTrue(str_contains($html,'id="web-analytics" data-page-section="Site analytics"'),'Site analytics keeps the direct dashboard bookmark');
+        assertTrue(str_contains($html,'data-commerce-event="cart_add"') && str_contains($html,'data-commerce-event="checkout_initiated"'),'Storefront action totals appear on the dashboard');
+        assertTrue(!str_contains($html,'Storefront activity is temporarily unavailable.'),'An empty readable audit feed is valid data');
+        ob_start();$controller->agentMonitoring();$monitoring=(string)ob_get_clean();
+        assertTrue(str_contains($monitoring,'Provider and model reliability'),'Agent Monitoring retains provider evidence');
+        assertTrue(!str_contains($monitoring,'data-commerce-event=') && !str_contains($monitoring,'First-party commerce events'),'Agent Monitoring no longer shows unrelated storefront totals');
         assertTrue(!str_contains($html,'Fatal error'),'Controller page does not emit a runtime error');
     } finally {
         while(ob_get_level()>$level)ob_end_clean();
@@ -1286,6 +1292,9 @@ $tests['site profile selects only approved deployment identity and public channe
     ], 'https://caldera.example.test', 'Legacy SEO name', 'Environment name');
     assertSame('Sri Panchami Spiritual', $reference->name(), 'Reference default keeps its name');
     assertSame('Caldera & Iris', $fixture->name(), 'Published name wins over previous configuration');
+    assertSame('Enterprise Agent Vinod', $reference->ownerAgentName(), 'The reference profile supplies its owner workspace label');
+    assertSame('Enterprise Agent', $fixture->ownerAgentName(), 'An independent deployment uses the neutral owner label');
+    assertTrue(!isset($reference->valuesForEditor()['owner_agent_display_name']), 'The owner label stays outside the public profile fields');
     assertSame([
         'name' => 'Caldera & Iris', 'path' => '/contact',
         'phones' => [['label' => '+44 (20) 7000-0123', 'number' => '+442070000123']],
@@ -4702,6 +4711,36 @@ $tests['admin product preview protects hidden catalog content and disables purch
     $view = file_get_contents(app_path('views/public/product.php'));
     assertTrue(str_contains($view, 'Admin preview · Not for sale'), 'Preview must be clearly labeled');
     assertTrue(strpos($view, 'if (empty($adminPreview))') < strpos($view, 'id="product-cart-form"'), 'Preview must not render purchase controls');
+};
+
+$tests['product detail places native purchase actions before specifications and respects stock'] = static function (): void {
+    $renderProduct = static function (array $stock, bool $adminPreview = false): string {
+        $product = $stock + [
+            'slug' => 'fixture-pendant',
+            'name' => 'Fixture pendant',
+            'price' => 250,
+            'specifications' => ['Item type' => 'Pendant'],
+        ];
+        $related = [];
+        ob_start();
+        require app_path('views/public/product.php');
+        return (string)ob_get_clean();
+    };
+
+    $available = $renderProduct(['stock_status' => 'active']);
+    $form = strpos($available, 'id="product-cart-form"');
+    $specifications = strpos($available, 'id="product-specifications"');
+    assertTrue($form !== false && $specifications !== false && $form < $specifications, 'Purchase form should appear before specifications');
+    assertTrue(str_contains($available, 'name="redirect" value="/checkout"'), 'Buy Now remains a native submit to checkout');
+    assertTrue(str_contains($available, 'for="qty-input"'), 'Quantity field has a visible associated label');
+
+    foreach ([$renderProduct(['stock_status' => 'out_of_stock']), $renderProduct([])] as $unavailable) {
+        assertTrue(!str_contains($unavailable, 'id="product-cart-form"'), 'Unavailable items must not offer a form the cart rejects');
+        assertTrue(str_contains($unavailable, 'Out of stock'), 'Unavailable items explain why the purchase action is absent');
+    }
+
+    $preview = $renderProduct(['stock_status' => 'active'], true);
+    assertTrue(!str_contains($preview, 'id="product-cart-form"'), 'Owner preview never shows purchase actions');
 };
 
 $tests['a coupon obeys its dates, spend range and usage limits'] = function (): void {

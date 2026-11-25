@@ -124,7 +124,7 @@ final class PublicController extends BaseController {
         $slug = $page['slug'];
         $_SESSION['campaign_enquiry_received'] = $slug;
         http_response_code(303);
-        $this->redirect('/pages/'.$slug.'#campaign-enquiry');
+        $this->redirect('/pages/'.$slug);
     }
 
     private function campaignFormError(array $page, int $status, string $message, array $state = []): void {
