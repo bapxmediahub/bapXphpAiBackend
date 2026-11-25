@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "a88e56591f9d321da42b753a4b1e49d9e665bd5ce1eb3dceea33736d762405c3",
+            "source_sha256": "19d470c8a1c0783592b19a821f58a4133999c976df2576b4db5335314706f82b",
             "references_sha256": "aae35a322bb12f8bfb578f05020bf2715ba7860491ce5e0ef3c7a308275507d2",
-            "review_note": "Checked both controller fixture paths and the PHP transport against the OpenAI Chat Completions finish reasons, refusal, tool message correlation and request parameter contract."
+            "review_note": "Reviewed the strict JSON list shape and confirmed the direct OpenAI GPT-6 Luna tool-calling reasoning setting against the documented endpoint. The loopback fixture tests both agent controllers and the numeric object rejection."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -29,8 +29,8 @@
         },
         "google-tags": {
             "source_sha256": "a02edc85b6bd4cc5f95748217edaf7ea3fae53a6d67edd0098c99848290122d8",
-            "references_sha256": "a75991231da6a13cfb14b382b45cc7b414c9c24b7b77e5a7c39b3179517af0fe",
-            "review_note": "Checked the Integrations change within its AI fieldset and verified the Google tags and OAuth configuration continue to use their existing independent fields."
+            "references_sha256": "d4b4260ffa9152b4e1ce2693cab26a998376cf85e6265c906727a56d7148e3c7",
+            "review_note": "Checked the shared Integrations reference. The Luna example applies exclusively to Chat Completions and the Google tags and OAuth guidance remains accurate."
         },
         "http-errors": {
             "source_sha256": "63602cadbe59868b0d25a1b00729a589e75d1b31c6ea3a1b25c1e5a46fd06d50",
@@ -49,8 +49,8 @@
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
-            "references_sha256": "85b869a493003e809468f64813cc5a78b0d0532793151a999375e457417ac0da",
-            "review_note": "Checked the shared SecretsService change against the MCP grant storage and Integrations documentation. The additional field is scoped to the model connection and existing MCP grant handling is preserved."
+            "references_sha256": "0b4814b02f21a481f4cb06d148700595ebfa01586ed4388f52bdf093226b61d9",
+            "review_note": "Checked that the endpoint example and supported model guidance change only the existing AI connection documentation. The local reporting client setup remains accurate."
         },
         "media": {
             "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
