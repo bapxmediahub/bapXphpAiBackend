@@ -1,4 +1,4 @@
-<section class="enterprise-chat" aria-labelledby="enterprise-agent-title">
+<section class="enterprise-chat" aria-labelledby="enterprise-agent-title" data-chat-scope="<?= e($chatScope ?? '') ?>">
     <header class="enterprise-chat__intro">
         <h1 id="enterprise-agent-title">Enterprise Agent</h1>
         <p>Ask about business performance, orders, stock status, and customer support.</p>
@@ -37,6 +37,8 @@
             <p id="agent-history-status" role="status"></p>
             <div id="agent-history-list" class="agent-history-list"></div>
         </section>
+        <p id="agent-resume-status" role="status"></p>
+        <button id="agent-resume-retry" type="button" class="agent-suggestion" hidden>Reload saved chat</button>
     <div id="agent-messages" class="agent-messages" role="log" aria-live="polite" aria-label="Conversation"></div>
 
     <div class="agent-suggestions" id="agent-suggestions">
@@ -123,6 +125,9 @@
 .agent-history-panel h2 { font-size:0.94rem; margin:0 0 var(--space-xs); }
 #agent-history-status { margin:0 0 var(--space-xs); }
 #agent-history-status:empty { margin:0; }
+#agent-resume-status { margin:0 0 var(--space-xs); }
+#agent-resume-status:empty { display:none; }
+#agent-resume-retry { min-height:44px; margin-bottom:var(--space-xs); }
 .agent-history-list { display:flex; flex-direction:column; gap:var(--space-2xs); }
 .agent-history-entry { text-align:left; background:var(--color-white); border:1px solid var(--color-border); border-radius:var(--radius-sm); padding:8px 10px; cursor:pointer; overflow-wrap:anywhere; }
 .agent-history-entry:hover, .agent-history-entry:focus-visible { border-color:var(--color-gold); }
@@ -206,7 +211,25 @@
     const historyPanel = document.getElementById('agent-history-panel');
     const historyList = document.getElementById('agent-history-list');
     const historyStatus = document.getElementById('agent-history-status');
+    const resumeStatus = document.getElementById('agent-resume-status');
+    const resumeRetry = document.getElementById('agent-resume-retry');
+    const chatScope = messages.closest('[data-chat-scope]').dataset.chatScope;
+    const activeChatKey = chatScope ? 'sps-enterprise-active-chat:' + chatScope : null;
+    const isChatId = id => typeof id === 'string' && /^[a-f0-9]{32}$/.test(id);
     let conversationId = null;
+    let resumeId = null;
+    function setActiveChat(id) {
+        conversationId = id;
+        if (!activeChatKey) return;
+        try {
+            if (id === null) sessionStorage.removeItem(activeChatKey);
+            else sessionStorage.setItem(activeChatKey, id);
+        } catch (_) { /* History remains available when storage is disabled. */ }
+    }
+    function resumeMessage(message = '', retry = false) {
+        resumeStatus.textContent = message;
+        resumeRetry.hidden = !retry;
+    }
     const drafts = new Map();
     function rememberDraft() {
         if (!conversationId) return;
@@ -220,7 +243,8 @@
         if (transcriptRequest) {
             transcriptRequest.abort();
             transcriptRequest = null;
-            submit.disabled = false;
+            submit.disabled = resumeId !== null;
+            if (resumeId !== null) resumeMessage('Reload the saved chat or start a new one.', true);
         }
         historyStatus.textContent = '';
         historyPanel.hidden = true;
@@ -289,28 +313,35 @@
         }
     }
 
-    async function restoreConversation(id) {
-        if (input.disabled || uploadBtn.disabled || !/^[a-f0-9]{32}$/.test(String(id))) return;
+    async function restoreConversation(id, automatic = false, focusOnSuccess = !automatic) {
+        if (input.disabled || uploadBtn.disabled || !isChatId(id)) return;
         transcriptRequest?.abort();
-        transcriptRequest = new AbortController();
-        const {signal} = transcriptRequest;
+        const request = new AbortController();
+        transcriptRequest = request;
+        const {signal} = request;
+        const deadline = setTimeout(() => request.abort(), 12000);
         submit.disabled = true;
-        historyStatus.textContent = 'Opening chat…';
+        if (automatic) resumeMessage('Opening your saved chat…');
+        else historyStatus.textContent = 'Opening chat…';
+        let missing = false;
         try {
             const response = await fetch('/admin/agent/history/' + id, {credentials:'same-origin',cache:'no-store',signal});
+            missing = response.status === 404;
             if (!response.ok) throw new Error('Conversation is unavailable');
             const data = await response.json();
-            if (signal.aborted) return;
+            if (transcriptRequest !== request) return;
+            if (signal.aborted) throw new Error('Chat restoration timed out');
             if (data.conversation_id !== id || !Array.isArray(data.turns)) throw new Error('Invalid chat history');
             if (conversationId !== id) {
+                const waitingDraft = automatic && resumeId === id && conversationId === null ? input.value : '';
                 rememberDraft();
-                input.value = drafts.get(id) || '';
+                input.value = drafts.get(id) ?? waitingDraft;
                 closeMentions();
                 document.getElementById('agent-attachment-status').textContent = '';
                 autoGrow();
             }
             messages.replaceChildren();
-            conversationId = id;
+            setActiveChat(id);
             for (const turn of data.turns) {
                 addRow('user', escapeHtml(String(turn.question || '')).replace(/\n/g,'<br>'));
                 if (turn.outcome === 'error') {
@@ -323,17 +354,35 @@
             }
             clear.hidden = false;
             suggestions.style.display = 'none';
+            transcriptRequest = null;
+            resumeId = Number(data.pending_turn_count) > 0 ? id : null;
+            submit.disabled = resumeId !== null;
+            resumeMessage(resumeId ? 'This chat has an unfinished request. Reload it to check for a saved reply, or start a new chat.' : '', resumeId !== null);
             hideHistory();
             messages.scrollTop = messages.scrollHeight;
-            input.focus();
+            if (focusOnSuccess) input.focus();
         } catch (error) {
-            if (!signal.aborted) {
-                transcriptRequest = null;
-                submit.disabled = false;
+            if (transcriptRequest !== request) return;
+            transcriptRequest = null;
+            if (resumeId === id && missing) {
+                resumeId = null;
+                setActiveChat(null);
+                resumeMessage('This saved chat is unavailable. Start a new chat or select one from History.');
+            } else if (resumeId === id) {
+                resumeMessage('Could not reopen your saved chat. Reload it to retry, or start a new chat.', true);
+            }
+            submit.disabled = resumeId !== null;
+            if (!automatic) {
                 historyStatus.textContent = 'Could not reopen that chat. Select it again to retry.';
             }
+        } finally {
+            clearTimeout(deadline);
         }
     }
+
+    resumeRetry.addEventListener('click', () => {
+        if (resumeId !== null) void restoreConversation(resumeId, true, true);
+    });
 
     historyToggle.addEventListener('click', async () => {
         if (input.disabled) return;
@@ -355,7 +404,9 @@
         document.getElementById('agent-attachment-status').textContent = '';
         rememberDraft();
         messages.replaceChildren();
-        conversationId = null;
+        resumeId = null;
+        setActiveChat(null);
+        resumeMessage();
         hideHistory();
         suggestions.style.display = '';
         input.value = '';
@@ -635,7 +686,8 @@
             } finally {
                 uploadInput.value = '';
                 suggestions.inert = false;
-                uploadBtn.disabled = submit.disabled = clear.disabled = historyToggle.disabled = false;
+                uploadBtn.disabled = clear.disabled = historyToggle.disabled = false;
+                submit.disabled = transcriptRequest !== null || resumeId !== null;
                 input.focus();
             }
         });
@@ -644,7 +696,7 @@
     window.askAgent = async function (e) {
         e.preventDefault();
         const msg = input.value.trim();
-        if (!msg || submit.disabled) return false;
+        if (!msg || submit.disabled || transcriptRequest !== null || resumeId !== null) return false;
         hideHistory();
 
         addRow('user', escapeHtml(msg).replace(/\n/g, '<br>'));
@@ -680,7 +732,7 @@
                 signal: abort.signal
             });
             const data = await resp.json().catch(() => ({ error: 'The server returned an unreadable response.' }));
-            if (typeof data.conversation_id === 'string') conversationId = data.conversation_id;
+            if (isChatId(data.conversation_id)) setActiveChat(data.conversation_id);
             if (!resp.ok || data.error) {
                 failed = true;
                 thinking.className = 'agent-bubble agent-bubble--error';
@@ -712,5 +764,12 @@
         return false;
     };
 
+    try {
+        const saved = activeChatKey && sessionStorage.getItem(activeChatKey);
+        if (isChatId(saved)) {
+            resumeId = saved;
+            void restoreConversation(saved, true);
+        }
+    } catch (_) { /* Keep the ordinary History control available. */ }
 })();
 </script>

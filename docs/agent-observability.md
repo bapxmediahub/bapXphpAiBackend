@@ -275,10 +275,16 @@ References (patterns researched, not required installations):
 ## Follow-up contracts: context, action receipts, lifecycle and history
 
 - `contextForActor` authorizes the session first and supplies at most four prior
-  completed turns and an 8,000-byte JSON dialogue budget by default. Dialogue is
-  untrusted reference, not an instruction layer. Both agent prompts use it.
-  Ordered public product slugs are saved with a turn; ordinal follow-ups fetch
-  the current visible catalogue again instead of trusting historical prose.
+  successful turns and an 8,000-byte JSON dialogue budget by default. Both agent
+  prompts use that dialogue as untrusted reference. Product slugs come from
+  turns inside the selected dialogue budget, and current details require a live
+  scoped lookup. Enterprise can reuse the last successful report scope. Failed
+  attempts remain visible in history and traces.
+- Enterprise uses a session-scoped active chat reference to re-read its actor-owned
+  history. A missing or foreign chat returns the same 404 response, while a
+  temporarily unreadable chat returns 503. Pending requests keep their saved
+  replies visible and offer an explicit reload. Support keys its rendered
+  transcript to the server actor and session. New chat starts a separate thread.
 - `requestedCollection` recognizes explicit Tamil Ayyappa/festival aliases.
   Generic or tied festival matches ask the customer to choose a real published
   collection, rather than substituting unrelated products. This is tested alias

@@ -51,14 +51,15 @@ if(PHP_SAPI==='cli-server'){
         }
     }
     $last=$responses===[]?[]:reset($responses);
-    $owner=in_array($scenario,['owner','capability'],true);
-    $guest=!in_array($scenario,['owner','capability','customer','ticket'],true);
+    $owner=in_array($scenario,['owner','capability','owner_followup'],true);
+    $guest=!$owner&&!in_array($scenario,['customer','ticket'],true);
     $fail=static function(string $message):void{http_response_code(400);echo json_encode(['error'=>['message'=>$message]]);};
     if((!$owner&&in_array('order_count',$names,true))||($guest&&array_intersect(['own_order_status','own_ticket_status'],$names))){$fail('Role leak');return;}
     $call=static fn(string $name,array $args,string $id):array=>['functionCall'=>['name'=>$name,'args'=>(object)$args,'id'=>$id]];
     $choice=match($scenario){
         'aggregate','catalogue_wrong','catalogue_current'=>['public_catalogue_summary',[], 'total','catalogue'],
         'owner'=>['order_count',['period'=>'all_time'],'count','reporting'],
+        'owner_followup'=>['order_count',['from'=>'2024-01-03','to'=>'2024-01-07'],'count','reporting'],
         'customer'=>['own_order_status',[],'count','customer-policy'],
         'ticket'=>['own_ticket_status',[],'count','customer-policy'],
         'article'=>['read_published_article',['slug'=>'get-support'],'found','customer-policy'],
@@ -67,9 +68,17 @@ if(PHP_SAPI==='cli-server'){
         default=>null
     };
     $finish='STOP';
-    if($n===1&&str_starts_with($scenario,'catalogue_')
-        && !str_contains($wire,'There are currently 43 products published in the shop.')) {
-        $fail('Missing approved historical context for catalogue followup');return;
+    if ($n === 1 && (str_starts_with($scenario, 'catalogue_') || $scenario === 'owner_followup')) {
+        $prompt = $contents[0]['parts'][0]['text'] ?? '';
+        $hasGrounding = $scenario === 'owner_followup'
+            ? str_contains($prompt, 'The last delivered order report covered 3 to 7 January.')
+                && str_contains($prompt, 'Previous report: order_count, 2024-01-03 to 2024-01-07 inclusive.')
+            : str_contains($prompt, 'There are currently 43 products published in the shop.')
+                && str_contains($prompt, '"previous_public_product_slugs":["fixture-first"]');
+        if (!$hasGrounding || str_contains($prompt, 'Unsuccessful provider attempt.') || str_contains($prompt, '2024-01-08')) {
+            $fail('Unsuccessful attempts displaced verified follow-up context');
+            return;
+        }
     }
     if($scenario==='catalogue_stale') {
         $parts=[['text'=>'<final_answer>There are currently 43 products published in the shop.</final_answer>']];
@@ -110,6 +119,7 @@ if(PHP_SAPI==='cli-server'){
                 'aggregate','catalogue_current'=>'The catalogue contains '.$last['total'].' published products.',
                 'catalogue_wrong'=>'The catalogue contains '.($last['total']+1).' published products.',
                 'owner'=>'There are '.$last['count'].' dated order records in the requested period.',
+                'owner_followup'=>'There are '.$last['count'].' orders from '.$last['from'].' through '.$last['to'].'.',
                 'customer'=>'Your matching order count is '.$last['count'].'.',
                 'ticket'=>'Your matching ticket count is '.$last['count'].'.',
                 'policy','transient_continuation'=>$last['value'],
@@ -174,15 +184,16 @@ try{
         ['long_retry','support','guest','hi',null],
         ['schema_error','support','guest','hi',null],
     ]);
-    // These follow-ups exercise the real Support controller and its persisted
-    // conversation. The compatible wire fixture below bypasses that controller.
-    $catalogueCases=[
+    // Real controllers resume private saved chats after failed attempts. The
+    // compatible-provider wire fixture bypasses these controllers.
+    $followupCases=[
         ['catalogue_stale','support','guest','Is that published product count still correct?',null],
         ['catalogue_wrong','support','guest','Is that published product count still correct?','public_catalogue_summary'],
         ['catalogue_current','support','guest','Is that published product count still correct?','public_catalogue_summary'],
+        ['owner_followup','admin','admin','How many orders in that same period now?','order_count'],
     ];
     foreach(['google','compatible'] as $protocol)foreach(
-        $protocol==='google'?array_merge($cases,$catalogueCases):$cases as [$scenario,$surface,$role,$question,$tool]
+        $protocol==='google'?array_merge($cases,$followupCases):$cases as [$scenario,$surface,$role,$question,$tool]
     ){
         $env=['BAPX_MODEL_DRIVEN_FIXTURE'=>'1','BAPX_FIXTURE_ENDPOINT'=>'http://'.$address.'/'.$scenario,'BAPX_TEST_MODE'=>'1','BAPX_FIXTURE_PROTOCOL'=>$protocol]+getenv();
         $child=proc_open([PHP_BINARY,__DIR__.'/fixtures/model-driven-agent-turn.php',$scenario,$surface,$role,$question],[0=>['file','/dev/null','r'],1=>['pipe','w'],2=>['pipe','w']],$io,null,$env);
@@ -209,8 +220,14 @@ try{
         }
         foreach((array)$tool as $selected)if(!in_array($selected,array_column($turn['tools']??[],'name'),true))throw new RuntimeException("Missing selected tool: $selected");
         if(!empty($response['ticket_id']))throw new RuntimeException('Unapproved ticket creation');
+        if (str_starts_with($scenario, 'catalogue_') || $scenario === 'owner_followup') {
+            if (($result['history_preserved'] ?? false) !== true) throw new RuntimeException('Existing conversation history was rewritten or lost');
+        }
+        if ($scenario === 'owner_followup'
+            && (($result['status'] ?? 0) !== 200 || !str_contains($response['answer'] ?? '', '2024-01-03 through 2024-01-07'))) {
+            throw new RuntimeException('Owner follow-up did not rerun its tool for the last delivered report period');
+        }
         if(str_starts_with($scenario,'catalogue_')) {
-            if(($result['history_preserved']??false)!==true)throw new RuntimeException('Historical response was rewritten');
             if($scenario==='catalogue_current'){
                 if(($result['status']??0)!==200||!str_contains($response['reply']??'','0 published products'))
                     throw new RuntimeException('Matching fresh zero-product count was not delivered');

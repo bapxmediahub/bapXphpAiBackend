@@ -1899,6 +1899,8 @@ html:has(.site-search-popup[open]) { overflow: hidden; }
     overflow: hidden;
 }
 .support-panel__head { display: flex; align-items: center; justify-content: space-between; padding: var(--space-md); border-bottom: 1px solid var(--color-border); }
+.support-panel__head .support-panel__new { min-height:44px; padding:6px 8px; font-size:.8rem; }
+.support-panel[data-commerce-open="true"] .support-panel__new,.support-panel[data-enquiry-open="true"] .support-panel__new { display:none; }
 .support-panel__close { border: 0; background: transparent; font-size: 1.5rem; cursor: pointer; }
 .support-panel__body { max-height: 260px; overflow: auto; padding: var(--space-md); display: grid; gap: var(--space-sm); font-size: 0.9rem; }
 .support-panel__body p { margin: 0; padding: var(--space-sm); border-radius: var(--radius-md); background: var(--color-bg-alt); }

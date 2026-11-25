@@ -52,15 +52,15 @@ The same navigation group links to `/admin/agent/monitoring` and the AI Support 
 implements and authorizes a mutation. Draft cards are editable proposals and must say
 that nothing changes until the owner reviews and confirms.
 
-Test rapid history switching, New chat during a pending read, keyboard mention selection mid-sentence, and successful and rejected inline uploads. Verify the draft and active conversation after each action. Use isolated owner sessions and fixture media for these checks.
+Test rapid history switching, New chat during a pending read, keyboard mention selection mid-sentence, and successful and rejected inline uploads. Verify that a session-scoped chat reloads from server history before sending a follow-up, including temporary failure, an unfinished request and a changed owner session. Use synthetic chats and fixture media for these checks.
 
 ### Implementation Pattern
 
 The admin-agent flow:
 1. `GET /admin/agent` calls `AdminController::agent()` and renders the page.
-2. `POST /admin/agent/ask` calls `AdminController::agentAsk()`, with admin-only `EnterpriseToolRegistry` named read-only queries, local deterministic aggregates and server-owned follow-up report dates.
+2. `POST /admin/agent/ask` calls `AdminController::agentAsk()`. The model selects named read-only queries through `EnterpriseToolRegistry`, and PHP supplies actor-owned prior report dates.
 3. `SecretService` supplies provider/model settings. `AiClient` handles provider failover and bounded tools.
-4. `AgentConversationService` saves a single private JSON file per chat. The `History` and `New chat` controls use authenticated `/admin/agent/history` routes to reopen only this admin's sessions; the frontend never reads the raw storage files.
+4. `AgentConversationService` saves a single private JSON file per chat. The browser stores one opaque active chat ID under its session-scoped key and restores it through the authenticated history route. Use History to switch threads or New chat to begin one.
 5. The controller returns JSON; `views/admin/agent.php` safely renders replies, source links, drafts, traces and history.
 
 The response may include a secret-safe `run` summary: route, total elapsed time,
