@@ -178,6 +178,8 @@ $pdo->exec('CREATE TEMPORARY TABLE settings (id VARCHAR(36) PRIMARY KEY, _data J
 $pages = new \App\Services\AuthoredPageService($store);
 $initial = ['slug'=>'guide', 'title'=>'A guide', 'content'=>'Private phrase', 'status'=>'draft', 'expected_revision'=>'0'];
 $pages->save($initial);
+$settingsCreated = $store->query('SELECT _created_at FROM settings WHERE id = ?', ['pg:guide'])[0]['_created_at'];
+check(str_ends_with($settingsCreated, '+05:30'), 'Campaign SQL normalization is scoped away from other records');
 $createdRevision = $pages->find('guide')['revision'];
 check($pages::validRevision($createdRevision), 'Creating the page initializes its revision');
 check($pages->findPublic('guide') === null && $pages->published('Private phrase') === [], 'Draft excluded from all public reads');

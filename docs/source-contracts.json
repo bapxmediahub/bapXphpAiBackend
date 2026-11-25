@@ -18,14 +18,14 @@
             "review_note": "Reviewed the campaign additions against the order and catalogue contracts; campaign validation and owner CRM records do not enter commerce order, checkout or revenue processing."
         },
         "content": {
-            "source_sha256": "212b011850f629622f93fb4b74088f48aa1a95ee8b60cceda9d8db31858aa944",
+            "source_sha256": "36eed5968658c8b5e35dfdd1028dba9999e555335b39f959185c22bec81a9415",
             "references_sha256": "ed431946047cc8f0b267edd928ec8d38a59571da585e175c8c81a90a3634ce09",
-            "review_note": "Verified the campaign Contact and Inbox projection retains its submitted creation offset in JSON and binds that same instant as UTC in both SQL datetime columns."
+            "review_note": "Verified campaign provenance gates SQL UTC timestamp normalization for Contact and Inbox records and the original JSON instant remains available to owner views."
         },
         "foundation": {
-            "source_sha256": "d0c5296111a3a22bf93bbf4a7cbc486a38c060ef6cca0a0a4dda49855ac0071a",
+            "source_sha256": "92bff954bec5748362d195aa1e98e75b309669bf9e47b92810ee3e6a32f21650",
             "references_sha256": "d662c82d5107cfdb842c2481427c6e4cf8c57154ff87dbc37b0ef533adc45622",
-            "review_note": "Checked the portable UTC datetime bindings against the documented JSON storage and hosted database boundary. The database fixture still forces Inbox failure and asserts Contact rollback."
+            "review_note": "Checked scoped campaign DATETIME normalization, original timestamps on other records, and continued rollback and replay verification on the hosted database fixture."
         },
         "google-tags": {
             "source_sha256": "366fdab983979cc3a1fec22fb6da4afb61072d6fd24cd0ba2271d67a0c063019",
@@ -68,9 +68,9 @@
             "review_note": "Checked that the merged ProjectMapService declares owner analytics and public authored enquiry separately from the fixed public MCP allowlist."
         },
         "remote-commerce": {
-            "source_sha256": "09326a265252b51c9c3b3309cd8fb91b925fcdfa7498ea7eeb4518454a7f70a2",
+            "source_sha256": "838fc2e55edce98c70da808104c0630fe85bc9d2b3dff94d5d531fa980297bf4",
             "references_sha256": "248cb29bdb4f8186da9b74c3e14cfe0742e7a6431faa623bd7c480032e63d472",
-            "review_note": "Checked direct database timestamp bindings after normalization and preserved original JSON on the shared upsert and insert-if-absent paths used by remote commerce."
+            "review_note": "Checked the SQL date conversion is scoped to campaign Contact and Inbox rows. Shared checkout and order record bindings preserve existing timestamp values."
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",

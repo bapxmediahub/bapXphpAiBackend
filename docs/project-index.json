@@ -2095,7 +2095,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 821
+            "line": 827
         },
         {
             "from": "service:DatabaseService",
@@ -2103,7 +2103,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 838
+            "line": 844
         },
         {
             "from": "service:DatabaseService",
@@ -2111,7 +2111,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 764
+            "line": 770
         },
         {
             "from": "service:DatabaseService",
@@ -2135,7 +2135,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 740
+            "line": 621
         },
         {
             "from": "service:DatabaseService",
@@ -2143,7 +2143,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 813
+            "line": 819
         },
         {
             "from": "service:DatabaseService",
@@ -2151,7 +2151,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 833
+            "line": 839
         },
         {
             "from": "service:DatabaseService",
@@ -2183,7 +2183,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 713
+            "line": 719
         },
         {
             "from": "service:DatabaseService",
