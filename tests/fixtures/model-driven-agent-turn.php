@@ -41,6 +41,7 @@ namespace App\Services {
     final class SecretService {
         public const PRIMARY_MODEL='gemma-4-31b-it', FALLBACK_MODEL='gemma-4-26b-a4b-it';
         public const GOOGLE_MODELS=[self::PRIMARY_MODEL,self::FALLBACK_MODEL];
+        public const OPENROUTER_MODEL='openrouter/free';
         public static function validModelId(string $model): bool {
             return preg_match('~^[a-zA-Z0-9][a-zA-Z0-9_./:-]{0,119}$~D', $model) === 1;
         }
@@ -53,7 +54,7 @@ namespace App\Services {
             $profile = getenv('BAPX_FIXTURE_PROTOCOL');
             $google = $connection('google', $profile === 'google_fallback' ? self::FALLBACK_MODEL : self::PRIMARY_MODEL, $bases['google']);
             if ($profile === 'google' || $profile === 'google_fallback') return [$google];
-            if ($profile === 'openrouter') return [$connection('openrouter', 'openrouter/free', $bases['openrouter'])];
+            if ($profile === 'openrouter') return [$connection('openrouter', self::OPENROUTER_MODEL, $bases['openrouter'])];
             $model = match ($profile) {
                 'openai' => 'gpt-5',
                 'openai_legacy' => 'gpt-4o',

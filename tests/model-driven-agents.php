@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 // Scripted model decisions over real HTTP. Never uses real keys or live records.
+const OPENROUTER_FREE_MODEL = 'google/gemma-4-26b-a4b-it:free';
+const OPENROUTER_CHANGED_MODEL = 'google/gemma-4-31b-it:free';
 if(PHP_SAPI==='cli-server'){
     if(getenv('BAPX_MODEL_DRIVEN_FIXTURE')!=='1'){http_response_code(404);return;}
     header('Content-Type: application/json');
@@ -18,7 +20,7 @@ if(PHP_SAPI==='cli-server'){
     $r=json_decode($wire,true,512,JSON_THROW_ON_ERROR);
     $expectedModels = match ($provider) {
         'google' => ['gemma-4-31b-it','gemma-4-26b-a4b-it'],
-        'openrouter' => ['openrouter/free'],
+        'openrouter' => ['openrouter/free', OPENROUTER_FREE_MODEL],
         'openai' => ['gpt-5','gpt-4o','gpt-6-luna'],
         'openai_compatible' => ['fixture-model'],
         default => [],
@@ -55,7 +57,7 @@ if(PHP_SAPI==='cli-server'){
     }
     $names = array_column(array_column($tools, 'function'), 'name');
     $contents = $r['messages'];
-    $owner=in_array($scenario,['owner','capability','owner_followup','slash_capabilities','slash_help','direct_order_total','missing_finish'],true);
+    $owner=in_array($scenario,['owner','capability','owner_followup','slash_capabilities','slash_help','direct_order_total','missing_finish','router_changed_answer'],true);
     $guest=!$owner&&!in_array($scenario,['customer','ticket'],true);
     $hasHistory = str_starts_with($scenario, 'catalogue_') || $scenario === 'owner_followup';
     $instructionRole = $luna || ($r['model'] ?? '') === 'gpt-5' ? 'developer' : 'system';
@@ -107,6 +109,10 @@ if(PHP_SAPI==='cli-server'){
     }
     $n = 1 + 2 * count(array_filter(array_slice($contents, count($expectedRoles)),
         static fn(array $message): bool => ($message['role'] ?? null) === 'assistant'));
+    if ($router && $r['model'] !== ($n === 1 ? 'openrouter/free' : OPENROUTER_FREE_MODEL)) {
+        $fail('OpenRouter continuation did not request its selected free model');
+        return;
+    }
     if (($r['tool_choice'] ?? null) !== ($n === 9 ? 'none' : 'auto')) {
         $fail('Unexpected tool choice for the current round');
         return;
@@ -178,9 +184,9 @@ if(PHP_SAPI==='cli-server'){
     ];
     $directChoice=match($scenario){
         'direct_shop_total'=>['public_catalogue_summary',[],'catalogue',['total'=>0]],
-        'direct_delivery_charge'=>['public_policy',['key'=>'shipping_cost'],'customer-policy',
-            ['value'=>'Shipping is calculated at checkout.']],
-        'direct_order_total'=>['order_count',['period'=>'all_time'],'reporting',
+        'direct_delivery_charge','router_missing_model','router_paid_model','router_changed_tool'=>
+            ['public_policy',['key'=>'shipping_cost'],'customer-policy',['value'=>'Shipping is calculated at checkout.']],
+        'direct_order_total','router_changed_answer'=>['order_count',['period'=>'all_time'],'reporting',
             ['from'=>'0001-01-01','count'=>0,'undated_excluded'=>0]],
         default=>null,
     };
@@ -257,10 +263,14 @@ if(PHP_SAPI==='cli-server'){
             && in_array($skill, array_column($last['runtime_guidance'] ?? [], 'skill'), true)) {
             $answer = match ($scenario) {
                 'direct_shop_total' => 'The catalogue contains '.$last['total'].' published products.',
-                'direct_delivery_charge' => $last['value'],
+                'direct_delivery_charge','router_changed_tool' => $last['value'],
                 'direct_order_total' => 'There are '.$last['count'].' dated order records across all statuses.',
+                'router_changed_answer' => 'fixture-continued-on-wrong-model',
             };
-            $parts = [['text'=>'<final_answer>'.$answer.'</final_answer>']];
+            // Both forms of a mismatched 200 response must stop the turn.
+            $parts = $scenario === 'router_changed_tool'
+                ? [$call($tool, $args, 'unexpected-second-business')]
+                : [['text'=>'<final_answer>'.$answer.'</final_answer>']];
         } else {
             $fail('Initially advertised business lookup did not return its scoped facts and guidance in one call');
             return;
@@ -311,7 +321,16 @@ if(PHP_SAPI==='cli-server'){
     if ($scenario !== 'missing_finish') {
         $choice['finish_reason'] = $calls !== [] && $scenario !== 'stopped_tool' ? 'tool_calls' : $finish;
     }
-    echo json_encode(['model'=>$r['model'],'choices'=>[$choice]], JSON_THROW_ON_ERROR);
+    $reply = ['choices'=>[$choice]];
+    if ($scenario !== 'router_missing_model') {
+        $reply['model'] = match (true) {
+            $scenario === 'router_paid_model' => 'google/gemma-4-26b-a4b-it',
+            $n > 1 && in_array($scenario, ['router_changed_tool','router_changed_answer'], true) => OPENROUTER_CHANGED_MODEL,
+            $router => OPENROUTER_FREE_MODEL,
+            default => $r['model'],
+        };
+    }
+    echo json_encode($reply, JSON_THROW_ON_ERROR);
     return;
 }
 if(PHP_SAPI!=='cli')exit;
@@ -389,7 +408,15 @@ try{
         'openai_legacy' => [$followupCases[3]],
         'openai_luna' => [$cases[9], $followupCases[3]],
         'compatible_modern' => [['modern_policy','support','guest','How is shipping calculated?','public_policy']],
-        'openrouter' => [...$textAndTools, ['router_policy','support','guest','How is shipping calculated?','public_policy']],
+        'openrouter' => [
+            ...$textAndTools,
+            ['router_policy','support','guest','How is shipping calculated?','public_policy'],
+            ['transient_continuation','support','guest','How is shipping calculated?','public_policy'],
+            ['router_missing_model','support','guest','What is the delivery charge?',null],
+            ['router_paid_model','support','guest','What is the delivery charge?',null],
+            ['router_changed_tool','support','guest','What is the delivery charge?','public_policy'],
+            ['router_changed_answer','admin','admin','How many orders in total?','order_count'],
+        ],
     ];
     foreach ($profiles as $protocol=>$requests) foreach ($requests as [$scenario,$surface,$role,$question,$tool]) {
         $env=['BAPX_MODEL_DRIVEN_FIXTURE'=>'1','BAPX_FIXTURE_ENDPOINT'=>'http://'.$address.'/'.$scenario,'BAPX_TEST_MODE'=>'1','BAPX_FIXTURE_PROTOCOL'=>$protocol]+getenv();
@@ -406,10 +433,13 @@ try{
             echo "PASS $protocol/$surface/$scenario: denied before provider transfer\n";
             continue;
         }
-        $invalidChatCompletion = in_array($scenario,['stopped_tool','object_tool_batch','missing_finish','oversized_signature'],true);
-        $expected=$invalidChatCompletion||in_array($scenario,['outage','duplicate','truncated','unfinished','quota','long_retry','schema_error','catalogue_stale','catalogue_wrong','catalogue_locked'],true)?'error':'model';
+        $invalidChatCompletion = in_array($scenario, [
+            'stopped_tool','object_tool_batch','missing_finish','oversized_signature','router_missing_model','router_paid_model',
+        ], true);
+        $routerChangedModel = in_array($scenario, ['router_changed_tool','router_changed_answer'], true);
+        $expected=$invalidChatCompletion||$routerChangedModel||in_array($scenario,['outage','duplicate','truncated','unfinished','quota','long_retry','schema_error','catalogue_stale','catalogue_wrong','catalogue_locked'],true)?'error':'model';
         $rounds=match($scenario){'mixed'=>3,'denied'=>2,'unfinished','transient_continuation','catalogue_fallback'=>5,
-            'transient_start','slash_help','direct_shop_total','direct_delivery_charge','direct_order_total'=>2,
+            'transient_start','slash_help','direct_shop_total','direct_delivery_charge','direct_order_total','router_changed_tool','router_changed_answer'=>2,
             'outage'=>6,default=>$tool!==null?4:1};
         if($exit!==0||($turn['outcome']??null)!==$expected||count($turn['model_attempts']??[])!==$rounds||($turn['turn_id']??null)!==($response['turn_id']??null)){
             throw new RuntimeException("$scenario/$surface: unexpected model lifecycle: ".substr($raw,0,2500)." STDERR: ".substr($err,0,1000));
@@ -439,12 +469,20 @@ try{
         if ($scenario === 'catalogue_fallback') {
             $providers = [$provider, ...array_fill(0, $rounds - 1, 'google')];
             $models = [$model, ...array_fill(0, $rounds - 1, 'gemma-4-31b-it')];
+        } elseif ($protocol === 'openrouter') {
+            $models = ['openrouter/free', ...array_fill(0, $rounds - 1, OPENROUTER_FREE_MODEL)];
         }
         if (array_column($attempts, 'provider') !== $providers || array_column($attempts, 'model') !== $models) {
             throw new RuntimeException('Recorded provider/model sequence does not match the configured connection');
         }
         if ($invalidChatCompletion && (($measured['http_status'] ?? null) !== 200 || ($turn['tools'] ?? []) !== [])) {
             throw new RuntimeException('Malformed successful Chat Completions response must fail before tool dispatch');
+        }
+        if ($routerChangedModel && (array_column($attempts, 'http_status') !== [200, 200]
+            || ($attempts[1]['response_model'] ?? null) !== OPENROUTER_CHANGED_MODEL
+            || count($turn['tools'] ?? []) !== 1
+            || str_contains($raw, 'fixture-continued-on-wrong-model'))) {
+            throw new RuntimeException('OpenRouter accepted a tool or answer from a changed continuation model');
         }
         if (($measured['connect_ms'] ?? 0) <= 0 || ($measured['ready_ms'] ?? 0) <= 0 || ($measured['first_byte_ms'] ?? 0) <= 0) {
             throw new RuntimeException('Loopback request milestones missing from private attempt evidence');

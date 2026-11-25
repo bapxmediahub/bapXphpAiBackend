@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "187ce42004dc5758210412e045890ee928d6dbc387b15e69c9648ea1babb07b9",
-            "references_sha256": "caf9db085b2a7597df8c67b49328ee1d7779599c4166ee24693e1e2d8febae70",
-            "review_note": "Reviewed the common endpoint exchange, exact hosted Gemma thinking level, provider continuation caps, authenticated diagnostics and tool correlation."
+            "source_sha256": "460fbd20a91cbb58e773d3b1ed51983e83050f311e6996307f914f081dfa9618",
+            "references_sha256": "04f7edb2138d011e77d077c6c49d54cda2639c071da20d438e66982421f6c252",
+            "review_note": "Verified the hosted Gemma thinking option and the exact free model identifier across each tool continuation on the shared Chat Completions transport."
         },
         "auth": {
             "source_sha256": "c34a5b34bc904f36cda184c26113f91e2cf36afa2b506217d1f74e22e9e0cefd",

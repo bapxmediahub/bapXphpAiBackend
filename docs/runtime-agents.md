@@ -248,6 +248,12 @@ two hosted Gemma 4 models through the compatible endpoint's
 their provider defaults. [Google compatibility options](https://aistudio.google.com/docs/openai#thinking) ·
 [Hosted Gemma model settings](https://gemma.ai/deployment/gemini-api/#thinking).
 
+The OpenRouter Free alias selects the initial model. Before executing a tool,
+the agent requires a concrete `:free` model ID in the Chat Completions response
+and uses that ID for continuation on the same connection. A changed model in
+a continuation response ends the turn before any additional tool executes.
+[Chat Completions response fields](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create).
+
 OpenAI-compatible text endpoints are not automatically tool-capable models.
 Each enabled model needs a successful live tool round trip. The portable
 `tool_search` and `read_runtime_skill` functions are application-owned, not the

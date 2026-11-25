@@ -341,6 +341,8 @@ final class AiClient
         $status = 0;
         $body = false;
         foreach ($models as $index => $model) {
+            $requestModel = $model;
+            $usesFreeRouter = $usesOpenRouterContinuation && $model === SecretService::OPENROUTER_MODEL;
             $messages = $dialogue;
             if ($prompt instanceof AgentModelTurn) {
                 // OpenAI documents developer messages for o1 and newer models.
@@ -360,7 +362,7 @@ final class AiClient
                     $tools->declarations()
                 );
                 $advertised=array_map(static fn(array $declaration):string=>$declaration['function']['name'],$declarations);
-                $payload = ['model' => $model, 'messages' => $messages];
+                $payload = ['model' => $requestModel, 'messages' => $messages];
                 $payload[$tokenField] = $maxTokens;
                 if ($usesGoogleContinuation && isset($config['temperature'])) {
                     $payload['temperature'] = $config['temperature'];
@@ -384,12 +386,16 @@ final class AiClient
                 $hasAlternate = $hasModelAlternate || ($round === 0 && $laterConnection
                     && $this->toolCalls === 0);
                 $wire=json_encode($payload,JSON_THROW_ON_ERROR);
-                $body=$this->postWithRetries($url,$wire,$headers,$status,$model,$deadline,$hasAlternate,$options);
+                $body=$this->postWithRetries($url,$wire,$headers,$status,$requestModel,$deadline,$hasAlternate,$options);
                 if ($status !== 200 || $body === false) {
                     if ($hasModelAlternate && $this->waitForFailover($status, $deadline, $index)) break;
                     return $this->failureMessage($status, $body);
                 }
-                $choices = json_decode($body)->choices ?? null;
+                $response = json_decode($body);
+                if ($usesFreeRouter && $round > 0 && ($response->model ?? null) !== $requestModel) {
+                    return $this->incompleteResponse();
+                }
+                $choices = $response->choices ?? null;
                 $choice = is_array($choices) ? ($choices[0] ?? null) : null;
                 $message = $choice->message ?? null;
                 $wireCalls = $message->tool_calls ?? [];
@@ -421,6 +427,14 @@ final class AiClient
                 if(count($calls)>self::MAX_TOOL_CALLS_PER_ROUND||!self::validCallBatch($calls,$seenCalls)) {
                     $this->failureCategory = 'provider_response';
                     return 'AI request failed: the model returned an invalid set of lookups.';
+                }
+                if ($usesFreeRouter && $round === 0) {
+                    $resolvedModel = $response->model ?? null;
+                    if (!is_string($resolvedModel) || !SecretService::validModelId($resolvedModel)
+                        || !str_contains($resolvedModel, '/') || !str_ends_with($resolvedModel, ':free')) {
+                        return $this->incompleteResponse();
+                    }
+                    $requestModel = $resolvedModel;
                 }
                 $assistant = ['role' => 'assistant', 'tool_calls' => []];
                 if (array_key_exists('content', $message) && (is_string($message['content']) || $message['content'] === null)) {
