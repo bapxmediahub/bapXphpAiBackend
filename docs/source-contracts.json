@@ -18,14 +18,14 @@
             "review_note": "Reviewed the campaign additions against the order and catalogue contracts; campaign validation and owner CRM records do not enter commerce order, checkout or revenue processing."
         },
         "content": {
-            "source_sha256": "f346ebca1f78094f1f6a5357c39700e690bbd80e42b745b21f1adfce090f3116",
-            "references_sha256": "903ad6b4c0ef2340017b5ef3bb03b634b428ebad7d3f356070731e40be75f262",
-            "review_note": "Checked the published form definition, header and Markdown reading column, native status focus and named error links against the campaign guide and its actual view and HTTP regressions."
+            "source_sha256": "212b011850f629622f93fb4b74088f48aa1a95ee8b60cceda9d8db31858aa944",
+            "references_sha256": "ed431946047cc8f0b267edd928ec8d38a59571da585e175c8c81a90a3634ce09",
+            "review_note": "Verified the campaign Contact and Inbox projection retains its submitted creation offset in JSON and binds that same instant as UTC in both SQL datetime columns."
         },
         "foundation": {
-            "source_sha256": "f12f804d0d2dec9e33d089959f57bc21aeb3f75e21005af0d7cd9a9e6ce95194",
+            "source_sha256": "d0c5296111a3a22bf93bbf4a7cbc486a38c060ef6cca0a0a4dda49855ac0071a",
             "references_sha256": "d662c82d5107cfdb842c2481427c6e4cf8c57154ff87dbc37b0ef533adc45622",
-            "review_note": "Reviewed the reference profile and private owner routes with the campaign HTTP controller and database-host mutations. The existing permissions, publication revisions and traffic admission remain applicable."
+            "review_note": "Checked the portable UTC datetime bindings against the documented JSON storage and hosted database boundary. The database fixture still forces Inbox failure and asserts Contact rollback."
         },
         "google-tags": {
             "source_sha256": "366fdab983979cc3a1fec22fb6da4afb61072d6fd24cd0ba2271d67a0c063019",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed the Owner UI skill and shared upload lock documentation against the media source. Campaign layout renders the same owned image before the enquiry form."
         },
         "operator-help": {
-            "source_sha256": "8c17a137d57840514d3e1c9fcee4089459b4dc20c4bf0279f1a98c98c34e2c0f",
+            "source_sha256": "254709edb9415a260a845d506fe33233e747143ad37a9aa3c425942159132eca",
             "references_sha256": "f8665f2397dd7bcd2d7dd9376123fd10fb26f09c6a8bb5b7934c28771331a17f",
-            "review_note": "Checked updated Analytics and provider navigation separately from the Pages guide and related Inbox evidence. The campaign editor and disabled preview follow the same owner forms."
+            "review_note": "Compared the campaign Inbox proof and mark-read flow against the owner guide. Saved JSON keeps the original date and offset shown on owner routes."
         },
         "public-mcp": {
             "source_sha256": "c5a5fe7a8f6708e210a95964afd24f5f47c9b5524ee392fef57cf3b422ec41d2",
@@ -68,9 +68,9 @@
             "review_note": "Checked that the merged ProjectMapService declares owner analytics and public authored enquiry separately from the fixed public MCP allowlist."
         },
         "remote-commerce": {
-            "source_sha256": "0bd5a027bb0d148f34355260946bfc05cf3b23555dcbe6620e43b55120023ba9",
+            "source_sha256": "09326a265252b51c9c3b3309cd8fb91b925fcdfa7498ea7eeb4518454a7f70a2",
             "references_sha256": "248cb29bdb4f8186da9b74c3e14cfe0742e7a6431faa623bd7c480032e63d472",
-            "review_note": "Compared the reconciled Design and Checkout guidance with the storefront cart and checkout controls. Campaign admissions retain their dedicated Contact and Inbox transaction."
+            "review_note": "Checked direct database timestamp bindings after normalization and preserved original JSON on the shared upsert and insert-if-absent paths used by remote commerce."
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",

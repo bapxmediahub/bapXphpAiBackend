@@ -243,16 +243,24 @@ check($store->saveCampaignLead($leadId, 'campaign', $revision, $answers) === 're
 $contact = $store->find('contact_submissions', $leadId);
 $inbox = $store->find('mail_inbox', 'in_'.$leadId);
 check($contact['name'] === 'Fixture visitor' && $contact['email'] === 'fixture@example.invalid', 'Contacts retain basic identity');
+$created = DateTimeImmutable::createFromFormat(DateTimeInterface::ATOM, $contact['created_at']);
+check($created !== false && $created->format('P') === '+05:30' && $inbox['created_at'] === $contact['created_at'],
+    'Both JSON records retain the original timestamp and its offset');
+$utcCreated = gmdate('Y-m-d H:i:s', $created->getTimestamp());
 foreach (['contact_submissions'=>$leadId, 'mail_inbox'=>'in_'.$leadId] as $table=>$id) {
     $timestamps = $store->query("SELECT _created_at, _updated_at FROM $table WHERE id = ?", [$id])[0];
-    check(strtotime($timestamps['_created_at']) > 0 && $timestamps['_created_at'] === $timestamps['_updated_at'],
-        'The database stores valid creation and update times on both records');
+    check($timestamps['_created_at'] === $utcCreated && $timestamps['_updated_at'] === $utcCreated,
+        'The database stores the same UTC instant in both timestamp columns');
 }
 check($inbox['source_id'] === $leadId && $inbox['from_email'] === $contact['email'], 'Inbox retains the existing contact source contract');
 check($contact['campaign_slug'] === 'campaign' && $inbox['campaign_slug'] === 'campaign'
     && $contact['campaign_revision'] === $revision && $inbox['campaign_revision'] === $revision,
     'Both owner records retain bounded publication provenance');
 $store->upsert('mail_inbox', ['id'=>'in_'.$leadId, 'status'=>'read']);
+$updated = $store->query('SELECT _created_at, _updated_at FROM mail_inbox WHERE id = ?', ['in_'.$leadId])[0];
+check($updated['_created_at'] === $utcCreated && $updated['_updated_at'] >= $utcCreated
+    && $store->find('mail_inbox', 'in_'.$leadId)['created_at'] === $contact['created_at'],
+    'Marking the Inbox record read updates the SQL timestamp and preserves creation time and offset');
 check($store->saveCampaignLead($leadId, 'campaign', $revision, array_replace($answers, ['detail_2'=>'Changed on retry'])) === 'received',
     'Retry acknowledges the original receipt');
 check($store->find('contact_submissions', $leadId) === $contact && $store->find('mail_inbox', 'in_'.$leadId)['status'] === 'read',
