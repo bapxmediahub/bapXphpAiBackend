@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "f12b24e4feac798f15606827d05005703e3d4491fd0b0d9c152500940d707d0e",
-            "references_sha256": "08b82bcb3b80fd899b7157991a7b4e2812c2260bce4f1bb9725eb576b191c309",
-            "review_note": "Cross-checked bounded ready-model waiting and exact provider hold timing against runtime and monitoring. Reviewed the merged OpenAI response shape and model-specific Luna setting, including tool continuation lock and unchanged diagnostics bypass."
+            "source_sha256": "bde2bde8a9de8bf32dc819c741e87a13e30ec696f95f2049814fee7028c63a73",
+            "references_sha256": "712cfa82eeaf1799825bf88c52ccd4fc11eb229ca750401d97e1d77bbd037bbb",
+            "review_note": "Reviewed the merged operator monitoring and provider recovery references. The published analytics group and validated short-hold behavior match the source, and no request or provider secrets enter navigation or review evidence."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -23,14 +23,14 @@
             "review_note": "Reviewed published Markdown guides, search navigation and module filters against the merged catalogue and account source."
         },
         "foundation": {
-            "source_sha256": "b8e8e05e07c45c8a482066602a139279a73693f0ceca2d1e4b1405eb12d01686",
+            "source_sha256": "7d10a0293ed9e27d0d8b5e6b87e2e14ac904e882209495e278a0bac35aec7782",
             "references_sha256": "6eba6651fd8e747d8053034a7812f9d41e6dba5a405bc1d1ed669556c8f2474b",
-            "review_note": "Checked that the new option stays in the existing encrypted Integrations record and both agent surfaces reuse their existing shared PHP transport and actor-scoped tool policy."
+            "review_note": "Rechecked architecture, backend evidence and hosted route boundaries after integrating the provider config change. Analytics continues to read existing aggregates and carries explicit unavailable states."
         },
         "google-tags": {
-            "source_sha256": "a02edc85b6bd4cc5f95748217edaf7ea3fae53a6d67edd0098c99848290122d8",
-            "references_sha256": "d4b4260ffa9152b4e1ce2693cab26a998376cf85e6265c906727a56d7148e3c7",
-            "review_note": "Checked the shared Integrations reference. The Luna example applies exclusively to Chat Completions and the Google tags and OAuth guidance remains accurate."
+            "source_sha256": "4834fd90479519dba801e19dbd3c1e434d62cf7cb6a4915eed9905f1c21bb8b5",
+            "references_sha256": "ac5f69a9cfd73428a1702be69cd944a1ee4f8ed3211c040ed755356134044065",
+            "review_note": "Checked the dashboard and Site analytics links against the Google reporting and PageSpeed guides. The views expose the existing connection, data window and unavailable states, and the Luna example applies to the separate AI connection."
         },
         "http-errors": {
             "source_sha256": "63602cadbe59868b0d25a1b00729a589e75d1b31c6ea3a1b25c1e5a46fd06d50",
@@ -38,39 +38,39 @@
             "review_note": "Compared the layout-specific title assignment with the request-error boundary. Website error status, sanitized error text and public not-found rendering follow their existing handlers."
         },
         "interface": {
-            "source_sha256": "27c32323b787b7174be1178612751c8a93a9e2506d43efaf7b9f53a86e084218",
-            "references_sha256": "a91a95841dc182236befb1ff651bb22b318c92a7e4e5fd8adac315a9e16cbb9f",
-            "review_note": "Verified the labeled token-field selector in the existing AI settings form at 1280px and 375px and checked that its selection is present in the scoped save payload."
+            "source_sha256": "738e38a60e1cf8946e57026804877aec36c9effa52f9f190db1702b5f8a695a0",
+            "references_sha256": "53cc2ed21de9291d5d1d5288ff06d8e236f6f342f6d155e3b695151676d4e235",
+            "review_note": "Reconciled dashboard, owner navigation and integration views against Design and recent UI contracts. The named workspace stays deployment-profile based, and no heading or permission is duplicated."
         },
         "mail": {
-            "source_sha256": "6895291447775bb17e9bef6c3d38d388ed65b3f5985b4c79bc71a9b4fa222c16",
+            "source_sha256": "20e83e649ed008a9061724716681cff8a4c7888b7e5520459aed8843abdc5cda",
             "references_sha256": "903e7da848c1e0472ce9a1823b94afc21004e564d12041ee0456918176a6cc72",
-            "review_note": "Reviewed Support controller failure and replay handling against email configuration and ticket boundaries. Verified outbound mail and persisted receipt handling remain separate from chat presentation."
+            "review_note": "Checked the two changed AdminController rendering paths against owner email and delivery-state guidance. Queue and mailbox behavior continues through the existing mail actions."
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
-            "references_sha256": "0b4814b02f21a481f4cb06d148700595ebfa01586ed4388f52bdf093226b61d9",
-            "review_note": "Checked that the endpoint example and supported model guidance change only the existing AI connection documentation. The local reporting client setup remains accurate."
+            "references_sha256": "73c4e7ed550ac139d52f0e560ab34a74738e8f4aa2ae6fc87c9e635c9dcd4d43",
+            "review_note": "Checked the merged Integrations guide against the local MCP client controller and form. The owner issues and revokes a paid-sales grant, and the trusted STDIO client receives it through its process environment."
         },
         "media": {
             "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
-            "references_sha256": "34433348ceb97accb0aea9b04f930b1ec0936825154d70c9ae872f155e0d2cbd",
-            "review_note": "Cross-checked the revised owner UI skill with the current media selection, confirmation and metadata flows. The existing media documentation still describes those operations."
+            "references_sha256": "743e6fad151e2f5729436c3d42b7a23bbd7b1ccde63ec7b26823c4e0cb505c95",
+            "review_note": "Reviewed the owner skill changes against media selection, deletion and metadata guidance. The new analytics section describes navigation and owner counts, and the media controls follow their documented path."
         },
         "operator-help": {
-            "source_sha256": "afa0cc0daae802fcfdd02fc2641fd6c25cc7c0a5f87a7924080f563e435b5b03",
-            "references_sha256": "c4f92ef1a785d3800380a6878286c4fec17e3c8f7e377d248b5f4f00bbc419c0",
-            "review_note": "Checked the owner settings guide against the actual Integrations controls, provider-plan toggles, model selector and exact-target text/tools diagnostic."
+            "source_sha256": "711ba481e7a1209bea63a8890341fee1c3a3d64e353992e78d5e4e09046f56f1",
+            "references_sha256": "9c949b4806f5ffa9c5ff122c863e4b2af50516fff6d0ea5e6201d543c147b4a3",
+            "review_note": "Reviewed the reconciled settings and owner docs after the endpoint change. Agent monitoring, site analytics, and commerce are navigable independently while provider configuration and scopes stay in Integrations."
         },
         "public-mcp": {
-            "source_sha256": "234155f55b0f66f669f6422a85acc30a6a59ebf216d8f682d7a212cd01ee7358",
+            "source_sha256": "6855ccd4ae97d341559568e5e6799115f860d8bed5216f003680919a474ab934",
             "references_sha256": "d1e0824e500f825020b2cccfaad7fd435a8fefbe73d61e1b5f05fd54fed0b829",
-            "review_note": "Checked the rendered Support enquiry controls against the current public MCP and A2UI documentation. Focus scrolling keeps the existing tool and submission contracts."
+            "review_note": "Cross-checked the updated route associations with Public MCP and A2UI guidance. The moved storefront evidence is rendered through the authenticated Dashboard and the published contracts stay scoped."
         },
         "remote-commerce": {
             "source_sha256": "d4727219602e3533680fbc91389cb2648ede2b15ef7dfa8ea866f2ed8bcd25c9",
-            "references_sha256": "3855f1bbcafb7e5178cc56306a1909c6b074172af1cc6669040a9cec5c6944fc",
-            "review_note": "Reviewed the shared SecretsService save path and remote checkout references. Token-field validation applies only to the AI form field and leaves payment and checkout credential fields on their existing path."
+            "references_sha256": "1b5573df9e0031b30d2aff8a41f9b249a03ed67030455440ea9edcbbaeb24892",
+            "review_note": "Rechecked dashboard and admin Design against remote commerce, checkout, and order source. Site actions remain aggregate counts over the documented window and no new commerce operation is exposed."
         },
         "sales-channels": {
             "source_sha256": "36385e3d18e26f524d0efdd12d26cd8386e368fb5d27441460c688ffdff28b92",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed SettingsService module resolution and Merchant feed guidance. Dropping a retired header slot leaves the saved catalog eligibility inputs intact."
         },
         "workflow": {
-            "source_sha256": "25fc02afb350bcc0e86de9e80e8e382c86a2742383625a4853fa9f1208502580",
+            "source_sha256": "916168e32dd7086fca5fd23e94e2fbf6a8bd2b94dda0b62f1a5596b6d4f8c86d",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Reviewed Testing and the development workflow after the customer release. Owner-authorized project history is a fallback for the ignored browser fixture, with private input and redacted logs, screenshots and release evidence."
+            "review_note": "Verified current workflow guidance, including the newly released credential history fallback, against the analytics change and existing release tests. The separate Agent and Site sections use the existing approval and private test process."
         }
     }
 }

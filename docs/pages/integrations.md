@@ -149,7 +149,7 @@ Use Tag Assistant to verify collection and Search Console to verify site ownersh
 
 ## Owner reporting
 
-Open **Google reporting** from the dashboard or Integrations. In the Cloud
+Open **Google reporting** from Site analytics or Integrations. In the Cloud
 project that owns the configured web OAuth client, enable Analytics Admin API,
 Analytics Data API and Search Console API. Add the displayed configured-origin
 `/admin/google-reporting/callback` URI to the client. Configure the consent
@@ -179,7 +179,7 @@ References:
 
 ## Built-in Google PageSpeed Insights
 
-From the existing owner dashboard, open **PageSpeed Insights** at
+From Site analytics, open **PageSpeed Insights** at
 `/admin/google-pagespeed`. The native view uses the site's configured HTTPS
 origin and retrieves mobile/desktop results from Google's **fixed**
 PageSpeed Insights v5 API endpoint only after the authenticated owner presses

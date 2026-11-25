@@ -21,6 +21,24 @@
         <div class="report-kpi"><dt>Gross paid sales</dt><dd><?= e($money($salesTotals['gross'])) ?></dd></div>
         <div class="report-kpi"><dt>Pending payment value</dt><dd><?= e($money($pendingOrderValue ?? 0)) ?></dd></div>
     </dl>
+    <section class="report-panel storefront-activity" aria-labelledby="storefront-activity-title">
+        <h3 id="storefront-activity-title">Storefront activity</h3>
+        <p>Recorded cart and checkout actions over the last 30 days.</p>
+        <?php if (($storefrontActivity ?? null) === null): ?>
+            <p role="status">Storefront activity is temporarily unavailable.</p>
+        <?php else: ?>
+            <dl class="storefront-activity__totals">
+                <div data-commerce-event="cart_add">
+                    <dt>Cart additions</dt>
+                    <dd><?= number_format($storefrontActivity['cart_add']) ?></dd>
+                </div>
+                <div data-commerce-event="checkout_initiated">
+                    <dt>Checkout initiations</dt>
+                    <dd><?= number_format($storefrontActivity['checkout_initiated']) ?></dd>
+                </div>
+            </dl>
+        <?php endif; ?>
+    </section>
     <h3>Latest orders in this period</h3>
     <?php if (empty($latestOrders)): ?><p>No orders in this period.</p><?php else: ?>
         <ul class="dashboard-order-list">
@@ -86,55 +104,61 @@
     </div>
 </div>
 
-<div id="web-analytics">
-<section class="admin-card" id="google-tag-status" aria-labelledby="google-tag-status-title" style="margin-bottom:var(--space-lg)">
-    <h2 id="google-tag-status-title">Google tags &amp; reporting</h2>
-    <p>Saved configuration is not evidence of data collection or account ownership. Each service is shown independently.</p>
-    <div class="table-wrap"><table><thead><tr><th>Service</th><th>Local configuration</th><th>External verification</th><th>Check in Google</th></tr></thead><tbody>
-    <?php foreach([
-        'analytics'=>['Google Analytics','Data collection unverified','https://analytics.google.com/analytics/web/','Open GA4'],
-        'ads'=>['Google Ads','Conversion tracking unverified','https://ads.google.com/','Open Ads'],
-        'search_console'=>['Search Console','Ownership unverified','https://search.google.com/search-console','Open Search Console']
-    ] as $key=>$item): $state=$googleStatus[$key]['configuration']; ?>
-        <tr data-google-service="<?= e($key) ?>" data-google-configuration="<?= e($state) ?>">
-            <th><?= e($item[0]) ?></th><td><?= e(['missing'=>'Not configured','invalid'=>'Invalid value — not rendered','configured'=>'Valid format — configured'][$state]) ?></td>
-            <td><?= e($item[1]) ?></td><td><a href="<?= e($item[2]) ?>" target="_blank" rel="noopener noreferrer"><?= e($item[3]) ?> ↗</a></td>
-        </tr>
-    <?php endforeach; ?>
-    </tbody></table></div>
-    <?php if ($googleError !== ''): ?>
-        <p role="status"><?= e($googleError) ?></p>
-    <?php elseif (!$googleConnected): ?>
-        <p><strong>Reporting is not connected.</strong> Connect Google to view Analytics and Search Console here.</p>
-    <?php else: ?>
-        <h3>Last 28 days through yesterday</h3>
-        <?php foreach (['analytics'=>'Google Analytics','search'=>'Search Console'] as $key=>$label): ?>
-            <h4><?= e($label) ?></h4>
-            <?php $report = $googleReports[$key] ?? null; ?>
-            <?php if ($report === null): ?><p>Choose a reporting property to see these metrics.</p>
-            <?php elseif (isset($report['error'])): ?><p role="status"><?= e($report['error']) ?></p>
-            <?php else: ?>
-                <?php $data = $report['data']; ?>
-                <?php if ($key === 'analytics'): ?>
-                    <p><?= isset($data['sessions'][0]) ? 'Sessions · ' . number_format($data['sessions'][0]['value']) : 'Google returned no session data for this period.' ?></p>
-                <?php elseif ($data['summary'] !== null): ?>
-                    <p>Clicks · <?= number_format((int)$data['summary']['clicks']) ?> · Impressions · <?= number_format((int)$data['summary']['impressions']) ?></p>
-                <?php else: ?><p>Google returned no Search Console totals for this period.</p><?php endif; ?>
-                <?php foreach (($key === 'analytics' ? ['pages'=>['Top pages','Views'],'sources'=>['Traffic sources','Sessions']] : ['queries'=>['Top queries','Clicks']]) as $table=>$columns): ?>
-                    <?php if ($data[$table]): ?>
-                        <div class="table-wrap"><table><thead><tr><th scope="col"><?= e($columns[0]) ?></th><th scope="col"><?= e($columns[1]) ?></th></tr></thead><tbody>
-                        <?php foreach ($data[$table] as $row): ?><tr><th scope="row"><?= e($row['label']) ?></th><td><?= number_format($row['value']) ?></td></tr><?php endforeach; ?>
-                        </tbody></table></div>
-                    <?php else: ?><p><?= e($columns[0]) ?> · Google returned no rows.</p><?php endif; ?>
-                <?php endforeach; ?>
-            <?php endif; ?>
+<section class="admin-card site-analytics" id="web-analytics" data-page-section="Site analytics" aria-labelledby="web-analytics-title" tabindex="-1">
+    <h2 id="web-analytics-title">Site analytics</h2>
+    <div class="admin-card__actions site-analytics__actions">
+        <a class="btn btn-outline" href="/admin/google-reporting"><?= $googleConnected ? 'Manage Google reporting' : 'Set up Google reporting' ?></a>
+        <a class="btn btn-outline" href="/admin/google-pagespeed">PageSpeed Insights</a>
+    </div>
+    <div id="google-tag-status">
+        <h3 id="google-tag-status-title">Google tags &amp; reporting</h3>
+        <p>Saved configuration is not evidence of data collection or account ownership. Each service is shown independently.</p>
+        <div class="table-wrap" role="region" aria-labelledby="google-tag-status-title" tabindex="0" data-no-table-search><table><thead><tr><th>Service</th><th>Local configuration</th><th>External verification</th><th>Check in Google</th></tr></thead><tbody>
+        <?php foreach([
+            'analytics'=>['Google Analytics','Data collection unverified','https://analytics.google.com/analytics/web/','Open GA4'],
+            'ads'=>['Google Ads','Conversion tracking unverified','https://ads.google.com/','Open Ads'],
+            'search_console'=>['Search Console','Ownership unverified','https://search.google.com/search-console','Open Search Console']
+        ] as $key=>$item): $state=$googleStatus[$key]['configuration']; ?>
+            <tr data-google-service="<?= e($key) ?>" data-google-configuration="<?= e($state) ?>">
+                <th><?= e($item[0]) ?></th><td><?= e(['missing'=>'Not configured','invalid'=>'Invalid value — not rendered','configured'=>'Valid format — configured'][$state]) ?></td>
+                <td><?= e($item[1]) ?></td><td><a href="<?= e($item[2]) ?>" target="_blank" rel="noopener noreferrer"><?= e($item[3]) ?> ↗</a></td>
+            </tr>
         <?php endforeach; ?>
-    <?php endif; ?>
-    <p><a href="/admin/google-reporting"><?= $googleConnected ? 'Manage Google reporting' : 'Set up Google reporting' ?></a></p>
-    <p><a href="/admin/google-pagespeed">PageSpeed Insights — mobile and desktop diagnostics</a></p>
-    <p><a href="/admin/integrations#google-tags">Configure Google tags</a> · <a href="https://tagassistant.google.com/" target="_blank" rel="noopener noreferrer">Validate with Tag Assistant ↗</a> · <a href="/admin/google-merchant">Product feed &amp; shopping channels</a></p>
+        </tbody></table></div>
+        <?php if ($googleError !== ''): ?>
+            <p role="status"><?= e($googleError) ?></p>
+        <?php elseif (!$googleConnected): ?>
+            <p><strong>Reporting is not connected.</strong> Connect Google to view Analytics and Search Console here.</p>
+        <?php else: ?>
+            <h3>Last 28 days through yesterday</h3>
+            <?php foreach (['analytics'=>'Google Analytics','search'=>'Search Console'] as $key=>$label): ?>
+                <h4><?= e($label) ?></h4>
+                <?php $report = $googleReports[$key] ?? null; ?>
+                <?php if ($report === null): ?><p>Choose a reporting property to see these metrics.</p>
+                <?php elseif (isset($report['error'])): ?><p role="status"><?= e($report['error']) ?></p>
+                <?php else: ?>
+                    <?php $data = $report['data']; ?>
+                    <?php if ($key === 'analytics'): ?>
+                        <p><?= isset($data['sessions'][0]) ? 'Sessions · ' . number_format($data['sessions'][0]['value']) : 'Google returned no session data for this period.' ?></p>
+                    <?php elseif ($data['summary'] !== null): ?>
+                        <p>Clicks · <?= number_format((int)$data['summary']['clicks']) ?> · Impressions · <?= number_format((int)$data['summary']['impressions']) ?></p>
+                    <?php else: ?><p>Google returned no Search Console totals for this period.</p><?php endif; ?>
+                    <?php foreach (($key === 'analytics' ? ['pages'=>['Top pages','Views'],'sources'=>['Traffic sources','Sessions']] : ['queries'=>['Top queries','Clicks']]) as $table=>$columns): ?>
+                        <?php if ($data[$table]): ?>
+                            <div class="table-wrap"><table><thead><tr><th scope="col"><?= e($columns[0]) ?></th><th scope="col"><?= e($columns[1]) ?></th></tr></thead><tbody>
+                            <?php foreach ($data[$table] as $row): ?><tr><th scope="row"><?= e($row['label']) ?></th><td><?= number_format($row['value']) ?></td></tr><?php endforeach; ?>
+                            </tbody></table></div>
+                        <?php else: ?><p><?= e($columns[0]) ?> · Google returned no rows.</p><?php endif; ?>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            <?php endforeach; ?>
+        <?php endif; ?>
+        <div class="admin-card__actions site-analytics__tag-actions">
+            <a class="btn btn-ghost btn-sm" href="/admin/integrations#google-tags">Configure Google tags</a>
+            <a class="btn btn-ghost btn-sm" href="https://tagassistant.google.com/" target="_blank" rel="noopener noreferrer">Validate with Tag Assistant ↗</a>
+        </div>
+    </div>
 </section>
-</div>
 
 <div class="admin-quick-grid" id="dashboard-admin-shortcuts" data-page-section="Admin shortcuts" role="navigation" aria-label="Admin shortcuts" tabindex="-1" style="scroll-margin-block-start:6rem;">
     <div class="admin-card">
@@ -152,7 +176,7 @@
         <p>Review saved sessions and manage service records.</p>
         <div class="admin-card__actions">
             <a href="/admin/appointments" class="btn btn-sm btn-ghost">Sessions</a>
-            <a href="/admin/consultation-analytics" class="btn btn-sm btn-ghost">Analytics</a>
+            <a href="/admin/consultation-analytics" class="btn btn-sm btn-ghost">Session analytics</a>
             <a href="/admin/temples" class="btn btn-sm btn-ghost">Temples</a>
         </div>
     </div>
