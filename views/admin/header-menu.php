@@ -1,6 +1,6 @@
 <section class="admin-card" aria-labelledby="header-menu-options">
     <h2 id="header-menu-options">Public header links</h2>
-    <p>Choose pages in display order. Leave a position empty to omit it. The home logo, account links, cart and mobile shortcut bar are managed separately.</p>
+    <p>Choose pages in display order. Leave a position empty to omit it. The home logo, account links, and the Search and Cart icons are managed separately.</p>
     <?php if (isset($_SESSION['header_menu_message'])): ?>
         <p role="status"><?= e($_SESSION['header_menu_message']) ?></p>
         <?php unset($_SESSION['header_menu_message']); ?>
@@ -8,7 +8,7 @@
     <form class="admin-form" method="post" action="/admin/appearance/menu">
         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
         <input type="hidden" name="revision" value="<?= (int)$menu['revision'] ?>">
-        <?php for ($i=0; $i<count(\App\Services\SettingsService::DEFAULT_MENU); $i++): ?>
+        <?php for ($i=0; $i<\App\Services\SettingsService::HEADER_MENU_LIMIT; $i++): ?>
             <label>Position <?= $i+1 ?>
                 <select name="positions[]">
                     <option value="">No link</option>

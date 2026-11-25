@@ -3015,7 +3015,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SettingsService.php",
-            "line": 76
+            "line": 80
         },
         {
             "from": "service:SettingsService",
@@ -3031,7 +3031,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/SettingsService.php",
-            "line": 111
+            "line": 115
         },
         {
             "from": "service:ShippingService",

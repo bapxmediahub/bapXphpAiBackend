@@ -90,7 +90,9 @@ nav:where(#primary-nav) a[aria-current="page"]::after{position:absolute;right:0;
 @media(max-width:768px){.nav-dropdown__menu{position:static;transform:none;box-shadow:none;border:0;opacity:1;visibility:visible;margin:0;padding:0 0 0 16px;background:transparent}
 .nav-dropdown__menu::before{display:none}
 .nav-dropdown__menu a{padding:6px 0;font-size:0.85rem}}
-.header-actions{display:flex;align-items:center;gap:var(--space-md)}
+.header-actions{display:flex;align-items:center;gap:4px}
+.header-actions .search-btn{display:inline-grid;place-items:center;width:44px;height:44px;border:0;border-radius:var(--radius-pill);background:transparent;color:var(--color-ink);cursor:pointer}
+.header-actions .search-btn[hidden],.site-search-popup:not([open]){display:none}
 .cart-btn{background:transparent;border:0;font-size:1.3rem;cursor:pointer;position:relative;color:var(--color-ink);padding:var(--space-xs);border-radius:var(--radius-md)}
  .cart-count{position:absolute;top:-6px;right:-8px;background:var(--color-maroon);color:var(--color-white);font-size:0.6rem;width:16px;height:16px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-weight:bold}
 .menu-toggle{display:none;border:1px solid var(--color-border);background:var(--color-white);padding:var(--space-xs) var(--space-sm);border-radius:var(--radius-md);cursor:pointer;font-size:1.2rem}
@@ -213,7 +215,7 @@ nav:where(#primary-nav).open{display:flex}
 .footer-grid{grid-template-columns:1fr 1fr}
 .bottom-nav{display:block}
 .main-content{padding-bottom:calc(60px + var(--space-md))}
-/* Mobile header order: brand left, then cart, then the menu button hard right. */
+/* Mobile header order: brand left, then search and cart, then the menu button hard right. */
 .site-header{display:flex;align-items:center;gap:4px}
 .site-header .brand{order:1;margin-right:auto}
 .site-header .header-actions{order:2}
@@ -440,12 +442,25 @@ catch (\RuntimeException) { $__publicProductsOrigin=null; }
         <?php endif; ?>
     </nav>
     <div class="header-actions">
+        <?php $__searchIcon = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>'; ?>
+        <a href="/search" class="search-btn" id="header-search-link" aria-label="Search"><?= $__searchIcon ?></a>
+        <button type="button" class="search-btn" id="header-search-button" aria-label="Search" aria-haspopup="dialog" aria-controls="header-search-popup" hidden><?= $__searchIcon ?></button>
         <a href="/cart" class="cart-btn" aria-label="Cart">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
             <?php $cartCount = 0; if(!empty($_SESSION['cart'])){foreach($_SESSION['cart'] as $c){$cartCount += $c['qty'] ?? 1;}} ?><span class="cart-count"><?= $cartCount ?></span>
         </a>
     </div>
 </header>
+<dialog class="site-search-popup" id="header-search-popup" aria-label="Search the site" closedby="any">
+    <form class="site-search-popup__form" role="search" action="/search" method="get">
+        <input class="site-search-popup__input" type="search" name="q" maxlength="120" aria-label="Search by name or keyword"
+            placeholder="Search by name or keyword" value="<?= e($currentPath === '/search' ? ($query ?? '') : '') ?>" required autofocus>
+        <button class="site-search-popup__submit" type="submit">Search</button>
+        <button class="site-search-popup__close" type="button" aria-label="Close search">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+        </button>
+    </form>
+</dialog>
 <main class="<?= $currentPath === '/' ? 'home-main' : ($currentPath === '/about' ? 'about-main' : '') ?>">
 <?php
 $__flash = $_SESSION['flash'] ?? null;
@@ -571,6 +586,35 @@ if ($__flash):
 </footer>
 <?php endif; ?>
 <script>
+(() => {
+    const popup = document.getElementById('header-search-popup');
+    if (typeof popup.showModal !== 'function') return;
+
+    const button = document.getElementById('header-search-button');
+    button.addEventListener('click', () => {
+        button.focus({preventScroll: true});
+        popup.showModal();
+    });
+    popup.querySelector('.site-search-popup__close').addEventListener('click', () => popup.close());
+
+    // Older dialog implementations support Escape but do not light-dismiss with closedby.
+    if (!('closedBy' in popup)) {
+        const isBackdrop = event => {
+            if (event.target !== popup) return false;
+            const {left, right, top, bottom} = popup.getBoundingClientRect();
+            return event.clientX < left || event.clientX > right || event.clientY < top || event.clientY > bottom;
+        };
+        let startedOutside = false;
+        popup.addEventListener('pointerdown', event => { startedOutside = isBackdrop(event); });
+        popup.addEventListener('click', event => {
+            if (startedOutside && isBackdrop(event)) popup.close();
+            startedOutside = false;
+        });
+    }
+    document.getElementById('header-search-link').hidden = true;
+    button.hidden = false;
+})();
+
 if ('serviceWorker' in navigator) {
     var swPath = '/sw.js';
     var swScope = '/';

@@ -60,7 +60,8 @@ Open **Header menu** in the owner sidebar. Choose the pages in the order you
 want them to appear and leave unused positions empty. Select **Save header
 menu** and follow **View the public header** to check it. Published pages from the Pages editor are available by title. Withheld or missing pages disappear from the public menu. The Blog link keeps
 its category dropdown. Shop and Blog become visible only when their modules
-are enabled. The mobile shortcut bar and account links have separate roles.
+are enabled. The Search magnifier beside Cart and the account links are managed
+separately from the editable header links.
 
 ## Configure chat checkout completion
 
