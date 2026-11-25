@@ -149,6 +149,91 @@ Returning a page to Draft withdraws it from all three. The public renderer
 treats HTML tags as literal text. Existing About, Terms and Privacy routes
 keep their existing templates and URLs.
 
+**Header image** accepts an existing uploaded raster image or a new upload
+through Media Library. Add alternative text if the image carries information,
+or leave it blank for a decorative image. **Preview** uses the same PHP
+presentation and sanitized Markdown as the published page. This follows the
+server-side rendering pattern of deriving the display from validated content
+and attributes at request time.
+[WordPress dynamic rendering reference](https://developer.wordpress.org/block-editor/getting-started/fundamentals/static-dynamic-rendering/)
+
+The image and its alternative text participate in the same revision check as
+the Markdown. Select **No header image** and save to clear them. Page rows
+created without a header render the original text-only layout. The upload
+must belong to the current deployment's Media Library. The database host
+serializes attachment and metadata deletion for the same upload. A saved
+reference from a draft or published page keeps its upload in the library until
+the page clears or replaces that image. Media Library image URLs serve the
+uploaded assets while the authored page and its unsaved preview remain under
+their existing publication and owner access rules.
+
+**Enquiry form** adds a native form after the Markdown, in the same reading
+column. Name and email are required. The owner can add up to three fields with
+fixed slot IDs, choose short text, long text or phone number, and mark each
+included field required.
+An enabled form with no additional fields collects only name and email. A page
+without a saved form keeps its original article. Owner preview shows the
+current draft fields with disabled inputs.
+
+The published page and its form share a revision. Each rendered form has a
+session-bound submission token valid for 30 minutes. The server checks CSRF,
+the publication revision, and the configured fields before applying the
+shared public contact admission limits. A revised form asks the visitor to
+review the current fields. A withdrawn page no longer accepts enquiries.
+Successful submissions create a Contact and its Inbox entry together under
+one receipt ID. The records keep the campaign slug and exact revision.
+Both records keep the original timestamp with its timezone offset in JSON.
+The database binds UTC values in the SQL datetime columns on create and update.
+[MariaDB date and time literals](https://mariadb.com/docs/server/reference/sql-structure/sql-language-structure/date-and-time-literals)
+Repeating an accepted submission preserves the existing receipt. Raw answers
+stay in the owner records. The public acknowledgement does not enqueue email.
+The form and receipt use native navigation so the status can receive
+autofocus. The error summary links focus the named fields.
+[HTML Standard autofocus processing](https://html.spec.whatwg.org/multipage/interaction.html#the-autofocus-attribute)
+
+**Enable downloads** adds a file list beneath the published article and enquiry
+form. In Pages, add files, choose the positions of saved files, or select
+**Remove**. The ordered selection can contain up to 20 PDF, ZIP, TXT, PNG,
+JPG or WebP files totalling at most 5,000,000 bytes. Preview displays the
+file list without active links or stored uploads. New files must be selected
+again after preview. The page revision atomically owns the validated list.
+
+With payment disabled, visitors can download from a published page without an
+enquiry form. If the page has a form, a confirmed receipt unlocks downloads for
+that browser session for one hour. Each PHP link requires the current published revision
+and an exact file in the enabled selection. Editing, disabling or withdrawing
+the page invalidates old public download links and revision grants. Files are
+attachments with private, non-cacheable responses. The original file location
+remains outside the web root. This adapts the server-controlled delivery and
+direct-path protection in the
+[WooCommerce downloadable product guide](https://woocommerce.com/document/digital-downloadable-product-handling/#general-settings),
+with the bapX editor's combined byte limit and revision-based access rules.
+
+**Enable payment** adds an independent booking section. Enter the INR amount
+with up to two decimal places, then preview or save the page. Preview shows the
+amount and keeps the payment action disabled. Published visits can review a
+booking even when the enquiry form is disabled. Free downloads follow the
+page's enquiry settings. When payment and downloads are both enabled, the
+booking status page makes the selected files available after verified capture.
+
+The booking attempt keeps the published revision, amount in integer paise,
+Razorpay mode, and enabled file versions. A stale page needs a fresh review.
+An existing booking can still confirm against its saved price and files after
+the owner updates the page or the provider link expires. The browser and actor
+that started the booking can reopen its status and download the confirmed files
+while that session is available.
+
+Initialize the `campaign_bookings` collection with `./bapXphp db init` before
+opening campaign checkout. Razorpay Standard Payment Links use the configured
+test or live mode. Configure the matching API key pair and webhook secret. Subscribe the
+existing `/api/payments/razorpay-webhook` endpoint to Payment Link events. A signed
+notification triggers a fresh API check of the reference, amount, currency and
+captured payment before the database records a receipt. After a lost provider
+response, status uses the same payment reference for recovery. Booking receipts
+live in `campaign_bookings` and are independent of product orders and tax
+reports.
+[Razorpay Payment Link events](https://razorpay.com/docs/webhooks/payment-links)
+
 The dedicated About route uses the deployment-owned public story descriptor
 in config/about.php and a reusable PHP editorial view, with semantic theme
 tokens, approved image dimensions, and existing contact and module services.
@@ -169,8 +254,8 @@ compares the current revision and removes only the corresponding page row.
 Recreating the same address generates a new revision so a stale form cannot
 edit or delete the replacement.
 
-The authored-page editor also saves unsent title, address and Markdown locally
-in the current browser, scoped to the signed-in owner and original page address.
+The authored-page editor also saves unsent title, address, Markdown and header
+selection locally in the current browser, scoped to the signed-in owner and original page address.
 It offers explicit restore/discard for the same revision and Markdown download
 rather than restore when the saved revision changed. Publication status is
 never autosaved or restored. Browser drafts are not server-side drafts or a

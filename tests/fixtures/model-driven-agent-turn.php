@@ -13,7 +13,7 @@ namespace App\Services {
     }
 
     function fixtureCompatibleHost(): string {
-        return in_array(getenv('BAPX_FIXTURE_PROTOCOL'), ['openai','openai_legacy'], true)
+        return in_array(getenv('BAPX_FIXTURE_PROTOCOL'), ['openai','openai_legacy','openai_luna'], true)
             ? 'api.openai.com' : 'provider.fixture.invalid';
     }
 
@@ -44,10 +44,13 @@ namespace App\Services {
             $model = match ($protocol) {
                 'openai' => 'gpt-5',
                 'openai_legacy' => 'gpt-4o',
+                'openai_luna' => 'gpt-6-luna',
                 default => 'fixture-model',
             };
             $compatible = ['provider'=>'openai_compatible','endpoint'=>'https://' . fixtureCompatibleHost() . '/v1',
                 'apiKey'=>'fixture-only','models'=>[$model],'model'=>$model,'configured'=>true];
+            if ($protocol === 'openrouter') $compatible['provider'] = 'openrouter';
+            if ($protocol === 'compatible_modern') $compatible['tokenField'] = 'max_completion_tokens';
             return preg_match('~/catalogue_(?:fallback|locked)$~D',$endpoint) ? [$compatible,$google] : [$compatible];
         }
         public function getModelConfig(): array {return $this->getProviderPlan()[0];}

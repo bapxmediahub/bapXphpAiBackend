@@ -24,9 +24,12 @@ or used. Confirming consumes the token and calls the guarded deletion method for
 each upload, with an audit record for each removal. A referenced file is kept
 even when another selection succeeds.
 
-These guards are not an atomic cross-collection reference-lock protocol.
-Concurrent content edits and media deletion should be serialized operationally;
-do not claim a no-race guarantee across arbitrary independently edited records.
+Authored-page header saves and media metadata deletion lock the same upload
+row on the database host. The final deletion check includes headers on both
+draft and published pages. If a page attaches the image after the library's
+initial scan, the metadata check rejects deletion and the media service
+restores the quarantined file. Product, temple, category and article references
+use the initial scan. Serialize those content edits with media deletion.
 
 ## Reproducible isolated test
 
@@ -36,6 +39,10 @@ an authenticated fixture-only remotedb process. It checks:
 1. Current references and unverifiable upload history block deletion. A product that has since replaced the image, or a deleted product, releases the historical reference.
 2. A simulated metadata-delete failure restores the original binary.
 3. An unused disposable upload loses both its metadata and binary.
+
+The loopback MySQL scenarios in `tests/admin-list-pagination.php` check the
+authored-page header attachment, an unknown upload, stale page revision,
+deletion refusal while attached and successful deletion after clearing.
 
 The fixture server is loopback only, does not connect to production, and is
 terminated by the test. No customer file is used as a fixture.

@@ -71,6 +71,13 @@ account/order notifications and unrelated SMTP states unchanged. Re-enabling
 automatic contact mail requires reviewed recipient verification and anti-abuse
 controls. Never test by flooding the production form or replaying its backlog.
 
+Published campaign forms share contact admission. Validate answers against
+the exact published revision, and verify CSRF and the session receipt before
+accepting a submission. On the database host, lock the authored page and persist
+the Contact and its Inbox projection together with one idempotent receipt.
+Store campaign slug and revision on the owner records. Keep form text out of
+logs and leave the mail queue untouched.
+
 ## SMTP persistence and retry boundary
 
 A pending queue row must be atomically claimed on the database host before
@@ -89,6 +96,15 @@ runtime:check and actual web System Health, and keep raw exception/DSN/secret
 content out of output. A compatibility report is not authority to migrate a
 production database or fabricate query/backup parity. Preserve older running
 sites until a separate approved cutover is verified.
+
+## Authored-page headers
+
+Keep the optional uploaded image URL and page-specific alt text in the same
+revisioned `pg:<slug>` row as the Markdown. Validate a local raster URL and its
+Media Library ownership on the database host. Header attachment and upload
+metadata removal use a shared upload row lock. Keep the existing publication
+predicate, and verify the legacy no-image path, invalid ownership, stale save,
+and removal after clearing in the isolated database and owner preview.
 
 ## Authored article integrity
 
@@ -217,3 +233,27 @@ must recover order saves after chat/cart expiry. Unresolved attempts survive
 cart cleanup, and capacity rejection must roll back the cart lock. Test with
 real pure transitions, a fake gateway, disposable SQL/HTTP concurrency and native
 form recovery; never treat fixture success as live payment proof.
+
+
+## Authored-page downloads
+
+Validate the combined file size from actual uploads and retained descriptors
+against the same bound in the PHP editor and database-host revision write.
+Keep immutable bytes outside the checkout under `.sps-downloads`. Publish
+the page reference only after every new file is staged. Clean up new bytes
+on a definitive stale or invalid result. Preserve them after an ambiguous
+database acknowledgement so a committed page can still resolve its files.
+Confirm the current published revision and access grant before streaming an
+attachment. Keep names and identifiers out of unauthorized markup.
+
+## Authored campaign booking consistency
+
+Use the database-host campaign booking transaction to read the published page
+revision and freeze the approved integer INR paise, gateway mode, and enabled
+file descriptors. The first durable booking reservation owns provider creation.
+Recover an ambiguous provider response by reference. The shared Razorpay
+webhook verifies its mode-specific signature before checking the provider API.
+Apply captured receipts and frozen paid files in one booking transition.
+Verify that signed duplicates, delayed expiration, and wrong amounts cannot
+overwrite a receipt or create a shop order. Use deterministic provider fixtures
+and the disposable MySQL job.

@@ -116,9 +116,22 @@ read-only and works without JavaScript, while the existing product editor uses
 JavaScript to prefill its form. Google account approval and YouTube eligibility
 remain separate, unverified external steps. See `google-sales-channels.md`.
 
-## Google reporting
+## Site analytics and agent monitoring
 
-On the dashboard, open **Set up Google reporting**. Register the displayed callback
+Choose **Site analytics → Traffic & search** for GA4 traffic and Search Console
+visibility in the Dashboard's existing web analytics section. Open **Google
+reporting** to manage the connection and **PageSpeed Insights** for a separate
+performance check. Commerce overview shows the previous 30 days of recorded
+storefront cart additions and checkout initiations. Session analytics remains
+under Services for historical records.
+
+Open **Enterprise Agent → Agent Monitoring** for provider attempts, tool
+outcomes, saved conversation evidence and quality checks. The reference
+deployment uses **Enterprise Agent Vinod** as its owner display label.
+
+### Google reporting
+
+Open **Set up Google reporting** from Site analytics. Register the displayed callback
 on the Google web OAuth client, enable the Analytics Admin, Analytics Data and
 Search Console APIs, and consent with an account that can read the desired
 properties. Select the GA4 property and Search Console site from Google's lists.

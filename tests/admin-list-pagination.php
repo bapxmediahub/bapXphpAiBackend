@@ -178,19 +178,41 @@ $pdo->exec('CREATE TEMPORARY TABLE settings (id VARCHAR(36) PRIMARY KEY, _data J
 $pages = new \App\Services\AuthoredPageService($store);
 $initial = ['slug'=>'guide', 'title'=>'A guide', 'content'=>'Private phrase', 'status'=>'draft', 'expected_revision'=>'0'];
 $pages->save($initial);
+$settingsCreated = $store->query('SELECT _created_at FROM settings WHERE id = ?', ['pg:guide'])[0]['_created_at'];
+check(str_ends_with($settingsCreated, '+05:30'), 'Campaign SQL normalization is scoped away from other records');
 $createdRevision = $pages->find('guide')['revision'];
 check($pages::validRevision($createdRevision), 'Creating the page initializes its revision');
 check($pages->findPublic('guide') === null && $pages->published('Private phrase') === [], 'Draft excluded from all public reads');
 try { $pages->save($initial); throw new RuntimeException('Duplicate create overwrote an existing page'); }
 catch (DomainException) {}
-$publication = array_replace($initial, ['content'=>'Published phrase', 'status'=>'published', 'expected_revision'=>$createdRevision]);
+$header = ['id'=>'fedcba9876543210','url'=>'/assets/images/media/2026/11/campaign-fixture.webp','context'=>'shared'];
+$pdo->prepare('INSERT INTO media_files (id, _data, _created_at) VALUES (?, ?, NOW())')->execute([$header['id'],json_encode($header, JSON_THROW_ON_ERROR)]);
+check(!isset($pages->find('guide')['header_image_url']), 'Legacy page reads without an optional header');
+$publication = array_replace($initial, ['content'=>'Published phrase', 'status'=>'published', 'expected_revision'=>$createdRevision,
+    'header_image_url'=>$header['url'], 'header_image_alt'=>'A fixture temple']);
+try {
+    $pages->save(array_replace($publication, ['header_image_url'=>'/assets/images/media/2026/11/unowned.webp']));
+    throw new RuntimeException('Unowned media was accepted for an authored page');
+} catch (InvalidArgumentException) {}
+check($pages->find('guide')['revision'] === $createdRevision, 'Rejecting an unknown upload keeps the saved revision');
 $pages->save($publication);
-check($pages->findPublic('guide')['content'] === 'Published phrase', 'Publishing exposes current content');
+$published = $pages->findPublic('guide');
+check($published['content'] === 'Published phrase', 'Publishing exposes current content');
+check($published['header_image_url'] === $header['url'] && $published['header_image_alt'] === 'A fixture temple',
+    'The header URL and alt share the authored page revision');
+try {
+    $store->delete('media_files', $header['id']);
+    throw new RuntimeException('The DB host deleted an attached page header');
+} catch (InvalidArgumentException) {}
+check($store->find('media_files', $header['id']) !== null, 'A referenced header stays in the media catalogue');
 check(array_column($pages->published('a phrase'), 'slug') === ['guide'], 'Public full-content word search');
 try { $pages->save($publication); throw new RuntimeException('Stale editor overwrote the page'); }
 catch (DomainException) {}
-$pages->save(array_replace($initial, ['expected_revision'=>$pages->find('guide')['revision']]));
+$pages->save(array_replace($initial, ['expected_revision'=>$pages->find('guide')['revision'], 'header_image_url'=>'']));
 check($pages->findPublic('guide') === null && $pages->published() === [], 'Withholding removes the public URL and index entry');
+check(!isset($pages->find('guide')['header_image_url']), 'Clearing an image leaves no stored attachment');
+$store->delete('media_files', $header['id']);
+check($store->find('media_files', $header['id']) === null, 'An upload can be deleted after the page clears it');
 $deletedRevision = $pages->find('guide')['revision'];
 $pages->delete('guide', $deletedRevision);
 check($pages->find('guide') === null, 'Delete removes the authored row');
@@ -199,3 +221,69 @@ try { $pages->delete('guide', $deletedRevision); throw new RuntimeException('Old
 catch (DomainException) {}
 check($pages->find('guide') !== null, 'A new page at the same address has independent revision identity');
 echo "PASS authored page creation, collision, publication, public exclusions, and stale revisions.\n";
+
+foreach (['contact_submissions','mail_inbox'] as $table) {
+    $pdo->exec("CREATE TEMPORARY TABLE $table (id VARCHAR(64) PRIMARY KEY, _data JSON NOT NULL,
+        _owner VARCHAR(100), _status VARCHAR(64), _created_at DATETIME, _updated_at DATETIME) ENGINE=InnoDB");
+}
+$leadInput = array_replace($initial, ['slug'=>'campaign', 'campaign_form'=>[
+    ['id'=>'detail_2', 'type'=>'text', 'label'=>'Question', 'required'=>true],
+]]);
+$pages->save($leadInput);
+$draft = $pages->find('campaign');
+$leadId = 'lead_'.str_repeat('a', 24);
+$answers = ['name'=>'Fixture visitor', 'email'=>'fixture@example.invalid', 'detail_2'=>'First answer'];
+check($store->saveCampaignLead($leadId, 'campaign', $draft['revision'], $answers) === 'stale', 'Drafts cannot receive public enquiries');
+$pages->save(array_replace($leadInput, ['status'=>'published', 'expected_revision'=>$draft['revision']]));
+$published = $pages->findPublic('campaign');
+$revision = $published['revision'];
+check($store->saveCampaignLead($leadId, 'campaign', $revision, $answers + ['detail_1'=>'Forged field']) === 'invalid',
+    'The database host rejects forged fields against the locked published definition');
+check($store->find('contact_submissions', $leadId) === null && $store->find('mail_inbox', 'in_'.$leadId) === null,
+    'Neither projection exists after an invalid enquiry');
+check($store->saveCampaignLead($leadId, 'campaign', $revision, $answers) === 'received', 'A published campaign accepts validated contact answers');
+$contact = $store->find('contact_submissions', $leadId);
+$inbox = $store->find('mail_inbox', 'in_'.$leadId);
+check($contact['name'] === 'Fixture visitor' && $contact['email'] === 'fixture@example.invalid', 'Contacts retain basic identity');
+$created = DateTimeImmutable::createFromFormat(DateTimeInterface::ATOM, $contact['created_at']);
+check($created !== false && $created->format('P') === '+05:30' && $inbox['created_at'] === $contact['created_at'],
+    'Both JSON records retain the original timestamp and its offset');
+$utcCreated = gmdate('Y-m-d H:i:s', $created->getTimestamp());
+foreach (['contact_submissions'=>$leadId, 'mail_inbox'=>'in_'.$leadId] as $table=>$id) {
+    $timestamps = $store->query("SELECT _created_at, _updated_at FROM $table WHERE id = ?", [$id])[0];
+    check($timestamps['_created_at'] === $utcCreated && $timestamps['_updated_at'] === $utcCreated,
+        'The database stores the same UTC instant in both timestamp columns');
+}
+check($inbox['source_id'] === $leadId && $inbox['from_email'] === $contact['email'], 'Inbox retains the existing contact source contract');
+check($contact['campaign_slug'] === 'campaign' && $inbox['campaign_slug'] === 'campaign'
+    && $contact['campaign_revision'] === $revision && $inbox['campaign_revision'] === $revision,
+    'Both owner records retain bounded publication provenance');
+$store->upsert('mail_inbox', ['id'=>'in_'.$leadId, 'status'=>'read']);
+$updated = $store->query('SELECT _created_at, _updated_at FROM mail_inbox WHERE id = ?', ['in_'.$leadId])[0];
+check($updated['_created_at'] === $utcCreated && $updated['_updated_at'] >= $utcCreated
+    && $store->find('mail_inbox', 'in_'.$leadId)['created_at'] === $contact['created_at'],
+    'Marking the Inbox record read updates the SQL timestamp and preserves creation time and offset');
+check($store->saveCampaignLead($leadId, 'campaign', $revision, array_replace($answers, ['detail_2'=>'Changed on retry'])) === 'received',
+    'Retry acknowledges the original receipt');
+check($store->find('contact_submissions', $leadId) === $contact && $store->find('mail_inbox', 'in_'.$leadId)['status'] === 'read',
+    'Retry does not replace answers or reset Inbox state');
+$store->delete('contact_submissions', $leadId);
+check($store->saveCampaignLead($leadId, 'campaign', $revision, $answers) === 'received'
+    && $store->find('contact_submissions', $leadId) === null, 'A retained Inbox receipt prevents replay after owner deletion');
+
+// A disposable replacement missing the status column forces the Inbox write to fail.
+$pdo->exec('DROP TEMPORARY TABLE mail_inbox');
+$pdo->exec('CREATE TEMPORARY TABLE mail_inbox (id VARCHAR(64) PRIMARY KEY, _data JSON NOT NULL,
+    _owner VARCHAR(100), _created_at DATETIME, _updated_at DATETIME) ENGINE=InnoDB');
+$failedLeadId = 'lead_'.str_repeat('b', 24);
+try {
+    $store->saveCampaignLead($failedLeadId, 'campaign', $revision, $answers);
+    throw new RuntimeException('Expected the isolated Inbox projection write to fail');
+} catch (PDOException) {}
+check($store->find('contact_submissions', $failedLeadId) === null && $store->find('mail_inbox', 'in_'.$failedLeadId) === null,
+    'A rejected Inbox write rolls back its contact');
+
+$pages->save(array_replace($leadInput, ['status'=>'published', 'expected_revision'=>$revision, 'campaign_form'=>[]]));
+check($store->saveCampaignLead($failedLeadId, 'campaign', $revision, $answers) === 'stale', 'An amended field definition invalidates outstanding submissions');
+check(count($store->read('mail_queue')) === count($queueRecords), 'Campaign admissions do not enqueue messages');
+echo "PASS campaign lead validation, exact revision, atomic Contact and Inbox, replay protection, and no email.\n";

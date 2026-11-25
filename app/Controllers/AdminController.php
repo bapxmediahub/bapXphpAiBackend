@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{AuditLogService,MailQueueService,AuthService,BlogDraftService,BlogService,ConsultationService,EnvService,MailStorageService,MarkdownRenderer,MediaService,OrderService,ResourceService,SchemaService,SecretService,SettingsService,StoragePermissionService,StoreStatsService};
+use App\Services\{AuditLogService,MailQueueService,AuthService,AuthoredPageService,CampaignDownloadService,BlogDraftService,BlogService,ConsultationService,EnvService,MailStorageService,MarkdownRenderer,MediaService,OrderService,ResourceService,SchemaService,SecretService,SettingsService,StoragePermissionService,StoreStatsService};
 final class AdminController extends BaseController {
     protected string $layout = 'admin';
     public function __construct() {
@@ -64,6 +64,12 @@ final class AdminController extends BaseController {
         );
         $productRows = StoreStatsService::topProducts($allOrders, $from, $to);
         $orderStatusCounts = StoreStatsService::orderStatusCounts($allOrders, $from, $to);
+        $storefrontActivity = null;
+        try {
+            $storefrontActivity = \App\Services\SiteTelemetryService::counts((new AuditLogService())->all());
+        } catch (\Throwable) {
+            // A failed audit read must be shown as unavailable rather than zero events.
+        }
         // Public consultation booking has been retired, but historical requests remain
         // an owner responsibility. Keep them visible from the admin dashboard rather
         // than making their recovery depend on a public-site module flag.
@@ -98,7 +104,7 @@ final class AdminController extends BaseController {
             'pendingOrderValue' => StoreStatsService::pendingOrderValue($allOrders, $from, $to),
             'bookingCount' => count($appointments),
             'appointments' => array_slice($appointments, 0, 5),
-        ] + compact('period', 'from', 'to', 'reportRows', 'productRows', 'orderStatusCounts', 'seoInsights', 'commerceInsights', 'userSupportInsights', 'googleConnected', 'googleReports', 'googleStatus', 'googleError'));
+        ] + compact('period', 'from', 'to', 'reportRows', 'productRows', 'orderStatusCounts', 'seoInsights', 'commerceInsights', 'userSupportInsights', 'storefrontActivity', 'googleConnected', 'googleReports', 'googleStatus', 'googleError'));
     }
     public function products(): void{
         $draft = $_SESSION['product_form_draft'] ?? null;
@@ -575,10 +581,8 @@ final class AdminController extends BaseController {
             // Keep the monitoring page available when the audit store is unavailable.
         }
         $agentConversations = [];
-        $commerceTelemetry = [];
         try {
             $agentConversations = (new \App\Services\AgentConversationService())->recent(40);
-            $commerceTelemetry = \App\Services\SiteTelemetryService::counts((new AuditLogService())->all());
         } catch (\Throwable $e) {
             error_log('Agent session insights unavailable: '.$e::class);
         }
@@ -591,7 +595,7 @@ final class AdminController extends BaseController {
             $agentGoldenSuite = null;
         }
         $this->render('admin/agent-monitoring',
-            compact('agentMonitoring','agentConversations','commerceTelemetry','supportFeedbackSummary','agentGoldenSuite','answerReviewSummary')
+            compact('agentMonitoring','agentConversations','supportFeedbackSummary','agentGoldenSuite','answerReviewSummary')
             + ['pageTitle' => 'Agent Monitoring']);
     }
 
@@ -702,7 +706,7 @@ final class AdminController extends BaseController {
         // Everything the owner may write @ against, so the chat can autocomplete rather
         // than making them remember slugs and filenames.
         $attachables = (new \App\Services\AgentAttachmentService())->catalogue();
-        $this->render('admin/agent',['pageTitle'=>'Enterprise Agent','modelConfig'=>$modelConfig,'attachables'=>$attachables,
+        $this->render('admin/agent',['pageTitle'=>$this->siteProfile()->ownerAgentName(),'modelConfig'=>$modelConfig,'attachables'=>$attachables,
             'chatScope'=>$chatScope,'agentCapabilities'=>\App\Services\EnterpriseToolRegistry::capabilities($user),
             'agentCapabilityLimits'=>\App\Services\EnterpriseToolRegistry::capabilityLimits()]);
     }
@@ -1254,7 +1258,11 @@ final class AdminController extends BaseController {
         $owner = (string)($_SESSION['user']['sub'] ?? '');
         $saved = $_SESSION['page_saved_draft_token'] ?? '';
         unset($_SESSION['page_saved_draft_token']);
-        return ['pageDraftOwner'=>$owner !== '' ? hash('sha256', $owner) : '', 'savedPageDraftToken'=>$saved];
+        return [
+            'pageDraftOwner'=>$owner !== '' ? hash('sha256', $owner) : '',
+            'savedPageDraftToken'=>$saved,
+            'headerImages'=>(new MediaService())->pageHeaderChoices(),
+        ];
     }
 
     public function deleteAuthoredPage(): void {
@@ -1273,22 +1281,64 @@ final class AdminController extends BaseController {
     }
 
     public function saveAuthoredPage(): void {
-        $service = new \App\Services\AuthoredPageService();
+        $service = new AuthoredPageService();
+        $downloads = new CampaignDownloadService();
         $form = [];
-        foreach (['title','slug','status','content','original_slug','expected_revision'] as $name) {
+        foreach (['title','slug','status','content','original_slug','expected_revision','header_image_url','header_image_alt'] as $name) {
             $form[$name] = is_string($_POST[$name] ?? null) ? $_POST[$name] : '';
         }
-        $preview = $error = null;
+        $form['campaign_enabled'] = $_POST['campaign_enabled'] ?? null;
+        $form['campaign_fields'] = $_POST['campaign_fields'] ?? [];
+        $form['campaign_payment_enabled'] = $_POST['campaign_payment_enabled'] ?? null;
+        $form['campaign_booking_amount'] = $_POST['campaign_booking_amount'] ?? '';
+        $downloadEditor = ($_POST['download_editor'] ?? null) === '1';
+        if ($downloadEditor) {
+            $form['download_enabled'] = $_POST['download_enabled'] ?? null;
+            $form['download_existing'] = $_POST['download_existing'] ?? [];
+        }
+        $preview = $error = $downloadNotice = null;
+        $stored = [];
         try {
-            if (($form['expected_revision'] === '0' && $form['original_slug'] !== '')
-                || ($form['expected_revision'] !== '0' && $form['original_slug'] !== $form['slug'])) {
+            $revision = $form['expected_revision'];
+            if (($revision === '0' && $form['original_slug'] !== '')
+                || ($revision !== '0' && $form['original_slug'] !== $form['slug'])) {
                 throw new \InvalidArgumentException('An existing page keeps its original address.');
             }
-            if (($_POST['action'] ?? '') === 'preview') {
-                $valid = $service::record($form);
-                $preview = $service::renderContent($valid['content']);
-            } elseif (($_POST['action'] ?? '') === 'save') {
-                $service->save($form);
+            $previous = $revision === '0' ? null : $service->find($form['slug']);
+            $form['campaign_downloads'] = CampaignDownloadService::manifest($previous ?? []);
+            $action = $_POST['action'] ?? '';
+            if ($action !== 'preview' && $action !== 'save') {
+                throw new \InvalidArgumentException('Choose Preview or Save page.');
+            }
+            if ($revision !== '0' && (!AuthoredPageService::validRevision($revision)
+                || ($previous['revision'] ?? null) !== $revision)) {
+                throw new \DomainException('The page changed. Reopen the saved page before continuing.');
+            }
+            $form['campaign_form'] = \App\Services\CampaignLeadService::fromEditor(
+                $form['campaign_enabled'], $form['campaign_fields']);
+            $form['campaign_payment'] = \App\Services\CampaignPaymentService::fromEditor(
+                $form['campaign_payment_enabled'], $form['campaign_booking_amount']);
+            foreach (['header_image_url', 'header_image_alt'] as $field) {
+                if (isset($_POST[$field]) && !is_string($_POST[$field])) {
+                    throw new \InvalidArgumentException('Choose a header image and plain alternative text.');
+                }
+            }
+            $candidate = $form;
+            $uploads = [];
+            if ($downloadEditor) {
+                ['manifest'=>$candidate['campaign_downloads'], 'uploads'=>$uploads] = $downloads->prepare(
+                    $previous, $form['download_enabled'], $form['download_existing'], $_FILES['download_files'] ?? []);
+            }
+            $valid = $service::record($candidate);
+            if ($action === 'preview') {
+                if (isset($valid['header_image_url']) && !(new MediaService())->findPageHeaderUpload($valid['header_image_url'])) {
+                    throw new \InvalidArgumentException('Choose an available uploaded image from the Media Library.');
+                }
+                if ($uploads) $downloadNotice = 'Select the new download files again before saving. Preview did not upload them.';
+                $preview = ['page'=>$valid, 'html'=>$service::renderContent($valid['content'])];
+            } else {
+                $stored = $downloads->store($form['slug'], $uploads);
+                $service->save($candidate);
                 $draftToken = $_POST['browser_draft_token'] ?? '';
                 if (is_string($draftToken) && preg_match('/^[a-f0-9]{32}$/D', $draftToken)) {
                     $_SESSION['page_saved_draft_token'] = $draftToken;
@@ -1296,12 +1346,14 @@ final class AdminController extends BaseController {
                 (new AuditLogService())->record('save', 'authored_page', $form['slug'], ['status'=>$form['status']]);
                 $this->flash($form['status'] === 'published' ? 'Page published.' : 'Draft saved.', 'success');
                 $this->redirect('/admin/pages?edit='.rawurlencode($form['slug']));
-            } else { throw new \InvalidArgumentException('Choose Preview or Save page.'); }
+            }
         } catch (\InvalidArgumentException|\DomainException $exception) {
+            $downloads->discard($form['slug'], $stored);
             http_response_code($exception instanceof \DomainException ? 409 : 422);
             $error = $exception->getMessage();
         }
-        $this->render('admin/pages', ['pages'=>$service->all(), 'form'=>$form, 'preview'=>$preview, 'error'=>$error] + $this->pageDraftContext());
+        $this->render('admin/pages', ['pages'=>$service->all(), 'form'=>$form, 'preview'=>$preview,
+            'error'=>$error, 'downloadNotice'=>$downloadNotice] + $this->pageDraftContext());
     }
 
     public function blog(): void{

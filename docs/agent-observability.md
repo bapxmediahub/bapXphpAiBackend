@@ -226,7 +226,7 @@ to the 24-hour operational metrics.
 
 Each attempt in Recent runs displays the observed HTTP status, cURL error and elapsed duration. New attempts can also carry the effective timeout and positive cURL milestones for DNS resolution, connection, transfer start and the first response byte. Each milestone measures cumulative elapsed time from the start of that transfer. An absent measurement remains unknown. For cURL 28, a recorded first byte indicates the response had begun. If transfer start was recorded and there is no HTTP status or first byte, the timeout happened before a response was observed. Older evidence can still show a generic timeout. These observations identify the stage reached and leave the network or upstream cause undetermined. [libcurl transfer start](https://curl.se/libcurl/c/CURLINFO_PRETRANSFER_TIME.html) · [libcurl first byte](https://curl.se/libcurl/c/CURLINFO_STARTTRANSFER_TIME.html)
 
-HTTP 5xx establishes an upstream error response. HTTP 429 directs the operator to provider quota and rate limits. HTTP 401 is an observed credential rejection for its recorded connection. The remaining models on that connection are skipped for the turn, so they contribute no attempts. HTTP 403 directs the owner to connection permissions. A successful transfer can still produce an unusable answer. Each run keeps its own outcome, independently of its attempt counts.
+HTTP 5xx establishes an upstream error response. HTTP 429 directs the operator to provider quota and rate limits. HTTP 401 is an observed credential rejection for its recorded connection. The remaining models on that connection are skipped for the turn, so they contribute no attempts. HTTP 403 directs the owner to connection permissions. A successful transfer can still produce an unusable answer. Each run keeps its own outcome, independently of its attempt counts. The Dashboard Commerce overview shows the first-party storefront cart and checkout counters. Agent Monitoring retains request, provider, tool and quality evidence.
 
 The deployment-local health file, `storage/logs/ai-provider-health-v2.json`, stores
 credential-scoped HMAC model/connection identities, bounded expiry timestamps and
@@ -241,8 +241,9 @@ Positive delays set the cross-turn hold and ordinary transient observations
 cannot prolong it. Before each provider transfer, the client rereads the exact
 credential/model hold. A hold observed by another worker after plan selection can
 therefore stop that candidate before a model-attempt span or transfer is recorded.
-Short holds of up to eight seconds can be waited out within the existing request
-budget, followed by another read. An extended hold stops locally with
+Fresh turns prefer ready models. When every configured model is held, the
+readiness check can wait for a short hold of up to eight seconds within the
+existing budget and then reread it. A longer or extended hold stops locally with
 `provider_cooldown`. Earlier observed upstream responses remain in the attempt
 history. Explicit integration diagnostics bypass this gate, including their
 continuation requests. A held tool continuation stops on its original model. Successful transfers clear their

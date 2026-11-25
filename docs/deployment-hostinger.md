@@ -94,7 +94,18 @@ actor isolation, trace exports, admin dashboards, and 375px views.
 
 ## Release revision receipt and rollback gate
 
-A green PR check or successful merge is **not** evidence that Hostinger finished pulling the new code. Before a release, capture the expected `main` merge SHA and independently back up MySQL, the sibling `.sps-media` directory, and private `storage/agent-conversations/` JSON (including ownership/permissions). Keep `.env` outside change review. Record the existing Hostinger checkout SHA and previous known-working release before initiating deployment.
+Keep campaign binaries in `.sps-downloads` beside `public_html`. Give the PHP
+worker access to the private directory and keep it outside the document root.
+Back up and restore it alongside the hosted page and booking records.
+Initialize `campaign_bookings` on the database host with `./bapXphp db init`
+before enabling campaign payments. For the full campaign
+upload allowance, set PHP `upload_max_filesize` to at least `5M`,
+`post_max_size` to at least `6M`, and `max_file_uploads` to at least `21` so PHP passes oversized
+selections to application validation.
+Check direct-path denial and the authorized PHP attachment route separately
+after changing hosting configuration.
+
+A green PR check or successful merge is **not** evidence that Hostinger finished pulling the new code. Before a release, capture the expected `main` merge SHA and independently back up MySQL, the sibling `.sps-media` and `.sps-downloads` directories, and private `storage/agent-conversations/` JSON (including ownership/permissions). Keep `.env` outside change review. Record the existing Hostinger checkout SHA and previous known-working release before initiating deployment.
 
 After Hostinger Git auto-deploy or an approved manual `git pull --ff-only origin main`, verify `git rev-parse HEAD` on the actual deployed checkout equals the expected merge SHA. Do not run force reset, prune customer files, apply schema migration, or re-send stored payments/email to repair a failed deploy. Record live URL, verified SHA, local IST time, health result and the exact human operator. Without shell access, use the deployed `/is-sha-valid?sha=<expected-sha>` endpoint and require its actual `git_head` to match. If neither source establishes the deployed checkout, **mark the SHA unverified**, even if public content appears correct.
 

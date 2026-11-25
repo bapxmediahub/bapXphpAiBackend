@@ -5,7 +5,7 @@
             <p class="lede">Explore temples across Tamil Nadu and find addresses, opening hours, and directions where available.</p>
         </header>
         <?php if (empty($items)): ?>
-            <p class="temple-directory__empty">Temple information will appear here soon.</p>
+            <p class="temple-directory__empty">There are no temple guides available yet.</p>
         <?php else: ?>
             <div data-section-index hidden></div>
             <div class="temple-feature-list" id="temple-directory-list" data-page-section="Temples" tabindex="-1">
@@ -25,7 +25,7 @@
                                 <p><?= e($item['address']) ?></p>
                             <?php endif; ?>
                             <?php if (!empty($item['timings'])): ?>
-                                <p><strong>Opening hours</strong><br><?= e($item['timings']) ?></p>
+                                <p><strong>Opening hours</strong><br><?= nl2br(e($item['timings'])) ?></p>
                             <?php endif; ?>
                             <div class="temple-directory-card__actions">
                                 <a href="<?= e($detailUrl) ?>" class="btn btn-primary" aria-label="View details for <?= e($item['name']) ?>">View details</a>

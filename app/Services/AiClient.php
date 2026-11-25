@@ -357,12 +357,10 @@ final class AiClient
             if($plan){$plan[0]['models']=[$override];$plan[0]['model']=$override;}
         }
         if(!$plan){$this->failureCategory='not_configured';return 'No AI API key or enabled model is configured. Check Admin → Integrations.';}
-        if(!$diagnostic&&$override===null&&$this->health!==null){
-            $plan=$this->health->availablePlan($plan,null,true);
-            if(!$plan){
-                $this->failureCategory='provider_cooldown';
-                return $this->failureMessage(0, false);
-            }
+        if (!$this->bypassProviderHolds && $this->health !== null) {
+            // Prefer ready models. If all are held, let the existing bounded
+            // gate decide whether a short hold can expire during this turn.
+            $plan = $this->health->availablePlan($plan, null, true) ?: $plan;
         }
         if(!function_exists('curl_init')){$this->failureCategory='transport';return 'AI request failed: cURL is not available on this server.';}
         $deadline=hrtime(true)+self::GENERATION_TIMEOUT_NS;
@@ -503,6 +501,8 @@ final class AiClient
         $url = $config['endpoint'] . '/chat/completions';
         $models = in_array($modelOverride, $config['models'], true) ? [$modelOverride] : $config['models'];
         $officialOpenAi = parse_url($url, PHP_URL_HOST) === 'api.openai.com';
+        $tokenField = $config['tokenField'] ?? ($officialOpenAi ? 'max_completion_tokens' : 'max_tokens');
+        $usesOpenRouterContinuation = $config['provider'] === 'openrouter';
         $dialogue = $prompt instanceof AgentModelTurn ? $prompt->dialogue() : [['role' => 'user', 'content' => $prompt]];
         $status = 0;
         $body = false;
@@ -527,7 +527,13 @@ final class AiClient
                 );
                 $advertised=array_map(static fn(array $declaration):string=>$declaration['function']['name'],$declarations);
                 $payload = ['model' => $model, 'messages' => $messages];
-                $payload[$officialOpenAi ? 'max_completion_tokens' : 'max_tokens'] = $maxTokens;
+                $payload[$tokenField] = $maxTokens;
+                // Luna tool calling on Chat Completions requires reasoning_effort=none.
+                // https://developers.openai.com/api/docs/models/gpt-6-luna
+                if ($officialOpenAi && $tools !== null
+                    && preg_match('/^gpt-6-luna(?:-\d{4}-\d{2}-\d{2})?$/D', $model) === 1) {
+                    $payload['reasoning_effort'] = 'none';
+                }
                 if ($declarations !== []) {
                     $payload['tools'] = $declarations;
                     $payload['tool_choice'] = $round < $maxRounds ? 'auto' : 'none';
@@ -541,13 +547,29 @@ final class AiClient
                     if ($hasModelAlternate && $this->waitForFailover($status, $deadline, $index)) break;
                     return $this->failureMessage($status, $body);
                 }
-                $choice=json_decode($body,true)['choices'][0]??[];
-                $message=$choice['message']??[];
-                $calls=$message['tool_calls']??[];
-                if(!is_array($choice)||!is_array($message)||!is_array($calls)||!self::finishedCompatibleChoice($choice))return $this->incompleteResponse();
-                if(($choice['finish_reason']??null)==='tool_calls'&&$calls===[])return $this->incompleteResponse();
+                $choices = json_decode($body)->choices ?? null;
+                $choice = is_array($choices) ? ($choices[0] ?? null) : null;
+                $message = $choice->message ?? null;
+                $wireCalls = $message->tool_calls ?? [];
+                // Only a completed assistant turn can produce an answer or dispatch tools.
+                $expectedFinish = $wireCalls === [] ? 'stop' : 'tool_calls';
+                if (!($message instanceof \stdClass) || ($message->role ?? null) !== 'assistant'
+                    || !is_array($wireCalls) || ($choice->finish_reason ?? null) !== $expectedFinish) {
+                    return $this->incompleteResponse();
+                }
+                $calls = array_map(static fn(mixed $call): array => [
+                    'id' => $call->id ?? null,
+                    'type' => $call->type ?? null,
+                    'function' => [
+                        'name' => $call->function->name ?? null,
+                        'arguments' => $call->function->arguments ?? null,
+                    ],
+                ], $wireCalls);
+                $message = get_object_vars($message);
                 if($calls!==[]&&($tools===null||$round===$maxRounds))return $this->incompleteResponse();
                 if ($calls === []) {
+                    $refusal = $message['refusal'] ?? null;
+                    if (is_string($refusal) && trim($refusal) !== '') return $refusal;
                     $answer=is_string($message['content']??null)?$message['content']:'';
                     if (trim($answer) !== '') return self::fencedAnswer($answer) ?? $answer;
                     $this->failureCategory = 'empty_response';
@@ -559,11 +581,13 @@ final class AiClient
                     return 'AI request failed: the model returned an invalid set of lookups.';
                 }
                 $this->toolExchangeStarted=true;
-                $assistant = ['role'=>'assistant','content'=>is_string($message['content']??null)?$message['content']:'','tool_calls'=>[]];
-                // Documented compatible-provider continuation fields. Preserve only
-                // provider-returned state in this request's locked wire history.
-                // Never include these fields in the answer, saved chat or audit.
-                foreach(['reasoning_content','reasoning_details'] as $field){
+                $assistant = ['role' => 'assistant', 'tool_calls' => []];
+                if (array_key_exists('content', $message) && (is_string($message['content']) || $message['content'] === null)) {
+                    $assistant['content'] = $message['content'];
+                }
+                // Keep the pre-existing OpenRouter adapter's continuation state on
+                // that connection. The custom endpoint uses the OpenAI HTTP schema.
+                foreach($usesOpenRouterContinuation ? ['reasoning_content','reasoning_details'] : [] as $field){
                     if(!isset($message[$field]))continue;
                     $value=$message[$field];
                     if(($field==='reasoning_content'&&!is_string($value))
@@ -626,10 +650,6 @@ final class AiClient
 
     private static function finishedGoogleCandidate(array $candidate): bool {
         return !isset($candidate['finishReason'])||in_array($candidate['finishReason'],['STOP'],true);
-    }
-
-    private static function finishedCompatibleChoice(array $choice): bool {
-        return !isset($choice['finish_reason'])||in_array($choice['finish_reason'],['stop','tool_calls'],true);
     }
 
     private function incompleteResponse(): string {

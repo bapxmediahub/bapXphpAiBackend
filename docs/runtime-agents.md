@@ -229,10 +229,17 @@ A batch can contain multiple calls. Its call identifiers must be valid and uniqu
 before any member executes. The advertised declaration snapshot controls the
 current round; `tool_search` activates new schemas only on subsequent model
 rounds. An invalid or unauthorized request returns a safe tool error for the
-model to handle. Explicit incomplete finishes and tool calls at the final-answer
-boundary are errors, not successful answers. Where returned, compatible-provider
-continuation fields are retained in bounded request-local wire history on the
-same locked provider connection; they are not rendered or persisted.
+model to handle. The Chat Completions response must contain an assistant message
+with `finish_reason: "tool_calls"` for a nonempty call batch, or
+`finish_reason: "stop"` for a final answer or refusal. Invalid finishes and
+calls at the final-answer boundary fail before any tool executes.
+
+The custom connection sends only Chat Completions message fields. PHP adds the
+assistant's function calls with their original IDs and argument strings, then
+appends one JSON-encoded `role: "tool"` result with the matching `tool_call_id`
+for each call. The built-in OpenRouter connection retains its own continuation
+state within the same request. See [endpoint-only configuration](pages/integrations.md#run-support-and-enterprise-through-chat-completions)
+to use the custom connection for both agents.
 
 OpenAI-compatible text endpoints are not automatically tool-capable models.
 Each enabled model needs a successful live tool round trip. The portable
@@ -242,7 +249,6 @@ a separate protocol adapter; this revision does not claim that support.
 Do not force strict schemas or provider-specific optional flags universally.
 
 References: [OpenAI function calling](https://developers.openai.com/api/docs/guides/function-calling),
-[OpenAI tool search](https://developers.openai.com/api/docs/guides/tools-tool-search),
 [OpenAI Chat Completions to Responses migration](https://developers.openai.com/api/docs/guides/migrate-to-responses),
 [DeepSeek thinking-mode tool calls](https://api-docs.deepseek.com/guides/thinking_mode/),
 [OpenRouter tool calling](https://openrouter.ai/blog/tutorials/tool-calling/).
@@ -282,9 +288,11 @@ deadline and at most 32 transfers; both browsers wait up to 120 seconds. The tra
 Provider holds are scoped to the configured API key, endpoint and model. A replacement
 key starts eligible, and delayed responses under the previous key update only that
 key's health entry. The local version-2 health file stores HMAC identities and expiry
-metadata. Unscoped legacy entries are ignored. Each transfer rechecks current provider holds.
-A short hold can expire within the turn's remaining budget. Longer holds skip
-the candidate before recording a transfer. Tool exchanges remain on their original
+metadata. Unscoped legacy entries are ignored. A fresh turn first selects from
+models that are ready. If all configured models are held, their configured order
+reaches the same readiness check used before each transfer. A short hold can
+expire within the turn's remaining budget. Longer holds skip the candidate before
+recording a transfer. Tool exchanges remain on their original
 model, and an explicit integration diagnostic bypasses these hold checks.
 The deadline or budget can stop a cycle early. Once tool exchange starts,
 three-attempt recovery resends only the correlated inference request to the

@@ -40,12 +40,44 @@ The editor keeps the ten most recent changes. Restoring also saves the version y
 
 ## Publish a standalone page
 
-Open **Pages** in the sidebar. Give the page a title and a short address, write
-its Markdown, and use **Preview** to inspect the unsaved draft. Select
-**Published** and **Save page** when it is ready. Use **Open published page**
+Open **Pages** in the sidebar. Give the page a title and a short address, then
+write its Markdown. In **Header image**, choose an uploaded image or use
+**Upload to Media Library** to add one. Describe informative images in
+**Alternative text**. For a text-only page, choose **No header image**.
+Under **Enquiry form**, select **Show an enquiry form** to collect a name and
+email. To ask for more information, choose a type and enter a label for up to
+three fields. Tick **Required** on any field the visitor must complete.
+Choose **Unused** to remove a field from the form. Clear **Show an enquiry
+form** to remove the whole form when you save.
+
+In **Downloads**, select **Enable downloads** and use **Add files** for files
+that together total 5 MB or less. Choose a different **Position** for each
+existing file, or choose **Remove**. New files go after the retained files.
+Preview lists the files without active download links. Re-select any new
+files after preview. Clear **Enable downloads** and save to hide downloads
+while retaining the current selection. Published pages with an enquiry form
+require a confirmed submission before visitors can download.
+
+Use **Preview** to inspect the unsaved title, image, Markdown and enquiry
+fields. The preview form is disabled. Select **Published** and **Save page**
+when it is ready. Use **Open published page**
 to check it. Select **Draft** and save to withdraw the page from its address,
 search, and the sitemap. The address stays fixed across edits. If another
-editor saved first, copy your text before reopening the current version.
-Unsaved page title, address and Markdown are saved in this browser when storage is available. Reopen the same page as the same owner to restore or discard the draft. If the saved page changed, download the browser copy instead; review visibility before using Save page. Autosave does not publish or send content to the server.
+editor saved first, download the browser draft before reopening the current version.
+Unsaved page title, address, Markdown, header choice, enquiry settings and saved download positions are saved in this browser when storage is available. Reopen the same page as the same owner to restore or discard the draft. If the saved page changed, download the browser copy instead; review visibility before using Save page. Autosave does not publish or send content to the server.
+Review submitted enquiries in **Contact Submissions** or **Email → Inbox**.
+Inbox shows the campaign address and revision alongside each enquiry. The
+visitor sees a receipt on the page.
+
 To remove the page and its text permanently, open **Delete page**, tick the
 confirmation and choose **Delete this page**.
+
+In **Pages**, turn on **Enable payment** and enter the booking amount in INR.
+The preview shows the amount. Save the page to make it available to visitors.
+Booking works with or without enquiries. If downloads are also enabled,
+visitors retrieve the purchased file versions from their confirmed booking.
+
+Set up Razorpay API credentials and the webhook secret for the selected payment
+mode in **Integrations**. Walk through a booking in test mode before accepting
+payments. The booking reference appears on the visitor's status page when
+Razorpay confirms capture.

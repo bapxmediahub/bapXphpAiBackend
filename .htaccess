@@ -1,8 +1,8 @@
 Options -Indexes
 RewriteEngine On
 
-# Neither development harness rules nor live agent instructions are public assets.
-RewriteRule (^|/)(\.agents|\.bapX)(/|$) - [F,L,NC]
+# Private instructions and download storage are outside public routing.
+RewriteRule (^|/)(\.agents|\.bapX|\.sps-downloads)(/|$) - [F,L,NC]
 RewriteRule ^AGENTS\.md$ - [F,L,NC]
 # Curated operator guides are rendered only after admin authentication.
 RewriteRule ^content/help/admin(?:/|$) - [F,L,NC]

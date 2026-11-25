@@ -49,6 +49,10 @@ jobs:
         run: node --test tests/review-automation.test.cjs
       - name: Verify atomic contact admission and flood containment
         run: php tests/contact-admission.php
+      - name: Verify campaign booking with deterministic gateway and payment replay
+        run: php tests/campaign-booking.php
+      - name: Verify published campaign form HTTP and remote mutation contracts
+        run: php tests/campaign-form-http.php
       - name: Verify guarded deletion and stale upload history
         run: php tests/media-delete-integration.php
       - name: Verify current checkout SHA and safe failure on untrusted references
@@ -103,6 +107,8 @@ jobs:
           NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/agent-history-browser.cjs tests/admin-pwa-browser.cjs tests/header-menu-browser.cjs tests/mobile-cart-restore-browser.cjs tests/a2ui-public-browser.cjs tests/enterprise-capabilities-browser.cjs tests/openrouter-integrations-browser.cjs tests/home-full-card-browser.cjs tests/homepage-release-browser.cjs tests/google-pagespeed-browser.cjs tests/media-metadata-browser.cjs tests/page-draft-browser.cjs tests/shipping-preview-browser.cjs tests/contact-admission-browser.cjs
       - name: Exercise reusable About layout and live-link contracts
         run: NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/about-release-browser.cjs tests/site-profile-browser.cjs
+      - name: Exercise campaign page editing, preview, and enquiry feedback in Chromium
+        run: NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/campaign-form-browser.cjs tests/campaign-booking-browser.cjs
       - name: Exercise owner Users directory and customer Profile in Chromium
         run: NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/users-directory-browser.cjs tests/account-profile-browser.cjs
       - name: Exercise owner scheduled mail confirmation in Chromium
@@ -168,6 +174,8 @@ jobs:
         run: |
           php tests/remote-cart-mysql.php
           php tests/remote-checkout-mysql.php
+      - name: Verify campaign booking against isolated MySQL
+        run: php tests/campaign-booking.php --mysql
       - name: Test concurrent private JSON conversation appends
         run: php tests/agent-concurrency.php
       - name: Test concurrent structured answer review in private JSON
@@ -242,3 +250,5 @@ jobs:
           BAPX_MYSQL_PASS: sps_ci_fixture
           BAPX_REMOTE_DB_URL: 'http://127.0.0.1:1/remotedb'
         run: php tests/admin-list-pagination.php
+      - name: Verify campaign booking on the hosted database family
+        run: php tests/campaign-booking.php --mysql

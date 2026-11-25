@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-/** The allowlisted public profile of one installation. No request host or private records. */
+/** Allowlisted installation presentation from approved site configuration. */
 final class SiteProfileService
 {
     private const FIELD_LIMITS = [
@@ -21,6 +21,7 @@ final class SiteProfileService
 
     private readonly bool $reference;
     private readonly array $fields;
+    private readonly string $ownerAgentName;
 
     public function __construct(array $settings, string $origin, mixed $legacyName = null, mixed $appName = null)
     {
@@ -28,6 +29,7 @@ final class SiteProfileService
             'https://sripanchamispiritual.com', 'https://www.sripanchamispiritual.com',
         ], true);
         $defaults = $this->reference ? require app_path('config/reference-site.php') : [];
+        $this->ownerAgentName = self::text($defaults['owner_agent_display_name'] ?? '', 80) ?: 'Enterprise Agent';
         $fields = [];
         foreach (self::FIELD_LIMITS as $key => $limit) {
             $value = array_key_exists($key, $settings) ? $settings[$key] : ($defaults[$key] ?? '');
@@ -59,6 +61,7 @@ final class SiteProfileService
     }
 
     public function name(): string { return $this->fields['site_display_name']; }
+    public function ownerAgentName(): string { return $this->ownerAgentName; }
     public function summary(): string { return $this->fields['site_summary']; }
     public function isReference(): bool { return $this->reference; }
     public function hasReferenceName(): bool { return $this->reference && $this->name() === 'Sri Panchami Spiritual'; }

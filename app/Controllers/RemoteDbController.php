@@ -109,7 +109,37 @@ final class RemoteDbController {
                 if (!is_array($input['record'] ?? null) || !is_string($input['expected'] ?? null)) {
                     throw new \InvalidArgumentException('A page record and revision are required.');
                 }
-                echo json_encode(['success'=>true, 'saved'=>$store->saveAuthoredPage($input['record'], $input['expected'])]);
+                try {
+                    $saved = $store->saveAuthoredPage($input['record'], $input['expected']);
+                    echo json_encode(['success'=>true, 'saved'=>$saved]);
+                } catch (\InvalidArgumentException $error) {
+                    if (!isset($input['record']['header_image_url'])) throw $error;
+                    echo json_encode(['success'=>true, 'saved'=>false, 'header_unavailable'=>true]);
+                }
+                return;
+            }
+            if ($collection === 'contact_submissions' && $action === 'save_campaign_lead') {
+                if (!is_string($input['id'] ?? null) || !is_string($input['slug'] ?? null)
+                    || !is_string($input['revision'] ?? null) || !is_array($input['answers'] ?? null)) {
+                    throw new \InvalidArgumentException('Campaign submission identity and answers are required.');
+                }
+                $outcome = $store->saveCampaignLead($input['id'], $input['slug'], $input['revision'], $input['answers']);
+                echo json_encode(['success'=>true, 'outcome'=>$outcome], JSON_THROW_ON_ERROR);
+                return;
+            }
+            if ($collection === 'campaign_bookings') {
+                $id = (string)($input['id'] ?? '');
+                if ($action === 'begin_campaign_booking') {
+                    $result = $store->beginCampaignBooking($id, (string)($input['slug'] ?? ''),
+                        (string)($input['revision'] ?? ''), (string)($input['owner'] ?? ''), $input['mode'] ?? null);
+                } elseif ($action === 'change_campaign_booking' && array_key_exists('change', $input)) {
+                    $result = $input['change'] === null
+                        ? $store->claimCampaignBookingCheck($id)
+                        : ['booking'=>$store->updateCampaignBooking($id, $input['change'])];
+                } else {
+                    throw new \InvalidArgumentException('Unknown booking operation.');
+                }
+                echo json_encode(['success'=>true, 'result'=>$result], JSON_THROW_ON_ERROR);
                 return;
             }
             if ($collection === 'settings' && $action === 'save_header_menu') {
@@ -246,7 +276,10 @@ final class RemoteDbController {
             throw new \InvalidArgumentException('Unsupported mutation action.');
         } catch (\Throwable $e) {
             http_response_code(422);
-            echo json_encode(['error' => 'Remote mutation failed: ' . $e->getMessage()]);
+            echo json_encode(['error' => $action === 'save_campaign_lead'
+                ? 'Campaign submission was not confirmed.'
+                : ($collection === 'campaign_bookings' ? 'Booking change was not confirmed.'
+                    : 'Remote mutation failed: ' . $e->getMessage())]);
         }
     }
 }

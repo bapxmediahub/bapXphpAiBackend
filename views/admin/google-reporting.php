@@ -1,6 +1,6 @@
 <section class="admin-card google-reporting" aria-labelledby="google-reporting-title">
     <h2 id="google-reporting-title"><?= $connected ? 'Reporting properties' : 'Connect a Google account' ?></h2>
-    <p><a href="/admin#web-analytics">View dashboard reports</a></p>
+    <p><a href="/admin/#web-analytics">Open Site analytics</a></p>
     <?php if (!$connected): ?>
         <p>Connect the Google account that can read your GA4 property and Search Console site.</p>
         <p>In Google Cloud, enable the Google Analytics Admin API, Google Analytics Data API and Search Console API. Register this authorized redirect URI on the web OAuth client.</p>

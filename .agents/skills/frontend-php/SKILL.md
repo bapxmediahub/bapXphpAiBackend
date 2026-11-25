@@ -16,9 +16,23 @@ description: Use when editing public, account, shop, consultant, temple, cart, c
 - Essential content must be legible before JavaScript enhancement. Never make reveal-animation opacity a loading dependency.
 - Keep enquiry card label contrast in the shared stylesheet. Test the native
   contact link and measure the shared label with the About stylesheet blocked.
+- Render authored campaign forms after Markdown with the contact form styles.
+  Keep the native submission, preserve validated text on recoverable errors,
+  and verify the focused error and receipt states at desktop and 375px.
+  Keep owner previews visibly disabled.
+- Render campaign download names and URLs only after the controller confirms
+  access. Put locked-state guidance beside the article and preserve native
+  download and enquiry behavior at 375px without JavaScript.
+- Campaign bookings use a native form and a private status page. Verify pending,
+  expired and captured states on desktop and at 375px. Put downloadable files on
+  the captured receipt only and check the correct version with the same browser.
 - Use the shared public site profile for the header, footer, About and Contact.
   Test absent contact methods, app metadata and module-off URLs in an
   independent synthetic deployment as well as the reference layout.
+- Search results keep the query in a labelled native form with grouped results
+  and a clear empty state. At 375px, check long queries, command examples in public
+  documents, and the focusable invoice table. Tab to the order review rating
+  and use Arrow keys to check visible focus and selection.
 - In Profile, display initials in the avatar slot from the first render. Reveal an HTTPS photo after it loads and keep the initials for absent, failed or blocked images. Check the slot and form without JavaScript and at 375px with a long email.
 - Audit card families together. Product, consultant, account, authentication, and admin cards have different jobs but share the geometry and focus rules in `Design.md`.
 - Reuse the circular top-overlapping marketplace card geometry and face-focused clipped portrait frame on home and consultation surfaces. Render only real profile metadata and reviews, and keep hero slides isolated on a warm-neutral image frame.
@@ -29,6 +43,13 @@ description: Use when editing public, account, shop, consultant, temple, cart, c
 ## Testing
 
 Verify in a browser at desktop **and** 375px mobile — `Design.md` is canonical for responsive behaviour. Check computed styles, not just the screenshot: an author rule such as `display:flex` silently overrides `[hidden]`, which breaks JS filters without any visible error. Then `./bapXphp test`.
+
+Check the product's labelled quantity, both native purchase submits, the
+unavailable state, and the gallery at each width. Compare stock gating against
+the cart controller. Check the category card link, shop empty-search recovery,
+cart unit and line amounts, and the checkout review jump and return to the cart
+with keyboard and pointer. Empty homepage product sections retain a visible
+shop link and skip the empty carousel controls.
 
 ## Keeping this skill current
 

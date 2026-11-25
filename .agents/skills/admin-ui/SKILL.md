@@ -14,7 +14,17 @@ description: Use when editing owner/admin pages, CRUD forms, media library, envi
 - Media metadata editing is owner-only, bounded, revision-checked and limited to existing MySQL uploads; never replace binaries or enable bundled/legacy editing.
 - Media bulk removal uses named per-upload checkboxes and a separate owner review. Confirm only the recorded selection, consume its token once, and apply the single-upload reference checks and audit to each item. Test cancel, partial results, and 375 px without JavaScript.
 - Logo & Favicon uses persistent Media Library uploads and the saved settings for previews. Test size and format rejection, a failed write, and successful reload with disposable brand profiles. Production verification reads the existing brand without replacing it.
-- Use schema-driven resource fields and the media library for product, temple, and blog media.
+- On authored pages, preview the configured enquiry fields in the public
+  renderer with disabled controls. Keep field slot identity and publication
+  revision on the server, and expose only saved enquiry evidence in owner Inbox.
+- Attach authored-page downloads through the same revisioned editor. Show the
+  combined byte limit, retained order, removals and upload recovery. Preview
+  lists file descriptions as text and asks the owner to reselect new uploads.
+- In Pages, confirm **Enable payment** reveals the INR amount with the keyboard
+  and with scripts disabled. Preview the approved amount with booking disabled,
+  then verify that reopening the saved page restores the explicit payment state.
+- Use schema-driven resource fields and the media library for product, temple, blog, and authored-page media.
+- Authored-page headers use a native selection of uploaded library images. Reuse the owner Media Library upload and render Preview through the public PHP template. Verify clear, draft recovery, stale revision and accurate text/image rendering at 1280px and 375px. Page publication still requires Save page.
 - Astrologer profile management and portraits are retired in admin as well as publicly. Do not restore their navigation, upload category, or bundled assets. Existing historical session and financial records remain owner-accessible; they do not authorize reintroducing profile management.
 - Validate with `php tests/run.php`; use a browser workflow for changed admin pages.
 
@@ -60,9 +70,21 @@ and 375px. Explicit SMTP acceptance and legacy sent have separate labels.
   action fields stay inside it. Cancel collapses the editor and returns
   focus to its summary, and opening the disclosure works without JavaScript.
 
+## Owner analytics
+
+- Site analytics leads to the existing Dashboard traffic and search anchor,
+  Google reporting and PageSpeed Insights. Keep connection, empty and error
+  states distinct from valid zero activity.
+- Commerce overview owns the first-party storefront cart-add and checkout
+  initiation counts for the last 30 days. Agent Monitoring owns request,
+  provider, tool and quality evidence. Historical Session analytics belongs
+  under Services.
+- Verify native disclosure navigation, current destinations, module-off
+  behavior and the existing fragment bookmark at desktop and 375px.
+
 ## Admin Panel Agent
 
-The interface at `/admin/agent` is the Enterprise Agent chat workspace.
+The interface at `/admin/agent` is the Enterprise Agent chat workspace. Use the deployment profile for the display label. The reference deployment shows Enterprise Agent Vinod. The display label does not participate in authorization or runtime instructions.
 The same navigation group links to `/admin/agent/monitoring` and the AI Support Tickets queue. Treat it as read-only unless controller code explicitly
 implements and authorizes a mutation. Draft cards are editable proposals and must say
 that nothing changes until the owner reviews and confirms.

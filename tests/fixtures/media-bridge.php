@@ -45,9 +45,13 @@ if (isset($payload['query'])) {
             'revision' => (string)($page['revision'] ?? ''),
         ], $pages);
         echo json_encode(['success'=>true,'data'=>$rows], JSON_THROW_ON_ERROR); exit;
-    } elseif ($query === 'SELECT * FROM media_files WHERE id = ?') {
+    } elseif (preg_match('/^SELECT \* FROM (media_files|settings) WHERE id = \?$/D', $query, $match)) {
         $id = $payload['params'][0] ?? null;
-        $records = array_filter($data['collections']['media_files'] ?? [], static fn(array $row): bool => $row['id'] === $id);
+        $records = array_filter($data['collections'][$match[1]] ?? [], static fn(array $row): bool => $row['id'] === $id);
+    } elseif (preg_match("/^SELECT id, _data FROM media_files\s+WHERE BINARY JSON_UNQUOTE/", $query)) {
+        $url = $payload['params'][0] ?? null;
+        $records = array_slice(array_values(array_filter($data['collections']['media_files'] ?? [],
+            static fn(array $row): bool => ($row['url'] ?? null) === $url)), 0, 2);
     } elseif (preg_match('/^SELECT \* FROM (media_files|products|temples|categories|settings)$/D',$query,$m)) {
         $records=$data['collections'][$m[1]]??[];
     } else {
@@ -58,6 +62,28 @@ if (isset($payload['query'])) {
     }
     $rows=array_values(array_map(static fn(array $r):array=>['id'=>$r['id']??'', '_data'=>json_encode($r,JSON_THROW_ON_ERROR)], $records));
     echo json_encode(['success'=>true,'data'=>$rows],JSON_THROW_ON_ERROR);exit;
+}
+if (($payload['action'] ?? '') === 'save_authored_page' && ($payload['collection'] ?? '') === 'settings') {
+    $record = $payload['record'];
+    $expected = $payload['expected'];
+    $url = $record['header_image_url'] ?? null;
+    if ($url !== null && !in_array($url, array_column($data['collections']['media_files'], 'url'), true)) {
+        echo json_encode(['success'=>true, 'saved'=>false, 'header_unavailable'=>true], JSON_THROW_ON_ERROR); exit;
+    }
+    foreach ($data['collections']['settings'] as $index => $saved) {
+        if ($saved['id'] !== $record['id']) continue;
+        if ($saved['revision'] !== $expected) {
+            echo json_encode(['success'=>true, 'saved'=>false], JSON_THROW_ON_ERROR); exit;
+        }
+        $data['collections']['settings'][$index] = $record;
+        file_put_contents($path, json_encode($data, JSON_THROW_ON_ERROR), LOCK_EX);
+        echo json_encode(['success'=>true, 'saved'=>true], JSON_THROW_ON_ERROR); exit;
+    }
+    if ($expected === '0') {
+        $data['collections']['settings'][] = $record;
+        file_put_contents($path, json_encode($data, JSON_THROW_ON_ERROR), LOCK_EX);
+    }
+    echo json_encode(['success'=>true, 'saved'=>$expected === '0'], JSON_THROW_ON_ERROR); exit;
 }
 if (($payload['action']??'')==='delete' && ($payload['collection']??'')==='media_files') {
     $id=(string)($payload['id']??'');

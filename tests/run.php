@@ -704,6 +704,12 @@ $tests['admin dashboard resolves all services and renders its actual zero-data p
         assertTrue(str_contains($html,'<h2 id="dashboard-commerce-title"'),'Commerce overview is a section heading');
         assertTrue(str_contains($html,'revenue-chart-title'),'Real dashboard controller reaches its chart template');
         assertTrue(str_contains($html,'No paid orders in this period.'),'Zero-data rendering remains safe through the full controller');
+        assertTrue(str_contains($html,'id="web-analytics" data-page-section="Site analytics"'),'Site analytics keeps the direct dashboard bookmark');
+        assertTrue(str_contains($html,'data-commerce-event="cart_add"') && str_contains($html,'data-commerce-event="checkout_initiated"'),'Storefront action totals appear on the dashboard');
+        assertTrue(!str_contains($html,'Storefront activity is temporarily unavailable.'),'An empty readable audit feed is valid data');
+        ob_start();$controller->agentMonitoring();$monitoring=(string)ob_get_clean();
+        assertTrue(str_contains($monitoring,'Provider and model reliability'),'Agent Monitoring retains provider evidence');
+        assertTrue(!str_contains($monitoring,'data-commerce-event=') && !str_contains($monitoring,'First-party commerce events'),'Agent Monitoring no longer shows unrelated storefront totals');
         assertTrue(!str_contains($html,'Fatal error'),'Controller page does not emit a runtime error');
     } finally {
         while(ob_get_level()>$level)ob_end_clean();
@@ -1286,6 +1292,9 @@ $tests['site profile selects only approved deployment identity and public channe
     ], 'https://caldera.example.test', 'Legacy SEO name', 'Environment name');
     assertSame('Sri Panchami Spiritual', $reference->name(), 'Reference default keeps its name');
     assertSame('Caldera & Iris', $fixture->name(), 'Published name wins over previous configuration');
+    assertSame('Enterprise Agent Vinod', $reference->ownerAgentName(), 'The reference profile supplies its owner workspace label');
+    assertSame('Enterprise Agent', $fixture->ownerAgentName(), 'An independent deployment uses the neutral owner label');
+    assertTrue(!isset($reference->valuesForEditor()['owner_agent_display_name']), 'The owner label stays outside the public profile fields');
     assertSame([
         'name' => 'Caldera & Iris', 'path' => '/contact',
         'phones' => [['label' => '+44 (20) 7000-0123', 'number' => '+442070000123']],
@@ -2481,6 +2490,157 @@ $tests['authored pages validate immutable addresses and render Markdown with lit
     assertSame('x < 3', $dom->getElementsByTagName('code')->item(0)->textContent, 'Inline code preserves a literal comparison');
     assertSame("<x> &lt;\n", $dom->getElementsByTagName('pre')->item(0)->textContent, 'Fenced code preserves both tags and literal entities');
     assertSame(0, $dom->getElementsByTagName('span')->length, 'Literal raw markup cannot produce a span element');
+};
+
+$tests['authored header uses only bounded library paths and escaped page-specific text'] = static function (): void {
+    $service = \App\Services\AuthoredPageService::class;
+    $input = ['slug'=>'guide', 'title'=>'Guide', 'content'=>'## Heading', 'status'=>'draft'];
+    $path = '/assets/images/media/2026/11/guide.webp';
+    $record = $service::record($input + ['header_image_url'=>$path, 'header_image_alt'=>'  A <temple> entrance  ']);
+    assertSame($path, $record['header_image_url'], 'A canonical uploaded URL is retained for the ownership check');
+    assertSame('A <temple> entrance', $record['header_image_alt'], 'Alternative text is trimmed as plain text');
+    assertTrue(!array_key_exists('header_image_url', $service::record($input)), 'Old pages keep their original row shape');
+    assertTrue(!array_key_exists('header_image_alt', $service::record($input + ['header_image_url'=>'', 'header_image_alt'=>'Old alt'])), 'Clearing the selection removes its alternative text');
+
+    foreach (['https://elsewhere.example'.$path, '//elsewhere.example'.$path, 'javascript:alert(1)', $path.'?x=1',
+        '/assets/images/media/2026/11/../guide.webp', '/assets/images/media/2026/11/guide.svg', ['/assets/images/media/x.webp']] as $unsafe) {
+        try {
+            $service::record($input + ['header_image_url'=>$unsafe]);
+            assertTrue(false, 'Invalid or nonlocal header paths must be rejected');
+        } catch (InvalidArgumentException) {
+            assertTrue(true, 'Unsafe selection rejected');
+        }
+    }
+    try {
+        $service::record($input + ['header_image_url'=>$path, 'header_image_alt'=>str_repeat('x', 256)]);
+        assertTrue(false, 'Overlong alternative text must be rejected');
+    } catch (InvalidArgumentException) {
+        assertTrue(true, 'Overlong alternative text rejected');
+    }
+
+    $renderPage = static function (array $page, bool $authoredPreview): string {
+        $html = \App\Services\AuthoredPageService::renderContent($page['content']);
+        ob_start();
+        require app_path('views/public/authored-page.php');
+        return (string)ob_get_clean();
+    };
+    foreach ([false, true] as $preview) {
+        $markup = $renderPage($record, $preview);
+        assertTrue(str_contains($markup, 'src="'.$path.'"') && str_contains($markup, 'alt="A &lt;temple&gt; entrance"'),
+            'The public and preview markup share one escaped header');
+        assertTrue(!str_contains($renderPage($input + ['header_image_url'=>'//elsewhere.example/photo.webp'], $preview),
+            'class="authored-page__image"'), 'An unsafe stored URL cannot reach either renderer');
+    }
+};
+
+$tests['campaign revisions preserve legacy pages and validate configured enquiries'] = static function (): void {
+    $service = \App\Services\CampaignLeadService::class;
+    $pages = \App\Services\AuthoredPageService::class;
+    $page = ['slug'=>'campaign', 'title'=>'Campaign', 'content'=>'Campaign details', 'status'=>'published'];
+    assertSame(null, $service::pageDefinition($pages::record($page)), 'Legacy pages have no enquiry form');
+    assertSame(null, $service::fromEditor(null, []), 'Unchecked form setting disables the form');
+    assertSame([], $service::pageDefinition($pages::record($page + ['campaign_form'=>[]])), 'Name and email are sufficient to enable a form');
+    $fields = $service::fromEditor('1', [
+        'detail_3'=>['type'=>'tel', 'label'=>' Phone '],
+        'detail_2'=>['type'=>'textarea', 'label'=>'Your question <here>', 'required'=>'1'],
+        'detail_1'=>['type'=>''],
+    ]);
+    $record = $pages::record($page + ['campaign_form'=>$fields]);
+    assertSame(['name','email','detail_2','detail_3'], array_column($service::publicFields($record['campaign_form']), 'id'),
+        'Fixed slots remain stable when another slot is unused');
+    assertSame(null, $service::pageDefinition(['campaign_form'=>[$fields[0],$fields[0]]]), 'Duplicate persisted fields fail closed');
+    foreach ([
+        ['any_name'=>['type'=>'text', 'label'=>'Question']],
+        ['detail_2'=>['type'=>'email', 'label'=>'Alternative address']],
+        ['detail_2'=>['type'=>'textarea', 'label'=>str_repeat('x', 73)]],
+        ['detail_2'=>['type'=>'text', 'label'=>"Line\nBreak"]],
+        ['detail_2'=>['type'=>'text', 'label'=>'Question', 'required'=>true]],
+    ] as $invalid) {
+        try {
+            $service::fromEditor('1', $invalid);
+            assertTrue(false, 'Invalid field must be rejected');
+        } catch (InvalidArgumentException) {
+            assertTrue(true, 'Editor rejects a malformed field');
+        }
+    }
+    $answers = ['name'=>' Visitor ', 'email'=>'visitor@example.invalid', 'detail_2'=>"Question\nwith context",
+        'detail_3'=>'+91 98765 43210'];
+    $accepted = $service::validate($fields, $answers);
+    assertSame([], $accepted['errors'], 'Text and international phone are accepted');
+    $record = $service::contactRecord('lead_'.str_repeat('a', 24), $page['slug'], $record['revision'], $fields, $accepted['values']);
+    assertSame('Visitor', $record['name'], 'Stored enquiry keeps the ordinary contact name');
+    assertSame('visitor@example.invalid', $record['email'], 'Stored enquiry keeps the ordinary contact email');
+    assertSame('+91 98765 43210', $record['phone'], 'Contact phone comes from a validated phone field');
+    assertTrue(str_contains($record['message'], "Your question <here>\nQuestion\nwith context"), 'Only configured labels and answers reach the owner');
+    assertSame('campaign', $record['campaign_slug'], 'The stored contact has a bounded campaign source');
+    assertTrue($pages::validRevision($record['campaign_revision']), 'The source records an exact publication revision');
+    $invalid = $service::validate($fields, ['name'=>['nested'], 'email'=>'wrong', 'detail_3'=>'123', 'role'=>'owner']);
+    assertSame(['form','name','email','detail_2','detail_3'], array_keys($invalid['errors']),
+        'Reject extra, nested, invalid and missing answers together');
+    assertSame(['detail_2'], array_keys($service::validate($fields, array_replace($answers, ['detail_2'=>str_repeat('問', 1001)]))['errors']),
+        'Server limits count Unicode characters');
+};
+
+$tests['campaign download selection and grants are bounded to the published revision'] = static function (): void {
+    $downloads = \App\Services\CampaignDownloadService::class;
+    $file = ['id'=>str_repeat('a', 32), 'name'=>'Visitor guide.pdf', 'mime'=>'application/pdf', 'bytes'=>5_000_000];
+    $manifest = ['enabled'=>true, 'files'=>[$file]];
+    $page = ['slug'=>'campaign', 'revision'=>str_repeat('b', 32), 'status'=>'published', 'campaign_downloads'=>$manifest];
+    assertSame($manifest, $downloads::manifest($page), 'The exact maximum is a supported manifest');
+    assertTrue($downloads::canAccess($page, []), 'Published downloads with no form are open');
+    assertTrue(!$downloads::canAccess(array_replace($page, ['status'=>'draft']), []), 'Draft download remains private');
+    assertTrue(!$downloads::canAccess(array_replace($page, ['campaign_downloads'=>['enabled'=>false, 'files'=>[$file]]]), []),
+        'Disabling downloads revokes even free access');
+    $oneByte = ['id'=>str_repeat('c', 32), 'name'=>'One byte.txt', 'mime'=>'text/plain','bytes'=>1];
+    foreach ([
+        [...$manifest['files'],$oneByte],
+        [$file,$file],
+        [array_replace($file,['name'=>'../guide.pdf'])],
+        [array_replace($file,['mime'=>'text/html'])],
+        [array_replace($file,['name'=>"bad\nname.pdf"])],
+    ] as $bad) {
+        assertSame(null, $downloads::manifest(['campaign_downloads'=>['enabled'=>true, 'files'=>$bad]]),
+            'Over-limit, duplicate or unsafe file descriptors are rejected');
+    }
+    $session = [];
+    $gated = $page + ['campaign_form'=>[]];
+    $now = 1800000000;
+    assertTrue(!$downloads::canAccess($gated, $session, $now), 'Gated downloads require a grant');
+    $downloads::grant($session, $gated, str_repeat('d', 32), $now);
+    assertTrue(!$downloads::canAccess($gated, $session, $now), 'A different revision cannot mint the grant');
+    $downloads::grant($session, $gated, $gated['revision'], $now);
+    assertTrue($downloads::canAccess($gated, $session, $now + $downloads::GRANT_SECONDS - 1), 'The matching session has limited access');
+    assertTrue(!$downloads::canAccess($gated, [], $now), 'The download URL does not confer access in a different session');
+    assertTrue(!$downloads::canAccess($gated, $session, $now + $downloads::GRANT_SECONDS), 'The grant expires');
+    assertTrue(!$downloads::canAccess(array_replace($gated, ['revision'=>str_repeat('d', 32)]), $session, $now),
+        'Republishing invalidates the previous grant');
+};
+
+$tests['campaign submission receipts bind session, page, revision and expiry'] = static function (): void {
+    $service = \App\Services\CampaignLeadService::class;
+    $slug = 'campaign';
+    $revision = str_repeat('a', 32);
+    $otherRevision = str_repeat('b', 32);
+    $key = str_repeat('c', 64);
+    $now = 1800000000;
+    $token = $service::issueToken($slug, $revision, $key, $now);
+    $id = $service::submissionId($slug, $revision, $token, $key, $now);
+    assertTrue(is_string($id) && preg_match('/^lead_[a-f0-9]{24}$/D', $id) === 1, 'The published form yields a bounded contact key');
+    assertSame($id, $service::submissionId($slug, $revision, $token, $key, $now + 1800), 'Retries retain one receipt identity');
+    assertTrue($id !== $service::submissionId($slug, $revision, $service::issueToken($slug, $revision, $key, $now), $key, $now),
+        'A newly opened form is an independent enquiry');
+    foreach ([
+        ['other-page',$revision,$token,$key,$now],
+        [$slug,$otherRevision,$token,$key,$now],
+        [$slug,$revision,$token,'another-session',$now],
+        [$slug,$revision,$token,'',$now],
+        [$slug,$revision,$token.'0',$key,$now],
+        [$slug,$revision,[$token],$key,$now],
+        [$slug,$revision,$token,$key,$now - 1],
+        [$slug,$revision,$token,$key,$now + 1801],
+    ] as $input) {
+        assertSame(null, $service::submissionId(...$input), 'Invalid, cross-session or expired receipts are rejected');
+    }
 };
 
 $tests['blog enhancement candidates preserve manual images and distinguish provider failures'] = static function (): void {
@@ -4551,6 +4711,36 @@ $tests['admin product preview protects hidden catalog content and disables purch
     $view = file_get_contents(app_path('views/public/product.php'));
     assertTrue(str_contains($view, 'Admin preview · Not for sale'), 'Preview must be clearly labeled');
     assertTrue(strpos($view, 'if (empty($adminPreview))') < strpos($view, 'id="product-cart-form"'), 'Preview must not render purchase controls');
+};
+
+$tests['product detail places native purchase actions before specifications and respects stock'] = static function (): void {
+    $renderProduct = static function (array $stock, bool $adminPreview = false): string {
+        $product = $stock + [
+            'slug' => 'fixture-pendant',
+            'name' => 'Fixture pendant',
+            'price' => 250,
+            'specifications' => ['Item type' => 'Pendant'],
+        ];
+        $related = [];
+        ob_start();
+        require app_path('views/public/product.php');
+        return (string)ob_get_clean();
+    };
+
+    $available = $renderProduct(['stock_status' => 'active']);
+    $form = strpos($available, 'id="product-cart-form"');
+    $specifications = strpos($available, 'id="product-specifications"');
+    assertTrue($form !== false && $specifications !== false && $form < $specifications, 'Purchase form should appear before specifications');
+    assertTrue(str_contains($available, 'name="redirect" value="/checkout"'), 'Buy Now remains a native submit to checkout');
+    assertTrue(str_contains($available, 'for="qty-input"'), 'Quantity field has a visible associated label');
+
+    foreach ([$renderProduct(['stock_status' => 'out_of_stock']), $renderProduct([])] as $unavailable) {
+        assertTrue(!str_contains($unavailable, 'id="product-cart-form"'), 'Unavailable items must not offer a form the cart rejects');
+        assertTrue(str_contains($unavailable, 'Out of stock'), 'Unavailable items explain why the purchase action is absent');
+    }
+
+    $preview = $renderProduct(['stock_status' => 'active'], true);
+    assertTrue(!str_contains($preview, 'id="product-cart-form"'), 'Owner preview never shows purchase actions');
 };
 
 $tests['a coupon obeys its dates, spend range and usage limits'] = function (): void {
