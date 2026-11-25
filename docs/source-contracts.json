@@ -5,7 +5,7 @@
         "agents": {
             "source_sha256": "bde2bde8a9de8bf32dc819c741e87a13e30ec696f95f2049814fee7028c63a73",
             "references_sha256": "712cfa82eeaf1799825bf88c52ccd4fc11eb229ca750401d97e1d77bbd037bbb",
-            "review_note": "Read the exact bounded provider readiness and monitoring paths. The new synchronous short-hold recovery uses the prescribed actor and tool boundaries, and the Vinod screen continues to show only sanitized agent run and quality evidence."
+            "review_note": "Reviewed the merged operator monitoring and provider recovery references. The published analytics group and validated short-hold behavior match the source, and no request or provider secrets enter navigation or review evidence."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -30,7 +30,7 @@
         "google-tags": {
             "source_sha256": "4834fd90479519dba801e19dbd3c1e434d62cf7cb6a4915eed9905f1c21bb8b5",
             "references_sha256": "ac5f69a9cfd73428a1702be69cd944a1ee4f8ed3211c040ed755356134044065",
-            "review_note": "Compared the merged Integrations reference against Google tagging, owner reporting and PageSpeed. The Site analytics menu retains the correct connection and identity checks."
+            "review_note": "Checked the dashboard and Site analytics links against the Google reporting and PageSpeed guides. The views expose the existing connection, data window and unavailable states, and the Luna example applies to the separate AI connection."
         },
         "http-errors": {
             "source_sha256": "63602cadbe59868b0d25a1b00729a589e75d1b31c6ea3a1b25c1e5a46fd06d50",
@@ -50,7 +50,7 @@
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
             "references_sha256": "73c4e7ed550ac139d52f0e560ab34a74738e8f4aa2ae6fc87c9e635c9dcd4d43",
-            "review_note": "Reviewed the merged Integrations reference after the tool batch and Luna changes. Site analytics links point to the existing owner pages and preserve platform client configuration and access guidance."
+            "review_note": "Checked the merged Integrations guide against the local MCP client controller and form. The owner issues and revokes a paid-sales grant, and the trusted STDIO client receives it through its process environment."
         },
         "media": {
             "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
