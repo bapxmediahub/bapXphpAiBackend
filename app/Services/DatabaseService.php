@@ -1010,7 +1010,7 @@ final class DatabaseService {
 
         $response = $this->remoteMutation('count_storefront_activity', 'audit_events', ['since' => $since], invalidateCache: false);
         $counts = $response['result'] ?? null;
-        if (!is_array($counts) || count($counts) !== 2
+        if (($response['success'] ?? null) !== true || !is_array($counts) || count($counts) !== 2
             || !is_int($counts['cart_add'] ?? null) || $counts['cart_add'] < 0
             || !is_int($counts['checkout_initiated'] ?? null) || $counts['checkout_initiated'] < 0) {
             throw new \RuntimeException('Database returned invalid storefront activity counts.');

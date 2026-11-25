@@ -18,14 +18,14 @@
             "review_note": "Reviewed the downloaded file resolver and schema field against the source contracts for product orders and payments. This route uses the authored page publication and enquiry grant."
         },
         "content": {
-            "source_sha256": "6ed1b0682de0ec02e129e85a80160a1009a93dbb831d139706a05d442a76c802",
+            "source_sha256": "22a3c715c41de9fe716066632b9f563ba72bbaf88420cff8cfe9082b62055251",
             "references_sha256": "9f4b89e9662c998b53e5805a3e3177dd84341cf6c61839f1ca0cd97e062a1473",
-            "review_note": "Checked the campaign entitlement route, authored settings and protected storage references against the content and storage guides. The dashboard uses a separate one-query audit projection."
+            "review_note": "Checked the dashboard-only envelope validation against campaign receipt and entitlement paths. The separate campaign bridge contracts retain existing behavior."
         },
         "foundation": {
-            "source_sha256": "e0d5b94723088650ef04d7be591210e22b6cc3bcf9ffbeba3af0ad301d4ddacc",
+            "source_sha256": "c4ab3eff00f320185e292979a674f736c23d027d787de55f5c4431bfa3e6b4bd",
             "references_sha256": "c3165ef24301726715e782e931c2fa3c2e7ff1f70e61adf8662c15aae8c1557e",
-            "review_note": "Compared the fixed audit bridge, PDO cleanup and original timestamp parser with the storage guide. The private download directory and revision-aware entitlement remain documented."
+            "review_note": "Cross-checked the exact cutoff, streamed database read and strictly boolean success envelope against the storage guide and malformed-result regressions."
         },
         "google-tags": {
             "source_sha256": "366fdab983979cc3a1fec22fb6da4afb61072d6fd24cd0ba2271d67a0c063019",
@@ -68,9 +68,9 @@
             "review_note": "Cross-checked the dashboard and authored page map entries with public MCP and A2UI. The storefront count remains owner analytics through the authenticated data bridge."
         },
         "remote-commerce": {
-            "source_sha256": "56272e2df67a9bf604d722200664aef95a8846b39ccbb539fdc3ddad430f417a",
+            "source_sha256": "c4f1a27876f086e268d738bf397f5505ac13ab2e57442dc1744d1242f8362368",
             "references_sha256": "f9c8aa084e1f0e49bea48d97b588303f78f6457ee8128f5da9b33f0f369d432c",
-            "review_note": "Reviewed the fixed authenticated storefront count alongside Checkout and campaign controls. It reads the audit table independently of checkout writes and entitlement handling."
+            "review_note": "Reviewed the fixed storefront action and its boolean success requirement alongside Checkout. The existing cart and checkout bridge contracts are unchanged."
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",

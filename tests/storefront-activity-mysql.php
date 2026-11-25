@@ -91,6 +91,11 @@ if (PHP_SAPI === 'cli-server') {
         echo '{"success":true,"result":{"cart_add":"0","checkout_initiated":0}}';
         exit;
     }
+    if (isset($_GET['bad_success'])) {
+        $badSuccess = $_GET['bad_success'] === 'string' ? 'false' : 1;
+        echo json_encode(['success' => $badSuccess, 'result' => SiteTelemetryService::counts([])], JSON_THROW_ON_ERROR);
+        exit;
+    }
     $cutoff = (int)getenv('BAPX_STOREFRONT_FIXTURE_CUTOFF');
     $empty = isset($_GET['empty']);
     $pdo = (new DatabaseService(true))->connection();
@@ -199,6 +204,8 @@ try {
     $failures = [
         [$bridge, $remoteCutoff - 120],
         [$bridge.'?malformed', $remoteCutoff],
+        [$bridge.'?bad_success=string', $remoteCutoff],
+        [$bridge.'?bad_success=number', $remoteCutoff],
         [$bridge.'?query_failed', $remoteCutoff],
         ['http://'.$address.'/missing', $remoteCutoff],
         ['http://127.0.0.1:1/remotedb', $remoteCutoff],
