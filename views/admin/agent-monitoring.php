@@ -1,14 +1,18 @@
-<?php use App\Services\AuditLogService; ?>
+<?php
+use App\Services\AuditLogService;
+
+$ownerAgentName ??= 'Enterprise Agent';
+?>
 <div class="admin-card" style="margin-bottom:var(--space-lg);">
     <h2>Last 24 hours</h2>
-    <p>Track response paths and failures for customer support and Enterprise Agent. Model responses still need quality review; these counts do not measure answer accuracy.</p>
+    <p>Track response paths and failures for customer support and <?= e($ownerAgentName) ?>. Model responses still need quality review; these counts do not measure answer accuracy.</p>
     <?php if (($agentMonitoring ?? null) === null): ?>
         <p role="status">Monitoring is temporarily unavailable.</p>
     <?php else: ?>
         <div class="table-wrap" data-no-table-search><table>
             <thead><tr><th>Agent</th><th>Requests</th><th>Model</th><th>Local data</th><th>Fallback</th><th>Sign-in guidance</th><th>Drafts</th><th>Errors</th><th>Average time</th><th>Median (p50)</th><th>95th percentile</th><th>Request error rate</th><th>Provider attempt errors</th><th>Tool errors</th></tr></thead>
             <tbody><?php foreach ($agentMonitoring as $surface => $metrics): ?>
-                <tr><th><?= $surface === 'support' ? 'Customer support' : 'Enterprise Agent' ?></th>
+                <tr><th><?= e($surface === 'support' ? 'Customer support' : $ownerAgentName) ?></th>
                 <?php foreach (['requests', 'model', 'local', 'fallback', 'private_account', 'draft', 'error'] as $metric): ?><td><?= (int)$metrics[$metric] ?></td><?php endforeach; ?>
                 <td><?= $metrics['average_ms'] === null ? 'No requests yet' : e(number_format($metrics['average_ms'] / 1000, 2)) . ' s' ?></td>
                 <td><?= $metrics['p50_ms'] === null ? '—' : e(number_format($metrics['p50_ms'] / 1000, 2)) . ' s' ?></td>
@@ -24,25 +28,25 @@
         <div class="table-wrap" data-no-table-search><table>
         <thead><tr><th>Agent</th><th>Provider / requested model</th><th>Transfers</th><th>HTTP success</th><th>Transfer errors</th><th>Accepted answers</th><th>Mean transfer time</th><th>Observed tokens</th><th>Failure evidence</th></tr></thead>
         <tbody><?php foreach($agentMonitoring as $surface=>$metrics): foreach(($metrics['provider_models']??[]) as $m): ?>
-        <tr><th><?= $surface==='support'?'Support':'Enterprise' ?></th><td><?= e($m['provider']) ?> · <?= e($m['model']) ?></td>
+        <tr><th><?= e($surface === 'support' ? 'Customer support' : $ownerAgentName) ?></th><td><?= e($m['provider']) ?> · <?= e($m['model']) ?></td>
             <td><?= (int)$m['attempts'] ?></td><td><?= (int)$m['http_success'] ?></td><td><?= (int)$m['errors'] ?></td>
             <td><?= (int)$m['accepted_answers'] ?></td><td><?= e(number_format($m['duration_ms']/max(1,$m['attempts'])/1000,2)) ?> s</td>
             <td><?= $m['usage_reported']?e(number_format($m['observed_tokens'])):'Not reported' ?><br><small><?= (int)$m['usage_reported'] ?>/<?= (int)$m['attempts'] ?> transfers reported usage</small></td>
             <td><?php foreach($m['diagnoses'] as $key=>$count): if($key==='http_success')continue; ?><?= e(AuditLogService::DIAGNOSTICS[$key][0]) ?>: <?= (int)$count ?><br><?php endforeach; ?></td></tr>
         <?php endforeach; endforeach; ?></tbody></table></div>
         <?php foreach($agentMonitoring as $surface=>$metrics): ?>
-            <p><strong><?= $surface==='support'?'Support':'Enterprise' ?> recovery and failure stages:</strong>
+            <p><strong><?= e($surface === 'support' ? 'Customer support' : $ownerAgentName) ?> recovery and failure stages:</strong>
             <?= (int)($metrics['recovered_model_runs']??0) ?> accepted answers after transfer errors.
             <?php foreach(($metrics['failure_stages']??[]) as $stage=>$count): ?><?= e(str_replace('_',' ',$stage)) ?>: <?= (int)$count ?>; <?php endforeach; ?></p>
         <?php endforeach; ?>
         <?php foreach ($agentMonitoring as $surface => $metrics): ?>
-            <p><strong><?= $surface === 'support' ? 'Customer support' : 'Enterprise Agent' ?> failure reasons:</strong>
+            <p><strong><?= e($surface === 'support' ? 'Customer support' : $ownerAgentName) ?> failure reasons:</strong>
             <?php if (empty($metrics['reasons'])): ?>No categorized failures recorded.<?php else: ?>
                 <?php foreach ($metrics['reasons'] as $category => $count): ?><?= e(str_replace('_', ' ', $category)) ?>: <?= (int)$count ?>; <?php endforeach; ?>
             <?php endif; ?></p>
             <?php if ($run = $metrics['latest_provider_run']): ?>
                 <details>
-                    <summary><?= $surface === 'support' ? 'Customer support' : 'Enterprise Agent' ?> latest provider run · <?= e($run['outcome']) ?></summary>
+                    <summary><?= e($surface === 'support' ? 'Customer support' : $ownerAgentName) ?> latest provider run · <?= e($run['outcome']) ?></summary>
                     <p><time datetime="<?= e($run['at']) ?>"><?= e($run['at']) ?></time></p>
                     <div class="table-wrap" data-no-table-search><table>
                         <thead><tr><th>Attempt</th><th>Model</th><th>HTTP status</th><th>Transport error</th><th>Elapsed</th><th>Transfer result</th></tr></thead>
@@ -66,7 +70,7 @@
     <h2>Recent runs</h2>
     <p>Up to 20 runs from each agent in the last 24 hours. Expand a run to inspect its provider attempts and tool outcomes.</p>
     <?php foreach ($agentMonitoring as $surface => $metrics): ?>
-        <h3><?= $surface === 'support' ? 'Customer support' : 'Enterprise Agent' ?></h3>
+        <h3><?= e($surface === 'support' ? 'Customer support' : $ownerAgentName) ?></h3>
         <?php if ($metrics['recent_runs'] === []): ?><p>No runs in this period.</p><?php endif; ?>
         <?php foreach ($metrics['recent_runs'] as $run): ?>
             <details class="agent-monitor-run">
@@ -285,11 +289,4 @@
     <?php endforeach; ?>
     </tbody></table></div>
     <?php endif; ?>
-    <h3>First-party commerce events (30 days)</h3>
-    <p>Counts are successful instrumented actions, not unique visitors or a conversion rate.</p>
-    <div class="admin-stats" style="margin:var(--space-md) 0;">
-    <?php foreach (($commerceTelemetry ?? []) as $event => $count): ?>
-        <div class="admin-stat"><div class="admin-stat__value"><?= (int)$count ?></div><div class="admin-stat__label"><?= e(str_replace('_',' ',ucwords($event,'_'))) ?></div></div>
-    <?php endforeach; ?>
-    </div>
 </section>

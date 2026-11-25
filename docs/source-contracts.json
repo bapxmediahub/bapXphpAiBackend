@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "f12b24e4feac798f15606827d05005703e3d4491fd0b0d9c152500940d707d0e",
-            "references_sha256": "9c8e3099f7c47aa65c0dcd480fb65ac9874f9348f03269bf36e99a7a38fa03d5",
-            "review_note": "Matched the Support controller response, stored evaluation and service trace fields to the new transcript reference and agent observability guide. The current Luna transport has the same evaluated failure boundary and opaque trace identifier. Verified the merged short-hold readiness path, including original-model continuation and the existing correlation/reference behavior."
+            "source_sha256": "bde2bde8a9de8bf32dc819c741e87a13e30ec696f95f2049814fee7028c63a73",
+            "references_sha256": "80ba950e02684caa72da15953f03979c3d32bef9f4c6246957a50c7b3dc69cc1",
+            "review_note": "Matched the opaque trace ID, evaluated HTTP 503 response and saved-turn replay to Support and the observability guide. Dashboard Commerce shows storefront counters while Agent Monitoring retains request, tool and provider evidence."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -20,17 +20,17 @@
         "content": {
             "source_sha256": "dc7ed13eb82f5ed7056e5b06c66dc874b229aa19e7a6fa32ca738a34df5f3b14",
             "references_sha256": "d283e57698fc4ae10cba725749a1723c0f5bea1825f89812b2bf7a15fb2daa20",
-            "review_note": "Checked the published Support article instructions against the new transcript reference and existing contact route. Article frontmatter still matches the published help category."
+            "review_note": "Compared the published Support article and its existing contact link with the rendered Support reference that customers can share after an evaluated failure."
         },
         "foundation": {
-            "source_sha256": "b8e8e05e07c45c8a482066602a139279a73693f0ceca2d1e4b1405eb12d01686",
+            "source_sha256": "7d10a0293ed9e27d0d8b5e6b87e2e14ac904e882209495e278a0bac35aec7782",
             "references_sha256": "6eba6651fd8e747d8053034a7812f9d41e6dba5a405bc1d1ed669556c8f2474b",
-            "review_note": "Checked that the new option stays in the existing encrypted Integrations record and both agent surfaces reuse their existing shared PHP transport and actor-scoped tool policy."
+            "review_note": "Rechecked architecture, backend evidence and hosted route boundaries after integrating the provider config change. Analytics continues to read existing aggregates and carries explicit unavailable states."
         },
         "google-tags": {
-            "source_sha256": "9f09044f67f983b4e87eac4f26391194a914bd7f7f238c6c79c2e0e28abe5c60",
-            "references_sha256": "40679acbd9e3b5c54152a932b94de2be6e8eb363a80f35ae19d0f3f8c4390ddc",
-            "review_note": "Reviewed the shared layout head and the Google tag rendering boundary. The reference is rendered in the Support submit handler after a failed response."
+            "source_sha256": "3f31630475b641aa4d160508d3dd1fd4b13e80dc3eca9f51fd6ae3c1532c33a1",
+            "references_sha256": "d08526e2286d28bd69bdf8e76d5a0167c16d2f99069b5c087e33ba725d2c881b",
+            "review_note": "Reviewed the shared public layout and frontend guide for Support reference rendering, and matched the owner Site analytics navigation and connection states to the integration guide."
         },
         "http-errors": {
             "source_sha256": "63602cadbe59868b0d25a1b00729a589e75d1b31c6ea3a1b25c1e5a46fd06d50",
@@ -38,39 +38,39 @@
             "review_note": "Compared the layout-specific title assignment with the request-error boundary. Website error status, sanitized error text and public not-found rendering follow their existing handlers."
         },
         "interface": {
-            "source_sha256": "c65d49c63b7d414079ec51b1f404bd72d8b7d5a201ec9678228dad7a3e56145b",
-            "references_sha256": "0c08489101d7c7caa52362bde4e94f32abd656c9fa755fd10eb1f9619d0c5f86",
-            "review_note": "Reviewed the reference in the live conversation region, inline error and contact action against the design and frontend guidance. Checked reference readability at desktop and 375px. Confirmed the reference follows the error text before any separate action buttons."
+            "source_sha256": "74a6ce5338ccfaa406666d6cb83bb8f0e7ed64dc4c105dd405b1c1ff99161fcc",
+            "references_sha256": "2172fd85115918ac57e5dd9bb9eb7e7a02bf12d4b7714f4142903c914fdb61b3",
+            "review_note": "Compared the error, selectable Support reference and separate contact action with Design. Verified the owner dashboard navigation guidance matches the current Commerce, Site analytics and Enterprise Agent layout."
         },
         "mail": {
-            "source_sha256": "6895291447775bb17e9bef6c3d38d388ed65b3f5985b4c79bc71a9b4fa222c16",
+            "source_sha256": "20e83e649ed008a9061724716681cff8a4c7888b7e5520459aed8843abdc5cda",
             "references_sha256": "903e7da848c1e0472ce9a1823b94afc21004e564d12041ee0456918176a6cc72",
-            "review_note": "Reviewed Support controller failure and replay handling against email configuration and ticket boundaries. Verified outbound mail and persisted receipt handling remain separate from chat presentation."
+            "review_note": "Checked the two changed AdminController rendering paths against owner email and delivery-state guidance. Queue and mailbox behavior continues through the existing mail actions."
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
-            "references_sha256": "0b4814b02f21a481f4cb06d148700595ebfa01586ed4388f52bdf093226b61d9",
-            "review_note": "Checked that the endpoint example and supported model guidance change only the existing AI connection documentation. The local reporting client setup remains accurate."
+            "references_sha256": "73c4e7ed550ac139d52f0e560ab34a74738e8f4aa2ae6fc87c9e635c9dcd4d43",
+            "review_note": "Checked the merged Integrations guide against the local MCP client controller and form. The owner issues and revokes a paid-sales grant, and the trusted STDIO client receives it through its process environment."
         },
         "media": {
             "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
-            "references_sha256": "34433348ceb97accb0aea9b04f930b1ec0936825154d70c9ae872f155e0d2cbd",
-            "review_note": "Cross-checked the revised owner UI skill with the current media selection, confirmation and metadata flows. The existing media documentation still describes those operations."
+            "references_sha256": "743e6fad151e2f5729436c3d42b7a23bbd7b1ccde63ec7b26823c4e0cb505c95",
+            "review_note": "Reviewed the owner skill changes against media selection, deletion and metadata guidance. The new analytics section describes navigation and owner counts, and the media controls follow their documented path."
         },
         "operator-help": {
-            "source_sha256": "edea71088f1911cabcd407f786597491fa19ad13de2092cd1eb1edd2a1edaefd",
-            "references_sha256": "9cf0748bb19ef227c7e6477ae9716c924b2cf8de7a5e0c85dba2c850338d3f78",
-            "review_note": "Compared the Support error and contact flow with the published help guide. The guide explains when to share the displayed reference."
+            "source_sha256": "bc3d326d2235380f0965d3c8fa5130c1b5ecbaab05e46b15da804f7dc1dec52b",
+            "references_sha256": "bb25746eabc7ac4fad51ed082d34e5f80af4bdb10f4e649f6626ee2e01ff5970",
+            "review_note": "Compared the customer Support guide with the evaluated error and contact flow. Reviewed the owner links and guides for Commerce, Site analytics and Agent Monitoring against their current navigation."
         },
         "public-mcp": {
-            "source_sha256": "234155f55b0f66f669f6422a85acc30a6a59ebf216d8f682d7a212cd01ee7358",
+            "source_sha256": "6855ccd4ae97d341559568e5e6799115f860d8bed5216f003680919a474ab934",
             "references_sha256": "d1e0824e500f825020b2cccfaad7fd435a8fefbe73d61e1b5f05fd54fed0b829",
-            "review_note": "Checked the rendered Support enquiry controls against the current public MCP and A2UI documentation. Focus scrolling keeps the existing tool and submission contracts."
+            "review_note": "Cross-checked the updated route associations with Public MCP and A2UI guidance. The moved storefront evidence is rendered through the authenticated Dashboard and the published contracts stay scoped."
         },
         "remote-commerce": {
             "source_sha256": "c7246149f55063767e06c3f5493b71b6d506947252fa69336a767a7737be0245",
-            "references_sha256": "44056cfa2924108d4536d80aaadc375533e2d223e723af6a1326eaf9a8aa2c00",
-            "review_note": "Reviewed the shared Support layout with the native checkout and recovery contract. The browser fixture exercises cart, checkout and enquiry alongside the reference."
+            "references_sha256": "e9f9b5623b844a3e3903f77bea3d9dfe17aa71a6739a21a5a59aa381956ef287",
+            "review_note": "Compared the Support error presentation and native checkout recovery with the shared layout and Design. Dashboard Commerce retains the documented first-party 30-day count window and existing checkout operations."
         },
         "sales-channels": {
             "source_sha256": "36385e3d18e26f524d0efdd12d26cd8386e368fb5d27441460c688ffdff28b92",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed SettingsService module resolution and Merchant feed guidance. Dropping a retired header slot leaves the saved catalog eligibility inputs intact."
         },
         "workflow": {
-            "source_sha256": "41faf56a5bccaf85e06761bb8f32e61c32539e893576411e582a73b0fb28c262",
+            "source_sha256": "fa46f15d6de11c852cd7dcd43a3115649cecd8b46e73a2f31dbe1cbf6cfd6140",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Checked the frontend skill guidance against the Support browser fixture and the existing source review and desktop and phone verification procedure."
+            "review_note": "Compared the revised Support frontend skill with the desktop and phone browser fixture and review instructions. The owner analytics guidance follows the existing route and approval workflow."
         }
     }
 }

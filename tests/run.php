@@ -704,6 +704,12 @@ $tests['admin dashboard resolves all services and renders its actual zero-data p
         assertTrue(str_contains($html,'<h2 id="dashboard-commerce-title"'),'Commerce overview is a section heading');
         assertTrue(str_contains($html,'revenue-chart-title'),'Real dashboard controller reaches its chart template');
         assertTrue(str_contains($html,'No paid orders in this period.'),'Zero-data rendering remains safe through the full controller');
+        assertTrue(str_contains($html,'id="web-analytics" data-page-section="Site analytics"'),'Site analytics keeps the direct dashboard bookmark');
+        assertTrue(str_contains($html,'data-commerce-event="cart_add"') && str_contains($html,'data-commerce-event="checkout_initiated"'),'Storefront action totals appear on the dashboard');
+        assertTrue(!str_contains($html,'Storefront activity is temporarily unavailable.'),'An empty readable audit feed is valid data');
+        ob_start();$controller->agentMonitoring();$monitoring=(string)ob_get_clean();
+        assertTrue(str_contains($monitoring,'Provider and model reliability'),'Agent Monitoring retains provider evidence');
+        assertTrue(!str_contains($monitoring,'data-commerce-event=') && !str_contains($monitoring,'First-party commerce events'),'Agent Monitoring no longer shows unrelated storefront totals');
         assertTrue(!str_contains($html,'Fatal error'),'Controller page does not emit a runtime error');
     } finally {
         while(ob_get_level()>$level)ob_end_clean();
@@ -1286,6 +1292,9 @@ $tests['site profile selects only approved deployment identity and public channe
     ], 'https://caldera.example.test', 'Legacy SEO name', 'Environment name');
     assertSame('Sri Panchami Spiritual', $reference->name(), 'Reference default keeps its name');
     assertSame('Caldera & Iris', $fixture->name(), 'Published name wins over previous configuration');
+    assertSame('Enterprise Agent Vinod', $reference->ownerAgentName(), 'The reference profile supplies its owner workspace label');
+    assertSame('Enterprise Agent', $fixture->ownerAgentName(), 'An independent deployment uses the neutral owner label');
+    assertTrue(!isset($reference->valuesForEditor()['owner_agent_display_name']), 'The owner label stays outside the public profile fields');
     assertSame([
         'name' => 'Caldera & Iris', 'path' => '/contact',
         'phones' => [['label' => '+44 (20) 7000-0123', 'number' => '+442070000123']],
