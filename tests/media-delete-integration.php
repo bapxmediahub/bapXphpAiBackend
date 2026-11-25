@@ -120,6 +120,45 @@ try {
     }
     if(!is_file($files[2]))throw new RuntimeException('Failed DB mutation must restore upload');
 
+    $pages = new \App\Services\AuthoredPageService();
+    $draft = ['slug'=>'media-fixture', 'title'=>'Fixture page', 'content'=>'Fixture content', 'status'=>'draft',
+        'expected_revision'=>'0', 'header_image_url'=>$urls[1], 'header_image_alt'=>'Fixture alt'];
+    if (($media->findPageHeaderUpload($urls[1])['id'] ?? null) !== $ids[1]) {
+        throw new RuntimeException('Exact owned upload should resolve across the bridge');
+    }
+    $pages->save($draft);
+    $saved = $pages->find($draft['slug']);
+    if (($saved['header_image_url'] ?? null) !== $urls[1] || ($saved['header_image_alt'] ?? null) !== 'Fixture alt'
+        || $pages->findPublic($draft['slug']) !== null) {
+        throw new RuntimeException('Header and alternative text must save with the same private draft');
+    }
+    $edit = array_replace($draft, ['expected_revision'=>$saved['revision'], 'status'=>'published']);
+    try {
+        $pages->save(array_replace($edit, ['header_image_url'=>'/assets/images/media/2026/11/unknown-fixture.webp']));
+        throw new RuntimeException('An unavailable header must be rejected by the bridge');
+    } catch (InvalidArgumentException $error) {
+        if (!str_contains($error->getMessage(), 'available uploaded image')) throw $error;
+    }
+    $pages->save($edit);
+    if (($pages->findPublic($draft['slug'])['header_image_url'] ?? null) !== $urls[1]) {
+        throw new RuntimeException('Published page must expose the selected header');
+    }
+    try {
+        $pages->save(array_replace($edit, ['header_image_url'=>'']));
+        throw new RuntimeException('A stale edit cannot clear a newer attachment');
+    } catch (DomainException) {}
+    try {
+        $media->delete($ids[1]);
+        throw new RuntimeException('An authored-page reference must block binary deletion');
+    } catch (InvalidArgumentException $error) {
+        if (!str_contains($error->getMessage(), 'referenced')) throw $error;
+    }
+    if (!is_file($files[1])) throw new RuntimeException('The referenced header file was removed');
+    $pages->save(array_replace($edit, ['expected_revision'=>$pages->find($draft['slug'])['revision'], 'header_image_url'=>'']));
+    if (array_key_exists('header_image_url', $pages->findPublic($draft['slug']))) {
+        throw new RuntimeException('Clearing the choice must remove the saved header field');
+    }
+
     if($media->delete($ids[1])!==true || is_file($files[1])) {
         throw new RuntimeException('Unused disposable uploaded image was not deleted');
     }
@@ -139,7 +178,7 @@ try {
         if (!str_contains($error->getMessage(), 'fixture read unavailable')) throw $error;
         if (!is_file($files[0])) throw new RuntimeException('Unavailable records lost their binary');
     }
-    echo "Isolated media deletion: current or unverifiable usage blocked; stale usage reconciled; failed DB mutation rolled back.\n";
+    echo "Isolated media deletion: current or unverifiable usage blocked; authored header save and clear verified; stale usage reconciled; failed DB mutation rolled back.\n";
 } finally {
     if(is_resource($bridge)){proc_terminate($bridge);proc_close($bridge);}
     foreach($files as $file)if(is_file($file))unlink($file);

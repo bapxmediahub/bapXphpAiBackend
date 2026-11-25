@@ -1,4 +1,9 @@
-<?php $editing = ($form['original_slug'] ?? '') !== ''; ?>
+<?php
+$editing = ($form['original_slug'] ?? '') !== '';
+$headerImages ??= [];
+$selectedHeader = $form['header_image_url'] ?? '';
+$knownHeader = in_array($selectedHeader, array_column($headerImages, 'url'), true) ? $selectedHeader : '';
+?>
 <section class="admin-card" aria-labelledby="pages-title">
     <h1 id="pages-title">Pages</h1>
     <?php if ($pages): ?>
@@ -34,6 +39,33 @@
         <label>Title <input name="title" maxlength="160" value="<?= e($form['title'] ?? '') ?>" required></label>
         <label>Page address under /pages/ <input name="slug" maxlength="32" pattern="[a-z0-9]+(-[a-z0-9]+)*" placeholder="visiting-guide" value="<?= e($form['slug'] ?? '') ?>" <?= $editing ? 'readonly' : '' ?> required>
         <small><?= $editing ? 'The address is fixed for this page.' : 'Use lowercase letters, digits and hyphens. The address stays fixed after saving.' ?></small></label>
+        <fieldset class="page-header-media">
+            <legend>Header image</legend>
+            <label for="page-header-image">Choose uploaded image</label>
+            <select id="page-header-image" name="header_image_url" aria-describedby="page-header-image-help">
+                <option value="">No header image</option>
+                <?php foreach ($headerImages as $image): ?>
+                    <option value="<?= e($image['url']) ?>" <?= $knownHeader === $image['url'] ? 'selected' : '' ?>><?= e($image['original_name'] ?? $image['filename'] ?? basename($image['url'])) ?></option>
+                <?php endforeach; ?>
+            </select>
+            <small id="page-header-image-help">Use an uploaded JPG, PNG, WebP or GIF from Media Library.</small>
+            <?php if ($selectedHeader !== '' && $knownHeader === ''): ?>
+                <p role="status">The previous selection is unavailable. Choose another image or save without a header.</p>
+            <?php endif; ?>
+            <img class="page-header-media__selection" id="page-header-thumbnail"
+                <?php if ($knownHeader !== ''): ?>src="<?= e($knownHeader) ?>"<?php else: ?>hidden<?php endif; ?>
+                alt="" decoding="async">
+            <label for="page-header-alt">Alternative text</label>
+            <input id="page-header-alt" name="header_image_alt" maxlength="255" value="<?= e($form['header_image_alt'] ?? '') ?>">
+            <small>Describe what the image conveys. Leave blank when it is decorative.</small>
+            <div class="page-header-media__upload" id="page-header-upload-controls" hidden>
+                <label for="page-header-file">Image file</label>
+                <input id="page-header-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+                <button type="button" class="btn btn-outline" id="page-header-upload">Upload to Media Library</button>
+                <p id="page-header-upload-status" role="status"></p>
+            </div>
+            <noscript><a href="/admin/media" target="_blank" rel="noopener">Open Media Library to upload in a new tab</a></noscript>
+        </fieldset>
         <label>Page content <textarea name="content" rows="13" required><?= e($form['content'] ?? '') ?></textarea>
         <small>Write in Markdown. HTML tags appear as text.</small></label>
         <label>Visibility <select name="status">
@@ -41,7 +73,7 @@
             <option value="published" <?= ($form['status'] ?? '') === 'published' ? 'selected' : '' ?>>Published</option>
         </select></label>
         <div class="admin-card__actions">
-            <button class="btn btn-outline" name="action" value="preview">Preview</button>
+            <button class="btn btn-outline" name="action" value="preview" formaction="/admin/pages/save#page-preview">Preview</button>
             <button class="btn btn-primary" name="action" value="save">Save page</button>
         </div>
         </div>
@@ -62,8 +94,14 @@
     <?php endif; ?>
 </section>
 <?php if (isset($preview)): ?>
-    <section class="admin-card" aria-labelledby="page-preview"><h2 id="page-preview">Unsaved preview</h2>
-        <h3><?= e($form['title']) ?></h3><div class="blog-post__body"><?= $preview ?></div>
+    <section id="page-preview" class="admin-card" tabindex="-1" aria-labelledby="page-preview-title">
+        <h2 id="page-preview-title">Unsaved preview</h2>
+        <?php
+        $page = $preview['page'];
+        $html = $preview['html'];
+        $authoredPreview = true;
+        require app_path('views/public/authored-page.php');
+        ?>
     </section>
 <?php endif; ?>
 
