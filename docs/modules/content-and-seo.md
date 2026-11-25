@@ -149,6 +149,24 @@ Returning a page to Draft withdraws it from all three. The public renderer
 treats HTML tags as literal text. Existing About, Terms and Privacy routes
 keep their existing templates and URLs.
 
+**Header image** accepts an existing uploaded raster image or a new upload
+through Media Library. Add alternative text if the image carries information,
+or leave it blank for a decorative image. **Preview** uses the same PHP
+presentation and sanitized Markdown as the published page. This follows the
+server-side rendering pattern of deriving the display from validated content
+and attributes at request time.
+[WordPress dynamic rendering reference](https://developer.wordpress.org/block-editor/getting-started/fundamentals/static-dynamic-rendering/)
+
+The image and its alternative text participate in the same revision check as
+the Markdown. Select **No header image** and save to clear them. Page rows
+created without a header render the original text-only layout. The upload
+must belong to the current deployment's Media Library. The database host
+serializes attachment and metadata deletion for the same upload. A saved
+reference from a draft or published page keeps its upload in the library until
+the page clears or replaces that image. Media Library image URLs serve the
+uploaded assets while the authored page and its unsaved preview remain under
+their existing publication and owner access rules.
+
 The dedicated About route uses the deployment-owned public story descriptor
 in config/about.php and a reusable PHP editorial view, with semantic theme
 tokens, approved image dimensions, and existing contact and module services.
@@ -169,8 +187,8 @@ compares the current revision and removes only the corresponding page row.
 Recreating the same address generates a new revision so a stale form cannot
 edit or delete the replacement.
 
-The authored-page editor also saves unsent title, address and Markdown locally
-in the current browser, scoped to the signed-in owner and original page address.
+The authored-page editor also saves unsent title, address, Markdown and header
+selection locally in the current browser, scoped to the signed-in owner and original page address.
 It offers explicit restore/discard for the same revision and Markdown download
 rather than restore when the saved revision changed. Publication status is
 never autosaved or restored. Browser drafts are not server-side drafts or a

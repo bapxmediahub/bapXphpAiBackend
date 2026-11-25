@@ -2480,6 +2480,47 @@ $tests['authored pages validate immutable addresses and render Markdown with lit
     assertSame(0, $dom->getElementsByTagName('span')->length, 'Literal raw markup cannot produce a span element');
 };
 
+$tests['authored header uses only bounded library paths and escaped page-specific text'] = static function (): void {
+    $service = \App\Services\AuthoredPageService::class;
+    $input = ['slug'=>'guide', 'title'=>'Guide', 'content'=>'## Heading', 'status'=>'draft'];
+    $path = '/assets/images/media/2026/11/guide.webp';
+    $record = $service::record($input + ['header_image_url'=>$path, 'header_image_alt'=>'  A <temple> entrance  ']);
+    assertSame($path, $record['header_image_url'], 'A canonical uploaded URL is retained for the ownership check');
+    assertSame('A <temple> entrance', $record['header_image_alt'], 'Alternative text is trimmed as plain text');
+    assertTrue(!array_key_exists('header_image_url', $service::record($input)), 'Old pages keep their original row shape');
+    assertTrue(!array_key_exists('header_image_alt', $service::record($input + ['header_image_url'=>'', 'header_image_alt'=>'Old alt'])), 'Clearing the selection removes its alternative text');
+
+    foreach (['https://elsewhere.example'.$path, '//elsewhere.example'.$path, 'javascript:alert(1)', $path.'?x=1',
+        '/assets/images/media/2026/11/../guide.webp', '/assets/images/media/2026/11/guide.svg', ['/assets/images/media/x.webp']] as $unsafe) {
+        try {
+            $service::record($input + ['header_image_url'=>$unsafe]);
+            assertTrue(false, 'Invalid or nonlocal header paths must be rejected');
+        } catch (InvalidArgumentException) {
+            assertTrue(true, 'Unsafe selection rejected');
+        }
+    }
+    try {
+        $service::record($input + ['header_image_url'=>$path, 'header_image_alt'=>str_repeat('x', 256)]);
+        assertTrue(false, 'Overlong alternative text must be rejected');
+    } catch (InvalidArgumentException) {
+        assertTrue(true, 'Overlong alternative text rejected');
+    }
+
+    $renderPage = static function (array $page, bool $authoredPreview): string {
+        $html = \App\Services\AuthoredPageService::renderContent($page['content']);
+        ob_start();
+        require app_path('views/public/authored-page.php');
+        return (string)ob_get_clean();
+    };
+    foreach ([false, true] as $preview) {
+        $markup = $renderPage($record, $preview);
+        assertTrue(str_contains($markup, 'src="'.$path.'"') && str_contains($markup, 'alt="A &lt;temple&gt; entrance"'),
+            'The public and preview markup share one escaped header');
+        assertTrue(!str_contains($renderPage($input + ['header_image_url'=>'//elsewhere.example/photo.webp'], $preview),
+            'class="authored-page__image"'), 'An unsafe stored URL cannot reach either renderer');
+    }
+};
+
 $tests['blog enhancement candidates preserve manual images and distinguish provider failures'] = static function (): void {
     $service = \App\Services\BlogDraftService::class;
     assertSame('A revised title', $service::reviewableEnhancement('title', 'Original', ' "A revised title" '), 'Clean provider headline');

@@ -183,14 +183,34 @@ check($pages::validRevision($createdRevision), 'Creating the page initializes it
 check($pages->findPublic('guide') === null && $pages->published('Private phrase') === [], 'Draft excluded from all public reads');
 try { $pages->save($initial); throw new RuntimeException('Duplicate create overwrote an existing page'); }
 catch (DomainException) {}
-$publication = array_replace($initial, ['content'=>'Published phrase', 'status'=>'published', 'expected_revision'=>$createdRevision]);
+$header = ['id'=>'0123456789abcdef','url'=>'/assets/images/media/2026/11/campaign-fixture.webp','context'=>'shared'];
+$pdo->prepare('INSERT INTO media_files (id, _data) VALUES (?, ?)')->execute([$header['id'],json_encode($header, JSON_THROW_ON_ERROR)]);
+check(!isset($pages->find('guide')['header_image_url']), 'Legacy page reads without an optional header');
+$publication = array_replace($initial, ['content'=>'Published phrase', 'status'=>'published', 'expected_revision'=>$createdRevision,
+    'header_image_url'=>$header['url'], 'header_image_alt'=>'A fixture temple']);
+try {
+    $pages->save(array_replace($publication, ['header_image_url'=>'/assets/images/media/2026/11/unowned.webp']));
+    throw new RuntimeException('Unowned media was accepted for an authored page');
+} catch (InvalidArgumentException) {}
+check($pages->find('guide')['revision'] === $createdRevision, 'Rejecting an unknown upload keeps the saved revision');
 $pages->save($publication);
-check($pages->findPublic('guide')['content'] === 'Published phrase', 'Publishing exposes current content');
+$published = $pages->findPublic('guide');
+check($published['content'] === 'Published phrase', 'Publishing exposes current content');
+check($published['header_image_url'] === $header['url'] && $published['header_image_alt'] === 'A fixture temple',
+    'The header URL and alt share the authored page revision');
+try {
+    $store->delete('media_files', $header['id']);
+    throw new RuntimeException('The DB host deleted an attached page header');
+} catch (InvalidArgumentException) {}
+check($store->find('media_files', $header['id']) !== null, 'A referenced header stays in the media catalogue');
 check(array_column($pages->published('a phrase'), 'slug') === ['guide'], 'Public full-content word search');
 try { $pages->save($publication); throw new RuntimeException('Stale editor overwrote the page'); }
 catch (DomainException) {}
-$pages->save(array_replace($initial, ['expected_revision'=>$pages->find('guide')['revision']]));
+$pages->save(array_replace($initial, ['expected_revision'=>$pages->find('guide')['revision'], 'header_image_url'=>'']));
 check($pages->findPublic('guide') === null && $pages->published() === [], 'Withholding removes the public URL and index entry');
+check(!isset($pages->find('guide')['header_image_url']), 'Clearing an image leaves no stored attachment');
+$store->delete('media_files', $header['id']);
+check($store->find('media_files', $header['id']) === null, 'An upload can be deleted after the page clears it');
 $deletedRevision = $pages->find('guide')['revision'];
 $pages->delete('guide', $deletedRevision);
 check($pages->find('guide') === null, 'Delete removes the authored row');

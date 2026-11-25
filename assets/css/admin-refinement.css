@@ -91,3 +91,20 @@
   .google-pagespeed__results {grid-template-columns:minmax(0,1fr)}
   .google-pagespeed__result {padding:.75rem}
 }
+
+.page-header-media {
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+    margin: 0 0 var(--space-md);
+    padding: var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+}
+.page-header-media legend { padding-inline: 4px; font-weight: 700; }
+.page-header-media :is(select, input) { width: 100%; min-width: 0; }
+.page-header-media small { color: var(--color-text-muted); }
+.page-header-media__selection { width: min(100%, 260px); max-height: 150px; object-fit: contain; background: var(--color-bg-alt); }
+.page-header-media__upload:not([hidden]) { display: grid; justify-items: start; gap: 8px; }
+.page-header-media__upload p { margin: 0; }
+#page-preview { scroll-margin-top: 16px; }

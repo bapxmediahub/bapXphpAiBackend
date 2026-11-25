@@ -2887,6 +2887,7 @@ concepts:
     controller: "AdminController@pages"
     services:
       - "AuthoredPageService"
+      - "MediaService"
       - "AuthService"
     view: "admin/pages"
     response: null
@@ -4719,6 +4720,7 @@ concepts:
     controller: "AdminController@saveAuthoredPage"
     services:
       - "AuthoredPageService"
+      - "MediaService"
       - "AuditLogService"
       - "AuthService"
     view: "admin/pages"

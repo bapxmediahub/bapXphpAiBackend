@@ -4,48 +4,48 @@
     "reviews": {
         "agents": {
             "source_sha256": "5bc528985312485b9732d829b75addacb345765dfc1c767c85e38db4faa2ac99",
-            "references_sha256": "f5c7361b8ca9c867682dbafcde10dd099cdd71d35190bc7aaea8d770ba2d53ff",
-            "review_note": "Reviewed initial plan, candidate and per-transfer hold checks against runtime/observability docs and backend skill. Holds stop locally before model-attempt evidence, short waits reread current health, explicit probes bypass the gate, and locked tools never replay. Credentials remain confined to private health state."
+            "references_sha256": "922ac380f9c09674d66cf45663822d448babf8298de57437e723121727beb7cd",
+            "review_note": "Reviewed the backend developer guidance addition against the runtime agent and observability references. Header validation and the upload lock are owned by the page and media services; runtime prompt selection and tool permissions retain their current sources."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
-            "references_sha256": "3a5c9d23740782e0276c02c9ca6e6dbc0722cca4a6b91b24993c4039b17207dd",
-            "review_note": "Compared the profile rendering and saved HTTPS picture check to the authentication module guide. The guide documents the photo loading and JavaScript fallback cases."
+            "references_sha256": "54af9d4d2d11ada9af9ae5548b5b4b639b47b8226d6dd67ad5d40dad20fba125",
+            "review_note": "Verified the authored header controls remain on the existing owner admin GET and CSRF-guarded POST, with published-only guest content. The backend guidance retains the existing role and account isolation described in authentication docs."
         },
         "commerce": {
             "source_sha256": "4d8f53718f4495182ccef03d41eacb3da729dbe5ff1b5db5b54cbfd88957749e",
-            "references_sha256": "49ed13d7bb4503ead03763ce9c02b37edb4aed8e340ec2ac68dea584dd2d8f35",
-            "review_note": "Compared canonical optional fields, verified payment snapshots, historical flags, HSN groups and CSV review aggregation with the GST commerce guide."
+            "references_sha256": "c954dba2a6dbbaac3a7592de46f23b2ed712d3027a5c1e3a1f47586e65f6d611",
+            "review_note": "Reviewed the authored-page data section added to the backend skill alongside catalogue, orders and tax references. The new optional settings fields and upload row lock apply to authored headers, leaving the documented commerce record and payment flows intact."
         },
         "content": {
-            "source_sha256": "212c08b38701ff11b88a9017c33cbefc734d241059b3b4d595ff8609de9ad282",
-            "references_sha256": "4a7c2e24302ce60d72e88914f1b756cf44e5fc65c6912f6b00ca4501aafbb4f0",
-            "review_note": "Read the account help Markdown and its source view. The article explains the picture placeholder beside the email."
+            "source_sha256": "4021501cfcb3e4cbf7281930adea01bcce723c21a72921c5c818b9fb7a355a39",
+            "references_sha256": "a8450a9fc7c2dad537751ddb4f97f410bf3abb1249ae209153e0e98cf56a001a",
+            "review_note": "Checked the shared authored page PHP template, bounded header attributes, Markdown renderer and revision checks against the content guide and linked server-rendering reference. Drafts retain the existing publication gate and text-only records remain valid."
         },
         "foundation": {
-            "source_sha256": "f8fda746e7fc7a3e0b2e0ce59de40b8b9125da1e42d280c827ead7b3abf5521b",
-            "references_sha256": "6eba6651fd8e747d8053034a7812f9d41e6dba5a405bc1d1ed669556c8f2474b",
-            "review_note": "Checked architecture and private JSON storage against controller replay. Only accepted model responses use native presentation on replay and no replay refreshes business data or changes access scope."
+            "source_sha256": "89c1ec8fd1d4a30cc1cfa524ae79cdd170301d334a792e2e15fed2066fd89fce",
+            "references_sha256": "185f906cb2170ba47183425b0a3da23b534d6bebc5d299297d18d16da548df4b",
+            "review_note": "Reviewed the authored settings record and media metadata coordination through direct PDO and the authenticated remotedb path. The attachment references existing local public assets and stores its editable fields in MySQL with the normal page revision."
         },
         "google-tags": {
-            "source_sha256": "683b99f0a3158682ae753aef309c0a7339cdc4005f2e640b4e5c94d5f05fac49",
+            "source_sha256": "dd0bcdc502cf36e78443eab1a71e00cbabf3a1319202d3d00215a34d24286227",
             "references_sha256": "f97f8bd08a0edd6ee125c583e1dbadbc000f3c422b469875bb4f718abf3d8191",
-            "review_note": "Reviewed unchanged public layout head rendering against the documented Google tag integration."
+            "review_note": "Compared the shared layout diff with documented gtag rendering. The changed section moves only document presentation rules to the shared stylesheet, with Google tag registration, consent and reporting behavior retained."
         },
         "http-errors": {
             "source_sha256": "2e2fee3211f50641844c05f86381f277f9c6c10b7fb60fb750c52937b0868e12",
-            "references_sha256": "d309fba94f0e9ed81e83cce280b9c5ac3560d4726227d058c866ee0ea4b12cd2",
-            "review_note": "Reviewed the new hosting instructions against existing request-failure guidance. A transport receipt remains distinct from a rendering response, and the worker preserves the canonical queue before reporting an outcome."
+            "references_sha256": "0328e92ddba3b69d790e8c4c69158891f80a8888b510be88c4a855ef9f4c609b",
+            "review_note": "Reviewed how authored page validation and shared media locking use existing error outcomes. Expected selection errors remain local owner form feedback and database transport failures stay under the existing request failure boundary."
         },
         "interface": {
-            "source_sha256": "108179ff3bf10f1a1a2bdd30b8dd48b373954c74e642ee59761a6b3b5a7475eb",
-            "references_sha256": "f278b12b1588f010fd7a0f51c357d7554396cc6fb7f53588c1ec198efda09c60",
-            "review_note": "Verified focus and visibility when reopening a scrolled Support enquiry at 375px, alongside the menu, footer and shared accessibility guidance."
+            "source_sha256": "4b5889aae3705fc06f8b9d18c3b3ad84e7f62728491a42b2e4301346fe540948",
+            "references_sha256": "3443cd7c0b80bd799dac8201a3505759acebc6501e15291f88e6ec56e8b16e69",
+            "review_note": "Compared the shared authored PHP template and reading typography with Design. The editor supports native choice, clear, upload status and preview, and long Markdown remains inside the public and 375px preview content rail."
         },
         "mail": {
-            "source_sha256": "6895291447775bb17e9bef6c3d38d388ed65b3f5985b4c79bc71a9b4fa222c16",
-            "references_sha256": "903e7da848c1e0472ce9a1823b94afc21004e564d12041ee0456918176a6cc72",
-            "review_note": "Reviewed Support controller failure and replay handling against email configuration and ticket boundaries. Verified outbound mail and persisted receipt handling remain separate from chat presentation."
+            "source_sha256": "ad37670c884849d8d45db4a66b868a062a9ac91415897e32424f6b361e90c529",
+            "references_sha256": "d4dbc02c5a391de33b25b183a057d6f6c84d8cabacd508b79e5ac2b389875f41",
+            "review_note": "Reviewed the AdminController additions against mail and audit contracts. Page preview shows unsaved content and the header upload uses the existing owner media endpoint and its audit; mail queue and recipient selection continue through their existing controllers."
         },
         "mcp-clients": {
             "source_sha256": "38828d52259fbd6b6555d790e463ff775e79be85872a5d5b5aea78e599fba3ac",
@@ -53,34 +53,34 @@
             "review_note": "Reviewed the revised Settings help alongside MCP client setup guidance. The change is confined to public Header menu guidance."
         },
         "media": {
-            "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
-            "references_sha256": "e46a00af045b0f554d796d480bc4c7bfe25b8464276587147872d4c29e2701f1",
-            "review_note": "Compared active-chat restoration and attachment changes with the media operator instructions, and confirmed upload and in-memory draft attachment regressions pass."
+            "source_sha256": "edc32a5a9f73cf7f2954eac135a2eaed1394089034bac24ea835af48c4d9600e",
+            "references_sha256": "3cc5e3fb14ffac2e5f6d1034fc90906cd0479c995e79714e3612193f40845a3f",
+            "review_note": "Cross-checked uploaded raster ownership, native selection, page save and media removal. The guard rereads authored references with the same database row lock and existing quarantine rollback preserves files after metadata rejection."
         },
         "operator-help": {
-            "source_sha256": "d4df8c61faae0b85fc48b8629ffc1519f43656271defcb0e9dfdbe9b568b691f",
-            "references_sha256": "7a684be61b80d3002adcfb6a344e0c4bf547d9c8082bee3fa151bd61b1dc9d98",
-            "review_note": "Cross-checked merged Enterprise declaration and scoped operator-guide behavior with the operator references. Verified that the public Support guide stays in the Blog gate and the public enquiry restores visible pane focus."
+            "source_sha256": "8ca0c910f498aff1446bcd1ca002b031c60d0e81736da097132d9cced1d050d5",
+            "references_sha256": "0145eaec1ca70c2920d4d3bba78741dbb8cd86bb31999cb22983da280bc1265e",
+            "review_note": "Compared the Pages editing guide with the native input, upload and preview controls. Shared document styles give the preview the public reading surface while the existing Help links and owner access policy retain their current behavior."
         },
         "public-mcp": {
-            "source_sha256": "234155f55b0f66f669f6422a85acc30a6a59ebf216d8f682d7a212cd01ee7358",
-            "references_sha256": "d1e0824e500f825020b2cccfaad7fd435a8fefbe73d61e1b5f05fd54fed0b829",
-            "review_note": "Checked the rendered Support enquiry controls against the current public MCP and A2UI documentation. Focus scrolling keeps the existing tool and submission contracts."
+            "source_sha256": "d9f31c99f6a3ed60e514698bb1d62d0bbf611a33ed1588e7c0f1dc8023cf2cc5",
+            "references_sha256": "49f145b54368e95240f2bfe5b347b3b18ac1b2b09931a252aaf9f69d8ffc5d31",
+            "review_note": "Checked the project route declaration change against the fixed public MCP registry and discovery documentation. The MediaService associations apply only to the existing owner page editor and save route."
         },
         "remote-commerce": {
-            "source_sha256": "0a504ca49d9995ea386d62a2783ae399dd7f8bf0eb0c10f5fffe1c5412a7b264",
-            "references_sha256": "233a298972f70b9eaa75c089da038a8d4e589686e2118f81235a5f32088ce1d5",
-            "review_note": "Reviewed both existing Support panes and verified nested heading focus on reopen. Checkout and commerce contracts remain as documented."
+            "source_sha256": "b6261908d13966fc317c847e56e6f54194c493f56e1f609a19b658de5e09b65e",
+            "references_sha256": "5cf6292e7228e0bec0d1a6883aca0fdd9ff33462d1c8fa195fb02782a8b4ccab",
+            "review_note": "Reviewed the database and remotedb changes for the existing authored page action and upload protection. The shared layout change moves document styling to band.css; the documented checkout, quote and payment contracts retain their implementation."
         },
         "sales-channels": {
-            "source_sha256": "36385e3d18e26f524d0efdd12d26cd8386e368fb5d27441460c688ffdff28b92",
+            "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",
             "references_sha256": "ed194e15ddaa5ac6ee1118994fceeb94723165cedba02bc92ad745a196a18fd1",
-            "review_note": "Reviewed SettingsService module resolution and Merchant feed guidance. Dropping a retired header slot leaves the saved catalog eligibility inputs intact."
+            "review_note": "Compared the MediaService additions with the Merchant Feed and product image inspection contracts. Header choices are filtered only for the owner authored editor, and catalogue image eligibility and feed URLs retain their existing resolution."
         },
         "workflow": {
-            "source_sha256": "0f5ec4723ce72247773717eae57bc723e10147e4a59b70a1ea4f491c4353ad08",
+            "source_sha256": "250ccb189cbb386a050e50d12e987c7054f3b3ac2995f3fe70327c850fa18844",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Regenerated source indexes after the layout focus fix and checked the established review and browser verification steps."
+            "review_note": "Reviewed the added authored-page media and test guidance against the development workflow. Route associations and schema are generated into the current project indexes, and disposable browser and bridge fixtures exercise established save and upload paths."
         }
     }
 }
