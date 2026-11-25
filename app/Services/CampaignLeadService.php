@@ -150,8 +150,6 @@ final class CampaignLeadService
             'subject'=>'Campaign enquiry',
             'message'=>'Campaign enquiry received.' . ($sections ? "\n\n" . implode("\n\n", $sections) : ''),
             'campaign_slug'=>$slug, 'campaign_revision'=>$revision,
-            // The envelope columns written by DatabaseService are DATETIME.
-            // https://dev.mysql.com/doc/refman/8.4/en/date-and-time-literals.html
             'status'=>'new', 'created_at'=>date('c'),
         ];
     }

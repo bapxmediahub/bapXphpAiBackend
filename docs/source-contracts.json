@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "3c6e1cb910ca0d8ad6ca0e30e7c295bb08df0df79ff147624fc80603a23a8525",
-            "references_sha256": "c72bfc905f8902c81ae71e4913eb75e7f4eb13e62f8eddf71907cddd75ce745a",
-            "review_note": "Checked role guidance and owner commerce report source. Campaign bookings use their own table and preserve valid empty order reports."
+            "source_sha256": "bde2bde8a9de8bf32dc819c741e87a13e30ec696f95f2049814fee7028c63a73",
+            "references_sha256": "8df82be9dda3ac0a158b42ed9c3a0bf4423d9bc9b7339ee6a406250a1ed82319",
+            "review_note": "Rechecked native model tool declarations and the owner navigation after the provider changes. Campaign booking receipt storage and gateway mutations remain beyond the existing read-only PHP agent capability boundary."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -18,19 +18,19 @@
             "review_note": "Verified the reusable Razorpay identity and capture checks still feed the existing order writer for product purchases. Campaign payments write their own receipt."
         },
         "content": {
-            "source_sha256": "c546fa55c54741b27d424f2cfd1c1d56ab49db352f2b254b11fccb9c4222eb33",
-            "references_sha256": "433011d28f1696415bf8a40e14b008113f2fe5db910ca5dd03fc9e4730057f7a",
-            "review_note": "Cross-checked exact paise, revision snapshots, independent controls, gateway configuration and the real local receipt and private attachment routes after simulated capture."
+            "source_sha256": "f29d65942144010bb43d2388566b9ed5a84d5b1004e45147e58d40539c50271b",
+            "references_sha256": "65acd8a91dbe2e87fa8a431b80eb9a64588aa1f10418c630a88e154f1fbcbc86",
+            "review_note": "Reviewed the final reconciled campaign editor, form, receipt, download, and booking paths. Current source retains exact publication evidence, approved money handling, scoped timestamp normalization, and matching operator help."
         },
         "foundation": {
-            "source_sha256": "63fd4d65982ae6b57003f4d3e8c3a1f7baa449c173110c7e6e0111b22b906a43",
+            "source_sha256": "92606f4c2130b5ff0ffafc9c6fff7de09cc9e04ca2967a5a6ee887b151e6856e",
             "references_sha256": "518460de0233cf4419b29b31f7e7b2b8f43a9fdc3b868bd973f83bc9731cd4d3",
-            "review_note": "Reviewed the hosted database schema, deployment prerequisites and private file retention with the booking, verification, and storage implementation."
+            "review_note": "Reviewed canonical schema, database transaction and private download docs against the final app path. Pure PHP owns payment evidence and the new separate booking collection, and the existing record and private file boundaries remain intact."
         },
         "google-tags": {
             "source_sha256": "366fdab983979cc3a1fec22fb6da4afb61072d6fd24cd0ba2271d67a0c063019",
-            "references_sha256": "e769d37fb080ccc92c0a85d83c989c057c864bcd128a13b862f3d9adb03f9cee",
-            "review_note": "Reviewed the frontend skill against the current reporting integration and the standalone private status template, which loads only same-site styling."
+            "references_sha256": "655070d558837a1d942929e6860428b9d822cb9b89e2d0d95344fdfe5d88b87d",
+            "review_note": "Rechecked the current Site analytics, Google reporting and integration routes inherited from the merged base. Campaign booking changes add no tag or reporting behavior."
         },
         "http-errors": {
             "source_sha256": "0f920c297cfc4e216a87be02a35c20827cc254dd6934ba24a1fa9135520a0560",
@@ -49,8 +49,8 @@
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
-            "references_sha256": "4274d502f7d2500a1a88e8dbb5d2626a6930d3b01197a0698083f41c03981144",
-            "review_note": "Reviewed the merged Integrations page references against the MCP client guide and approved route inventory. Display-group changes are owner navigation and preserve the client capability and config instructions."
+            "references_sha256": "73c4e7ed550ac139d52f0e560ab34a74738e8f4aa2ae6fc87c9e635c9dcd4d43",
+            "review_note": "Checked the merged Integrations guide against the local MCP client controller and form. The owner issues and revokes a paid-sales grant, and the trusted STDIO client receives it through its process environment."
         },
         "media": {
             "source_sha256": "edc32a5a9f73cf7f2954eac135a2eaed1394089034bac24ea835af48c4d9600e",
@@ -58,9 +58,9 @@
             "review_note": "Checked retained campaign file descriptors and protected streaming against Media Library behavior. Booking authorization is scoped to the frozen private manifest."
         },
         "operator-help": {
-            "source_sha256": "e0cabda8d62814602d68bf446f8aeb69392b3fd98f6c43636140a31e41ae7381",
+            "source_sha256": "3b65b7000c9036e17804c0cf31a8d2cd396b2e4644d32795aa4426b6e894f155",
             "references_sha256": "d7972865c18db0e7cab36b4fdf0cf22cf388c8fbde7bd5ae088de971afd212fe",
-            "review_note": "Reviewed Pages guide walk-through against the authored editor, disabled preview, exact INR input and captured receipt entry points."
+            "review_note": "Reviewed owner Pages, preview, form and Inbox copy against the campaign payment flow. Booking enablement and amount help stay separate from enquiry and download controls."
         },
         "public-mcp": {
             "source_sha256": "6817679be2290cbbea52d8a059df0770d1deb686132d09f9d57d0fbda5b62185",
@@ -68,9 +68,9 @@
             "review_note": "Checked registry additions and private booking collection ownership against the public MCP allowlist and its generated map."
         },
         "remote-commerce": {
-            "source_sha256": "02579cda698228b2ecd3085fb9bd8439c1efcd44e7a2d369a4175d80764374a9",
+            "source_sha256": "6b38c34acbcacd05569026df95bd9c75f9819199801ef4d0087862209520c80d",
             "references_sha256": "28072054dd96a103301f08d34ca9b39d988acc6e0a2c149a93e9d49fd009326c",
-            "review_note": "Reviewed the shared link verifier, signed endpoint and reference routing against both the existing product attempt and the new booking receipt."
+            "review_note": "Reviewed the shared Razorpay link validator and signed callback routing against the existing commerce tests. Campaign records carry independent frozen booking and capture evidence and preserve the established cart and order boundary."
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",

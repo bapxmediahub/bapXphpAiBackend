@@ -60,8 +60,8 @@ if (PHP_SAPI === 'cli-server') {
         echo json_encode(['candidates'=>[['content'=>['parts'=>[['text'=>'<final_answer>connection ok</final_answer>']]],'finishReason'=>'STOP']],'usageMetadata'=>['promptTokenCount'=>3,'candidatesTokenCount'=>2,'totalTokenCount'=>5],'modelVersion'=>'gemma-4-31b-it']);
         return;
     }
-    if($scenario==='cooldown') {
-        if($primary){http_response_code(503);echo '{"error":{"status":"UNAVAILABLE"}}';return;}
+    if($scenario==='cooldown'||$scenario==='short_hold') {
+        if($scenario==='cooldown'&&$primary){http_response_code(503);echo '{"error":{"status":"UNAVAILABLE"}}';return;}
         echo json_encode(['candidates'=>[['content'=>['parts'=>[['text'=>'<final_answer>connection ok</final_answer>']]]]]]);return;
     }
     if($scenario==='bad_schema') {
@@ -244,6 +244,38 @@ try {
         $client=new AiClient(health:new \App\Services\AiProviderHealthService($healthFile));
         $reply=$routeAll->invoke($client,'Reply connection ok',256,0.0,null,null,0,$plan);
         check($reply==='connection ok'&&array_column($client->transferTimings(),'model')===[SecretService::PRIMARY_MODEL,SecretService::PRIMARY_MODEL,SecretService::PRIMARY_MODEL,SecretService::FALLBACK_MODEL],'Fresh request starts at primary despite prior transient failures');
+
+        $shortHoldPlan = $plan;
+        $shortHoldPlan[0]['endpoint'] = 'http://'.$address.'/short_hold';
+        $health->record($shortHoldPlan[0], SecretService::PRIMARY_MODEL, 429, 0, 2500);
+        AgentTraceService::begin(bin2hex(random_bytes(8)), null, AiClient::agentLimits());
+        try {
+            $client = new AiClient(health: $health);
+            $reply = $routeAll->invoke($client, 'Reply connection ok', 256, 0.0, null, null, 0, $shortHoldPlan);
+            check($reply === 'connection ok' && array_column($client->transferTimings(), 'model') === [SecretService::FALLBACK_MODEL],
+                'A ready alternative starts ahead of a model with a short hold');
+            check(!in_array('provider_backoff', array_column(AgentTraceService::snapshot()['spans'], 'name'), true),
+                'A ready alternative does not spend time waiting for a held model');
+        } finally {
+            AgentTraceService::reset();
+        }
+
+        foreach (SecretService::GOOGLE_MODELS as $model) {
+            $health->record($shortHoldPlan[0], $model, 429, 0, 2000);
+        }
+        AgentTraceService::begin(bin2hex(random_bytes(8)), null, AiClient::agentLimits());
+        try {
+            $client = new AiClient(health: $health);
+            $reply = $routeAll->invoke($client, 'Reply connection ok', 256, 0.0, null, null, 0, $shortHoldPlan);
+            check($reply === 'connection ok' && array_column($client->transferTimings(), 'model') === [SecretService::PRIMARY_MODEL],
+                'A fresh turn recovers in configured order when all models start under short holds');
+            $waits = array_filter(AgentTraceService::snapshot()['spans'], static fn(array $span): bool => $span['name'] === 'provider_backoff');
+            check(count($waits) === 1 && reset($waits)['duration_ms'] >= 1000,
+                'The real request trace records waiting for expiry before a single provider transfer');
+        } finally {
+            AgentTraceService::reset();
+        }
+
         $health->record($plan[0],SecretService::PRIMARY_MODEL,429,0,60000);
         $health->record($plan[0],SecretService::FALLBACK_MODEL,429,0,60000);
         $client=new AiClient(health:$health);

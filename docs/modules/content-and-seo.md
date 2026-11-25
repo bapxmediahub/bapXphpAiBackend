@@ -182,6 +182,9 @@ shared public contact admission limits. A revised form asks the visitor to
 review the current fields. A withdrawn page no longer accepts enquiries.
 Successful submissions create a Contact and its Inbox entry together under
 one receipt ID. The records keep the campaign slug and exact revision.
+Both records keep the original timestamp with its timezone offset in JSON.
+The database binds UTC values in the SQL datetime columns on create and update.
+[MariaDB date and time literals](https://mariadb.com/docs/server/reference/sql-structure/sql-language-structure/date-and-time-literals)
 Repeating an accepted submission preserves the existing receipt. Raw answers
 stay in the owner records. The public acknowledgement does not enqueue email.
 The form and receipt use native navigation so the status can receive
