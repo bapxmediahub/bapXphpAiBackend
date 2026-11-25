@@ -34,8 +34,9 @@ The canonical published article search lives in `PublicKnowledgeService`, backed
 Both native agents include published article body matches in discovery. The
 published title, path, category and score stay in the result. The exact-slug
 read accepts optional topic keywords and selects a passage of up to 6,000
-characters from the best matching rendered section. A slug-only request reads
-the opening. Public HTTP, WebMCP and MCP search still use title and summary
+characters from the best matching rendered section. The text keeps spaces
+between headings, paragraphs, list items and table cells. A slug-only request
+reads the opening. Public HTTP, WebMCP and MCP search still use title and summary
 ranking and keep the existing input and output schema.
 
 Hidden, future-dated, retired-category, module-disabled or symlinked posts must not be returned. Disabling Blog removes the local article MCP tool and prevents public API results; operator Help and private JSON conversation records are not part of the public index. Tests use synthetic Markdown and check pagination/visibility without customer records.

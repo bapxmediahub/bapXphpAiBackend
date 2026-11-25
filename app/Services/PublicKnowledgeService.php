@@ -477,7 +477,10 @@ final class PublicKnowledgeService
     }
 
     private static function articleText(string $html): string {
-        return trim(html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+        // Preserve visible breaks without inserting spaces inside inline formatting.
+        $separators = '~(?:</(?:address|blockquote|dd|div|dt|figcaption|h[1-6]|li|p|pre|td|th|tr)>|<(?:br|hr)\s*/?>)(?!\s|$)~i';
+        $withBreaks = preg_replace($separators, '$0 ', $html) ?? $html;
+        return trim(html_entity_decode(strip_tags($withBreaks), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
     }
 
     private static function articleSearchWords(string $query, bool $includeBody): array {

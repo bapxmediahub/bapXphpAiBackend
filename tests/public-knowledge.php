@@ -178,6 +178,16 @@ try {
     foreach (['proofpetal', 'private@example.invalid', 'Delivery receipt', 'Receipt background'] as $privateText) {
         if (str_contains($trace, $privateText)) throw new RuntimeException('Raw passage content entered the trace.');
     }
+    $write('packing-notes', 'Packing notes', true, '2026-01-01', body:
+        '<h2>Packing checklist</h2><p>Choose <strong>card</strong>board.<br>Keep dry.</p>'
+        . '<ul><li>Pack receipt</li><li>Add sleeve</li></ul>'
+        . '<table><tr><td>Small parcel</td><td>Paper label</td></tr></table>');
+    $packing = $service->readArticleForAgent(['slug'=>'packing-notes','query'=>'packing checklist'])['articles'][0] ?? [];
+    foreach (['Packing checklist Choose cardboard.', 'cardboard. Keep dry.', 'Pack receipt Add sleeve', 'Small parcel Paper label'] as $visibleText) {
+        if (!str_contains($packing['text'] ?? '', $visibleText)) {
+            throw new RuntimeException('Rendered article passage omitted a visible text boundary.');
+        }
+    }
     $productPath = new ReflectionMethod(PublicKnowledgeService::class, 'productPath');
     foreach (['legacy item.v2'=>'/product/legacy%20item.v2', '珊瑚 pendant'=>'/product/%E7%8F%8A%E7%91%9A%20pendant',
         'தமிழ் pendant'=>'/product/%E0%AE%A4%E0%AE%AE%E0%AE%BF%E0%AE%B4%E0%AF%8D%20pendant',
