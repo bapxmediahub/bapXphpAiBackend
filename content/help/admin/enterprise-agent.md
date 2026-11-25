@@ -2,7 +2,7 @@
 
 Open Enterprise Agent → Chat. Name the business fact and time period you need, such as paid sales for a specific date range or support-ticket counts. The agent uses named read-only tools and current permitted records. An unavailable query is different from a valid zero result.
 
-Open **Help & Docs** for the owner guides. To get help in chat, ask about a specific task, such as how to prepare an unpublished blog post. Enterprise can read the matching guide and link to it from its answer.
+Open **Help & Docs** for the owner guides. To get help in chat, ask about a specific task, such as how to prepare an unpublished blog post. Enterprise can read the matching guide and link to it from its answer. Use `/help blog-publishing` to ask directly about the blog-publishing guide.
 
 Answers use readable sections and relevant cards. When a completed report tool provides figures, the answer shows labelled facts with the recorded source, date range and observation time. Missing figures remain unavailable. Use the source link to inspect the underlying report.
 

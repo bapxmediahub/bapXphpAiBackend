@@ -2895,7 +2895,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/RuntimeAgentToolRegistry.php",
-            "line": 45
+            "line": 53
         },
         {
             "from": "service:RuntimeAgentToolRegistry",
@@ -2919,7 +2919,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/RuntimeAgentToolRegistry.php",
-            "line": 53
+            "line": 61
         },
         {
             "from": "service:RuntimeAgentToolRegistry",
@@ -2927,7 +2927,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/RuntimeAgentToolRegistry.php",
-            "line": 188
+            "line": 196
         },
         {
             "from": "service:RuntimeHealthService",

@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "117d9662318ed72567129d18e3c8db663f98561f0eef012b518336a781b458b5",
-            "references_sha256": "241fc499b339d4ef99861aac7d5fa6e2e111ba3646f0338a36879d4d20c6378c",
-            "review_note": "Cross-checked PHP acceptance and saved turns with the documented browser error state. Failed model responses no longer contain A2UI or proposed forms and existing successful answer formatting remains scoped."
+            "source_sha256": "b75b02aeb1d03d91da0de1a23668db1d7348440c21cdded7501f2e7dc1fc7dfa",
+            "references_sha256": "1787b64eb38150f6ec3fd5d9415a6b6615cdb913e02f75f2356604b31fb7d6c2",
+            "review_note": "Compared role and module declaration filtering, bounded tool discovery, and agent scope docs with the first-round owner help route. Both provider fixtures require exactly one authorized guide lookup and two round trips."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -58,9 +58,9 @@
             "review_note": "Compared active-chat restoration and attachment changes with the media operator instructions, and confirmed upload and in-memory draft attachment regressions pass."
         },
         "operator-help": {
-            "source_sha256": "5a968215691404dfa7549b7fbc7128fbf895d81da5e0f1c4dbceb4847ce1d671",
-            "references_sha256": "0b6f98d469ec75bea6b386149fd46a6899cf15402fa354a3e92b2af9d05ebb40",
-            "review_note": "Reviewed the Enterprise guide, direct Help and Docs links and history recovery against the chat renderer. Verified unavailable responses remain failed and leave the question available for manual recovery."
+            "source_sha256": "6fd7fb2aa3e3a0ec800cd7e334b3e10b83c8ad37b698cc67417e2cc88fa3ca28",
+            "references_sha256": "7a684be61b80d3002adcfb6a344e0c4bf547d9c8082bee3fa151bd61b1dc9d98",
+            "review_note": "Reviewed the owner Help area, routing and Enterprise guide. The documented slash command advertises the existing owner guide only, and a model-selected lookup continues to link to the published authenticated guide."
         },
         "public-mcp": {
             "source_sha256": "06a7b8ef4b99e3c70cbae0dbf6ee2b7c97029aabb851906dc8e2e50d9f81c253",

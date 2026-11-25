@@ -127,7 +127,6 @@ if(PHP_SAPI==='cli-server'){
         'aggregate','catalogue_wrong','catalogue_current','catalogue_fallback','catalogue_locked'=>['public_catalogue_summary',[], 'total','catalogue'],
         'owner'=>['order_count',['period'=>'all_time'],'count','reporting'],
         'owner_followup'=>['order_count',['from'=>'2024-01-03','to'=>'2024-01-07'],'count','reporting'],
-        'slash_help'=>['operator_guide',['topic'=>'blog-publishing','section'=>'Prepare an unpublished article'],'instructions','reporting'],
         'customer'=>['own_order_status',[],'count','customer-policy'],
         'ticket'=>['own_ticket_status',[],'count','customer-policy'],
         'article'=>['read_published_article',['slug'=>'get-support'],'found','customer-policy'],
@@ -165,6 +164,16 @@ if(PHP_SAPI==='cli-server'){
     }elseif(in_array($scenario,['guest','capability','slash_capabilities'],true)){
         if($n!==1){$fail('Unexpected tool round');return;}
         $parts=[['text'=>'<final_answer>'.($scenario==='guest'?'Please sign in to view your own orders at /login.':'I can use your authorized business tools. Ask me what you would like to investigate.').'</final_answer>']];
+    } elseif ($scenario === 'slash_help') {
+        if ($n === 1 && in_array('operator_guide', $names, true)) {
+            $parts = [$call('operator_guide', ['topic'=>'blog-publishing','section'=>'Prepare an unpublished article'], 'guide')];
+        } elseif ($n === 3 && ($last['report_url'] ?? '') === '/admin/docs/blog-publishing'
+            && is_string($last['instructions'] ?? null) && $last['instructions'] !== '') {
+            $parts = [['text'=>'<final_answer>The owner guide describes how to save an unpublished draft. See /admin/docs/blog-publishing.</final_answer>']];
+        } else {
+            $fail('Explicit owner help must use its initially advertised guide and finish in two model rounds');
+            return;
+        }
     }elseif($choice!==null){
         [$tool,$args,$field,$skill]=$choice;
         if($n===1)$parts=[$call('tool_search',['query'=>$tool],'discover')];
@@ -176,7 +185,6 @@ if(PHP_SAPI==='cli-server'){
                 'catalogue_wrong'=>'The catalogue contains '.($last['total']+1).' published products.',
                 'owner'=>'There are '.$last['count'].' dated order records in the requested period.',
                 'owner_followup'=>'There are '.$last['count'].' orders from '.$last['from'].' through '.$last['to'].'.',
-                'slash_help'=>'The owner guide describes how to save an unpublished draft.',
                 'customer'=>'Your matching order count is '.$last['count'].'.',
                 'ticket'=>'Your matching ticket count is '.$last['count'].'.',
                 'policy','transient_continuation'=>$last['value'],
@@ -285,7 +293,7 @@ try{
         }
         $expected=in_array($scenario,['outage','duplicate','truncated','unfinished','quota','long_retry','schema_error','catalogue_stale','catalogue_wrong','catalogue_locked'],true)?'error':'model';
         $rounds=match($scenario){'mixed'=>3,'denied'=>2,'unfinished','transient_continuation','catalogue_fallback'=>5,
-            'transient_start'=>2,'outage'=>6,default=>$tool!==null?4:1};
+            'transient_start','slash_help'=>2,'outage'=>6,default=>$tool!==null?4:1};
         if($exit!==0||($turn['outcome']??null)!==$expected||count($turn['model_attempts']??[])!==$rounds||($turn['turn_id']??null)!==($response['turn_id']??null)){
             throw new RuntimeException("$scenario/$surface: unexpected model lifecycle: ".substr($raw,0,2500)." STDERR: ".substr($err,0,1000));
         }
