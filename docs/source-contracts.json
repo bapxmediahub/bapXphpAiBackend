@@ -4,8 +4,8 @@
     "reviews": {
         "agents": {
             "source_sha256": "a88e56591f9d321da42b753a4b1e49d9e665bd5ce1eb3dceea33736d762405c3",
-            "references_sha256": "aae35a322bb12f8bfb578f05020bf2715ba7860491ce5e0ef3c7a308275507d2",
-            "review_note": "Checked both controller fixture paths and the PHP transport against the OpenAI Chat Completions finish reasons, refusal, tool message correlation and request parameter contract."
+            "references_sha256": "e58fab5d1d36a171095101601858c8e45f19765cd132d6cdfc64b7d0072058c4",
+            "review_note": "Matched the Support controller response, stored evaluation and service trace fields to the new transcript reference and agent observability guide."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -18,9 +18,9 @@
             "review_note": "Compared canonical optional fields, verified payment snapshots, historical flags, HSN groups and CSV review aggregation with the GST commerce guide."
         },
         "content": {
-            "source_sha256": "9ca1ff8cd0fcc4302ca466ff646e1363396bac0780b7b40b2684486f3e87e465",
+            "source_sha256": "dc7ed13eb82f5ed7056e5b06c66dc874b229aa19e7a6fa32ca738a34df5f3b14",
             "references_sha256": "d283e57698fc4ae10cba725749a1723c0f5bea1825f89812b2bf7a15fb2daa20",
-            "review_note": "Reviewed published Markdown guides, search navigation and module filters against the merged catalogue and account source."
+            "review_note": "Checked the published Support article instructions against the new transcript reference and existing contact route. Article frontmatter still matches the published help category."
         },
         "foundation": {
             "source_sha256": "b8e8e05e07c45c8a482066602a139279a73693f0ceca2d1e4b1405eb12d01686",
@@ -28,9 +28,9 @@
             "review_note": "Checked that the new option stays in the existing encrypted Integrations record and both agent surfaces reuse their existing shared PHP transport and actor-scoped tool policy."
         },
         "google-tags": {
-            "source_sha256": "a02edc85b6bd4cc5f95748217edaf7ea3fae53a6d67edd0098c99848290122d8",
-            "references_sha256": "a75991231da6a13cfb14b382b45cc7b414c9c24b7b77e5a7c39b3179517af0fe",
-            "review_note": "Checked the Integrations change within its AI fieldset and verified the Google tags and OAuth configuration continue to use their existing independent fields."
+            "source_sha256": "9f09044f67f983b4e87eac4f26391194a914bd7f7f238c6c79c2e0e28abe5c60",
+            "references_sha256": "27df53642eed8b6cd404f56a5d8e18abdea509ac86382e748857703c65ca6411",
+            "review_note": "Reviewed the shared layout head and the Google tag rendering boundary. The reference is rendered in the Support submit handler after a failed response."
         },
         "http-errors": {
             "source_sha256": "63602cadbe59868b0d25a1b00729a589e75d1b31c6ea3a1b25c1e5a46fd06d50",
@@ -38,9 +38,9 @@
             "review_note": "Compared the layout-specific title assignment with the request-error boundary. Website error status, sanitized error text and public not-found rendering follow their existing handlers."
         },
         "interface": {
-            "source_sha256": "27c32323b787b7174be1178612751c8a93a9e2506d43efaf7b9f53a86e084218",
-            "references_sha256": "a91a95841dc182236befb1ff651bb22b318c92a7e4e5fd8adac315a9e16cbb9f",
-            "review_note": "Verified the labeled token-field selector in the existing AI settings form at 1280px and 375px and checked that its selection is present in the scoped save payload."
+            "source_sha256": "fe7db8f578d9449eb98a8f926d2ff67c27778116650f54192e67b006a131877d",
+            "references_sha256": "e53bd84343164363d3e64ac5640418cc9eb3a9598cbcec7ffd5631d8c952e053",
+            "review_note": "Reviewed the reference in the live conversation region, inline error and contact action against the design and frontend guidance. Checked reference readability at desktop and 375px."
         },
         "mail": {
             "source_sha256": "6895291447775bb17e9bef6c3d38d388ed65b3f5985b4c79bc71a9b4fa222c16",
@@ -58,9 +58,9 @@
             "review_note": "Cross-checked the revised owner UI skill with the current media selection, confirmation and metadata flows. The existing media documentation still describes those operations."
         },
         "operator-help": {
-            "source_sha256": "afa0cc0daae802fcfdd02fc2641fd6c25cc7c0a5f87a7924080f563e435b5b03",
-            "references_sha256": "c4f92ef1a785d3800380a6878286c4fec17e3c8f7e377d248b5f4f00bbc419c0",
-            "review_note": "Checked the owner settings guide against the actual Integrations controls, provider-plan toggles, model selector and exact-target text/tools diagnostic."
+            "source_sha256": "edea71088f1911cabcd407f786597491fa19ad13de2092cd1eb1edd2a1edaefd",
+            "references_sha256": "9cf0748bb19ef227c7e6477ae9716c924b2cf8de7a5e0c85dba2c850338d3f78",
+            "review_note": "Compared the Support error and contact flow with the published help guide. The guide explains when to share the displayed reference."
         },
         "public-mcp": {
             "source_sha256": "234155f55b0f66f669f6422a85acc30a6a59ebf216d8f682d7a212cd01ee7358",
@@ -68,9 +68,9 @@
             "review_note": "Checked the rendered Support enquiry controls against the current public MCP and A2UI documentation. Focus scrolling keeps the existing tool and submission contracts."
         },
         "remote-commerce": {
-            "source_sha256": "d4727219602e3533680fbc91389cb2648ede2b15ef7dfa8ea866f2ed8bcd25c9",
-            "references_sha256": "3855f1bbcafb7e5178cc56306a1909c6b074172af1cc6669040a9cec5c6944fc",
-            "review_note": "Reviewed the shared SecretsService save path and remote checkout references. Token-field validation applies only to the AI form field and leaves payment and checkout credential fields on their existing path."
+            "source_sha256": "c7246149f55063767e06c3f5493b71b6d506947252fa69336a767a7737be0245",
+            "references_sha256": "fc6e5ce0378588ce5cc16c226e155b624a0e97ef35f12ab2e142993e06ac2a2b",
+            "review_note": "Reviewed the shared Support layout with the native checkout and recovery contract. The browser fixture exercises cart, checkout and enquiry alongside the reference."
         },
         "sales-channels": {
             "source_sha256": "36385e3d18e26f524d0efdd12d26cd8386e368fb5d27441460c688ffdff28b92",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed SettingsService module resolution and Merchant feed guidance. Dropping a retired header slot leaves the saved catalog eligibility inputs intact."
         },
         "workflow": {
-            "source_sha256": "25fc02afb350bcc0e86de9e80e8e382c86a2742383625a4853fa9f1208502580",
+            "source_sha256": "41faf56a5bccaf85e06761bb8f32e61c32539e893576411e582a73b0fb28c262",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Reviewed Testing and the development workflow after the customer release. Owner-authorized project history is a fallback for the ignored browser fixture, with private input and redacted logs, screenshots and release evidence."
+            "review_note": "Checked the frontend skill guidance against the Support browser fixture and the existing source review and desktop and phone verification procedure."
         }
     }
 }

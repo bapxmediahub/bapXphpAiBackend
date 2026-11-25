@@ -235,6 +235,92 @@ const contactView=JSON.parse(execFileSync(process.env.PHP_BINARY||'php',['-r',co
     cwd:root,encoding:'utf8',maxBuffer:2*1024*1024
 }));
 
+for(const width of [1280,375])test(`Support shows only an opaque reference for evaluated failures at ${width}px`,
+    {timeout:60000},async()=>{
+    const browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH||undefined,args:['--no-sandbox']});
+    const context=await browser.newContext({viewport:{width,height:width===375?500:850}}),page=await context.newPage();
+    const errors=[];page.on('pageerror',error=>errors.push(error.message));
+    const reference='01ab23cd45ef6789';
+    const replayReference='9876fe54dc32ba10';
+    const malformedReference='z1ab23cd45ef6789';
+    const failure={
+        reply:'The AI model is temporarily unavailable. Please try again shortly, or use /contact to reach the team.',
+        actions:[{type:'navigate',label:'Contact Us',path:'/contact'}],
+        turn_id:'a'.repeat(32),
+        evaluation:{passed:false,checks:{turn_completed:false}},
+        run:{outcome:'error',trace_id:reference,reason:'PROVIDER_REASON_FIXTURE',
+            attempts:[{model:'PRIVATE_MODEL_FIXTURE'}],tools:[{name:'PRIVATE_TOOL_FIXTURE'}]},
+    };
+    const replies=[
+        {status:503,headers:{'X-Agent-Trace':reference},json:failure},
+        {status:503,json:{...failure,replayed:true,actions:undefined,run:{trace_id:replayReference}}},
+        {status:503,headers:{'X-Agent-Trace':malformedReference},json:failure},
+        {status:503,json:{...failure,run:{trace_id:reference+'\n'}}},
+        {status:503,json:{...failure,run:undefined}},
+        {status:503,headers:{'X-Agent-Trace':reference},json:{error:'The request could not be completed safely.',
+            request_status:'incomplete'}},
+        {status:200,headers:{'X-Agent-Trace':reference},json:{reply:'Support is available.',run:{trace_id:reference}}},
+    ];
+    let asks=0;
+    try{
+        await page.route('**/*',route=>{
+            const url=new URL(route.request().url());
+            assert.equal(url.origin,origin,'Failure fixture cannot visit production');
+            if(url.pathname==='/support/ask'){
+                assert.equal(route.request().method(),'POST');
+                return route.fulfill(replies[asks++]);
+            }
+            if(url.pathname==='/contact')return route.fulfill({contentType:'text/html',body:contactView.normal});
+            if(url.pathname.startsWith('/assets/')&&allowedAssets.has(path.basename(url.pathname))){
+                return route.fulfill({contentType:url.pathname.endsWith('.js')?'application/javascript':
+                    url.pathname.endsWith('.css')?'text/css':'image/webp',body:readFileSync(path.join(root,url.pathname))});
+            }
+            if(url.pathname==='/')return route.fulfill({contentType:'text/html',body:view.html});
+            return route.fulfill({status:404,body:'Fixture route unavailable'});
+        });
+        const launcher=page.getByRole('button',{name:'Support',exact:true});
+        const composer=page.getByRole('textbox',{name:'Support message'});
+        const send=page.getByRole('button',{name:'Send',exact:true});
+        const log=page.getByRole('region',{name:'Support conversation'});
+        await page.goto(origin);
+        await launcher.press('Enter');
+        assert.equal(await log.getAttribute('aria-live'),'polite');
+        for(let index=0;index<replies.length;index++){
+            await composer.fill('Check Support recovery '+(index+1));
+            await send.press('Enter');
+            const answer=log.locator('.support-answer').nth(index);
+            await answer.waitFor();
+            const expected=[reference,replayReference][index];
+            if(expected){
+                await answer.getByText('Support reference: '+expected,{exact:false}).waitFor({timeout:3000});
+                assert.match(await answer.ariaSnapshot(),new RegExp(expected));
+                assert.match(await answer.innerText(),/temporarily unavailable/);
+            }else{
+                const text=await answer.innerText();
+                assert.doesNotMatch(text,/Support reference/);
+                assert.equal(text.includes(malformedReference),false);
+            }
+            assert.equal(await composer.isEnabled(),true);
+            assert.equal(await send.isEnabled(),true);
+        }
+        assert.doesNotMatch(await log.innerText(),/PROVIDER_REASON_FIXTURE|PRIVATE_(?:MODEL|TOOL)_FIXTURE/);
+        assert.equal(await log.getByText(/Check whether your last request completed/).count(),1);
+        assert.equal(await log.evaluate(el=>el.scrollWidth<=el.clientWidth+1),true);
+
+        await page.reload();
+        await launcher.click();
+        assert.equal(await log.getByText(/Support reference:/).count(),2,'Reopening the same tab restores both references');
+        const contact=log.getByRole('link',{name:'Contact Us',exact:true}).first();
+        await contact.press('Enter');
+        const enquiry=page.getByRole('region',{name:'Send an enquiry to Fixture shop'});
+        await enquiry.locator('form.contact-form').waitFor();
+        await enquiry.getByRole('button',{name:'Back to chat'}).click();
+        assert.equal(await contact.evaluate(el=>document.activeElement===el),true);
+        assert.equal(asks,replies.length,'Recovery and reload do not repeat the request');
+        assert.deepEqual(errors,[]);
+    }finally{await context.close();await browser.close();}
+});
+
 for(const width of [1280,375])test('Existing contact form opens inside Support, preserves privacy and confirms only real submission at '+width+'px',
     {timeout:120000},async()=>{
     const browser=await chromium.launch({headless:true,executablePath:process.env.CHROMIUM_PATH||undefined,args:['--no-sandbox']});

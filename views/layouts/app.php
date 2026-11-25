@@ -762,10 +762,14 @@ supportEnquiry?.addEventListener('submit',async function(event){
         supportEnquiryStatus.textContent='The submission status is unknown. Your form remains here; please check before resending.';
     }finally{form.dataset.busy='false';if(submit)submit.disabled=false;}
 });
-function supportRenderAnswer(answer){
+function supportRenderAnswer(answer,failureReference){
     var block=document.createElement('div');block.className='support-answer';
     var rendered=answer.a2ui&&window.BapxA2ui&&window.BapxA2ui.render(block,answer.a2ui,{scope:'support'});
-    if(!rendered)block.innerHTML='<p><strong>Support:</strong> '+supportReplyHtml(answer.reply||answer.error)+'</p>'+(answer.actions?supportActionsHtml(answer.actions):'');
+    if(!rendered){
+        var reference=failureReference?'<br>Support reference: <code>'+supportEscape(failureReference)+'</code>':'';
+        block.innerHTML='<p><strong>Support:</strong> '+supportReplyHtml(answer.reply||answer.error)+reference+'</p>'
+            +(answer.actions?supportActionsHtml(answer.actions):'');
+    }
     supportLog.appendChild(block);
 }
 function supportToggle(open){
@@ -855,9 +859,12 @@ if(supportForm){supportForm.addEventListener('submit',async function(e){
         failed=!r.ok||!!j.error||!hasReply;
         if(!failed||typeof j.turn_id==='string')supportPendingRequest=null;
         if(typeof j.conversation_id==='string'&&/^[a-f0-9]{32}$/.test(j.conversation_id))supportConversationId=j.conversation_id;
+        var traceId=r.status===503&&j.evaluation?.passed===false
+            ? r.headers.get('X-Agent-Trace')??j.run?.trace_id : null;
+        var failureReference=typeof traceId==='string'&&traceId.length===16&&/^[a-f0-9]{16}$/.test(traceId)?traceId:null;
         supportRenderAnswer(failed
             ? {error:j.error||(hasReply?j.reply:'The server returned no answer.'),actions:j.actions}
-            : j);
+            : j, failureReference);
         if(failed&&['incomplete','pending_or_interrupted'].includes(j.request_status)){
             var recovery=document.createElement('p');
             recovery.textContent='Check whether your last request completed before repeating it. Choose New chat to ask a different question.';
