@@ -54,8 +54,8 @@ Business declarations use the same authenticated allowlist. A bounded lexical
 match against tool names, descriptions and parameter names seeds up to three
 business tools per turn. The `tool_search` meta-tool can enable up to four
 matching declarations per search, with eight active business tools total; an
-unknown exact identifier never activates a substitute. Both provider loops
-refresh declarations each round while retaining correlated tool-call history.
+unknown exact identifier never activates a substitute. The shared loop
+refreshes declarations each round while retaining correlated tool-call history.
 The initial declarations cover common wording for the published shop total,
 delivery charges, and total orders. Support can use the public catalogue or
 shipping policy directly. Enterprise can request `order_count` with `all_time`
@@ -190,38 +190,38 @@ Admin → Integrations independently enables Google, OpenRouter and the custom
 OpenAI-compatible connection. SecretService supplies ordered configured model
 IDs. Disabled or unconfigured connections are not hidden fallbacks. AiClient
 uses one bounded deadline, preserves correlated tool history and never switches
-provider after a tool exchange begins. Google uses parametersJsonSchema on the
-wire. Text response and synthetic tool challenge are separate diagnostics; an
-offline fixture or HTTP status does not establish successful live inference.
-See [Integrations](pages/integrations.md).
+connection after a tool exchange begins. Every enabled connection uses Chat
+Completions HTTP. The built-in Google base URL is
+`https://generativelanguage.googleapis.com/v1beta/openai`. OpenRouter uses
+`https://openrouter.ai/api/v1`. Each connection sends its own saved Bearer key.
+Text response and synthetic tool challenge are separate diagnostics. Verify both
+live for an exact provider/model target. See [Integrations](pages/integrations.md).
 
 ## Provider-neutral model decisions and tool execution
 
-The native PHP runtime implements the function-calling pattern documented by OpenAI:
-send authorized tool schemas, receive model-selected calls, validate and execute
-them, correlate each result with its original call, and invoke the model again.
-Google uses its native function declaration and function response format;
-OpenRouter and configured OpenAI-compatible connections use Chat Completions.
-Both adapters use the same PHP execution gate and role-scoped registries.
+The shared PHP Chat Completions loop sends the authorized JSON Schema in
+`tools[].function.parameters`, receives model-selected calls, and validates and
+executes them through the role-scoped registries. It correlates each result with
+its original call before invoking the model again.
 
 Both native chat controllers build an `AgentModelTurn` from authorized inputs.
-Fixed application guidance and the response-format instruction use Gemma REST
-`systemInstruction`, or the Chat Completions instruction role. Direct OpenAI
-uses `developer` for the recognized GPT-5, GPT-6, o1, o3 and o4 families.
+Fixed application guidance and the response-format instruction use a Chat
+Completions instruction message. Direct OpenAI uses `developer` for the
+recognized GPT-5, GPT-6, o1, o3 and o4 families.
 Other Chat Completions connections and legacy direct OpenAI models use
 `system`. The endpoint and model remain determined by the enabled provider plan.
 
-The adapters send bounded successful history as chronological `user` and
-`model` (Gemma) or `assistant` (Chat Completions) messages. The current
-`user` message contains the question and a `reference_data` object for
-server-derived context. Prior product identities, report scope, site identity
+The client sends bounded successful history as chronological `user` and
+`assistant` messages. The current `user` message contains the question and a
+`reference_data` object for server-derived context. Prior product identities,
+report scope, site identity
 and owner-resolved attachments stay in data fields. Referents help resolve a
 follow-up and require an authorized current lookup for current business facts.
 Earlier tool calls and internal reasoning are absent from saved dialogue.
 Tool-call correlation and provider continuation fields apply within the
 current request only. Text-only and synthetic diagnostic calls continue to
 use their existing one-shot prompt path.
-[Gemma system instructions and multi-turn requests](https://gemma.ai/deployment/gemini-api/#system-instructions) ·
+[Google Chat Completions compatibility](https://aistudio.google.com/docs/openai) ·
 [OpenAI conversation state](https://developers.openai.com/api/docs/guides/conversation-state#manually-manage-conversation-state) ·
 [OpenAI Chat Completions roles](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create).
 
@@ -237,9 +237,22 @@ calls at the final-answer boundary fail before any tool executes.
 The custom connection sends only Chat Completions message fields. PHP adds the
 assistant's function calls with their original IDs and argument strings, then
 appends one JSON-encoded `role: "tool"` result with the matching `tool_call_id`
-for each call. The built-in OpenRouter connection retains its own continuation
-state within the same request. See [endpoint-only configuration](pages/integrations.md#run-support-and-enterprise-through-chat-completions)
-to use the custom connection for both agents.
+for each call. Built-in provider continuation fields belong to the active
+connection and stay in memory for the current request. The owner can configure
+direct OpenAI or another compatible service through the existing custom HTTPS
+URL, key and model fields. See [custom connection configuration](pages/integrations.md#configure-the-optional-custom-connection).
+
+The built-in Google route requests the existing minimal thinking level for the
+two hosted Gemma 4 models through the compatible endpoint's
+`extra_body.google.thinking_config` option. Other configured model IDs use
+their provider defaults. [Google compatibility options](https://aistudio.google.com/docs/openai#thinking) ·
+[Hosted Gemma model settings](https://gemma.ai/deployment/gemini-api/#thinking).
+
+The OpenRouter Free alias selects the initial model. Before executing a tool,
+the agent requires a concrete `:free` model ID in the Chat Completions response
+and uses that ID for continuation on the same connection. A changed model in
+a continuation response ends the turn before any additional tool executes.
+[Chat Completions response fields](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create).
 
 OpenAI-compatible text endpoints are not automatically tool-capable models.
 Each enabled model needs a successful live tool round trip. The portable
@@ -269,7 +282,11 @@ consultation policy. Native-only additions do not expand the public MCP surface.
 
 Product net values allocate recorded refunds across lines; coupon values are associated order totals, not causal attribution; customer repeat means within the selected period. No profit, on-hand quantities, lifetime retention or live booking is implied. `.bapX/bapXcl/enterprise/reporting.md` supplies these meanings to the model without extending Support or the public MCP tool surface.
 
-The application executes each allowed function and sends its result back using the originating provider's call format. Model text is never authority to grant a capability. Google documents the hosted Gemma identifiers and native function calling. OpenAI recommends clear tool schemas and doing known work in application code. Those contracts apply to their respective clients. [Google AI Studio function calling](https://aistudio.google.com/docs/function-calling) · [Hosted Gemma models](https://gemma.ai/deployment/gemini-api/) · [OpenAI function calling](https://developers.openai.com/api/docs/guides/function-calling)
+The application executes each allowed function and sends its result back over
+the originating connection. The PHP authorization policy grants capabilities.
+The hosted Gemma catalogue identifies the models. The tool probe verifies the
+configured model's actual Chat Completions exchange. [Hosted Gemma models](https://gemma.ai/deployment/gemini-api/) ·
+[OpenAI function calling](https://developers.openai.com/api/docs/guides/function-calling).
 
 The default Google-first order is gemma-4-31b-it, gemma-4-26b-a4b-it,
 then openrouter/free when enabled and configured. The preferred connection and

@@ -281,7 +281,7 @@ flowchart TB
 |---|---|---|
 | Knowledge | `AgentContextService`, `PublicKnowledgeService`, `BlogService`, scoped tool results and owned JSON history | General authorized MD/JSON excerpt search and flexible schema-aware queries are not yet implemented |
 | Instruction | `AgentInstructionService` loads the role constitution and shared contract. The current eligible tools select the fixed skills available on demand or with related tools. | Authorized external MCP instruction projection remains incomplete |
-| Tool | `RuntimeAgentToolRegistry` filters by actor and the public Shop and Blog gates, ranks the remaining metadata, and refreshes declarations in both provider loops. | Actual provider availability and task resolution need live evidence |
+| Tool | `RuntimeAgentToolRegistry` filters by actor and the public Shop and Blog gates, ranks the remaining metadata, and refreshes declarations between inference rounds. | Actual provider availability and task resolution need live evidence |
 
 The two meta-tools, `read_runtime_skill` and `tool_search`, are model-adapter
 operations, not public MCP tools. Business execution continues through the
@@ -291,7 +291,9 @@ available as a direct admin page. Typed help and capability questions use the
 same inference loop. Draft commands prepare forms for human review, and an
 unavailable provider produces an explicit error.
 Gemma 31B → Gemma 26B A4B → OpenRouter Free (when configured) is the default
-order. Each recoverable failure can receive three same-model attempts, then
+order. All connections use Chat Completions. Direct OpenAI is optional through
+the custom connection in [Admin → Integrations](docs/pages/integrations.md#configure-the-optional-custom-connection).
+Each recoverable failure can receive three same-model attempts, then
 wait with documented exponential backoff and advance; a second bounded cycle restarts at the primary. The shared deadline,
 transfer/token budgets and provider holds can stop the cycle early. Identical
 inference retries never repeat completed PHP tools or switch a started tool

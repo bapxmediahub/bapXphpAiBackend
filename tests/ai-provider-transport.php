@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-use App\Services\{AiClient, AgentTraceService, SecretService};
+use App\Services\{AgentToolRegistry, AgentTraceService, AiClient, RuntimeAgentToolRegistry, SecretService, SupportToolRegistry};
 
 // Run through real cURL against a loopback-only HTTP fixture. Never read provider keys.
 if (PHP_SAPI !== 'cli' && !(PHP_SAPI === 'cli-server' && getenv('BAPX_PROVIDER_TRANSPORT_FIXTURE') === '1')) {
@@ -9,117 +9,196 @@ if (PHP_SAPI !== 'cli' && !(PHP_SAPI === 'cli-server' && getenv('BAPX_PROVIDER_T
     return;
 }
 if (PHP_SAPI === 'cli-server') {
-    [$scenario, $model] = explode('/', trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/'), 2);
-    $primary = str_starts_with($model, 'gemma-4-31b-it:');
+    [$scenario, $path] = explode('/', trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/'), 2);
+    $google = $path === 'v1beta/openai/chat/completions';
     header('Content-Type: application/json');
-    if($scenario==='cycle'){
-        $payload=json_decode((string)file_get_contents('php://input'),true);
-        $id=$model==='chat/completions'?($payload['model']??''):explode(':',$model)[0];
-        $dir=getenv('BAPX_CYCLE_FIXTURE_DIR');
-        if(!is_string($dir)||!is_dir($dir)){http_response_code(400);echo '{}';return;}
-        $key=$dir.'/'.hash('sha256',$id);
-        $count=(int)@file_get_contents($key)+1;
-        file_put_contents($key,(string)$count,LOCK_EX);
-        if($id==='gemma-4-31b-it'&&$count===4){
-            echo json_encode(['candidates'=>[['content'=>['parts'=>[['text'=>'<final_answer>connection ok</final_answer>']]]]]]);return;
+    $payload = file_get_contents('php://input');
+    $request = json_decode($payload, true, 512, JSON_THROW_ON_ERROR);
+    $id = $request['model'] ?? '';
+    $messages = $request['messages'] ?? null;
+    $authorization = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST' || (!$google && $path !== 'chat/completions')
+        || !in_array($authorization, ['Bearer fixture', 'Bearer fixture-key', 'Bearer fixture-google',
+            'Bearer fixture-compatible', 'Bearer replacement-fixture-key'], true)
+        || !is_string($id) || $id === '' || !is_array($messages) || !array_is_list($messages)
+        || array_key_exists('contents', $request) || array_key_exists('generationConfig', $request)) {
+        http_response_code(400);
+        echo '{"error":{"message":"Expected Chat Completions request with bearer authentication"}}';
+        return;
+    }
+    $primary = $id === 'gemma-4-31b-it';
+    $respond = static function (?string $content, array $calls = [], array $usage = [], array $extensions = []) use ($id): void {
+        $message = ['role'=>'assistant', 'content'=>$content] + $extensions;
+        if ($calls !== []) $message['tool_calls'] = $calls;
+        $reply = ['model'=>$id, 'choices'=>[['index'=>0, 'message'=>$message,
+            'finish_reason'=>$calls === [] ? 'stop' : 'tool_calls']]];
+        if ($usage !== []) $reply['usage'] = $usage;
+        echo json_encode($reply, JSON_THROW_ON_ERROR);
+    };
+    $makeCall = static fn(string $id, string $name, array|object $arguments): array =>
+        ['id'=>$id, 'type'=>'function', 'function'=>['name'=>$name, 'arguments'=>json_encode($arguments, JSON_THROW_ON_ERROR)]];
+    $toolResult = static function (array $message): array {
+        if (($message['role'] ?? null) !== 'tool' || !is_string($message['content'] ?? null)) return [];
+        $result = json_decode($message['content'], true, 512, JSON_THROW_ON_ERROR);
+        return is_array($result) ? $result : [];
+    };
+
+    if ($scenario === 'cycle') {
+        $dir = getenv('BAPX_CYCLE_FIXTURE_DIR');
+        if (!is_string($dir) || !is_dir($dir)) { http_response_code(400); echo '{}'; return; }
+        $key = $dir.'/'.hash('sha256', $id);
+        $count = (int)@file_get_contents($key) + 1;
+        file_put_contents($key, (string)$count, LOCK_EX);
+        if ($primary && $count === 4) {
+            $respond('<final_answer>connection ok</final_answer>');
+            return;
         }
-        http_response_code(503);echo '{"error":{"status":"UNAVAILABLE"}}';return;
+        http_response_code(503);
+        echo '{"error":{"status":"UNAVAILABLE"}}';
+        return;
     }
     if (in_array($scenario, ['auth_ordered', 'auth_independent', 'auth_cycle'], true)) {
-        if ($model === 'chat/completions') {
-            $payload = json_decode((string)file_get_contents('php://input'), true, 512, JSON_THROW_ON_ERROR);
-            $status = $scenario === 'auth_cycle'
-                ? (($payload['model'] ?? '') === 'fixture/first' ? 503 : 401) : 401;
+        if (!$google) {
+            $status = $scenario === 'auth_cycle' && $id === 'fixture/first' ? 503 : 401;
         } elseif ($scenario === 'auth_independent') {
-            echo json_encode(['candidates'=>[['content'=>['parts'=>[['text'=>'<final_answer>independent connection ok</final_answer>']]]]]]);
+            $respond('<final_answer>independent connection ok</final_answer>');
             return;
         } else {
-            $status = match ($scenario) {
-                'auth_cycle' => 403,
-                default => $primary ? 503 : 429,
-            };
-            if ($status !== 403) {
-                header('Retry-After: 60');
-            }
+            $status = $scenario === 'auth_cycle' ? 403 : ($primary ? 503 : 429);
+            if ($status !== 403) header('Retry-After: 60');
         }
         http_response_code($status);
         echo '{"error":{"message":"private-fixture-auth-details"}}';
         return;
     }
-    if($scenario==='body_retry'||$scenario==='daily_quota'){
-        $file=getenv('BAPX_CYCLE_FIXTURE_DIR').'/'.$scenario;
-        $count=(int)@file_get_contents($file)+1;file_put_contents($file,(string)$count,LOCK_EX);
-        if($count===1||$scenario==='daily_quota'){
-            http_response_code(429);header('Retry-After: 1');
+    if ($scenario === 'body_retry' || $scenario === 'daily_quota') {
+        $file = getenv('BAPX_CYCLE_FIXTURE_DIR').'/'.$scenario;
+        $count = (int)@file_get_contents($file) + 1;
+        file_put_contents($file, (string)$count, LOCK_EX);
+        if ($count === 1 || $scenario === 'daily_quota') {
+            http_response_code(429);
+            header('Retry-After: 1');
             echo json_encode(['error'=>['details'=>[
                 ['@type'=>'type.googleapis.com/google.rpc.RetryInfo','retryDelay'=>'1.25s'],
-                ['@type'=>'type.googleapis.com/google.rpc.QuotaFailure','violations'=>[['quotaId'=>$scenario==='daily_quota'?'RequestsPerDay':'RequestsPerMinute','quotaValue'=>'10','subject'=>'private-fixture-project']]]
-            ]]]);
+                ['@type'=>'type.googleapis.com/google.rpc.QuotaFailure',
+                    'violations'=>[['quotaId'=>$scenario === 'daily_quota' ? 'RequestsPerDay' : 'RequestsPerMinute',
+                        'quotaValue'=>'10','subject'=>'private-fixture-project']]],
+            ]]], JSON_THROW_ON_ERROR);
             return;
         }
-        echo json_encode(['candidates'=>[['content'=>['parts'=>[['text'=>'<final_answer>connection ok</final_answer>']]],'finishReason'=>'STOP']],'usageMetadata'=>['promptTokenCount'=>3,'candidatesTokenCount'=>2,'totalTokenCount'=>5],'modelVersion'=>'gemma-4-31b-it']);
+        $respond('<final_answer>connection ok</final_answer>', usage: ['prompt_tokens'=>3,'completion_tokens'=>2,'total_tokens'=>5]);
         return;
     }
-    if($scenario==='cooldown'||$scenario==='short_hold') {
-        if($scenario==='cooldown'&&$primary){http_response_code(503);echo '{"error":{"status":"UNAVAILABLE"}}';return;}
-        echo json_encode(['candidates'=>[['content'=>['parts'=>[['text'=>'<final_answer>connection ok</final_answer>']]]]]]);return;
+    if ($scenario === 'cooldown' || $scenario === 'short_hold') {
+        if ($scenario === 'cooldown' && $primary) {
+            http_response_code(503);
+            echo '{"error":{"status":"UNAVAILABLE"}}';
+            return;
+        }
+        $respond('<final_answer>connection ok</final_answer>');
+        return;
     }
-    if($scenario==='bad_schema') {
+    if ($scenario === 'bad_schema') {
         http_response_code(400);
-        echo json_encode(['error'=>['status'=>'INVALID_ARGUMENT','message'=>'function_declarations parameters_json_schema: private-fixture-raw-error']]);
+        echo json_encode(['error'=>['status'=>'INVALID_ARGUMENT','message'=>'Invalid tool schema: private-fixture-raw-error']]);
         return;
     }
-    if($scenario==='tool_probe') {
-        $request=json_decode((string)file_get_contents('php://input'),true,512,JSON_THROW_ON_ERROR);
-        $tool=$request['tools'][0]['functionDeclarations'][0]??[];
-        $objects=json_decode((string)file_get_contents('php://input'));
-        if(!is_object($objects->tools[0]->functionDeclarations[0]->parametersJsonSchema->properties??null) || (!$primary && isset($objects->generationConfig->thinkingConfig))) {
-            http_response_code(400);echo '{"error":"object shape or thinking config"}';return;
+    if (in_array($scenario, ['tool_probe', 'tool_probe_bad_signature', 'tool_probe_large_signature'], true)) {
+        $tools = json_decode($payload)->tools ?? [];
+        $tool = $tools[0] ?? null;
+        $knownGemma = $google && in_array($id, ['gemma-4-31b-it','gemma-4-26b-a4b-it'], true);
+        $thinking = $request['extra_body'] ?? null;
+        if (($tool->type ?? null) !== 'function' || ($tool->function->name ?? null) !== 'connection_probe'
+            || !is_object($tool->function->parameters->properties ?? null)
+            || ($tool->function->parameters->additionalProperties ?? null) !== false
+            || $thinking !== ($knownGemma ? ['google'=>['thinking_config'=>['thinking_level'=>'minimal']]] : null)) {
+            http_response_code(400);
+            echo '{"error":{"message":"Wrong tool schema"}}';
+            return;
         }
-        if(isset($tool['parameters'])||($tool['parametersJsonSchema']['additionalProperties']??null)!==false) {
-            http_response_code(400);echo '{"error":"wrong schema"}';return;
-        }
-        $contents=$request['contents'];
-        if(count($contents)===1){
-            echo json_encode(['candidates'=>[['content'=>['parts'=>[['functionCall'=>['name'=>'connection_probe','args'=>(object)[],'id'=>'fixture-call']]]]]]]);
+        $signature = match ($scenario) {
+            'tool_probe_bad_signature' => 7,
+            'tool_probe_large_signature' => str_repeat('x', 262145),
+            default => base64_encode('opaque-fixture-signature'),
+        };
+        $extra = ['extra_content'=>['google'=>['thought_signature'=>$signature]]];
+        $call = $makeCall('fixture-call', 'connection_probe', (object)[]);
+        // Cover both placements without assuming that every Google model returns a signature.
+        $wireCall = $primary ? $call + $extra : $call;
+        if (count($messages) === 1 && ($request['tool_choice'] ?? null) === 'auto') {
+            $respond(null, [$wireCall], extensions: $primary ? [] : $extra);
         } else {
-            $response=end($contents)['parts'][0]['functionResponse']??[];
-            $previous=$contents[count($contents)-2]['parts'][0]['functionCall']??[];
-            if(!is_object($objects->contents[count($contents)-2]->parts[0]->functionCall->args??null)||($response['id']??'')!=='fixture-call'||($previous['id']??'')!=='fixture-call'||($response['response']['challenge']??'')!=='fixture-observed-challenge'){
-                http_response_code(400);echo '{"error":"missing correlated response"}';return;
+            $previous = $messages[count($messages)-2] ?? [];
+            $result = end($messages);
+            $expectedCall = $google ? $wireCall : $call;
+            $expectedExtra = $google && !$primary ? $extra['extra_content'] : null;
+            if (($previous['role'] ?? null) !== 'assistant' || ($previous['tool_calls'] ?? null) !== [$expectedCall]
+                || ($previous['extra_content'] ?? null) !== $expectedExtra
+                || ($result['tool_call_id'] ?? null) !== 'fixture-call'
+                || ($toolResult($result)['challenge'] ?? null) !== 'fixture-observed-challenge') {
+                http_response_code(400);
+                echo '{"error":{"message":"Wrong tool history or continuation metadata"}}';
+                return;
             }
-            echo json_encode(['candidates'=>[['content'=>['parts'=>[['text'=>'<final_answer>fixture-observed-challenge</final_answer>']]]]]]);
+            $respond('<final_answer>fixture-observed-challenge</final_answer>');
         }
         return;
     }
-    if($scenario==='tool_discovery') {
-        $request=json_decode((string)file_get_contents('php://input'),true,512,JSON_THROW_ON_ERROR);
-        $names=array_column($request['tools'][0]['functionDeclarations']??[],'name');
-        $contents=$request['contents'];
-        $n=count($contents);
-        $response=end($contents)['parts'][0]['functionResponse']??[];
-        if($n===1 && $names===['read_runtime_skill','tool_search']) {
-            $parts=[['functionCall'=>['name'=>'tool_search','args'=>['query'=>'public_policy'],'id'=>'fixture-discovery']]];
-        } elseif($n===3 && in_array('public_policy',$names,true) && ($response['id']??'')==='fixture-discovery' && ($response['response']['matches'][0]['name']??'')==='public_policy') {
-            $parts=[['functionCall'=>['name'=>'public_policy','args'=>['key'=>'shipping_cost'],'id'=>'fixture-policy']]];
-        } elseif($n===5 && ($response['id']??'')==='fixture-policy' && ($response['response']['value']??'')==='Shipping is calculated at checkout.') {
-            $parts=[['text'=>'<final_answer>Shipping is calculated at checkout.</final_answer>']];
-        } else { http_response_code(400);echo '{"error":"discovery exchange invalid"}';return; }
-        echo json_encode(['candidates'=>[['content'=>['parts'=>$parts]]]]);
+    if ($scenario === 'tool_discovery') {
+        $names = array_column(array_column($request['tools'] ?? [], 'function'), 'name');
+        $count = count($messages);
+        $last = end($messages);
+        $result = $last ? $toolResult($last) : [];
+        $previous = $messages[$count-2]['tool_calls'][0] ?? [];
+        if ($count === 1 && $names === ['read_runtime_skill','tool_search']) {
+            $respond(null, [$makeCall('fixture-discovery', 'tool_search', ['query'=>'public_policy'])]);
+        } elseif ($count === 3 && in_array('public_policy', $names, true)
+            && ($previous['id'] ?? null) === 'fixture-discovery' && ($last['tool_call_id'] ?? null) === 'fixture-discovery'
+            && ($result['matches'][0]['name'] ?? null) === 'public_policy') {
+            $respond(null, [$makeCall('fixture-policy', 'public_policy', ['key'=>'shipping_cost'])]);
+        } elseif ($count === 5 && ($request['tool_choice'] ?? null) === 'none'
+            && ($previous['id'] ?? null) === 'fixture-policy' && ($last['tool_call_id'] ?? null) === 'fixture-policy'
+            && ($result['value'] ?? null) === 'Shipping is calculated at checkout.') {
+            $respond('<final_answer>Shipping is calculated at checkout.</final_answer>');
+        } else {
+            http_response_code(400);
+            echo '{"error":{"message":"Discovery exchange invalid"}}';
+        }
         return;
     }
     if ($scenario === 'slow' && $primary) usleep(6_350_000);
     if ($scenario === 'stalled' && $primary) usleep(3_300_000);
-    if (($scenario === 'stalled' && !$primary) || ($scenario === 'retry' && $primary) || $scenario === 'locked') {
-        http_response_code(503);
-        if ($scenario === 'retry') header('Retry-After: 1');
+    if ($scenario === 'retry') {
+        $file = getenv('BAPX_CYCLE_FIXTURE_DIR').'/retry-wire';
+        $first = @file_get_contents($file);
+        if ($first === false) {
+            file_put_contents($file, $payload, LOCK_EX);
+            http_response_code(503);
+            header('Retry-After: 1');
+            echo '{"error":{"message":"private-provider-placeholder"}}';
+            return;
+        }
+        if ($payload !== $first) {
+            http_response_code(400);
+            echo '{"error":{"message":"Retry changed the original request"}}';
+            return;
+        }
     }
-    if ($scenario === 'quota') {
-        http_response_code(429);
-        header('Retry-After: '.gmdate('D, d M Y H:i:s \G\M\T', time() + 60));
+    $status = match ($scenario) {
+        'locked' => 503,
+        'quota' => 429,
+        'denied' => 403,
+        default => 200,
+    };
+    if ($status !== 200) {
+        http_response_code($status);
+        if ($scenario === 'quota') {
+            header('Retry-After: '.gmdate('D, d M Y H:i:s \G\M\T', time() + 60));
+        }
+        echo '{"error":{"message":"private-provider-placeholder"}}';
+        return;
     }
-    if ($scenario === 'denied') http_response_code(403);
-    echo json_encode(['fixture' => 'private-provider-placeholder']);
+    $respond('private-provider-placeholder');
     return;
 }
 putenv('BAPX_TEST_MODE=1');
@@ -148,43 +227,50 @@ try {
         usleep(20000);
     }
     check((bool)$ready, 'Loopback server did not start');
-    $route = new ReflectionMethod(AiClient::class, 'postGoogleRouted');
-    $request = static function (string $scenario, int $budgetMs = 26000, bool $locked = false) use ($route, $address): array {
+    $googleEndpoint = static fn(string $scenario): string => 'http://'.$address.'/'.$scenario.'/v1beta/openai';
+    $curlOptions = [CURLOPT_PROXY=>'', CURLOPT_FOLLOWLOCATION=>false];
+    $transfer = new ReflectionMethod(AiClient::class, 'postWithRetries');
+    $request = static function (string $scenario, int $budgetMs = 26000, bool $locked = false) use ($transfer, $googleEndpoint, $curlOptions): array {
         $client = new AiClient();
+        if ($locked) (new ReflectionProperty(AiClient::class, 'toolExchangeStarted'))->setValue($client, true);
         $status = null;
         $model = SecretService::PRIMARY_MODEL;
+        $payload = json_encode(['model'=>$model, 'messages'=>[['role'=>'user', 'content'=>'Fixture']]], JSON_THROW_ON_ERROR);
         $start = hrtime(true);
-        $args = ['http://'.$address.'/'.$scenario, &$model, '{}', ['Content-Type: application/json'],
-            &$status, &$locked, $start + $budgetMs * 1000000];
-        $route->invokeArgs($client, $args);
-        return [$status, $client->failureCategory(), $client->transferTimings(), (hrtime(true) - $start) / 1000000, $locked];
+        $args = [$googleEndpoint($scenario).'/chat/completions', $payload,
+            ['Content-Type: application/json', 'Authorization: Bearer fixture'], &$status, $model,
+            $start + $budgetMs * 1000000, false, $curlOptions];
+        $transfer->invokeArgs($client, $args);
+        return [$status, $client->failureCategory(), $client->transferTimings(), (hrtime(true) - $start) / 1000000];
     };
 
     [$status, $reason, $attempts] = $request('slow');
     check($status === 200 && $reason === null && count($attempts) === 1, 'A slow primary can complete a single request');
     check($attempts[0]['total_ms'] > 6000 && $attempts[0]['timeout_ms'] === 12000, 'The primary can wait beyond the former 6s cutoff');
     check($attempts[0]['first_byte_ms'] > 0, 'A received response records time to first byte');
-
-    [$status, $reason, $attempts] = $request('stalled', 6000);
-    check($status === 503 && $reason === 'provider_server', 'The actual upstream fallback response is retained');
-    check(array_column($attempts, 'model') === [SecretService::PRIMARY_MODEL, SecretService::FALLBACK_MODEL], 'A stalled primary is not replayed');
-    check($attempts[0]['curl_error'] === 28 && !isset($attempts[0]['first_byte_ms']), 'A timeout before a response has no first-byte value');
     check(!str_contains(json_encode($attempts), 'private-provider-placeholder'), 'Attempt diagnostics exclude provider content');
 
-    [$status, $reason, $attempts, $elapsed, $locked] = $request('retry');
-    check($status === 200 && $reason === null && $locked && count($attempts) === 2 && $elapsed >= 1000, 'Honor Retry-After before recovering on fallback');
+    [$status, $reason, $attempts] = $request('stalled', 3000);
+    check($status === 0 && $reason === 'timeout' && count($attempts) === 1, 'The shared deadline stops retries after one stalled transfer');
+    check($attempts[0]['curl_error'] === 28 && !isset($attempts[0]['first_byte_ms']), 'A timeout before a response has no first-byte value');
+
+    [$status, $reason, $attempts, $elapsed] = $request('retry');
+    check($status === 200 && $reason === null && array_column($attempts, 'status') === [503,200] && $elapsed >= 1000,
+        'Honor Retry-After before retrying the identical Chat Completions payload');
     [$status, $reason, $attempts] = $request('quota', 6000);
     check($status === 429 && $reason === 'rate_limit' && count($attempts) === 1, 'Retry-After beyond the deadline retains the quota response');
     [$status, $reason, $attempts] = $request('denied');
     check($status === 403 && $reason === 'authentication' && count($attempts) === 1, 'Authentication failures are terminal');
     [$status, $reason, $attempts] = $request('locked', 6000, true);
-    check($status === 503 && count($attempts) === 1, 'A locked tool exchange cannot move to another model');
+    check($status === 503 && array_column($attempts, 'model') === array_fill(0, 3, SecretService::PRIMARY_MODEL)
+        && array_column($attempts, 'inference_phase') === array_fill(0, 3, 'continuation'),
+        'Recoverable continuation retries stay on the original model');
     [$status, $reason, $attempts] = $request('slow', 0);
     check($status === 0 && $reason === 'request_deadline' && $attempts === [], 'Local deadline expiry is not a network timeout');
     check(!AiClient::canFailOver(0, 60) && !AiClient::canFailOver(501, 0), 'Certificate and unsupported protocol failures are terminal');
 
     // The provider switch is valid only before any executed tool call.
-    $gate=new ReflectionMethod(AiClient::class,'routerNeedsGoogleFallback');
+    $gate=new ReflectionMethod(AiClient::class,'canTryAnotherConnection');
     $failure=new ReflectionProperty(AiClient::class,'failureCategory');
     $executed=new ReflectionProperty(AiClient::class,'toolCalls');
     $unit=new AiClient();
@@ -198,9 +284,9 @@ try {
     $failure->setValue($unit,null);
     check($gate->invoke($unit)===false,'A healthy model must not trigger duplicate inference.');
 
-    // Exercise the actual Google two-turn wire exchange against the fixture;
+    // Exercise Chat Completions tool correlation for the Google connection;
     // no production key, live business data or provider account.
-    $registry=new class extends \App\Services\AgentToolRegistry {
+    $registry=new class extends AgentToolRegistry {
         public function __construct() {}
         public function declarations(): array {
             return [['name'=>'connection_probe','description'=>'Synthetic fixture',
@@ -211,23 +297,47 @@ try {
         }
     };
     $client=new AiClient();
-    $complete=new ReflectionMethod(AiClient::class,'completeGoogleTools');
-    $config=['provider'=>'google','endpoint'=>'http://'.$address.'/tool_probe','apiKey'=>'fixture-key',
-        'model'=>SecretService::PRIMARY_MODEL,'models'=>[SecretService::PRIMARY_MODEL],'configured'=>true];
-    $reply=$complete->invoke($client,$config,'Call the tool.', $registry,256,0.0,2,null,hrtime(true)+6000000000);
-    check(AiClient::probeSucceeded($reply,'fixture-observed-challenge',$client->toolCalls(),true),'Actual tool call, correlated response and final text must all succeed');
-    check(count($client->transferTimings())===2,'Expected exactly two provider transfers');
-    $client=new AiClient();
-    $config['model']='custom-google-model';$config['models']=[$config['model']];
-    $reply=$complete->invoke($client,$config,'Call the tool.', $registry,256,0.0,2,null,hrtime(true)+6000000000);
-    check(AiClient::probeSucceeded($reply,'fixture-observed-challenge',$client->toolCalls(),true),'Custom Google model preserves JSON object shapes while omitting thinking configuration');
-    $client=new AiClient();
-    $config['model']=SecretService::PRIMARY_MODEL;$config['models']=[$config['model']];
-    $registry=new \App\Services\RuntimeAgentToolRegistry('support',null,new \App\Services\SupportToolRegistry(null),'');
-    $config['endpoint']='http://'.$address.'/tool_discovery';
-    $reply=$complete->invoke($client,$config,'Find the appropriate tool.', $registry,256,0.0,2,null,hrtime(true)+6000000000);
-    check($reply==='Shipping is calculated at checkout.'&&$client->toolCalls()===2,'Deferred discovery must update subsequent wire declarations and execute the actual policy tool');
-    check(count($client->transferTimings())===3,'Expected exactly three provider transfers for discovery and execution');
+    $complete = new ReflectionMethod(AiClient::class, 'completeCompatibleLoop');
+    $config = ['provider'=>'google', 'endpoint'=>$googleEndpoint('tool_probe'), 'apiKey'=>'fixture-key',
+        'model'=>SecretService::PRIMARY_MODEL, 'models'=>[SecretService::PRIMARY_MODEL], 'configured'=>true];
+    $runCompatible = static function (AiClient $client, array $config, string $prompt, AgentToolRegistry|RuntimeAgentToolRegistry $tools) use ($complete, $curlOptions): string {
+        return $complete->invoke($client, $config, $prompt, 256, null, $tools, 2, hrtime(true)+6000000000, false, $curlOptions);
+    };
+    $reply = $runCompatible($client, $config, 'Call the tool.', $registry);
+    check(AiClient::probeSucceeded($reply, 'fixture-observed-challenge', $client->toolCalls(), true),
+        'Function schema, correlated result and opaque call-level Google signature survive one continuation');
+    check(count($client->transferTimings()) === 2, 'Expected exactly two provider transfers');
+
+    $client = new AiClient();
+    $customGoogle = $config;
+    $customGoogle['model'] = 'custom-google-model';
+    $customGoogle['models'] = [$customGoogle['model']];
+    $reply = $runCompatible($client, $customGoogle, 'Call the tool.', $registry);
+    check(AiClient::probeSucceeded($reply, 'fixture-observed-challenge', $client->toolCalls(), true),
+        'A configured Google model preserves its ID and assistant-level Google signature');
+
+    $client = new AiClient();
+    $custom = ['provider'=>'openai_compatible', 'endpoint'=>'http://'.$address.'/tool_probe', 'apiKey'=>'fixture-compatible',
+        'model'=>'fixture/custom-model', 'models'=>['fixture/custom-model'], 'configured'=>true];
+    $reply = $runCompatible($client, $custom, 'Call the tool.', $registry);
+    check(AiClient::probeSucceeded($reply, 'fixture-observed-challenge', $client->toolCalls(), true),
+        'A custom connection can complete the tool exchange without forwarding Google metadata');
+
+    foreach (['tool_probe_bad_signature'=>$config, 'tool_probe_large_signature'=>$customGoogle] as $scenario=>$invalid) {
+        $client = new AiClient();
+        $invalid['endpoint'] = $googleEndpoint($scenario);
+        $reply = $runCompatible($client, $invalid, 'Call the tool.', $registry);
+        check(AiClient::isError($reply) && $client->toolCalls() === 0 && count($client->transferTimings()) === 1,
+            'Invalid or oversized Google continuation metadata blocks tool execution');
+    }
+
+    $client = new AiClient();
+    $registry = new RuntimeAgentToolRegistry('support', null, new SupportToolRegistry(null), '');
+    $config['endpoint'] = $googleEndpoint('tool_discovery');
+    $reply = $runCompatible($client, $config, 'Find the appropriate tool.', $registry);
+    check($reply === 'Shipping is calculated at checkout.' && $client->toolCalls() === 2,
+        'Deferred discovery updates Chat Completions declarations and executes the actual policy tool');
+    check(count($client->transferTimings()) === 3, 'Expected exactly three provider transfers for discovery and execution');
     // Ordinary generation avoids only a previously observed transient failure.
     // Explicit diagnostics still contact the selected endpoint, with no fake attempts.
     $healthDir=sys_get_temp_dir().'/bapx-ai-health-fixture-'.bin2hex(random_bytes(6));
@@ -235,7 +345,7 @@ try {
     $healthFile=$healthDir.'/state.json';
     try{
         $health=new \App\Services\AiProviderHealthService($healthFile);
-        $plan=[['provider'=>'google','endpoint'=>'http://'.$address.'/cooldown','apiKey'=>'fixture-key',
+        $plan=[['provider'=>'google','endpoint'=>$googleEndpoint('cooldown'),'apiKey'=>'fixture-key',
             'model'=>SecretService::PRIMARY_MODEL,'models'=>SecretService::GOOGLE_MODELS,'configured'=>true]];
         $routeAll=new ReflectionMethod(AiClient::class,'route');
         $client=new AiClient(health:$health);
@@ -246,7 +356,7 @@ try {
         check($reply==='connection ok'&&array_column($client->transferTimings(),'model')===[SecretService::PRIMARY_MODEL,SecretService::PRIMARY_MODEL,SecretService::PRIMARY_MODEL,SecretService::FALLBACK_MODEL],'Fresh request starts at primary despite prior transient failures');
 
         $shortHoldPlan = $plan;
-        $shortHoldPlan[0]['endpoint'] = 'http://'.$address.'/short_hold';
+        $shortHoldPlan[0]['endpoint'] = $googleEndpoint('short_hold');
         $health->record($shortHoldPlan[0], SecretService::PRIMARY_MODEL, 429, 0, 2500);
         AgentTraceService::begin(bin2hex(random_bytes(8)), null, AiClient::agentLimits());
         try {
@@ -302,7 +412,7 @@ try {
         $reply=$routeAll->invoke($client,'Reply connection ok',256,0.0,null,null,0,$diagnosticPlan,true);
         check($reply==='connection ok'&&count($client->transferTimings())===1,'Explicit diagnostic bypasses cooldown');
         check($health->availablePlan($plan)[0]['models']===[SecretService::FALLBACK_MODEL],'Successful diagnostic clears only its own cooldown');
-        $bad=$plan;$bad[0]['endpoint']='http://'.$address.'/bad_schema';$client=new AiClient(health:$health);
+        $bad=$plan;$bad[0]['endpoint']=$googleEndpoint('bad_schema');$client=new AiClient(health:$health);
         $reply=$routeAll->invoke($client,'Reply connection ok',256,0.0,null,null,0,$bad);
         $attempts=$client->transferTimings();
         check(AiClient::isError($reply)&&count($attempts)===2&&($attempts[0]['request_error_hint']??null)==='tool_schema'&&($attempts[1]['request_error_hint']??null)==='tool_schema','HTTP 400 receives an allowlisted hint without repeating the invalid request');
@@ -312,23 +422,21 @@ try {
         foreach(glob($healthDir.'/*')?:[] as $file)unlink($file);
         rmdir($healthDir);
     }
-    // Exercise the real synchronous fallback loop and both wire adapters over loopback.
+    // Exercise the real synchronous fallback loop through the shared wire adapter over loopback.
     // The production compatible endpoint's DNS/HTTPS guard is unchanged.
     AgentTraceService::begin(str_repeat('b',16),null,AiClient::agentLimits());
     $client=new AiClient();
     $plan=[
-        ['provider'=>'google','endpoint'=>'http://'.$address.'/cycle','apiKey'=>'fixture','model'=>SecretService::PRIMARY_MODEL,'models'=>SecretService::GOOGLE_MODELS,'configured'=>true],
+        ['provider'=>'google','endpoint'=>$googleEndpoint('cycle'),'apiKey'=>'fixture','model'=>SecretService::PRIMARY_MODEL,'models'=>SecretService::GOOGLE_MODELS,'configured'=>true],
         ['provider'=>'openrouter','endpoint'=>'http://'.$address.'/cycle','apiKey'=>'fixture','model'=>'openrouter/free','models'=>['openrouter/free'],'configured'=>true],
     ];
-    $googleText=new ReflectionMethod(AiClient::class,'completeGoogleText');
     $compatibleLoop=new ReflectionMethod(AiClient::class,'completeCompatibleLoop');
     $ordered=new ReflectionMethod(AiClient::class,'completeWithFallbacks');
-    $runOrdered = static function (AiClient $client, array $plan) use ($ordered, $googleText, $compatibleLoop): string {
+    $runOrdered = static function (AiClient $client, array $plan) use ($ordered, $compatibleLoop, $curlOptions): string {
         $deadline = hrtime(true) + 40_000_000_000;
         return $ordered->invoke($client, $plan, $deadline, true,
-            static function (array $cfg) use ($client, $googleText, $compatibleLoop, $deadline): string {
-                return $cfg['provider'] === 'google' ? $googleText->invoke($client, $cfg, 'Fixture', 32, 0.0, $deadline)
-                    : $compatibleLoop->invoke($client, $cfg, 'Fixture', 32, null, null, 0, $deadline, false, [CURLOPT_PROXY=>'',CURLOPT_FOLLOWLOCATION=>false]);
+            static function (array $cfg) use ($client, $compatibleLoop, $deadline, $curlOptions): string {
+                return $compatibleLoop->invoke($client, $cfg, 'Fixture', 32, null, null, 0, $deadline, false, $curlOptions);
             });
     };
     $reply = $runOrdered($client, $plan);
@@ -351,7 +459,7 @@ try {
     $probeFailureMessage = new ReflectionMethod(AiClient::class, 'probeFailureMessage');
     foreach (['auth_ordered', 'auth_independent', 'auth_cycle'] as $scenario) {
         $endpoint = 'http://'.$address.'/'.$scenario;
-        $google = ['provider'=>'google','endpoint'=>$endpoint,'apiKey'=>'fixture-google',
+        $google = ['provider'=>'google','endpoint'=>$googleEndpoint($scenario),'apiKey'=>'fixture-google',
             'model'=>SecretService::PRIMARY_MODEL,'models'=>SecretService::GOOGLE_MODELS,'configured'=>true];
         $compatible = ['provider'=>$scenario === 'auth_ordered' ? 'openrouter' : 'openai_compatible',
             'endpoint'=>$endpoint,'apiKey'=>'fixture-compatible','model'=>'fixture/first',
@@ -390,9 +498,9 @@ try {
 
     // A concurrent hold observed after a tool executes must stop the locked continuation.
     $lockedHealth = new \App\Services\AiProviderHealthService($cycleDir . '/locked-health.json');
-    $lockedConfig = ['provider'=>'google','endpoint'=>'http://'.$address.'/tool_probe','apiKey'=>'fixture-key',
+    $lockedConfig = ['provider'=>'google','endpoint'=>$googleEndpoint('tool_probe'),'apiKey'=>'fixture-key',
         'model'=>SecretService::PRIMARY_MODEL,'models'=>SecretService::GOOGLE_MODELS,'configured'=>true];
-    $holdingTool = new class($lockedHealth, $lockedConfig) extends \App\Services\AgentToolRegistry {
+    $holdingTool = new class($lockedHealth, $lockedConfig) extends AgentToolRegistry {
         public function __construct(private \App\Services\AiProviderHealthService $health, private array $connection) {}
         public function declarations(): array {
             return [['name'=>'connection_probe','description'=>'Synthetic fixture',
@@ -426,7 +534,7 @@ try {
     foreach(['body_retry','daily_quota'] as $scenario){
         AgentTraceService::begin(bin2hex(random_bytes(8)),null,AiClient::agentLimits());
         $client=new AiClient(health: new \App\Services\AiProviderHealthService($cycleDir . '/health-' . $scenario . '.json'));
-        $cfg=[['provider'=>'google','endpoint'=>'http://'.$address.'/'.$scenario,'apiKey'=>'fixture','model'=>SecretService::PRIMARY_MODEL,'models'=>[SecretService::PRIMARY_MODEL],'configured'=>true]];
+        $cfg=[['provider'=>'google','endpoint'=>$googleEndpoint($scenario),'apiKey'=>'fixture','model'=>SecretService::PRIMARY_MODEL,'models'=>[SecretService::PRIMARY_MODEL],'configured'=>true]];
         $routeAll=new ReflectionMethod(AiClient::class,'route');
         $start=hrtime(true);
         $reply=$routeAll->invoke($client,'Fixture',64,0.0,null,null,0,$cfg);
@@ -437,7 +545,7 @@ try {
         if($scenario==='body_retry'){
             check($reply==='connection ok'&&array_column($attempts,'status')===[429,200],'Temporary quota recovers after the indicated delay');
             check((hrtime(true)-$start)/1000000>=1250,'Measured wait honors structured provider minimum');
-            check(($attempts[1]['usage']['total_tokens']??null)===5&&($attempts[1]['finish_reason']??null)==='STOP','Response usage and finish reason retained');
+            check(($attempts[1]['usage']['total_tokens']??null)===5&&($attempts[1]['finish_reason']??null)==='stop','Response usage and finish reason retained');
         }else check(AiClient::isError($reply)&&count($attempts)===1,'Daily quota does not blindly retry within the same request');
         AgentTraceService::reset();
     }
