@@ -64,9 +64,21 @@ and 375px. Explicit SMTP acceptance and legacy sent have separate labels.
   action fields stay inside it. Cancel collapses the editor and returns
   focus to its summary, and opening the disclosure works without JavaScript.
 
+## Owner analytics
+
+- Site analytics leads to the existing Dashboard traffic and search anchor,
+  Google reporting and PageSpeed Insights. Keep connection, empty and error
+  states distinct from valid zero activity.
+- Commerce overview owns the first-party storefront cart-add and checkout
+  initiation counts for the last 30 days. Agent Monitoring owns request,
+  provider, tool and quality evidence. Historical Session analytics belongs
+  under Services.
+- Verify native disclosure navigation, current destinations, module-off
+  behavior and the existing fragment bookmark at desktop and 375px.
+
 ## Admin Panel Agent
 
-The interface at `/admin/agent` is the Enterprise Agent chat workspace.
+The interface at `/admin/agent` is the Enterprise Agent chat workspace. Use the deployment profile for the display label. The reference deployment shows Enterprise Agent Vinod. The display label does not participate in authorization or runtime instructions.
 The same navigation group links to `/admin/agent/monitoring` and the AI Support Tickets queue. Treat it as read-only unless controller code explicitly
 implements and authorizes a mutation. Draft cards are editable proposals and must say
 that nothing changes until the owner reviews and confirms.

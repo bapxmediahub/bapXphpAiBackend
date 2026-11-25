@@ -787,6 +787,8 @@ flowchart LR
   controller_admincontroller -. declared service .-> service_orderservice
   controller_admincontroller -. declared service .-> service_storestatsservice
   controller_admincontroller -. declared service .-> service_siteinsightsservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_sitetelemetryservice
   controller_admincontroller -. declared service .-> service_authservice
   controller_admincontroller -. declared related view .-> view_admin_dashboard
   route_get_admin_system_health -- registered handler --> controller_admincontroller
@@ -1004,7 +1006,6 @@ flowchart LR
   controller_admincontroller -. declared service .-> service_databaseservice
   controller_admincontroller -. declared service .-> service_agentconversationservice
   controller_admincontroller -. declared service .-> service_agentevaluationservice
-  controller_admincontroller -. declared service .-> service_sitetelemetryservice
   controller_admincontroller -. declared service .-> service_authservice
   controller_admincontroller -. declared related view .-> view_admin_agent_monitoring
   route_post_admin_agent_ask -- registered handler --> controller_admincontroller
