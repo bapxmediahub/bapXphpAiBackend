@@ -46,18 +46,18 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 504
-  relationships: 457
+  concepts: 506
+  relationships: 461
   by_type:
     blog: 16
     controller: 18
     doc: 55
     image: 89
     operator_guide: 12
-    route: 183
+    route: 184
     runtime_instruction: 6
     schema: 24
-    service: 89
+    service: 90
     skill: 12
 concepts:
   - id: "blog:benefits-of-rudraksha"
@@ -3665,6 +3665,24 @@ concepts:
       - "AuthoredPageService"
       - "MarkdownRenderer"
       - "CampaignLeadService"
+      - "CampaignDownloadService"
+    view: "public/authored-page"
+    response: null
+    provenance: "route_registry"
+  - id: "route:get__pages__slug__downloads__revision___id"
+    type: "route"
+    title: "GET /pages/{slug}/downloads/{revision}/{id}"
+    description: "pages.download"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "GET"
+    path: "/pages/{slug}/downloads/{revision}/{id}"
+    controller: "PublicController@campaignDownload"
+    services:
+      - "AuthoredPageService"
+      - "CampaignDownloadService"
     view: "public/authored-page"
     response: null
     provenance: "route_registry"
@@ -4721,6 +4739,7 @@ concepts:
     services:
       - "AuthoredPageService"
       - "CampaignLeadService"
+      - "CampaignDownloadService"
       - "MediaService"
       - "AuditLogService"
       - "AuthService"
@@ -5133,6 +5152,7 @@ concepts:
     services:
       - "AuthoredPageService"
       - "CampaignLeadService"
+      - "CampaignDownloadService"
       - "ContactService"
       - "RateLimiter"
     view: "public/authored-page"
@@ -5792,6 +5812,14 @@ concepts:
     title: "BlogService"
     description: "Service: BlogService"
     resource: "app/Services/BlogService.php"
+    tags:
+      - "code"
+      - "service"
+  - id: "service:CampaignDownloadService"
+    type: "service"
+    title: "CampaignDownloadService"
+    description: "Service: CampaignDownloadService"
+    resource: "app/Services/CampaignDownloadService.php"
     tags:
       - "code"
       - "service"
@@ -6469,6 +6497,9 @@ relationships:
     to: "service:BlogService"
     relation: "declared_service"
   - from: "controller:AdminController"
+    to: "service:CampaignDownloadService"
+    relation: "declared_service"
+  - from: "controller:AdminController"
     to: "service:CampaignLeadService"
     relation: "declared_service"
   - from: "controller:AdminController"
@@ -6700,6 +6731,9 @@ relationships:
     to: "service:BlogService"
     relation: "declared_service"
   - from: "controller:PublicController"
+    to: "service:CampaignDownloadService"
+    relation: "declared_service"
+  - from: "controller:PublicController"
     to: "service:CampaignLeadService"
     relation: "declared_service"
   - from: "controller:PublicController"
@@ -6908,6 +6942,9 @@ relationships:
     relation: "explains"
   - from: "operator_guide:blog-publishing"
     to: "service:BlogService"
+    relation: "explains"
+  - from: "operator_guide:blog-publishing"
+    to: "service:CampaignDownloadService"
     relation: "explains"
   - from: "operator_guide:blog-publishing"
     to: "service:CampaignLeadService"
@@ -7318,6 +7355,9 @@ relationships:
     to: "controller:AccountController"
     relation: "handled_by"
   - from: "route:get__pages__slug"
+    to: "controller:PublicController"
+    relation: "handled_by"
+  - from: "route:get__pages__slug__downloads__revision___id"
     to: "controller:PublicController"
     relation: "handled_by"
   - from: "route:get__payment_stripe_return"

@@ -233,3 +233,15 @@ must recover order saves after chat/cart expiry. Unresolved attempts survive
 cart cleanup, and capacity rejection must roll back the cart lock. Test with
 real pure transitions, a fake gateway, disposable SQL/HTTP concurrency and native
 form recovery; never treat fixture success as live payment proof.
+
+
+## Authored-page downloads
+
+Validate the combined file size from actual uploads and retained descriptors
+against the same bound in the PHP editor and database-host revision write.
+Keep immutable bytes outside the checkout under `.sps-downloads`. Publish
+the page reference only after every new file is staged. Clean up new bytes
+on a definitive stale or invalid result. Preserve them after an ambiguous
+database acknowledgement so a committed page can still resolve its files.
+Confirm the current published revision and access grant before streaming an
+attachment. Keep names and identifiers out of unauthorized markup.

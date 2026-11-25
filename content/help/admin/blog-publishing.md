@@ -50,13 +50,21 @@ three fields. Tick **Required** on any field the visitor must complete.
 Choose **Unused** to remove a field from the form. Clear **Show an enquiry
 form** to remove the whole form when you save.
 
+In **Downloads**, select **Enable downloads** and use **Add files** for files
+that together total 5 MB or less. Choose a different **Position** for each
+existing file, or choose **Remove**. New files go after the retained files.
+Preview lists the files without active download links. Re-select any new
+files after preview. Clear **Enable downloads** and save to hide downloads
+while retaining the current selection. Published pages with an enquiry form
+require a confirmed submission before visitors can download.
+
 Use **Preview** to inspect the unsaved title, image, Markdown and enquiry
 fields. The preview form is disabled. Select **Published** and **Save page**
 when it is ready. Use **Open published page**
 to check it. Select **Draft** and save to withdraw the page from its address,
 search, and the sitemap. The address stays fixed across edits. If another
 editor saved first, download the browser draft before reopening the current version.
-Unsaved page title, address, Markdown, header choice and enquiry settings are saved in this browser when storage is available. Reopen the same page as the same owner to restore or discard the draft. If the saved page changed, download the browser copy instead; review visibility before using Save page. Autosave does not publish or send content to the server.
+Unsaved page title, address, Markdown, header choice, enquiry settings and saved download positions are saved in this browser when storage is available. Reopen the same page as the same owner to restore or discard the draft. If the saved page changed, download the browser copy instead; review visibility before using Save page. Autosave does not publish or send content to the server.
 Review submitted enquiries in **Contact Submissions** or **Email → Inbox**.
 Inbox shows the campaign address and revision alongside each enquiry. The
 visitor sees a receipt on the page.
