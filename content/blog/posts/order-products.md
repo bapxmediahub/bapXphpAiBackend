@@ -16,15 +16,15 @@ source_url: /shop
 
 ## Choose and add a product
 
-Open [Shop](/shop), select a product to read its details and inspect the current price and stock information. Use **Add to Cart**, **Buy Now**, or the available quantity controls for the item. **Buy Now** proceeds toward checkout; it does not itself complete payment.
+Open [Shop](/shop), select a product to read its details and inspect the current price and stock information. On an in-stock product page, set **Quantity** below the price and select **Add to Cart** or **Buy Now**. On catalogue cards you can use the cart controls beside the price. **Buy Now** proceeds toward checkout; it does not itself complete payment.
 
-Open [Cart](/cart) to review the chosen items and quantities. Use the available quantity controls to adjust the order; removing an item affects the cart, not an order already paid for.
+Open [Cart](/cart) to review the chosen items, quantities and price per item. Use the available quantity controls to adjust the order; removing an item affects the cart, not an order already paid for.
 
 ## Choose delivery
 
 At checkout, review the recipient and delivery details. A signed-in customer can choose a saved address or enter a different one. Use **Save for next time** or **Make default** only when you want the address saved to that account.
 
-Check shipping and totals before submitting. A product-page amount is not a substitute for the final checkout review. The [account guide](/blog/manage-account) explains saved-address management.
+Check shipping and totals in **Order review** before submitting. On a phone, use **Review order** at the top of checkout to go there directly. A product-page amount is not a substitute for the final checkout review. The [account guide](/blog/manage-account) explains saved-address management.
 
 ## Pay and track
 

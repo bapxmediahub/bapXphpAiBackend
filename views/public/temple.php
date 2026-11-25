@@ -29,7 +29,7 @@
                                 <div><dt>Address</dt><dd><?= e($temple['address']) ?></dd></div>
                             <?php endif; ?>
                             <?php if (!empty($temple['timings'])): ?>
-                                <div><dt>Opening hours</dt><dd><?= e($temple['timings']) ?></dd></div>
+                                <div><dt>Opening hours</dt><dd><?= nl2br(e($temple['timings'])) ?></dd></div>
                             <?php endif; ?>
                             <?php if (!empty($temple['phone'])): ?>
                                 <div><dt>Phone</dt><dd><a href="tel:<?= e(preg_replace('/[^0-9+]/', '', $temple['phone'])) ?>"><?= e($temple['phone']) ?></a></dd></div>
@@ -37,6 +37,9 @@
                         </dl>
                     <?php endif; ?>
                     <div class="temple-directory-card__actions">
+                        <?php if ($directions !== null): ?>
+                            <a class="btn btn-primary" href="<?= e($directions) ?>" target="_blank" rel="noopener noreferrer">Get directions <span aria-hidden="true">↗</span></a>
+                        <?php endif; ?>
                         <a href="/contact#contact-form" class="btn btn-outline">Ask about pooja</a>
                     </div>
                 </div>
@@ -55,17 +58,15 @@
                         <?php endforeach; ?>
                     </ul>
                 <?php endif; ?>
-                <?php if ($canEmbedMap || $directions !== null): ?>
+                <?php if ($canEmbedMap): ?>
                     <h2 id="temple-location" data-page-section="Location" tabindex="-1">Location</h2>
                     <details class="temple-map" data-temple-map>
                         <summary><span class="temple-map__show">Show map</span><span class="temple-map__hide">Hide map</span></summary>
                         <div class="temple-map__content">
-                            <?php if ($canEmbedMap): ?>
-                                <template>
-                                    <iframe class="temple-visit__map" src="<?= e($mapUrl) ?>" title="Map for <?= e($temple['name']) ?>" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-                                </template>
-                            <?php endif; ?>
-                            <a href="<?= e($directions ?? $mapUrl) ?>" target="_blank" rel="noopener noreferrer">Open map in a new tab <span aria-hidden="true">↗</span></a>
+                            <template>
+                                <iframe class="temple-visit__map" src="<?= e($mapUrl) ?>" title="Map for <?= e($temple['name']) ?>" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                            </template>
+                            <a href="<?= e($mapUrl) ?>" target="_blank" rel="noopener noreferrer">Open map in a new tab <span aria-hidden="true">↗</span></a>
                         </div>
                     </details>
                 <?php endif; ?>

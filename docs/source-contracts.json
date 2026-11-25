@@ -18,9 +18,9 @@
             "review_note": "Compared canonical optional fields, verified payment snapshots, historical flags, HSN groups and CSV review aggregation with the GST commerce guide."
         },
         "content": {
-            "source_sha256": "212c08b38701ff11b88a9017c33cbefc734d241059b3b4d595ff8609de9ad282",
-            "references_sha256": "4a7c2e24302ce60d72e88914f1b756cf44e5fc65c6912f6b00ca4501aafbb4f0",
-            "review_note": "Read the account help Markdown and its source view. The article explains the picture placeholder beside the email."
+            "source_sha256": "9ca1ff8cd0fcc4302ca466ff646e1363396bac0780b7b40b2684486f3e87e465",
+            "references_sha256": "d283e57698fc4ae10cba725749a1723c0f5bea1825f89812b2bf7a15fb2daa20",
+            "review_note": "Reviewed published Markdown guides, search navigation and module filters against the merged catalogue and account source."
         },
         "foundation": {
             "source_sha256": "2d4bb586f2aa71a68702c704197743fa1dba2e7189b307e47154c966fb04309b",
@@ -29,8 +29,8 @@
         },
         "google-tags": {
             "source_sha256": "12e326bd61a1281101032aeb26328458c0ca19ebae671e4a888d7e2c9a69e369",
-            "references_sha256": "4b5f6deaa304ea489c82dba30df7f4754ffba47bdd8ab8488dc6b8a441ba6c99",
-            "review_note": "Compared the Site analytics anchor and Google configuration links with the actual Dashboard reports, reporting setup and PageSpeed view. Configured tags, connected data and diagnostics remain distinct."
+            "references_sha256": "cbf9b733297bca2778b2907cb304421bcf47b2485581d42523ee0b88d9f050d4",
+            "review_note": "Reviewed Site analytics links against the dashboard, Google reporting, PageSpeed and Integration instructions. Connection setup and established permission and error states remain on their current routes."
         },
         "http-errors": {
             "source_sha256": "63602cadbe59868b0d25a1b00729a589e75d1b31c6ea3a1b25c1e5a46fd06d50",
@@ -38,9 +38,9 @@
             "review_note": "Compared the layout-specific title assignment with the request-error boundary. Website error status, sanitized error text and public not-found rendering follow their existing handlers."
         },
         "interface": {
-            "source_sha256": "2836ea3929827e66a2663a553ee3df9bec3bce2d29d9fdc4a357dd9ff9f1a0c6",
-            "references_sha256": "8f6839b910bb5f6e797e4eebda5efe0a6372b457506a62c556378366a33b8502",
-            "review_note": "Compared the separate owner menu groups, current anchor state, 30-day storefront totals and unavailable states with Design and the operator guide. Site analytics links to existing traffic, search and performance pages."
+            "source_sha256": "005bf525b82864de10a606375f7a8ab90e8282615455ed410646b0f9aaeed0c4",
+            "references_sha256": "53cc2ed21de9291d5d1d5288ff06d8e236f6f342f6d155e3b695151676d4e235",
+            "review_note": "Reviewed the reconciled Design and interface guide against both release diffs. The analytics navigation is grouped by use, and dashboard labels, ownership, narrow layout, and unavailable states follow the current interface."
         },
         "mail": {
             "source_sha256": "20e83e649ed008a9061724716681cff8a4c7888b7e5520459aed8843abdc5cda",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed the owner skill changes against media selection, deletion and metadata guidance. The new analytics section describes navigation and owner counts, and the media controls follow their documented path."
         },
         "operator-help": {
-            "source_sha256": "72f15e29f98cdc21133071bb8797eab552a03dda732d7c5e1e017a588cfec3d9",
-            "references_sha256": "86f3f26e90b21a2a15e32dde64c6685c42742646e4e3715fabeb32dc9ca51feb",
-            "review_note": "Reviewed the role-scoped Vinod display label, separate Site analytics destinations and Commerce counts against the owner getting-started and Enterprise guides. The links use the current owner routes."
+            "source_sha256": "e13f59877facf732a7d93026d849ab4e01706b145de6078516534d5b935451b6",
+            "references_sha256": "d5ba5a7c34dc0a7bfc7218ed7d471592017e794760acacf1e28e9463b4bec4c8",
+            "review_note": "Reviewed the dashboard, site analytics destinations and Enterprise workspace against the operator help. Owners now see separate navigation for provider and quality evidence, traffic and search, and recorded commerce actions."
         },
         "public-mcp": {
             "source_sha256": "6855ccd4ae97d341559568e5e6799115f860d8bed5216f003680919a474ab934",
@@ -68,9 +68,9 @@
             "review_note": "Cross-checked the updated route associations with Public MCP and A2UI guidance. The moved storefront evidence is rendered through the authenticated Dashboard and the published contracts stay scoped."
         },
         "remote-commerce": {
-            "source_sha256": "0a504ca49d9995ea386d62a2783ae399dd7f8bf0eb0c10f5fffe1c5412a7b264",
-            "references_sha256": "4ba0207d2a7b8c162e081f7c76a2a2308a0113b8c80dc820cbe93a1896ae31b7",
-            "review_note": "Compared the owner analytics movement with the native Support checkout and payment guides. The displayed count comes from ordinary storefront events and the checkout behaviors follow their existing paths."
+            "source_sha256": "d240d614ae377c8a7195af73b09b5a49e762c87241bf86a1f65ff07985316f2e",
+            "references_sha256": "1b5573df9e0031b30d2aff8a41f9b249a03ed67030455440ea9edcbbaeb24892",
+            "review_note": "Reviewed Commerce overview and report links in Design against existing lifecycle, authority and payment documentation. Storefront action counts keep the same data and fixed window, and remote checkout contracts are unchanged."
         },
         "sales-channels": {
             "source_sha256": "36385e3d18e26f524d0efdd12d26cd8386e368fb5d27441460c688ffdff28b92",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed SettingsService module resolution and Merchant feed guidance. Dropping a retired header slot leaves the saved catalog eligibility inputs intact."
         },
         "workflow": {
-            "source_sha256": "4489856d4f946809e8d937a57c72d67d35aa374cc1b814add6e8adf66081dc75",
+            "source_sha256": "e43fe67f60dd25db07dd87426f6cb5a337ea7f6f1796d01f3054fd4deaf9ea69",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Checked the route registry move and owner skill updates against the release and source-review workflow. The regenerated maps place storefront telemetry on Dashboard and retain the existing read routes."
+            "review_note": "Verified the Testing and review procedure against the deployed customer UI base and new analytics checks. Route and generated maps remain grounded in source and require browser acceptance on both widths."
         }
     }
 }

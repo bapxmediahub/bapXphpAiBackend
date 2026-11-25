@@ -586,3 +586,11 @@ body:has(main.home-main) .site-footer a:focus-visible { outline: 2px solid #f3e8
 .home-hero .hero-deity .varahi-slide.hero-guruji.is-active { opacity: 1; visibility: visible; }
 
 .home-hero-inner:not(:has(.hero-deity)) { grid-template-columns: minmax(0, 1fr); }
+
+.home-bestsellers__empty {
+    margin: 0;
+    padding: var(--space-md);
+    border-inline-start: 3px solid var(--color-gold);
+    color: var(--color-text-muted);
+    background: var(--color-white);
+}

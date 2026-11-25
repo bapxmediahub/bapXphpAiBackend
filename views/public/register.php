@@ -1,62 +1,74 @@
-<div class="auth-page">
-    <div class="auth-visual">
-        <h2>Begin Your Journey</h2>
-        <p>Join our community of devotees and seekers. Create your account to manage your bookings and sacred collections.</p>
-    </div>
+<div class="auth-page auth-page--register">
     <div class="auth-form-container">
         <div class="auth-card">
-            <h1>Create Account</h1>
-            <p>Join Sri Panchami Spiritual today</p>
+            <h1>Create an account</h1>
+            <p>Set up your sign-in details and default delivery address.</p>
             <form method="post" action="/register" class="auth-form">
                 <?php $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
-                <input type="hidden" name="_csrf" value="<?= $csrf ?>">
-                <div class="form-group">
-                    <label for="register-name">Full Name</label>
-                    <input id="register-name" type="text" name="name" required autocomplete="name" placeholder="Your full name">
-                </div>
-                <div class="form-group">
-                    <label for="register-email">Email Address</label>
-                    <input id="register-email" type="email" name="email" required autocomplete="email" placeholder="your@email.com">
-                </div>
-                <div class="form-group">
-                    <label for="register-phone">Phone</label>
-                    <input id="register-phone" type="tel" name="phone" required autocomplete="tel" placeholder="+91 XXXXX XXXXX">
-                </div>
-                <div class="form-group">
-                    <label for="register-address">Default delivery address</label>
-                    <textarea id="register-address" name="address" required autocomplete="shipping street-address" rows="2" placeholder="Door no, street, area"></textarea>
-                </div>
-                <div class="auth-form__row">
-                    <div class="form-group">
-                        <label for="register-city">City</label>
-                        <input id="register-city" type="text" name="city" required autocomplete="shipping address-level2" placeholder="City">
+                <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+                <fieldset class="auth-form__section">
+                    <legend>Account details</legend>
+                    <div class="auth-form__row">
+                        <div class="form-group">
+                            <label for="register-name">Full name</label>
+                            <input id="register-name" type="text" name="name" required autocomplete="name">
+                        </div>
+                        <div class="form-group">
+                            <label for="register-email">Email address</label>
+                            <input id="register-email" type="email" name="email" required autocomplete="email">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="register-pincode">PIN code</label>
-                        <input id="register-pincode" type="text" name="pincode" required autocomplete="shipping postal-code" inputmode="numeric" placeholder="600001">
+                    <div class="auth-form__row">
+                        <div class="form-group">
+                            <label for="register-password">Password</label>
+                            <input id="register-password" type="password" name="password" required autocomplete="new-password" minlength="6" aria-describedby="register-password-hint">
+                            <p id="register-password-hint" class="auth-form__hint">At least 6 characters.</p>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-password-confirm">Confirm password</label>
+                            <input id="register-password-confirm" type="password" name="password_confirm" required autocomplete="new-password" minlength="6">
+                        </div>
                     </div>
-                </div>
-                <div class="form-group">
-                    <label for="register-state">State / Union Territory</label>
-                    <select id="register-state" name="state" required autocomplete="shipping address-level1"><option value="">Select delivery state</option>
-                        <?php foreach (\App\Services\TaxService::states() as $state): ?><option value="<?= e($state) ?>"><?= e($state) ?></option><?php endforeach; ?>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="register-password">Password</label>
-                    <input id="register-password" type="password" name="password" required autocomplete="new-password" placeholder="••••••••" minlength="6">
-                </div>
-                <div class="form-group">
-                    <label for="register-password-confirm">Confirm Password</label>
-                    <input id="register-password-confirm" type="password" name="password_confirm" required autocomplete="new-password" placeholder="••••••••" minlength="6">
-                </div>
+                </fieldset>
+                <fieldset class="auth-form__section">
+                    <legend>Delivery address</legend>
+                    <div class="form-group">
+                        <label for="register-address">Street address</label>
+                        <textarea id="register-address" name="address" required autocomplete="shipping street-address" rows="2" placeholder="Door number, street and area"></textarea>
+                    </div>
+                    <div class="auth-form__row">
+                        <div class="form-group">
+                            <label for="register-city">City</label>
+                            <input id="register-city" type="text" name="city" required autocomplete="shipping address-level2">
+                        </div>
+                        <div class="form-group">
+                            <label for="register-pincode">PIN code</label>
+                            <input id="register-pincode" type="text" name="pincode" required autocomplete="shipping postal-code" inputmode="numeric">
+                        </div>
+                    </div>
+                    <div class="auth-form__row">
+                        <div class="form-group">
+                            <label for="register-state">State or union territory</label>
+                            <select id="register-state" name="state" required autocomplete="shipping address-level1">
+                                <option value="">Select a state</option>
+                                <?php foreach (\App\Services\TaxService::states() as $state): ?>
+                                    <option value="<?= e($state) ?>"><?= e($state) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-phone">Delivery phone</label>
+                            <input id="register-phone" type="tel" name="phone" required autocomplete="shipping tel">
+                        </div>
+                    </div>
+                </fieldset>
                 <div class="form-group form-check">
                     <label class="checkbox-label">
                         <input type="checkbox" name="accept_terms" required>
-                        <span>I accept the <a href="/terms" target="_blank">Terms of Service</a> and <a href="/privacy" target="_blank">Privacy Policy</a></span>
+                        <span>I accept the <a href="/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a> and <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a></span>
                     </label>
                 </div>
-                <button class="btn btn-primary btn-block">Create Account</button>
+                <button class="btn btn-primary btn-block" type="submit">Create account</button>
             </form>
             <?php if (!empty($googleAuthEnabled)): ?>
             <div class="auth-divider">or</div>
@@ -66,7 +78,7 @@
             </a>
             <?php endif; ?>
             <div class="auth-footer">
-                <p>Already have an account? <a href="/login">Sign in here</a></p>
+                <p>Already have an account? <a href="/login">Sign in</a></p>
             </div>
         </div>
     </div>
