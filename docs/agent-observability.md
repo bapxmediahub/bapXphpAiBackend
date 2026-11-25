@@ -248,8 +248,9 @@ Positive delays set the cross-turn hold and ordinary transient observations
 cannot prolong it. Before each provider transfer, the client rereads the exact
 credential/model hold. A hold observed by another worker after plan selection can
 therefore stop that candidate before a model-attempt span or transfer is recorded.
-Short holds of up to eight seconds can be waited out within the existing request
-budget, followed by another read. An extended hold stops locally with
+Fresh turns prefer ready models. When every configured model is held, the
+readiness check can wait for a short hold of up to eight seconds within the
+existing budget and then reread it. A longer or extended hold stops locally with
 `provider_cooldown`. Earlier observed upstream responses remain in the attempt
 history. Explicit integration diagnostics bypass this gate, including their
 continuation requests. A held tool continuation stops on its original model. Successful transfers clear their

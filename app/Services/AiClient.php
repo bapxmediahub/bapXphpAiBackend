@@ -357,12 +357,10 @@ final class AiClient
             if($plan){$plan[0]['models']=[$override];$plan[0]['model']=$override;}
         }
         if(!$plan){$this->failureCategory='not_configured';return 'No AI API key or enabled model is configured. Check Admin → Integrations.';}
-        if(!$diagnostic&&$override===null&&$this->health!==null){
-            $plan=$this->health->availablePlan($plan,null,true);
-            if(!$plan){
-                $this->failureCategory='provider_cooldown';
-                return $this->failureMessage(0, false);
-            }
+        if (!$this->bypassProviderHolds && $this->health !== null) {
+            // Prefer ready models. If all are held, let the existing bounded
+            // gate decide whether a short hold can expire during this turn.
+            $plan = $this->health->availablePlan($plan, null, true) ?: $plan;
         }
         if(!function_exists('curl_init')){$this->failureCategory='transport';return 'AI request failed: cURL is not available on this server.';}
         $deadline=hrtime(true)+self::GENERATION_TIMEOUT_NS;

@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "19d470c8a1c0783592b19a821f58a4133999c976df2576b4db5335314706f82b",
-            "references_sha256": "e58fab5d1d36a171095101601858c8e45f19765cd132d6cdfc64b7d0072058c4",
-            "review_note": "Matched the Support controller response, stored evaluation and service trace fields to the new transcript reference and agent observability guide. The current Luna transport has the same evaluated failure boundary and opaque trace identifier."
+            "source_sha256": "f12b24e4feac798f15606827d05005703e3d4491fd0b0d9c152500940d707d0e",
+            "references_sha256": "9c8e3099f7c47aa65c0dcd480fb65ac9874f9348f03269bf36e99a7a38fa03d5",
+            "review_note": "Matched the Support controller response, stored evaluation and service trace fields to the new transcript reference and agent observability guide. The current Luna transport has the same evaluated failure boundary and opaque trace identifier. Verified the merged short-hold readiness path, including original-model continuation and the existing correlation/reference behavior."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
