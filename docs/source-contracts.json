@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "06f0e34ab3a68df5293196591a1f5408a1937d13ebfb0237918c11a400c350d6",
-            "references_sha256": "84656497111e424da5119e6a92c3610fb76ce72486d80ce4e1efecc315850737",
-            "review_note": "Revalidated the generated tool contracts against the updated shared transport. Initial descriptions surface existing scoped catalogue, delivery policy and dated-order count tools. Direct and deferred fixtures keep the same permission and continuation boundaries."
+            "source_sha256": "5bc528985312485b9732d829b75addacb345765dfc1c767c85e38db4faa2ac99",
+            "references_sha256": "f5c7361b8ca9c867682dbafcde10dd099cdd71d35190bc7aaea8d770ba2d53ff",
+            "review_note": "Reviewed initial plan, candidate and per-transfer hold checks against runtime/observability docs and backend skill. Holds stop locally before model-attempt evidence, short waits reread current health, explicit probes bypass the gate, and locked tools never replay. Credentials remain confined to private health state."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",

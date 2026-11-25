@@ -69,7 +69,7 @@ final class AiProviderHealthService
         return array_slice($out,0,self::MAX_ENTRIES,true);
     }
 
-    /** Filter only at the start of a new generation, never switch a locked tool conversation. */
+    /** Initial plan filter. AiClient rechecks exact holds before later transfers. */
     public function availablePlan(array $plan,?int $now=null,bool $providerHoldsOnly=false): array {
         $cooldowns=$this->read($now??time());
         if($providerHoldsOnly)$cooldowns=array_filter($cooldowns,static fn(array $r):bool=>$r['provider_hold']);
@@ -85,6 +85,16 @@ final class AiProviderHealthService
             $out[]=$connection;
         }
         return $out;
+    }
+
+    /** Remaining provider-mandated hold for one credential/model, observed at read time. */
+    public function providerHoldRemainingMs(array $connection, string $model, ?float $now = null): int {
+        $key = self::key($connection, $model);
+        if ($key === null) return 0;
+        $now ??= microtime(true);
+        $record = $this->read((int)$now)[$key] ?? null;
+        if ($record === null || !$record['provider_hold']) return 0;
+        return max(0, (int)ceil(($record['until'] - $now) * 1000));
     }
 
     /** No storage error may prevent an otherwise eligible provider request. */
