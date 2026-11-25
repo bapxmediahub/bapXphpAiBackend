@@ -5,7 +5,7 @@ final class SecretService {
     public const PRIMARY_MODEL = 'gemma-4-31b-it';
     public const FALLBACK_MODEL = 'gemma-4-26b-a4b-it';
     public const GOOGLE_MODELS = [self::PRIMARY_MODEL, self::FALLBACK_MODEL];
-    public const GOOGLE_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models';
+    public const GOOGLE_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/openai';
     public const OPENROUTER_ENDPOINT = 'https://openrouter.ai/api/v1';
     public const OPENROUTER_MODEL = 'openrouter/free';
 

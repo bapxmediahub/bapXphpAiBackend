@@ -251,10 +251,7 @@
 </div>
 
 <?php
-// Both agents fall back to a canned reply when the provider rejects a call, which is
-// right for a customer but left the owner with no way to tell "the model is off" from
-// "the model is broken". This asks the provider one real question and prints exactly
-// what came back.
+// Show the diagnostic once after the test redirects back to Integrations.
 $aiTest = $_SESSION['ai_test_result'] ?? null;
 unset($_SESSION['ai_test_result']);
 ?>
@@ -267,7 +264,7 @@ unset($_SESSION['ai_test_result']);
         <div style="margin-bottom:var(--space-md); padding:var(--space-sm) var(--space-md); border-radius:var(--radius-sm); border:1px solid <?= $aiTest['ok'] ? 'var(--color-success, #15803d)' : 'var(--color-error, #b91c1c)' ?>; background:<?= $aiTest['ok'] ? 'rgba(21,128,61,0.08)' : 'rgba(185,28,28,0.08)' ?>;">
             <strong><?= $aiTest['ok'] ? 'Probe passed' : 'Probe failed' ?></strong>
             <div style="margin-top:var(--space-2xs); font-size:0.82rem; color:var(--color-text-muted);">
-                <?= e((string)($aiTest['provider'] ?? '')) ?> · <?= e((string)($aiTest['model'] ?? '')) ?> · <?= e((string)($aiTest['endpoint'] ?? '')) ?>
+                <?= e((string)($aiTest['provider'] ?? '')) ?> · <?= e((string)($aiTest['model'] ?? '')) ?>
             </div>
             <div style="margin-top:var(--space-2xs); font-size:0.85rem; white-space:pre-wrap;"><?= e((string)$aiTest['message']) ?></div>
             <?php if (isset($aiTest['tool_calls'])): ?>

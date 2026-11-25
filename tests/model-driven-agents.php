@@ -1,50 +1,70 @@
 <?php
 declare(strict_types=1);
 // Scripted model decisions over real HTTP. Never uses real keys or live records.
+const OPENROUTER_FREE_MODEL = 'google/gemma-4-26b-a4b-it:free';
+const OPENROUTER_CHANGED_MODEL = 'google/gemma-4-31b-it:free';
 if(PHP_SAPI==='cli-server'){
     if(getenv('BAPX_MODEL_DRIVEN_FIXTURE')!=='1'){http_response_code(404);return;}
     header('Content-Type: application/json');
-    $scenario=explode('/',trim(parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH),'/'))[0];
+    $route = explode('/', trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/'));
+    [$scenario, $provider] = array_pad($route, 2, '');
+    $google = $provider === 'google';
+    $router = $provider === 'openrouter';
     $fail=static function(string $message):void{http_response_code(400);echo json_encode(['error'=>['message'=>$message]]);};
     if (str_starts_with($scenario, 'foreign_')) {
         file_put_contents(getenv('BAPX_RECOVERY_FIXTURE_DIR') . '/' . $scenario, 'Unexpected provider transfer');
         $fail('A foreign conversation reached the provider');
         return;
     }
-    if($scenario==='outage'){http_response_code(503);echo '{"error":{"status":"UNAVAILABLE"}}';return;}
-    if($scenario==='quota'){http_response_code(429);header('Retry-After: 60');echo '{}';return;}
-    if($scenario==='long_retry'){http_response_code(503);header('Retry-After: 60');echo '{}';return;}
-    if($scenario==='schema_error'){http_response_code(400);echo '{}';return;}
     $wire=file_get_contents('php://input');
     $r=json_decode($wire,true,512,JSON_THROW_ON_ERROR);
-    $compatible=isset($r['messages']);
+    $expectedModels = match ($provider) {
+        'google' => ['gemma-4-31b-it','gemma-4-26b-a4b-it'],
+        'openrouter' => ['openrouter/free', OPENROUTER_FREE_MODEL],
+        'openai' => ['gpt-5','gpt-4o','gpt-6-luna'],
+        'openai_compatible' => ['fixture-model'],
+        default => [],
+    };
+    $credential = $provider === 'openai' ? 'openai_compatible' : $provider;
     $luna = ($r['model'] ?? '') === 'gpt-6-luna';
     $modernTokenField = $luna || $scenario === 'modern_policy' || in_array($r['model'] ?? '', ['gpt-5','gpt-4o'], true);
     $tokenField = $modernTokenField ? 'max_completion_tokens' : 'max_tokens';
     $allowedFields = ['model','messages','tools','tool_choice',$tokenField];
     if ($luna) $allowedFields[] = 'reasoning_effort';
-    if ($compatible && ($_SERVER['REQUEST_METHOD'] !== 'POST'
-        || !str_ends_with($_SERVER['REQUEST_URI'], '/chat/completions')
-        || ($_SERVER['HTTP_AUTHORIZATION'] ?? '') !== 'Bearer fixture-only'
+    if ($google) $allowedFields = [...$allowedFields, 'temperature', 'extra_body'];
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST'
+        || $route !== [$scenario,$provider,'chat','completions']
+        || ($_SERVER['HTTP_AUTHORIZATION'] ?? '') !== 'Bearer fixture-'.$credential
+        || isset($_SERVER['HTTP_X_GOOG_API_KEY'])
         || ($_SERVER['CONTENT_TYPE'] ?? '') !== 'application/json'
-        || !isset($r[$tokenField])
+        || !in_array($r['model'] ?? null, $expectedModels, true)
+        || !isset($r[$tokenField]) || !is_array($r['messages'] ?? null)
         || ($luna && ($r['reasoning_effort'] ?? null) !== 'none')
-        || array_diff(array_keys($r), $allowedFields))) {
+        || ($google && (!in_array($r['temperature'] ?? null, [0.2, 0.3], true)
+            || ($r['extra_body'] ?? null) !== ['google'=>['thinking_config'=>['thinking_level'=>'minimal']]]))
+        || array_diff(array_keys($r), $allowedFields)) {
         $fail('Unexpected Chat Completions request');
         return;
     }
-    $names=$compatible?array_column(array_column($r['tools']??[],'function'),'name'):array_column($r['tools'][0]['functionDeclarations']??[],'name');
-    $contents=$compatible?$r['messages']:$r['contents'];
-    $owner=in_array($scenario,['owner','capability','owner_followup','owner_article','slash_capabilities','slash_help','direct_order_total','missing_finish'],true);
+    if($scenario==='outage'){http_response_code(503);echo '{"error":{"status":"UNAVAILABLE"}}';return;}
+    if($scenario==='quota'){http_response_code(429);header('Retry-After: 60');echo '{}';return;}
+    if($scenario==='long_retry'){http_response_code(503);header('Retry-After: 60');echo '{}';return;}
+    if($scenario==='schema_error'){http_response_code(400);echo '{}';return;}
+    $tools = $r['tools'] ?? [];
+    if ($tools === [] || array_column($tools, 'type') !== array_fill(0, count($tools), 'function')) {
+        $fail('Tool declarations must use the Chat Completions function envelope');
+        return;
+    }
+    $names = array_column(array_column($tools, 'function'), 'name');
+    $contents = $r['messages'];
+    $owner=in_array($scenario,['owner','capability','owner_followup','owner_article','slash_capabilities','slash_help','direct_order_total','missing_finish','router_changed_answer'],true);
     $guest=!$owner&&!in_array($scenario,['customer','ticket'],true);
     $hasHistory = str_starts_with($scenario, 'catalogue_') || $scenario === 'owner_followup';
-    $assistantRole = $compatible ? 'assistant' : 'model';
-    $expectedRoles = $hasHistory ? ['user',$assistantRole,'user',$assistantRole,'user'] : ['user'];
     $instructionRole = $luna || ($r['model'] ?? '') === 'gpt-5' ? 'developer' : 'system';
-    if ($compatible) array_unshift($expectedRoles, $instructionRole);
+    $expectedRoles = $hasHistory ? [$instructionRole,'user','assistant','user','assistant','user'] : [$instructionRole,'user'];
     $initialMessages = array_slice($contents, 0, count($expectedRoles));
-    $instruction = $compatible ? array_shift($initialMessages)['content'] ?? '' : $r['systemInstruction']['parts'][0]['text'] ?? '';
-    $text = static fn(array $message): string => $compatible ? ($message['content'] ?? '') : ($message['parts'][0]['text'] ?? '');
+    $instruction = array_shift($initialMessages)['content'] ?? '';
+    $text = static fn(array $message): string => $message['content'] ?? '';
     $current = json_decode($text(end($initialMessages)), true);
     if (array_column(array_slice($contents, 0, count($expectedRoles)), 'role') !== $expectedRoles
         || !str_contains($instruction, $owner ? 'Enterprise Agent runtime constitution' : 'Support Agent runtime constitution')
@@ -88,22 +108,30 @@ if(PHP_SAPI==='cli-server'){
         return;
     }
     $n = 1 + 2 * count(array_filter(array_slice($contents, count($expectedRoles)),
-        static fn(array $message): bool => ($message['role'] ?? null) === $assistantRole));
-    if (($scenario === 'catalogue_fallback' && $compatible && $n === 1)
-        || ($scenario === 'catalogue_locked' && $compatible && $n === 7)) {
+        static fn(array $message): bool => ($message['role'] ?? null) === 'assistant'));
+    if ($router && $r['model'] !== ($n === 1 ? 'openrouter/free' : OPENROUTER_FREE_MODEL)) {
+        $fail('OpenRouter continuation did not request its selected free model');
+        return;
+    }
+    if (($r['tool_choice'] ?? null) !== ($n === 9 ? 'none' : 'auto')) {
+        $fail('Unexpected tool choice for the current round');
+        return;
+    }
+    if (($scenario === 'catalogue_fallback' && !$google && $n === 1)
+        || ($scenario === 'catalogue_locked' && !$google && $n === 7)) {
         http_response_code(503);
         header('Retry-After: 60');
         echo '{"error":{"status":"UNAVAILABLE"}}';
         return;
     }
-    if ($scenario === 'catalogue_locked' && !$compatible) {
+    if ($scenario === 'catalogue_locked' && $google) {
         $fail('A partially executed tool exchange crossed providers');
         return;
     }
     // Force a single failed HTTP transfer, then require a byte-identical retry.
     // State is isolated in this test runner's temporary directory.
     if(($scenario==='transient_start'&&$n===1)||($scenario==='transient_continuation'&&$n===7)){
-        $file=getenv('BAPX_RECOVERY_FIXTURE_DIR').'/'.($compatible?'compatible':'google').'-'.$scenario;
+        $file=getenv('BAPX_RECOVERY_FIXTURE_DIR').'/'.$provider.'-'.$scenario;
         if(!is_file($file)){
             file_put_contents($file,hash('sha256',$wire),LOCK_EX);
             http_response_code(503);echo '{"error":{"status":"UNAVAILABLE"}}';return;
@@ -112,48 +140,53 @@ if(PHP_SAPI==='cli-server'){
             http_response_code(400);echo '{"error":{"message":"Retry changed the request"}}';return;
         }
     }
-    $responses=[];
-    if($n>1){
-        if($compatible){
-            for($i=count($contents)-1;$i>0&&$contents[$i]['role']==='tool';$i--){
-                $responses[$contents[$i]['tool_call_id']]=json_decode($contents[$i]['content'],true,64,JSON_THROW_ON_ERROR);
-            }
-            $previous=array_column($contents[$i]['tool_calls']??[],'id');
-            $extensions = array_intersect_key($contents[$i], array_flip(['reasoning_content','reasoning_details']));
-            $expectedExtensions = $scenario === 'router_policy'
-                ? ['reasoning_content'=>'fixture-continuation','reasoning_details'=>[['type'=>'fixture','id'=>'opaque-state']]]
-                : [];
-            if ($extensions !== $expectedExtensions || $contents[$i]['role'] !== 'assistant'
-                || !array_key_exists('content', $contents[$i]) || $contents[$i]['content'] !== null
-                || $previous !== array_reverse(array_keys($responses))) {
-                $fail('Unexpected assistant continuation or tool result order');
-                return;
-            }
-
-        }else{
-            foreach(end($contents)['parts']??[] as $part){
-                $response=$part['functionResponse']??[];
-                $responses[$response['id']??'']=$response['response']??[];
-            }
-            $modelParts = $contents[count($contents)-2]['parts'];
-            $previous=array_column(array_column($modelParts,'functionCall'),'id');
-            if (($modelParts[0]['thoughtSignature'] ?? '') !== 'fixture-google-signature') {
-                $fail('Gemma tool continuation signature missing');
-                return;
-            }
+    $responses = [];
+    if ($n > 1) {
+        for ($i = count($contents) - 1; $i > 0 && $contents[$i]['role'] === 'tool'; $i--) {
+            $responses[$contents[$i]['tool_call_id']] = json_decode($contents[$i]['content'], true, 64, JSON_THROW_ON_ERROR);
         }
-        if(count($previous)!==count($responses)||array_diff($previous,array_keys($responses))){
-            http_response_code(400);echo '{"error":{"message":"Uncorrelated tool batch"}}';return;
+        $previous = array_column($contents[$i]['tool_calls'] ?? [], 'id');
+        if ($contents[$i]['role'] !== 'assistant' || !array_key_exists('content', $contents[$i])
+            || $contents[$i]['content'] !== null || $previous !== array_reverse(array_keys($responses))) {
+            $fail('Unexpected assistant continuation or tool result order');
+            return;
         }
     }
-    $last=$responses===[]?[]:reset($responses);
-    if((!$owner&&in_array('order_count',$names,true))||($guest&&array_intersect(['own_order_status','own_ticket_status'],$names))){$fail('Role leak');return;}
-    $call=static fn(string $name,array $args,string $id):array=>['functionCall'=>['name'=>$name,'args'=>(object)$args,'id'=>$id]];
+    $signature = static fn(string $scope): array => ['google'=>['thought_signature'=>'fixture-google-signature-'.$scope]];
+    foreach ($contents as $message) {
+        $toolCalls = $message['tool_calls'] ?? [];
+        $extensions = array_intersect_key($message, array_flip(['reasoning_content','reasoning_details','extra_content']));
+        $expectedExtensions = match (true) {
+            $toolCalls === [] => [],
+            $google => ['extra_content'=>$signature('assistant')],
+            $router => ['reasoning_content'=>'fixture-continuation','reasoning_details'=>[['type'=>'fixture','id'=>'opaque-state']]],
+            default => [],
+        };
+        if ($extensions !== $expectedExtensions) {
+            $fail('Unexpected provider-specific assistant continuation');
+            return;
+        }
+        foreach ($toolCalls as $toolCall) {
+            if (($toolCall['extra_content'] ?? null) !== ($google ? $signature($toolCall['id']) : null)) {
+                $fail('Unexpected provider-specific tool-call continuation');
+                return;
+            }
+        }
+    }
+    $last = $responses === [] ? [] : reset($responses);
+    if ((!$owner && in_array('order_count', $names, true)) || ($guest && array_intersect(['own_order_status','own_ticket_status'], $names))) {
+        $fail('Role leak');
+        return;
+    }
+    $call = static fn(string $name, array $args, string $id): array => [
+        'id'=>$id, 'type'=>'function',
+        'function'=>['name'=>$name,'arguments'=>json_encode((object)$args, JSON_THROW_ON_ERROR)],
+    ];
     $directChoice=match($scenario){
         'direct_shop_total'=>['public_catalogue_summary',[],'catalogue',['total'=>0]],
-        'direct_delivery_charge'=>['public_policy',['key'=>'shipping_cost'],'customer-policy',
-            ['value'=>'Shipping is calculated at checkout.']],
-        'direct_order_total'=>['order_count',['period'=>'all_time'],'reporting',
+        'direct_delivery_charge','router_missing_model','router_paid_model','router_changed_tool'=>
+            ['public_policy',['key'=>'shipping_cost'],'customer-policy',['value'=>'Shipping is calculated at checkout.']],
+        'direct_order_total','router_changed_answer'=>['order_count',['period'=>'all_time'],'reporting',
             ['from'=>'0001-01-01','count'=>0,'undated_excluded'=>0]],
         default=>null,
     };
@@ -168,7 +201,7 @@ if(PHP_SAPI==='cli-server'){
         'policy','modern_policy','router_policy','transient_continuation'=>['public_policy',['key'=>'shipping_cost'],'value','customer-policy'],
         default=>null
     };
-    $finish='STOP';
+    $finish='stop';
     if($scenario==='catalogue_stale') {
         $parts=[['text'=>'<final_answer>There are currently 43 products published in the shop.</final_answer>']];
     }elseif($scenario==='mixed'){
@@ -190,10 +223,19 @@ if(PHP_SAPI==='cli-server'){
         $parts=[$call('tool_search',['query'=>'public_policy'],'dup'),$call('tool_search',['query'=>'public_catalogue_summary'],'dup')];
     }elseif(in_array($scenario,['stopped_tool','object_tool_batch'],true)){
         $parts=[$call('tool_search',['query'=>'public_policy'],'unexpected')];
+    }elseif($scenario==='oversized_signature'){
+        if (!in_array('public_policy', $names, true)) {
+            $fail('Oversized signature test needs an already advertised business tool');
+            return;
+        }
+        $parts=[
+            $call('public_policy',['key'=>'shipping_cost'],'valid-first-call'),
+            $call('tool_search',['query'=>'public_policy'],'oversized-call'),
+        ];
     }elseif($scenario==='missing_finish'){
         $parts=[['text'=>'<final_answer>Unverified partial answer.</final_answer>']];
     }elseif($scenario==='truncated'){
-        $parts=[['text'=>'<final_answer>Unfinished text</final_answer>']];$finish='MAX_TOKENS';
+        $parts=[['text'=>'<final_answer>Unfinished text</final_answer>']];$finish='length';
     }elseif($scenario==='unfinished'){
         $parts=[$call('tool_search',['query'=>'public_policy'],'r'.$n)];
         if($n===9)$parts[]=['text'=>'<final_answer>Not a completed answer.</final_answer>'];
@@ -221,10 +263,14 @@ if(PHP_SAPI==='cli-server'){
             && in_array($skill, array_column($last['runtime_guidance'] ?? [], 'skill'), true)) {
             $answer = match ($scenario) {
                 'direct_shop_total' => 'The catalogue contains '.$last['total'].' published products.',
-                'direct_delivery_charge' => $last['value'],
+                'direct_delivery_charge','router_changed_tool' => $last['value'],
                 'direct_order_total' => 'There are '.$last['count'].' dated order records across all statuses.',
+                'router_changed_answer' => 'fixture-continued-on-wrong-model',
             };
-            $parts = [['text'=>'<final_answer>'.$answer.'</final_answer>']];
+            // Both forms of a mismatched 200 response must stop the turn.
+            $parts = $scenario === 'router_changed_tool'
+                ? [$call($tool, $args, 'unexpected-second-business')]
+                : [['text'=>'<final_answer>'.$answer.'</final_answer>']];
         } else {
             $fail('Initially advertised business lookup did not return its scoped facts and guidance in one call');
             return;
@@ -254,34 +300,41 @@ if(PHP_SAPI==='cli-server'){
             $parts=[['text'=>'<final_answer>'.$answer.'</final_answer>']];
         }else{$fail('Unexpected tool exchange');return;}
     }else{$fail('Unknown fixture');return;}
-    if($compatible){
-        $message=['role'=>'assistant','content'=>''];$calls=[];
-        foreach($parts as $part){
-            if(isset($part['functionCall'])){
-                $fc=$part['functionCall'];
-                $calls[]=['id'=>$fc['id'],'type'=>'function','function'=>['name'=>$fc['name'],'arguments'=>json_encode($fc['args'],JSON_THROW_ON_ERROR)]];
-            }else $message['content'].=$part['text']??'';
+    $message = ['role'=>'assistant','content'=>''];
+    $calls = [];
+    foreach ($parts as $part) {
+        if (isset($part['id'])) {
+            // Only Google may return the signature in a subsequent request.
+            $part['extra_content'] = $signature($part['id']) + ['ignored'=>'fixture-ignored-extension'];
+            if ($scenario === 'oversized_signature' && $part['id'] === 'oversized-call') {
+                $part['extra_content']['google']['thought_signature'] = 'fixture-oversized-signature'.str_repeat('x', 262145);
+            }
+            $calls[] = $part;
+        } else {
+            $message['content'] .= $part['text'] ?? '';
         }
-        if($calls!==[]){
-            $message['content'] = null;
-            $message['tool_calls']=$scenario === 'object_tool_batch' ? (object)$calls : $calls;
-            $message['reasoning_content']='fixture-continuation';
-            $message['reasoning_details']=[['type'=>'fixture','id'=>'opaque-state']];
-        }
-        $choice = ['message'=>$message];
-        if ($scenario !== 'missing_finish') {
-            $choice['finish_reason'] = match (true) {
-                $finish === 'MAX_TOKENS' => 'length',
-                $scenario === 'stopped_tool' => 'stop',
-                $calls !== [] => 'tool_calls',
-                default => 'stop',
-            };
-        }
-        echo json_encode(['choices'=>[$choice]],JSON_THROW_ON_ERROR);
-    } else {
-        if (isset($parts[0]['functionCall'])) $parts[0]['thoughtSignature'] = 'fixture-google-signature';
-        echo json_encode(['candidates'=>[['content'=>['parts'=>$parts],'finishReason'=>$finish]]],JSON_THROW_ON_ERROR);
     }
+    if ($calls !== []) {
+        $message['content'] = null;
+        $message['tool_calls'] = $scenario === 'object_tool_batch' ? (object)$calls : $calls;
+        $message['extra_content'] = $signature('assistant') + ['ignored'=>'fixture-ignored-extension'];
+        $message['reasoning_content'] = 'fixture-continuation';
+        $message['reasoning_details'] = [['type'=>'fixture','id'=>'opaque-state']];
+    }
+    $choice = ['message'=>$message];
+    if ($scenario !== 'missing_finish') {
+        $choice['finish_reason'] = $calls !== [] && $scenario !== 'stopped_tool' ? 'tool_calls' : $finish;
+    }
+    $reply = ['choices'=>[$choice]];
+    if ($scenario !== 'router_missing_model') {
+        $reply['model'] = match (true) {
+            $scenario === 'router_paid_model' => 'google/gemma-4-26b-a4b-it',
+            $n > 1 && in_array($scenario, ['router_changed_tool','router_changed_answer'], true) => OPENROUTER_CHANGED_MODEL,
+            $router => OPENROUTER_FREE_MODEL,
+            default => $r['model'],
+        };
+    }
+    echo json_encode($reply, JSON_THROW_ON_ERROR);
     return;
 }
 if(PHP_SAPI!=='cli')exit;
@@ -327,7 +380,7 @@ try{
         ['long_retry','support','guest','hi',null],
         ['schema_error','support','guest','hi',null],
     ]);
-    // Real controllers resume private saved chats through both wire adapters.
+    // Real controllers resume private saved chats through Chat Completions.
     $followupCases=[
         ['catalogue_stale','support','guest','Is that published product count still correct?',null],
         ['catalogue_wrong','support','guest','Is that published product count still correct?','public_catalogue_summary'],
@@ -338,7 +391,7 @@ try{
         ['foreign_support','support','customer','Open the other customer conversation.',null],
         ['foreign_owner','admin','admin','Open the other owner conversation.',null],
     ];
-    $compatibleRecovery = [
+    $providerRecovery = [
         ['catalogue_fallback','support','guest','Is that published product count still correct?','public_catalogue_summary'],
         ['catalogue_locked','support','guest','Is that published product count still correct?','public_catalogue_summary'],
     ];
@@ -349,16 +402,28 @@ try{
         ['refusal','support','guest','Answer this unrelated question.',null],
     ];
     $standard = array_merge($cases, $followupCases, $privacyCases);
-    $protocols = [
-        'google' => $standard,
-        'compatible' => array_merge($standard, $compatibleRecovery, $chatCompletionBoundaries),
+    $textAndTools = array_values(array_filter($cases, static fn(array $case): bool =>
+        in_array($case[0], ['guest','capability','direct_delivery_charge','direct_order_total'], true)));
+    $profiles = [
+        'google' => [...$standard, ...$chatCompletionBoundaries,
+            ['oversized_signature','support','guest','What is the delivery charge?',null]],
+        'google_fallback' => $textAndTools,
+        'compatible' => array_merge($standard, $providerRecovery, $chatCompletionBoundaries),
         'openai' => [$cases[9], $followupCases[3]],
         'openai_legacy' => [$followupCases[3]],
         'openai_luna' => [$cases[9], $followupCases[3]],
         'compatible_modern' => [['modern_policy','support','guest','How is shipping calculated?','public_policy']],
-        'openrouter' => [['router_policy','support','guest','How is shipping calculated?','public_policy']],
+        'openrouter' => [
+            ...$textAndTools,
+            ['router_policy','support','guest','How is shipping calculated?','public_policy'],
+            ['transient_continuation','support','guest','How is shipping calculated?','public_policy'],
+            ['router_missing_model','support','guest','What is the delivery charge?',null],
+            ['router_paid_model','support','guest','What is the delivery charge?',null],
+            ['router_changed_tool','support','guest','What is the delivery charge?','public_policy'],
+            ['router_changed_answer','admin','admin','How many orders in total?','order_count'],
+        ],
     ];
-    foreach ($protocols as $protocol=>$requests) foreach ($requests as [$scenario,$surface,$role,$question,$tool]) {
+    foreach ($profiles as $protocol=>$requests) foreach ($requests as [$scenario,$surface,$role,$question,$tool]) {
         $env=['BAPX_MODEL_DRIVEN_FIXTURE'=>'1','BAPX_FIXTURE_ENDPOINT'=>'http://'.$address.'/'.$scenario,'BAPX_TEST_MODE'=>'1','BAPX_FIXTURE_PROTOCOL'=>$protocol]+getenv();
         $child=proc_open([PHP_BINARY,__DIR__.'/fixtures/model-driven-agent-turn.php',$scenario,$surface,$role,$question],[0=>['file','/dev/null','r'],1=>['pipe','w'],2=>['pipe','w']],$io,null,$env);
         if(!is_resource($child))throw new RuntimeException('Child startup failed');
@@ -373,10 +438,13 @@ try{
             echo "PASS $protocol/$surface/$scenario: denied before provider transfer\n";
             continue;
         }
-        $invalidChatCompletion = in_array($scenario,['stopped_tool','object_tool_batch','missing_finish'],true);
-        $expected=$invalidChatCompletion||in_array($scenario,['outage','duplicate','truncated','unfinished','quota','long_retry','schema_error','catalogue_stale','catalogue_wrong','catalogue_locked'],true)?'error':'model';
+        $invalidChatCompletion = in_array($scenario, [
+            'stopped_tool','object_tool_batch','missing_finish','oversized_signature','router_missing_model','router_paid_model',
+        ], true);
+        $routerChangedModel = in_array($scenario, ['router_changed_tool','router_changed_answer'], true);
+        $expected=$invalidChatCompletion||$routerChangedModel||in_array($scenario,['outage','duplicate','truncated','unfinished','quota','long_retry','schema_error','catalogue_stale','catalogue_wrong','catalogue_locked'],true)?'error':'model';
         $rounds=match($scenario){'mixed'=>3,'denied'=>2,'unfinished','transient_continuation','catalogue_fallback'=>5,
-            'transient_start','slash_help','direct_shop_total','direct_delivery_charge','direct_order_total'=>2,
+            'transient_start','slash_help','direct_shop_total','direct_delivery_charge','direct_order_total','router_changed_tool','router_changed_answer'=>2,
             'outage'=>6,default=>$tool!==null?4:1};
         if($exit!==0||($turn['outcome']??null)!==$expected||count($turn['model_attempts']??[])!==$rounds||($turn['turn_id']??null)!==($response['turn_id']??null)){
             throw new RuntimeException("$scenario/$surface: unexpected model lifecycle: ".substr($raw,0,2500)." STDERR: ".substr($err,0,1000));
@@ -392,8 +460,34 @@ try{
         }
         $attempts = $turn['model_attempts'];
         $measured = $attempts[0];
+        [$provider, $model] = match ($protocol) {
+            'google' => ['google','gemma-4-31b-it'],
+            'google_fallback' => ['google','gemma-4-26b-a4b-it'],
+            'openrouter' => ['openrouter','openrouter/free'],
+            'openai' => ['openai_compatible','gpt-5'],
+            'openai_legacy' => ['openai_compatible','gpt-4o'],
+            'openai_luna' => ['openai_compatible','gpt-6-luna'],
+            default => ['openai_compatible','fixture-model'],
+        };
+        $providers = array_fill(0, $rounds, $provider);
+        $models = array_fill(0, $rounds, $model);
+        if ($scenario === 'catalogue_fallback') {
+            $providers = [$provider, ...array_fill(0, $rounds - 1, 'google')];
+            $models = [$model, ...array_fill(0, $rounds - 1, 'gemma-4-31b-it')];
+        } elseif ($protocol === 'openrouter') {
+            $models = ['openrouter/free', ...array_fill(0, $rounds - 1, OPENROUTER_FREE_MODEL)];
+        }
+        if (array_column($attempts, 'provider') !== $providers || array_column($attempts, 'model') !== $models) {
+            throw new RuntimeException('Recorded provider/model sequence does not match the configured connection');
+        }
         if ($invalidChatCompletion && (($measured['http_status'] ?? null) !== 200 || ($turn['tools'] ?? []) !== [])) {
             throw new RuntimeException('Malformed successful Chat Completions response must fail before tool dispatch');
+        }
+        if ($routerChangedModel && (array_column($attempts, 'http_status') !== [200, 200]
+            || ($attempts[1]['response_model'] ?? null) !== OPENROUTER_CHANGED_MODEL
+            || count($turn['tools'] ?? []) !== 1
+            || str_contains($raw, 'fixture-continued-on-wrong-model'))) {
+            throw new RuntimeException('OpenRouter accepted a tool or answer from a changed continuation model');
         }
         if (($measured['connect_ms'] ?? 0) <= 0 || ($measured['ready_ms'] ?? 0) <= 0 || ($measured['first_byte_ms'] ?? 0) <= 0) {
             throw new RuntimeException('Loopback request milestones missing from private attempt evidence');
@@ -432,13 +526,15 @@ try{
             }
         }
         if ($scenario === 'catalogue_fallback' && array_column($attempts,'http_status') !== [503,200,200,200,200]) {
-            throw new RuntimeException('Pre-tool fallback did not preserve native roles across providers');
+            throw new RuntimeException('Pre-tool fallback did not preserve Chat Completions roles across providers');
         }
         if ($scenario === 'catalogue_locked' && (array_column($attempts,'http_status') !== [200,200,200,503]
             || count($turn['tools'] ?? []) !== 1)) {
             throw new RuntimeException('Fallback restarted an already executed tool exchange');
         }
-        if(str_contains($raw,'fixture-continuation')||str_contains($raw,'opaque-state')||str_contains($raw,'fixture-google-signature'))throw new RuntimeException('Provider-only continuation leaked');
+        foreach (['fixture-continuation','opaque-state','fixture-google-signature','fixture-ignored-extension','fixture-oversized-signature'] as $marker) {
+            if (str_contains($raw, $marker)) throw new RuntimeException('Provider-only continuation leaked');
+        }
         if($scenario==='contact'&&($response['ui']['kind']??null)!=='contact_enquiry')throw new RuntimeException('Missing model-selected form proposal');
         if($scenario==='outage'&&($turn['tools']??[])!==[])throw new RuntimeException('Outage must not trigger canned lookup');
         if(in_array($scenario,['denied','duplicate','truncated'],true)&&($turn['tools']??[])!==[])throw new RuntimeException('Denied call executed');

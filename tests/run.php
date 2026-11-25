@@ -706,7 +706,8 @@ $tests['admin dashboard resolves all services and renders its actual zero-data p
         assertTrue(str_contains($html,'No paid orders in this period.'),'Zero-data rendering remains safe through the full controller');
         assertTrue(str_contains($html,'id="web-analytics" data-page-section="Site analytics"'),'Site analytics keeps the direct dashboard bookmark');
         assertTrue(str_contains($html,'data-commerce-event="cart_add"') && str_contains($html,'data-commerce-event="checkout_initiated"'),'Storefront action totals appear on the dashboard');
-        assertTrue(!str_contains($html,'Storefront activity is temporarily unavailable.'),'An empty readable audit feed is valid data');
+        assertTrue(!str_contains($html,'Storefront activity is temporarily unavailable.'),'A successful empty storefront aggregate is available');
+        assertSame(2, preg_match_all('~data-commerce-event="(?:cart_add|checkout_initiated)"[^>]*>\s*<dt>[^<]+</dt>\s*<dd>0</dd>~', $html), 'Both storefront metrics render explicit zeroes');
         ob_start();$controller->agentMonitoring();$monitoring=(string)ob_get_clean();
         assertTrue(str_contains($monitoring,'Provider and model reliability'),'Agent Monitoring retains provider evidence');
         assertTrue(!str_contains($monitoring,'data-commerce-event=') && !str_contains($monitoring,'First-party commerce events'),'Agent Monitoring no longer shows unrelated storefront totals');
@@ -4405,57 +4406,18 @@ $tests['the admin agent can look things up instead of guessing'] = function (): 
     assertTrue(str_contains($source, 'assertUsable'), 'Coupon status should use CouponService');
 
     $client = file_get_contents(app_path('app/Services/AiClient.php'));
-    assertTrue(str_contains($client, 'functionDeclarations'), 'Tools should be declared to the provider');
-    assertTrue(str_contains($client, 'functionResponse'), 'Tool results should be returned to the model');
+    assertTrue(str_contains($client, "'type' => 'function'"), 'Tools should be declared as Chat Completions functions');
+    assertTrue(str_contains($client, "'role' => 'tool', 'tool_call_id'"), 'Results should correlate to the selected tool call');
     assertTrue(str_contains($client, "\$round <= \$maxRounds")
-        && str_contains($client, "'mode' => 'NONE'")
+        && str_contains($client, "? 'auto' : 'none'")
         && str_contains($client, 'GENERATION_TIMEOUT_NS'),
-        'The tool loop must have a shared deadline and end with a text-only round');
-    assertTrue(str_contains($client, "'role' => 'model', 'parts' => self::googleToolHistoryParts(\$parts)"),
-        'The model turn must stay in the history, or the function response answers a call the conversation no longer has');
+        'The tool loop has a shared deadline and a text-only final round');
+    assertTrue(!str_contains($client, ':generateContent'), 'All agent inference uses Chat Completions');
     $admin = file_get_contents(app_path('app/Controllers/AdminController.php'));
     assertTrue(str_contains($admin, 'completeWithTools'), 'The admin agent should use the tool loop');
 };
 
-$tests['google tool history preserves object arguments and call ids'] = function (): void {
-    $parts = \App\Services\AiClient::googleToolHistoryParts([
-        ['thought' => true, 'text' => 'checking'],
-        ['functionCall' => ['id' => 'call-1', 'name' => 'sales_summary', 'args' => []]],
-        ['functionCall' => ['name' => 'search_articles', 'args' => ['tags' => ['shop', 'help']]]],
-    ]);
-    $json = json_encode($parts, JSON_THROW_ON_ERROR);
-    assertTrue(str_contains($json, '"args":{}'), 'An empty Google function args object must not become a rejected JSON list');
-    assertTrue(str_contains($json, '"tags":["shop","help"]'), 'Nested list arguments must remain JSON lists');
-
-    $response = \App\Services\AiClient::googleFunctionResponse(
-        ['id' => 'call-1', 'name' => 'sales_summary'],
-        [['month' => '2026-11', 'orders' => 3]]
-    );
-    assertSame('call-1', $response['functionResponse']['id'] ?? null, 'The response must echo the provider call id');
-    assertSame('sales_summary', $response['functionResponse']['name'] ?? null, 'The response must name the requested function');
-    assertTrue(isset($response['functionResponse']['response']['result']), 'List-valued tool results must be wrapped in a response object');
-};
-
-$tests['the model answer is separated from the model thinking out loud'] = function (): void {
-    // gemma-4-31b-it is a reasoning model. AiClient read parts[0], which for a reasoning
-    // response is the *thought*, not the answer. Every reply handed back was the model
-    // thinking out loud: AiReplyCleaner then correctly stripped it as scaffold and left
-    // nothing, so both agents fell back to a canned reply. One array index.
-    assertSame('the answer', \App\Services\AiClient::answerFromParts([
-        ['text' => 'The user wants me to…', 'thought' => true],
-        ['text' => 'the answer'],
-    ]), 'A thought part must never be returned as the answer');
-    assertSame('the answer', \App\Services\AiClient::answerFromParts([['text' => 'the answer']]),
-        'A response with no thoughts is returned as-is');
-    assertSame('Hello world', \App\Services\AiClient::answerFromParts([
-        ['text' => 'planning', 'thought' => true], ['text' => 'Hello '], ['text' => 'world'],
-    ]), 'A multi-part answer is joined');
-    assertSame('', \App\Services\AiClient::answerFromParts([['text' => 'only thinking', 'thought' => true]]),
-        'Thought-only content must never become a public answer or transcript');
-    assertSame('', \App\Services\AiClient::answerFromParts([]), 'No parts means no answer');
-
-    // The thought flag is not always set — sometimes the reasoning arrives as prose —
-    // so the answer is also fenced.
+$tests['the final answer fence excludes scaffold text'] = function (): void {
     assertSame('A rudraksha is a seed.', \App\Services\AiClient::fencedAnswer(
         "I will write it between `<final_answer>` and `</final_answer>` as asked.\n"
         . "<final_answer>A rudraksha is a seed.</final_answer>"
@@ -4465,12 +4427,6 @@ $tests['the model answer is separated from the model thinking out loud'] = funct
     assertSame('ok', \App\Services\AiClient::fencedAnswer('<final_answer>ok</final_answer>'), 'A plain fence is read');
     assertSame(null, \App\Services\AiClient::fencedAnswer('no tags here'), 'No fence means no fenced answer');
 
-    // The request must ask for the reasoning to stop, in the shape the API accepts.
-    $client = file_get_contents(app_path('app/Services/AiClient.php'));
-    assertTrue(str_contains($client, "'thinkingConfig' => ['thinkingLevel' => 'MINIMAL']"),
-        'thinkingLevel must be nested inside thinkingConfig; at the top of generationConfig the API returns HTTP 400');
-    assertTrue(!str_contains($client, "parts'][0]['text']"),
-        'The client must never read parts[0] as the answer');
 };
 
 $tests['a product can be hidden without deleting it, and an offer expires'] = function (): void {
@@ -4569,34 +4525,11 @@ $tests['AI transport diagnostics distinguish causes without assuming the provide
         assertTrue(!$client::canFailOver($status, 0), "HTTP {$status} must fail immediately rather than repeat an invalid request");
     }
     assertTrue($client::canFailOver(0, 28), 'Transport failures count toward Gemma failover');
-    assertSame(
-        ['gemma-4-31b-it', 'gemma-4-26b-a4b-it'],
-        $client::googleModelPair('gemma-4-31b-it'),
-        '31B uses 26B A4B for an eligible fallback'
-    );
-    assertSame(
-        ['gemma-4-26b-a4b-it', 'gemma-4-31b-it'],
-        $client::googleModelPair('gemma-4-26b-a4b-it'),
-        'The router always selects the other supported Gemma model'
-    );
-    assertSame(
-        ['gemma-4-31b-it', 'gemma-4-26b-a4b-it'],
-        $client::googleModelPair('unsupported-model'),
-        'Unsupported saved models are forced back to the Gemma-only pair'
-    );
-    assertSame(
-        [
-            ['model' => 'gemma-4-31b-it', 'timeout_ms' => 12000],
-            ['model' => 'gemma-4-26b-a4b-it', 'timeout_ms' => 12000],
-        ],
-        $client::googleAttemptPlan('gemma-4-31b-it'),
-        'Model descriptor order is independent of per-model retries'
-    );
-    assertSame(
-        [['model' => 'gemma-4-26b-a4b-it', 'timeout_ms' => 12000]],
-        $client::googleAttemptPlan('gemma-4-26b-a4b-it', true),
-        'A tool conversation that failed over must stay on its fallback model'
-    );
+    $secrets = new \App\Services\SecretService();
+    $plan = $secrets->providerPlan(['ai_api_key' => 'fixture-google-key']);
+    assertSame(['gemma-4-31b-it', 'gemma-4-26b-a4b-it'], $plan[0]['models'], 'Gemma model order is preserved');
+    assertSame('https://generativelanguage.googleapis.com/v1beta/openai', $plan[0]['endpoint'],
+        'The configured Google connection uses its Chat Completions base URL');
 };
 
 $tests['verified refunds stay separate from fulfillment and are visible on customer order surfaces'] = function (): void {

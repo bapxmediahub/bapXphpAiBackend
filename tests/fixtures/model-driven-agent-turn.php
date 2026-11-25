@@ -12,46 +12,60 @@ namespace App\Services {
         return $endpoint;
     }
 
-    function fixtureCompatibleHost(): string {
-        return in_array(getenv('BAPX_FIXTURE_PROTOCOL'), ['openai','openai_legacy','openai_luna'], true)
-            ? 'api.openai.com' : 'provider.fixture.invalid';
+    function fixtureProviderBases(): array {
+        return [
+            'google' => 'https://generativelanguage.googleapis.com/v1beta/openai',
+            'openrouter' => 'https://openrouter.ai/api/v1',
+            'openai' => 'https://api.openai.com/v1',
+            'openai_compatible' => 'https://provider.fixture.invalid/v1',
+        ];
     }
 
-    // Local shims exercise AiClient's usual configured-endpoint route while
-    // permitting connections only to this fixture's temporary loopback server.
+    // Check the exact configured destination before redirecting provider traffic
+    // to the synthetic loopback server. No connection leaves this fixture.
     function dns_get_record(string $host, int $type): array {
-        if ($host !== fixtureCompatibleHost()) throw new \RuntimeException('Unexpected DNS lookup');
-        return [['ip'=>'93.184.216.34']];
+        foreach (fixtureProviderBases() as $base) {
+            if ($host === parse_url($base, PHP_URL_HOST)) return [['ip'=>'93.184.216.34']];
+        }
+        throw new \RuntimeException('Unexpected DNS lookup');
     }
     function curl_init(?string $url = null): \CurlHandle|false {
-        $endpoint = fixtureEndpoint();
-        if ($url === $endpoint . '/fixture-model:generateContent') return \curl_init($url);
-        if ($url === 'https://' . fixtureCompatibleHost() . '/v1/chat/completions') {
-            return \curl_init($endpoint . '/chat/completions');
+        foreach (fixtureProviderBases() as $provider => $base) {
+            if ($url === $base . '/chat/completions') {
+                return \curl_init(fixtureEndpoint() . '/' . $provider . '/chat/completions');
+            }
         }
         throw new \RuntimeException('Unexpected network destination');
     }
 
     final class SecretService {
-        public const PRIMARY_MODEL='fixture-model', FALLBACK_MODEL='fixture-model';
-        public const GOOGLE_MODELS=['fixture-model'];
-        public static function validModelId(string $model): bool {return $model==='fixture-model';}
+        public const PRIMARY_MODEL='gemma-4-31b-it', FALLBACK_MODEL='gemma-4-26b-a4b-it';
+        public const GOOGLE_MODELS=[self::PRIMARY_MODEL,self::FALLBACK_MODEL];
+        public const OPENROUTER_MODEL='openrouter/free';
+        public static function validModelId(string $model): bool {
+            return preg_match('~^[a-zA-Z0-9][a-zA-Z0-9_./:-]{0,119}$~D', $model) === 1;
+        }
         public function getProviderPlan(): array {
-            $endpoint = fixtureEndpoint();
-            $google = ['provider'=>'google','endpoint'=>$endpoint,'apiKey'=>'fixture-only','models'=>['fixture-model'],'model'=>'fixture-model'];
-            $protocol = getenv('BAPX_FIXTURE_PROTOCOL');
-            if ($protocol === 'google') return [$google];
-            $model = match ($protocol) {
+            $bases = fixtureProviderBases();
+            $connection = static fn(string $provider, string $model, string $base): array => [
+                'provider'=>$provider, 'endpoint'=>$base, 'apiKey'=>'fixture-'.$provider,
+                'models'=>[$model], 'model'=>$model, 'configured'=>true,
+            ];
+            $profile = getenv('BAPX_FIXTURE_PROTOCOL');
+            $google = $connection('google', $profile === 'google_fallback' ? self::FALLBACK_MODEL : self::PRIMARY_MODEL, $bases['google']);
+            if ($profile === 'google' || $profile === 'google_fallback') return [$google];
+            if ($profile === 'openrouter') return [$connection('openrouter', self::OPENROUTER_MODEL, $bases['openrouter'])];
+            $model = match ($profile) {
                 'openai' => 'gpt-5',
                 'openai_legacy' => 'gpt-4o',
                 'openai_luna' => 'gpt-6-luna',
                 default => 'fixture-model',
             };
-            $compatible = ['provider'=>'openai_compatible','endpoint'=>'https://' . fixtureCompatibleHost() . '/v1',
-                'apiKey'=>'fixture-only','models'=>[$model],'model'=>$model,'configured'=>true];
-            if ($protocol === 'openrouter') $compatible['provider'] = 'openrouter';
-            if ($protocol === 'compatible_modern') $compatible['tokenField'] = 'max_completion_tokens';
-            return preg_match('~/catalogue_(?:fallback|locked)$~D',$endpoint) ? [$compatible,$google] : [$compatible];
+            $base = in_array($profile, ['openai','openai_legacy','openai_luna'], true)
+                ? $bases['openai'] : $bases['openai_compatible'];
+            $compatible = $connection('openai_compatible', $model, $base);
+            if ($profile === 'compatible_modern') $compatible['tokenField'] = 'max_completion_tokens';
+            return preg_match('~/catalogue_(?:fallback|locked)$~D', fixtureEndpoint()) ? [$compatible,$google] : [$compatible];
         }
         public function getModelConfig(): array {return $this->getProviderPlan()[0];}
         public function all(): array {return [];}

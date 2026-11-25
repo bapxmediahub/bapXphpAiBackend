@@ -15,39 +15,40 @@ Purpose: configure Razorpay (test/live), Stripe, Google OAuth, SMTP, Meta Pixel,
 ## AI provider connections and model order
 
 The owner can independently enable Google Gemini, OpenRouter and one custom
-OpenAI-compatible HTTPS connection. Each connection has a masked API-key field
-and ordered model IDs; Google also has per-model enable switches. The default
-Google IDs remain Gemma 4 31B and 26B A4B; the default OpenRouter ID remains
-openrouter/free. Editing the list adds model IDs rather than modifying PHP.
-The preferred enabled connection runs first, then the other enabled connection,
-then OpenRouter as the final fallback. The default Google-first order is
-Gemma 31B, Gemma 26B A4B, then OpenRouter Free. Each model gets up to three
-recoverable inference attempts before moving on, then a second cycle returns
-to the first eligible model if the shared deadline permits. Disabled or unconfigured connections are never
-used as hidden fallbacks. A named model test does not fall back to another
-model. OpenRouter IDs other than free models can have provider charges.
+OpenAI-compatible HTTPS connection. All enabled connections use
+`POST {baseUrl}/chat/completions` with the selected connection's Bearer key.
+The protocol is shared across providers and keeps the model choice in Admin.
 
-API-key inputs stay blank and show only a short saved-key suffix outside the field. Blank replacement inputs preserve saved keys, and masked values are rejected. OpenRouter chat needs a standard inference key, not a management key. A changed compatible endpoint needs
-its own key. The existing encrypted app_secrets MySQL record remains the only
-runtime credential store. No secret values appear in the AI fields, diagnostics
-or test fixtures. The shared request deadline applies across providers; once
-a tool exchange starts, it never switches providers. The Google wire adapter
-uses parametersJsonSchema for canonical JSON Schema, retaining server-side
-authorization and validation.
+| Connection | API base URL | Default models |
+|---|---|---|
+| Google Gemini API | `https://generativelanguage.googleapis.com/v1beta/openai` | `gemma-4-31b-it`, then `gemma-4-26b-a4b-it` |
+| OpenRouter | `https://openrouter.ai/api/v1` | `openrouter/free` when enabled |
+| Custom OpenAI-compatible connection | Owner-configured HTTPS URL | Owner-configured model IDs |
 
-Provider references: [Google REST function declarations](https://ai.google.dev/api/generate-content#FunctionDeclaration),
-[Google retry strategy](https://ai.google.dev/gemini-api/docs/troubleshooting#retry-strategy),
-[OpenAI SDK retries](https://github.com/openai/openai-python#retries),
-[Vercel AI SDK settings](https://ai-sdk.dev/docs/ai-sdk-core/settings),
+Google has per-model enable switches, and both built-in model lists are
+editable. The preferred eligible connection runs first, followed by the
+other eligible connection and then OpenRouter. The default preference is
+Google. OpenRouter starts disabled. Specific OpenRouter model IDs may incur
+charges. The synchronous fallback loop makes up to three attempts per model
+for a recoverable failure and can return to the first eligible model for one
+more cycle within the shared deadline. After a tool exchange starts, recovery
+retries the continuation on that connection. [Google compatibility](https://aistudio.google.com/docs/openai) ·
+[Hosted Gemma model IDs](https://gemma.ai/deployment/gemini-api/#supported-models) ·
+[OpenRouter Free](https://openrouter.ai/openrouter/free) ·
 [OpenRouter error handling](https://openrouter.ai/docs/api_reference/errors-and-debugging).
-The native PHP client applies these patterns synchronously; there is no scheduled
-fallback job. Three attempts per model, the connection order and total budgets
-are product choices, not mandates from the providers.
 
-## Run Support and Enterprise through Chat Completions
+API-key inputs stay blank and show a short saved-key suffix outside the field.
+Blank inputs preserve saved keys, and masked values are rejected. Use a
+standard OpenRouter inference key for its connection. A changed custom
+endpoint needs its own key. Credentials stay in the encrypted `app_secrets`
+MySQL record. PHP validates model-selected tool arguments and authorization
+before executing a call.
 
-1. Under **AI Providers and Models**, enable **Custom OpenAI-compatible connection**
-   and select **OpenAI-compatible API** as the preferred provider.
+## Configure the optional custom connection
+
+1. Under **AI Providers and Models**, select **Enable custom connection** in
+   **Custom OpenAI-compatible connection**. To try it before Google, select
+   **OpenAI-compatible API** as the preferred provider.
 2. Enter the HTTPS API base URL, the API key issued for that endpoint, and one
    or more exact model IDs in fallback order. For direct OpenAI, use
    `https://api.openai.com/v1` and a Chat Completions model with function
@@ -59,12 +60,11 @@ are product choices, not mandates from the providers.
 4. Select the exact connection and model in **Test AI connection**. Run the
    text test and the tool test before relying on that model for either agent.
 
-PHP posts to `{baseUrl}/chat/completions` with Bearer authentication. Set
-**Chat Completions token limit field** to match the endpoint. **Automatic**
+Set **Chat Completions token limit field** to match the endpoint. **Automatic**
 uses `max_completion_tokens` for direct OpenAI and `max_tokens` for existing
 compatible connections. Choose `max_completion_tokens` explicitly for a custom
 endpoint that expects the current field.
-The endpoint must also support Chat Completions function declarations and
+The endpoint must support Chat Completions function declarations and
 multi-turn messages with `tool_call_id`.
 [Chat Completions HTTP reference](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create) ·
 [GPT-6 Luna capabilities](https://developers.openai.com/api/docs/models/gpt-6-luna).
@@ -76,11 +76,18 @@ allows an exact provider/model target (even when two connections have the same
 model ID) or the enabled fallback route. The text test requires the expected
 response; the tool test calls an isolated read-only synthetic tool and verifies
 the returned challenge. No order, customer or product data is sent by this
-diagnostic. It records the actual attempted provider, model and safe status
-without displaying keys or provider response bodies. Run the same tests locally
-with bapXphp ai:probe text or bapXphp ai:probe tools, optionally followed by a
-quoted provider|model selector. A missing tool call, unexpected answer, HTTP
-error or timeout is not success.
+diagnostic. It displays the attempted provider, model, and safe status. A 401
+names the API key field for the rejected connection. A 403 points to that
+connection's access settings. The browser result card omits endpoints, keys
+and provider response bodies. [OpenAI API error codes](https://developers.openai.com/api/docs/guides/error-codes).
+
+Run the same tests locally with `./bapXphp ai:probe text` or
+`./bapXphp ai:probe tools`, optionally followed by a quoted `provider|model`
+selector. Verify both modes separately for each enabled Gemma ID, for
+`openrouter|openrouter/free` when configured, and for each enabled custom model.
+Then exercise both agents with an authorized lookup on the deployed release.
+Loopback tests verify request and continuation handling. Live probes establish
+which exact models complete both modes with the deployment's provider access.
 
 ## Secrets Storage
 
