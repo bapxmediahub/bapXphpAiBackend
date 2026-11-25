@@ -3,6 +3,14 @@ namespace App\Services;
 
 /** Free, deterministic checks for critical policies; never ask a paid judge model. */
 final class AgentEvaluationService {
+    private const OWNER_REPORTS = [
+        'sales_summary' => ['orders', 'revenue'],
+        'order_count' => ['orders', 'count'],
+        'gst_register_summary' => ['orders', 'issued_invoices'],
+        'support_enquiries' => ['support_tickets', 'total'],
+        'commerce_report' => ['commerce_reports', null],
+    ];
+
     public static function evaluate(string $surface, string $question, string $answer, array $tools = [], string $outcome = 'unknown', array $retrieval = []): array {
         $checks = [];
         $checks['response_present'] = trim($answer) !== '';
@@ -17,19 +25,50 @@ final class AgentEvaluationService {
         $checks['no_invalid_tool_names'] = count(array_filter($tools, static fn(array $t): bool =>
             !in_array($t['name'] ?? '', $activityNames, true)
         )) === 0;
-        if ($surface === 'admin' && $outcome === 'model' && preg_match('/\b(?:revenue|sales|orders|gst|support tickets?)\b/i', $question)) {
-            $checks['source_lookup_used'] = count(array_filter($tools, static fn(array $tool): bool =>
-                ($tool['status'] ?? '') === 'complete'
-            )) > 0;
-        }
-        return [
+        $evaluation = [
             'passed' => count(array_filter($checks)) === count($checks),
             'checks' => $checks,
-            'version' => 2,
+            'version' => 3,
             'category' => 'deterministic_guardrails',
             'factual_accuracy' => 'not_evaluated',
             'groundedness' => 'not_evaluated',
         ];
+        if ($surface === 'admin' && $outcome === 'model') {
+            $evaluation['observations']['owner_report_lookup_observed'] = self::observedOwnerReports($tools) !== [];
+        }
+        return $evaluation;
+    }
+
+    /** Recognize completed, typed report evidence without interpreting the user's question. */
+    private static function observedOwnerReports(array $tools): array {
+        $reports = [];
+        foreach ($tools as $tool) {
+            $name = $tool['name'] ?? '';
+            if (!is_string($name) || !isset(self::OWNER_REPORTS[$name]) || ($tool['status'] ?? null) !== 'complete') continue;
+            [$source, $requiredFact] = self::OWNER_REPORTS[$name];
+            $raw = $tool['evidence'] ?? [];
+            if (!is_array($raw) || ($raw['source'] ?? null) !== $source || !is_int($raw['result_count'] ?? null) || $raw['result_count'] < 0) continue;
+            $evidence = AgentTraceService::safeTool($tool)['evidence'];
+            if ($requiredFact === null) {
+                if (!isset($evidence['report'])) continue;
+            } elseif (!isset($evidence['facts'][$requiredFact]) || !self::validReportPeriod($evidence['filters'])) {
+                continue;
+            }
+            $reports[] = ['tool'=>$name, 'source'=>$source, 'filters'=>$evidence['filters'],
+                'result_count'=>$evidence['result_count'], 'facts'=>$evidence['facts']];
+        }
+        return $reports;
+    }
+
+    private static function validReportPeriod(array $filters): bool {
+        $from = $filters['from'] ?? '';
+        $to = $filters['to'] ?? '';
+        foreach ([$from, $to] as $date) {
+            if (!is_string($date) || !preg_match('/^\d{4}-\d{2}-\d{2}$/D', $date)) return false;
+            $parsed = \DateTimeImmutable::createFromFormat('!Y-m-d', $date);
+            if ($parsed === false || $parsed->format('Y-m-d') !== $date) return false;
+        }
+        return $from <= $to;
     }
 
     public static function publicProductLinksSupported(string $answer,array $retrieval): bool {
@@ -126,6 +165,7 @@ final class AgentEvaluationService {
                 (string)($case['agent']??''),(string)($case['tool']??''),$case['actor']??null)
                 === (bool)($case['expected_allowed']??false),
             'financial_evidence' => self::fixtureFinancialEvidence($case),
+            'owner_report_evidence' => self::fixtureOwnerReportEvidence($case),
             'gst_evidence' => self::fixtureGstEvidence($case),
             'sales' => self::fixtureSales($case),
             'ticket_scope' => self::fixtureTicketScope($case),
@@ -157,6 +197,30 @@ final class AgentEvaluationService {
             (array)($case['orders']??[]),(array)($case['range']??[]));
         return (int)($result['orders']??-1)===(int)($case['expected_orders']??-2)
             && (float)($result['revenue']??-1)===(float)($case['expected_revenue']??-2);
+    }
+
+    private static function fixtureOwnerReportEvidence(array $case): bool {
+        $tool = $case['tool'];
+        $activity = [
+            'name' => $tool,
+            'status' => isset($case['result']['error']) ? 'error' : 'complete',
+            'evidence' => AgentTraceService::toolEvidence($tool, $case['args'], $case['result']),
+        ];
+        $expected = $case['expected'];
+        $reports = self::observedOwnerReports([$activity]);
+        $matches = false;
+        foreach ($reports as $report) {
+            $matches = $report['tool'] === $expected['tool'] && $report['source'] === $expected['source']
+                && $report['filters'] === $expected['filters'] && $report['result_count'] === $expected['result_count']
+                && $report['facts'] === $expected['facts'];
+            if ($matches) break;
+        }
+        $evaluation = self::evaluate('admin', $case['question'], $case['answer'], [$activity], 'model');
+        return $matches === $case['expected_match']
+            && ($evaluation['observations']['owner_report_lookup_observed'] ?? null) === $case['expected_observed']
+            && !array_key_exists('source_lookup_used', $evaluation['checks'])
+            && $evaluation['factual_accuracy'] === 'not_evaluated'
+            && $evaluation['groundedness'] === 'not_evaluated';
     }
 
     private static function fixtureFinancialEvidence(array $case): bool {

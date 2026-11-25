@@ -191,6 +191,16 @@ response guardrails. It reports live `factual_accuracy` and
 `groundedness` as `not_evaluated`, not as passing.
 Do not present a nonempty answer or no-secret result as factual correctness.
 
+New evaluation receipts use version 3. Owner model turns record whether a
+completed report tool produced typed evidence from its canonical source.
+Dated reports need effective dates and a recorded metric. A verified empty
+report qualifies, and a published article lookup does not. The same boolean is
+recorded in the evaluation span, separately from the produced response. It
+describes the evidence observed during the turn. The model still decides what
+to retrieve, and staff still assess answer grounding and factual accuracy.
+Previously saved version 2 receipts remain available with their original
+checks and results.
+
 The offline golden corpus and approved baseline live in:
 `tests/fixtures/agent-golden.json` and
 `tests/fixtures/agent-golden-baseline.json`.
@@ -435,10 +445,14 @@ claim-level all-traffic clustering. These are selected review labels, not a
 statistically representative production accuracy score. A human pass never
 marks customer-confirmed resolution; only the existing customer action does.
 
-The 31-case deterministic corpus includes exact net-sales answers with verified
+The deterministic corpus includes exact net-sales answers with verified
 refund/unpaid/cancelled/out-of-period fixtures and exact GST snapshot/count/scope
 evidence. These synthetic known-answer tests are reproducible regression
-coverage, not human-reviewed real-world labels or tax-filing certification.
+coverage, not human-reviewed real-world labels or tax-filing certification. Owner
+report fixtures specify the expected tool, source, effective dates, result count
+and facts. They exercise an unrelated article, another business report, a tool
+that returned the wrong period despite receiving the expected dates, and
+matching reports with positive and zero totals.
 
 ### Selective runtime skill evidence
 

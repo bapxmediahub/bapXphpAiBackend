@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "160120446ef0d740a9f76c3a65d2459efbe35fc9d1c263ab61530ea0a9d7f7a0",
-            "references_sha256": "f5c7361b8ca9c867682dbafcde10dd099cdd71d35190bc7aaea8d770ba2d53ff",
-            "review_note": "Reviewed Enterprise chat and Monitoring against scoped first-round tool declarations, recorded request evidence and credential-scoped provider holds. Rechecks before transfer keep local skips outside attempt counts. Diagnostic probes bypass holds, and tool exchanges stay on their original model. The owner UI presents authorized prompts, saved history and bounded evidence."
+            "source_sha256": "7e31fb3568a10a9ad1c0f5df618ce3fc2a01ce4efba073577a13718548ccd21d",
+            "references_sha256": "7a90ad0744280242a119113d0526fcb7f68954deafc19df589383c73f1e6f963",
+            "review_note": "Compared report evidence validation, trace recording, historical replay and versioned fixtures with the agent observability guide. Fixture scope matches the tool result and the runtime receipt records only the observed typed business report."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -58,9 +58,9 @@
             "review_note": "Cross-checked the revised owner UI skill with the current media selection, confirmation and metadata flows. The existing media documentation still describes those operations."
         },
         "operator-help": {
-            "source_sha256": "b509a9c0404b90c247b4551ab69d740b2af5997cb0ee1f0cbccacd7a666dd0b8",
+            "source_sha256": "a313afd167af43fec751710bfa57a08e9b5d4bf9d6f8ae5d546ddf72a74900ea",
             "references_sha256": "00126a5c3c862ff46efed68f3dafb9c26532dc8acd3c418d7079c3862859c100",
-            "review_note": "Compared owner navigation, ticket controls and scoped Enterprise prompts with the operator guides. Checked the public Blog-gated Support guide and the preserved enquiry pane focus path."
+            "review_note": "Compared the monitoring and owner review guide with saved evaluation receipts. Operator assessment and customer feedback remain distinct from the observed report-tool result."
         },
         "public-mcp": {
             "source_sha256": "234155f55b0f66f669f6422a85acc30a6a59ebf216d8f682d7a212cd01ee7358",

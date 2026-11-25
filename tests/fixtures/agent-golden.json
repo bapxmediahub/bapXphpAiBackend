@@ -735,6 +735,161 @@
         "rate_limit",
         "http_success"
       ]
+    },
+    {
+      "id": "owner_report_rejects_unrelated_article",
+      "type": "owner_report_evidence",
+      "question": "What was net revenue in October?",
+      "answer": "Net revenue was INR 1,200.",
+      "tool": "search_articles",
+      "args": {
+        "query": "revenue"
+      },
+      "result": {
+        "found": 1
+      },
+      "expected": {
+        "tool": "sales_summary",
+        "source": "orders",
+        "filters": {
+          "from": "2026-10-01",
+          "to": "2026-10-31"
+        },
+        "result_count": 2,
+        "facts": {
+          "orders": 2,
+          "revenue": 1200.0
+        }
+      },
+      "expected_match": false,
+      "expected_observed": false
+    },
+    {
+      "id": "owner_report_rejects_wrong_business_tool",
+      "type": "owner_report_evidence",
+      "question": "What was net revenue in October?",
+      "answer": "Net revenue was INR 1,200.",
+      "tool": "order_count",
+      "args": {
+        "from": "2026-10-01",
+        "to": "2026-10-31"
+      },
+      "result": {
+        "from": "2026-10-01",
+        "to": "2026-10-31",
+        "count": 2
+      },
+      "expected": {
+        "tool": "sales_summary",
+        "source": "orders",
+        "filters": {
+          "from": "2026-10-01",
+          "to": "2026-10-31"
+        },
+        "result_count": 2,
+        "facts": {
+          "orders": 2,
+          "revenue": 1200.0
+        }
+      },
+      "expected_match": false,
+      "expected_observed": true
+    },
+    {
+      "id": "owner_report_uses_effective_period",
+      "type": "owner_report_evidence",
+      "question": "What was net revenue in October?",
+      "answer": "Net revenue was INR 1,200.",
+      "tool": "sales_summary",
+      "args": {
+        "from": "2026-10-01",
+        "to": "2026-10-31"
+      },
+      "result": {
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "orders": 2,
+        "revenue": 1200.0
+      },
+      "expected": {
+        "tool": "sales_summary",
+        "source": "orders",
+        "filters": {
+          "from": "2026-10-01",
+          "to": "2026-10-31"
+        },
+        "result_count": 2,
+        "facts": {
+          "orders": 2,
+          "revenue": 1200.0
+        }
+      },
+      "expected_match": false,
+      "expected_observed": true
+    },
+    {
+      "id": "owner_report_matches_scoped_totals",
+      "type": "owner_report_evidence",
+      "question": "What was net revenue in October?",
+      "answer": "Net revenue was INR 1,200.",
+      "tool": "sales_summary",
+      "args": {
+        "from": "2026-10-01",
+        "to": "2026-10-31"
+      },
+      "result": {
+        "from": "2026-10-01",
+        "to": "2026-10-31",
+        "orders": 2,
+        "revenue": 1200.0
+      },
+      "expected": {
+        "tool": "sales_summary",
+        "source": "orders",
+        "filters": {
+          "from": "2026-10-01",
+          "to": "2026-10-31"
+        },
+        "result_count": 2,
+        "facts": {
+          "orders": 2,
+          "revenue": 1200.0
+        }
+      },
+      "expected_match": true,
+      "expected_observed": true
+    },
+    {
+      "id": "owner_report_matches_valid_zero",
+      "type": "owner_report_evidence",
+      "question": "What was net revenue in October?",
+      "answer": "No paid sales were recorded.",
+      "tool": "sales_summary",
+      "args": {
+        "from": "2026-10-01",
+        "to": "2026-10-31"
+      },
+      "result": {
+        "from": "2026-10-01",
+        "to": "2026-10-31",
+        "orders": 0,
+        "revenue": 0.0
+      },
+      "expected": {
+        "tool": "sales_summary",
+        "source": "orders",
+        "filters": {
+          "from": "2026-10-01",
+          "to": "2026-10-31"
+        },
+        "result_count": 0,
+        "facts": {
+          "orders": 0,
+          "revenue": 0.0
+        }
+      },
+      "expected_match": true,
+      "expected_observed": true
     }
   ]
 }
