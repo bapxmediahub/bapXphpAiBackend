@@ -2,8 +2,6 @@
 declare(strict_types=1);
 namespace App\Services;
 
-use App\Integrations\Razorpay\RazorpayClient;
-
 /** Anonymous checkout, shared by HTTP agents and the fixed in-chat form. No browser/account state. */
 final class RemoteCheckoutService
 {
@@ -190,15 +188,9 @@ final class RemoteCheckoutService
 
     private function paymentAvailability():array
     {
-        $secrets=$this->secretValues();$mode=$secrets['razorpay_mode']??'test';
-        if(!in_array($mode,['test','live'],true))$mode='test';
-        // SecretService normalizes legacy keys into their selected mode. Availability
-        // and provider execution must require the same exact normalized pair.
-        $available=trim((string)($secrets['razorpay_'.$mode.'_key_id']??''))!==''
-            &&trim((string)($secrets['razorpay_'.$mode.'_key_secret']??''))!==''
-            &&trim((string)($secrets['razorpay_'.$mode.'_webhook_secret']??''))!=='';
-        return ['available'=>$available,'provider'=>'razorpay','mode'=>$available?$mode:'unavailable',
-            'presentation'=>$available?'external_provider':'unavailable'];
+        $mode=RazorpayPaymentLinkService::mode($this->secretValues());
+        return ['available'=>$mode!==null,'provider'=>'razorpay','mode'=>$mode??'unavailable',
+            'presentation'=>$mode===null?'unavailable':'external_provider'];
     }
 
     private static function delivery(mixed $input):array
@@ -437,60 +429,24 @@ final class RemoteCheckoutService
     private function provider(string $operation,array $attempt,array $payload=[]):array
     {
         if($this->gateway!==null)return ($this->gateway)($operation,$attempt,$payload);
-        $secrets=$this->secretValues();$mode=$attempt['mode'];
-        $id=trim((string)($secrets['razorpay_'.$mode.'_key_id']??''));$secret=trim((string)($secrets['razorpay_'.$mode.'_key_secret']??''));
-        if($id===''||$secret==='')throw new \RuntimeException('Payment credentials unavailable',401);
-        $client=new RazorpayClient($id,$secret);
-        return match($operation){
-            'create_link'=>$client->createPaymentLink($payload),
-            'find_link'=>$client->findPaymentLinks($attempt['reference_id']),
-            'fetch_link'=>$client->fetchPaymentLink($attempt['provider_link_id']),
-            'fetch_payment'=>$client->fetchPayment($payload['payment_id']),
-            'order_payments'=>$client->fetchOrderPayments($payload['order_id']),
-            default=>throw new \LogicException('Unknown fixed payment operation.'),
-        };
+        return RazorpayPaymentLinkService::request($this->secretValues(),$attempt,$operation,$payload);
     }
 
     public static function validProviderUrl(mixed $url):bool
     {
-        return is_string($url)&&strlen($url)<=512&&preg_match('~^https://rzp\.io/(?:[A-Za-z0-9_-]+/)*[A-Za-z0-9_-]+$~D',$url)===1;
+        return RazorpayPaymentLinkService::validUrl($url);
     }
 
     private function acceptLink(array $attempt,array $link):array
     {
-        if(!is_string($link['id']??null)||!preg_match('/^plink_[A-Za-z0-9]{1,64}$/D',$link['id'])
-            ||($link['reference_id']??null)!==$attempt['reference_id']||($link['amount']??null)!==$attempt['amount_paise']
-            ||($link['currency']??null)!=='INR'||($link['accept_partial']??null)!==false
-            ||!is_int($link['expire_by']??null)||$link['expire_by']>$attempt['payment_expires_at']
-            ||$link['expire_by']<=strtotime($attempt['created_at'].' UTC')
-            ||!self::validProviderUrl($link['short_url']??null))throw new \RuntimeException('Provider checkout identity mismatch.');
-        if(isset($attempt['provider_link_id'])&&$attempt['provider_link_id']!==$link['id'])throw new \RuntimeException('Provider checkout identity changed.');
-        $state=$link['status']??null;
-        if(!in_array($state,['created','partially_paid','paid','expired','cancelled'],true))throw new \RuntimeException('Unknown provider checkout state.');
+        $state=RazorpayPaymentLinkService::validate($attempt,$link);
         $attempt=$this->operate('update_attempt',['id'=>$attempt['id'],'change'=>'link','linkId'=>$link['id'],
             'providerUrl'=>$link['short_url'],'paymentStatus'=>match($state){'expired'=>'expired','cancelled'=>'cancelled',default=>'pending'}])['attempt'];
         if($state!=='paid')return $attempt;
-        if(($link['amount_paid']??null)!==$attempt['amount_paise']||!is_string($link['order_id']??null)
-            ||!preg_match('/^order_[A-Za-z0-9]{1,64}$/D',$link['order_id']))throw new \RuntimeException('Paid checkout amount or order mismatch.');
-        $payments=$link['payments']??[];$ids=[];
-        if(is_array($payments))foreach(array_slice($payments,0,20) as $payment) {
-            $id=$payment['payment_id']??null;
-            if(is_string($id)&&preg_match('/^pay_[A-Za-z0-9]{1,64}$/D',$id))$ids[$id]=true;
-        }
-        if($ids===[]) {
-            $list=$this->provider('order_payments',$attempt,['order_id'=>$link['order_id']]);
-            foreach(array_slice($list['items']??[],0,20) as $payment) {
-                $id=$payment['id']??null;
-                if(is_string($id)&&preg_match('/^pay_[A-Za-z0-9]{1,64}$/D',$id))$ids[$id]=true;
-            }
-        }
-        $verified=[];
-        foreach(array_keys($ids) as $id) {
-            $payment=$this->provider('fetch_payment',$attempt,['payment_id'=>$id]);
-            if(PaymentService::isCapturedRazorpayPayment($payment,$id,$link['order_id'],$attempt['amount_paise']))$verified[]=$id;
-        }
-        if(count($verified)!==1)throw new \RuntimeException('Captured payment could not be uniquely verified.');
-        $attempt=$this->operate('update_attempt',['id'=>$attempt['id'],'change'=>'verified','paymentId'=>$verified[0],'providerOrderId'=>$link['order_id']])['attempt'];
+        $receipt=RazorpayPaymentLinkService::captured($attempt,$link,
+            fn(string $operation,array $payload=[])=>$this->provider($operation,$attempt,$payload));
+        $attempt=$this->operate('update_attempt',['id'=>$attempt['id'],'change'=>'verified',
+            'paymentId'=>$receipt['payment_id'],'providerOrderId'=>$receipt['order_id']])['attempt'];
         return $this->saveOrder($attempt);
     }
 
@@ -517,20 +473,9 @@ final class RemoteCheckoutService
         if(!$claim['claimed'])return $attempt;
         if($attempt['payment_status']==='captured')return $this->saveOrder($attempt);
         try {
-            if(isset($attempt['provider_link_id']))$link=$this->provider('fetch_link',$attempt);
-            else {
-                $response=$this->provider('find_link',$attempt);$matches=[];
-                $links=$response['payment_links']??$response['items']??null;
-                if(!is_array($links)||!array_is_list($links)||count($links)>20)throw new \RuntimeException('Invalid provider lookup result.');
-                foreach($links as $candidate) {
-                    if(is_array($candidate)&&($candidate['reference_id']??null)===$attempt['reference_id'])$matches[]=$candidate;
-                }
-                if(count($matches)>1)throw new \RuntimeException('Ambiguous provider reference.');
-                if($matches===[]) {
-                    return $this->operate('update_attempt',['id'=>$attempt['id'],'change'=>'not_found'])['attempt'];
-                }
-                $link=$matches[0];
-            }
+            $link=RazorpayPaymentLinkService::find($attempt,
+                fn(string $operation,array $payload=[])=>$this->provider($operation,$attempt,$payload));
+            if($link===null)return $this->operate('update_attempt',['id'=>$attempt['id'],'change'=>'not_found'])['attempt'];
             return $this->acceptLink($attempt,$link);
         } catch(\Throwable) {
             return $this->operate('update_attempt',['id'=>$attempt['id'],'change'=>'uncertain','failure'=>'provider_unavailable'])['attempt'];
@@ -550,7 +495,7 @@ final class RemoteCheckoutService
     }
 
     /** HMAC is checked before JSON parsing. Payload assertions never establish paid state. */
-    public function receiveWebhook(string $body,string $signature):void
+    public function receiveWebhook(string $body,string $signature,?CampaignPaymentService $campaign=null):void
     {
         if(strlen($body)>65536||!preg_match('/^[a-f0-9]{64}$/D',$signature))throw new RemoteCartException('invalid_signature','Invalid payment notification.',401);
         $secrets=$this->secretValues();$modes=[];
@@ -562,6 +507,10 @@ final class RemoteCheckoutService
         try{$event=json_decode($body,true,32,JSON_THROW_ON_ERROR);}catch(\JsonException){throw new RemoteCartException('invalid_notification','Invalid payment notification.');}
         if(!is_array($event)||!in_array($event['event']??null,['payment_link.paid','payment_link.partially_paid','payment_link.expired','payment_link.cancelled'],true))return;
         $reference=$event['payload']['payment_link']['entity']['reference_id']??null;
+        if(is_string($reference)&&preg_match('/^book_([a-f0-9]{32})$/D',$reference,$booking)) {
+            ($campaign??new CampaignPaymentService($this->store))->receivedNotification($booking[1],$modes,$event['event']==='payment_link.paid');
+            return;
+        }
         if(!is_string($reference)||!preg_match('/^ac_([a-f0-9]{32})$/D',$reference,$matches))return;
         try{$saved=$this->operate('read_internal',['id'=>$matches[1]]);}
         catch(RemoteCartException $error){if($error->errorCode==='checkout_not_found')return;throw $error;}

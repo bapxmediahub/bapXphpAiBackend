@@ -5016,3 +5016,10 @@ body { background: var(--color-bg); }
     .campaign-enquiry__fields { grid-template-columns: minmax(0, 1fr); }
     .campaign-enquiry .campaign-enquiry__submit { justify-self: stretch; }
 }
+
+[data-campaign-payment-editor]:not(:has([name="campaign_payment_enabled"]:checked)) .campaign-payment-amount {
+    display: none;
+}
+.campaign-payment-amount { display: grid; gap: var(--space-xs); }
+.campaign-booking__downloads { margin-block: 0 var(--space-md); padding-inline-start: var(--space-lg); }
+.campaign-booking__downloads a { display: inline-flex; align-items: center; min-height: 44px; }

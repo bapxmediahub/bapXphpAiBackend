@@ -307,3 +307,10 @@ the cart is empty. The empty cart expires normally. It never submits delivery
 details or invokes payment preparation, status reconciliation or order creation.
 The Hostinger acceptance workflow runs this bounded probe alongside the public
 read-only discovery and browser checks; a failure is not automatically replayed.
+
+Authored campaign bookings share the Razorpay link verification and the
+`/api/payments/razorpay-webhook` endpoint. A `book_` reference settles a
+revision-bound booking receipt and its selected download versions in
+`campaign_bookings`. Product checkout references continue to use
+`checkout_attempts` and the shared verified-order writer.
+See [Authored pages](modules/content-and-seo.md#authored-pages).

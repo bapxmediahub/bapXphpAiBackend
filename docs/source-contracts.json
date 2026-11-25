@@ -4,48 +4,48 @@
     "reviews": {
         "agents": {
             "source_sha256": "3c6e1cb910ca0d8ad6ca0e30e7c295bb08df0df79ff147624fc80603a23a8525",
-            "references_sha256": "2c8654ee43fa416f7cbc932e0d148d5069fe1a534be92a8f84a8512d3870098d",
-            "review_note": "Retained the reviewed provider role and tool-call behavior and compared the added storage skill against the agent instructions. Download access stays with the PHP route."
+            "references_sha256": "c72bfc905f8902c81ae71e4913eb75e7f4eb13e62f8eddf71907cddd75ce745a",
+            "review_note": "Checked role guidance and owner commerce report source. Campaign bookings use their own table and preserve valid empty order reports."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
-            "references_sha256": "fb0ed91e79da831124c7268b88c9d77ce218d0b26de28b4773dd0d14acf89ce1",
-            "review_note": "Reviewed the owner constructor authorization, CSRF and session-bound public download grant against the authentication guides and actual guest/owner fixtures."
+            "references_sha256": "fe469674ecc70d3badf9666cfc89e67c3bf7e86dd3faedecb8e4a324e4bbc218",
+            "review_note": "Checked the booking ownership hash against login and logout behavior. A different browser or actor cannot reopen a paid booking."
         },
         "commerce": {
-            "source_sha256": "4d8f53718f4495182ccef03d41eacb3da729dbe5ff1b5db5b54cbfd88957749e",
-            "references_sha256": "9f2b8970b34f4cc6e0a07951ebd67feafe3412ec41ee0a3fba803908621837a2",
-            "review_note": "Reviewed the downloaded file resolver and schema field against the source contracts for product orders and payments. This route uses the authored page publication and enquiry grant."
+            "source_sha256": "df52ec9c222d2700c066e207da621ef7a2dd252103def8ea01937080c9457912",
+            "references_sha256": "188c7a1dac9dcc80ffc838347a0d2a9ee8301ffe8de0d4d859e32b45a3ef9246",
+            "review_note": "Verified the reusable Razorpay identity and capture checks still feed the existing order writer for product purchases. Campaign payments write their own receipt."
         },
         "content": {
-            "source_sha256": "ea66e55d3743dc71b1cdf4f923ae2dada6d17ff627c5b8cf3714f45c0da60122",
-            "references_sha256": "d6dfd32d3d8e2c782defb6fcf99f7569ad47f252598104d916582b480f95b521",
-            "review_note": "Compared the merged one-column campaign shell and native receipt focus with the ordered file manifest, protected upload, revision gates and content/hosting guidance."
+            "source_sha256": "c546fa55c54741b27d424f2cfd1c1d56ab49db352f2b254b11fccb9c4222eb33",
+            "references_sha256": "433011d28f1696415bf8a40e14b008113f2fe5db910ca5dd03fc9e4730057f7a",
+            "review_note": "Cross-checked exact paise, revision snapshots, independent controls, gateway configuration and the real local receipt and private attachment routes after simulated capture."
         },
         "foundation": {
-            "source_sha256": "20bae1eaa76ff03f0b38e8d8173491ffdf4a172086edead0533249828ab94727",
-            "references_sha256": "edb833e6497897729ae4c0a1e1eca65934b466c547881885d7e8abb770eeda5b",
-            "review_note": "Compared the hosted page fields and private immutable binaries with the application and host storage contracts, deployment backup instructions and actual direct-path denial."
+            "source_sha256": "63fd4d65982ae6b57003f4d3e8c3a1f7baa449c173110c7e6e0111b22b906a43",
+            "references_sha256": "518460de0233cf4419b29b31f7e7b2b8f43a9fdc3b868bd973f83bc9731cd4d3",
+            "review_note": "Reviewed the hosted database schema, deployment prerequisites and private file retention with the booking, verification, and storage implementation."
         },
         "google-tags": {
             "source_sha256": "366fdab983979cc3a1fec22fb6da4afb61072d6fd24cd0ba2271d67a0c063019",
-            "references_sha256": "cf0782590bfba110469d8e40d1b532e09a1a8b261cf41f59f00b312c7e528cd7",
-            "review_note": "Reviewed the merged analytics defaults and reporting guidance with the new frontend download pattern. Downloads continue to use ordinary native links."
+            "references_sha256": "e769d37fb080ccc92c0a85d83c989c057c864bcd128a13b862f3d9adb03f9cee",
+            "review_note": "Reviewed the frontend skill against the current reporting integration and the standalone private status template, which loads only same-site styling."
         },
         "http-errors": {
             "source_sha256": "0f920c297cfc4e216a87be02a35c20827cc254dd6934ba24a1fa9135520a0560",
-            "references_sha256": "08e0e1b9c8e9e4135e255ef70a7d950b288f711f2ad6c7104e7c195c34bde242",
-            "review_note": "Compared the front-controller and Apache path guards, private resolution and upload errors with the shared request-boundary documentation."
+            "references_sha256": "634c2eb89d48cf67e96999b5b2d69e40a1e0d486686697c5113e8d73dd14d9ea",
+            "review_note": "Checked the booking-specific private error responses and the main response guard. Provider and database details stay out of browser errors."
         },
         "interface": {
-            "source_sha256": "ea5a8fecc5689f03bbe430db89e242f12f7d947ac3abb85ee47d240fef0e8ae4",
-            "references_sha256": "af5ab7f563f3179499adfc25b9b432edf03dcd73106769341fa96156ef02694b",
-            "review_note": "Checked the merged campaign reading column, native feedback and 44px underlined download links with editor selection, preview, lock and mobile design contracts."
+            "source_sha256": "82b14d7ac04642c59d3078ae1c355cee4aa65d582a36ae6dff4fec93456f3f36",
+            "references_sha256": "404619f91aeea891998b9c1cb6ef921514f8dd59adb0ae4f24a58e03fdcade70",
+            "review_note": "Reviewed the independent amount toggle, disabled preview, keyboard booking review, and private pending and captured cards against Design and the browser fixtures."
         },
         "mail": {
-            "source_sha256": "5227980c18b489b2f985b67c057a1f94a95c6784bd1e3b594f7fd2294ce37179",
-            "references_sha256": "5f7bb76e9a89eeb8e4bb8ec4a1c749eea3aee31fb9dd51411e657b1287ea8ffd",
-            "review_note": "Reviewed the download grant placement after a confirmed enquiry and the unchanged local receipt path against the documented held mail and owner Inbox boundary."
+            "source_sha256": "2ee930f138803363cf3cbd3daa72ed36eee58bc5491c06b2b42617b090bf8144",
+            "references_sha256": "c89eb0f0b4e0b63d4ce3d8fc165c8cc24212c6c47eb7691b58048aaa16931ec8",
+            "review_note": "Reviewed authored page and webhook writes against the transactional mail entry points. Existing enquiries and shop receipt mail keep their current paths."
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
@@ -54,23 +54,23 @@
         },
         "media": {
             "source_sha256": "edc32a5a9f73cf7f2954eac135a2eaed1394089034bac24ea835af48c4d9600e",
-            "references_sha256": "1011ad8c368684766c4694dbc430e61737314b7c0bba1e97f1776fd509dad7f5",
-            "review_note": "Reviewed the independent private download storage against the existing owner Media Library, header image and deletion documentation. Download files keep their own private root."
+            "references_sha256": "bb02d897e7b68e33511130766ce52a09d9b74f352c9c52e43c45706712515ef8",
+            "review_note": "Checked retained campaign file descriptors and protected streaming against Media Library behavior. Booking authorization is scoped to the frozen private manifest."
         },
         "operator-help": {
-            "source_sha256": "42d51f8146f1d2fb90a1130156772e7b4ed9eb33f4d9b1f2584c39e58de771bf",
-            "references_sha256": "f5c667e8fdb836b615fc47f2c1e84fe62d463ccf085757a8f354a0542de7d2c7",
-            "review_note": "Preserved reconciled operator guides and compared actual Pages controls with upload, file order, removal, preview and browser recovery instructions."
+            "source_sha256": "e0cabda8d62814602d68bf446f8aeb69392b3fd98f6c43636140a31e41ae7381",
+            "references_sha256": "d7972865c18db0e7cab36b4fdf0cf22cf388c8fbde7bd5ae088de971afd212fe",
+            "review_note": "Reviewed Pages guide walk-through against the authored editor, disabled preview, exact INR input and captured receipt entry points."
         },
         "public-mcp": {
-            "source_sha256": "ad08f180ca73336364b9cd907dfcbc99fafe564bfbc5555611ed1c41949b4de4",
-            "references_sha256": "4e016c2896dbeb1b1c300436bc89b235e56245aa9cd9cade4fdd1c4605cf1e6a",
-            "review_note": "Compared the new public HTTP route with the MCP capability and discoverability contracts. Campaign assets do not extend the existing agent tool surface."
+            "source_sha256": "6817679be2290cbbea52d8a059df0770d1deb686132d09f9d57d0fbda5b62185",
+            "references_sha256": "8d8378db8fdc83a1ef349fa1461908a8931013893513be9e41bb7570228e4f75",
+            "review_note": "Checked registry additions and private booking collection ownership against the public MCP allowlist and its generated map."
         },
         "remote-commerce": {
-            "source_sha256": "3df5515098feaff9a99a1dc2090656e21ddd31d892b1a8da8e49fd601e092793",
-            "references_sha256": "f9c8aa084e1f0e49bea48d97b588303f78f6457ee8128f5da9b33f0f369d432c",
-            "review_note": "Checked the authored-page revision write and schema addition against the remote-checkout contract. Validated public download links use the separate published-page resolver."
+            "source_sha256": "02579cda698228b2ecd3085fb9bd8439c1efcd44e7a2d369a4175d80764374a9",
+            "references_sha256": "28072054dd96a103301f08d34ca9b39d988acc6e0a2c149a93e9d49fd009326c",
+            "review_note": "Reviewed the shared link verifier, signed endpoint and reference routing against both the existing product attempt and the new booking receipt."
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",
@@ -78,9 +78,9 @@
             "review_note": "Compared the MediaService additions with the Merchant Feed and product image inspection contracts. Header choices are filtered only for the owner authored editor, and catalogue image eligibility and feed URLs retain their existing resolution."
         },
         "workflow": {
-            "source_sha256": "bc575cfbdbc5b84cf65eff4b81988ead2592d89a6cc4ec8e3c9c4887b65296b1",
+            "source_sha256": "83e9fdada69630419e82f477ec9344a921f18030d3402c1d3126c36fa343699f",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Cross-checked the generated route inventory and revised content review dependencies. The existing campaign HTTP and browser CI entries exercise the new behaviors."
+            "review_note": "Reviewed the route registry and verified the new booking collection is wired to the database and campaign service in the generated inventory."
         }
     }
 }

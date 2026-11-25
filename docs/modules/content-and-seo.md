@@ -195,9 +195,9 @@ JPG or WebP files totalling at most 5,000,000 bytes. Preview displays the
 file list without active links or stored uploads. New files must be selected
 again after preview. The page revision atomically owns the validated list.
 
-Visitors can download from a published page without an enquiry form. If the
-page has a form, a confirmed receipt unlocks downloads for that browser
-session for one hour. Each PHP link requires the current published revision
+With payment disabled, visitors can download from a published page without an
+enquiry form. If the page has a form, a confirmed receipt unlocks downloads for
+that browser session for one hour. Each PHP link requires the current published revision
 and an exact file in the enabled selection. Editing, disabling or withdrawing
 the page invalidates old public download links and revision grants. Files are
 attachments with private, non-cacheable responses. The original file location
@@ -205,6 +205,31 @@ remains outside the web root. This adapts the server-controlled delivery and
 direct-path protection in the
 [WooCommerce downloadable product guide](https://woocommerce.com/document/digital-downloadable-product-handling/#general-settings),
 with the bapX editor's combined byte limit and revision-based access rules.
+
+**Enable payment** adds an independent booking section. Enter the INR amount
+with up to two decimal places, then preview or save the page. Preview shows the
+amount and keeps the payment action disabled. Published visits can review a
+booking even when the enquiry form is disabled. Free downloads follow the
+page's enquiry settings. When payment and downloads are both enabled, the
+booking status page makes the selected files available after verified capture.
+
+The booking attempt keeps the published revision, amount in integer paise,
+Razorpay mode, and enabled file versions. A stale page needs a fresh review.
+An existing booking can still confirm against its saved price and files after
+the owner updates the page or the provider link expires. The browser and actor
+that started the booking can reopen its status and download the confirmed files
+while that session is available.
+
+Initialize the `campaign_bookings` collection with `./bapXphp db init` before
+opening campaign checkout. Razorpay Standard Payment Links use the configured
+test or live mode. Configure the matching API key pair and webhook secret. Subscribe the
+existing `/api/payments/razorpay-webhook` endpoint to Payment Link events. A signed
+notification triggers a fresh API check of the reference, amount, currency and
+captured payment before the database records a receipt. After a lost provider
+response, status uses the same payment reference for recovery. Booking receipts
+live in `campaign_bookings` and are independent of product orders and tax
+reports.
+[Razorpay Payment Link events](https://razorpay.com/docs/webhooks/payment-links)
 
 The dedicated About route uses the deployment-owned public story descriptor
 in config/about.php and a reusable PHP editorial view, with semantic theme

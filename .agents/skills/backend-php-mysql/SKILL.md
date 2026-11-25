@@ -245,3 +245,15 @@ on a definitive stale or invalid result. Preserve them after an ambiguous
 database acknowledgement so a committed page can still resolve its files.
 Confirm the current published revision and access grant before streaming an
 attachment. Keep names and identifiers out of unauthorized markup.
+
+## Authored campaign booking consistency
+
+Use the database-host campaign booking transaction to read the published page
+revision and freeze the approved integer INR paise, gateway mode, and enabled
+file descriptors. The first durable booking reservation owns provider creation.
+Recover an ambiguous provider response by reference. The shared Razorpay
+webhook verifies its mode-specific signature before checking the provider API.
+Apply captured receipts and frozen paid files in one booking transition.
+Verify that signed duplicates, delayed expiration, and wrong amounts cannot
+overwrite a receipt or create a shop order. Use deterministic provider fixtures
+and the disposable MySQL job.

@@ -30,7 +30,12 @@ $tests['project map shows source inheritance and gateway references without rout
         assertTrue(!preg_match('/service_paymentservice[^\n]*integration_'.$client.'/',$map),'Pure payment verification does not construct '.$client);
         assertTrue(str_contains($map,'controller_commercecontroller -. source new .-> integration_'.$client),'CommerceController has a literal '.$client.' construction');
     }
-    assertTrue(str_contains($map,'service_remotecheckoutservice -. source new .-> integration_razorpayclient'),'Anonymous checkout constructs its actual gateway client');
+    foreach (['remotecheckoutservice','campaignpaymentservice'] as $gatewayConsumer) {
+        assertTrue(str_contains($map,'service_'.$gatewayConsumer.' -. static reference .-> service_razorpaypaymentlinkservice'),
+            'Checkout references the shared provider operations');
+    }
+    assertTrue(str_contains($map,'service_razorpaypaymentlinkservice -. source new .-> integration_razorpayclient'),
+        'Shared provider operations construct the actual Razorpay gateway client');
     assertTrue(!str_contains($map,' -. renders .-> '),'A declared related view must not be presented as proof of rendering');
     assertTrue(str_contains($map,'controller_publicmcpcontroller -. declared related view .-> view_public_mcp_app'),'Related resource templates remain navigable as declared associations');
     assertTrue(str_contains($map,'controller_publiccontroller -. declared related view .-> view_public_shop'),'Redirect-related page associations are labelled without claiming execution');

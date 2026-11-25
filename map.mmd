@@ -14,12 +14,12 @@ flowchart LR
     legend_limits["No execution, autoload or dynamic reachability proof; gaps are inspection candidates"]:::arch
   end
 
-  subgraph ARCH["Architecture Overview — 185 routes, 18 controllers, 90 services, 75 views, 0 data files, 30 tools"]
-    arch_routes["> Routes: 185 (Public + Auth + Payment + Admin + Support)"]:::arch
-    arch_ctrl["> Controllers: 18"]:::arch
-    arch_svc["> Services: 90"]:::arch
-    arch_views["> Views: 75"]:::arch
-    arch_data["> Collections: 24 schema | 0 files"]:::arch
+  subgraph ARCH["Architecture Overview — 188 routes, 19 controllers, 92 services, 76 views, 0 data files, 30 tools"]
+    arch_routes["> Routes: 188 (Public + Auth + Payment + Admin + Support)"]:::arch
+    arch_ctrl["> Controllers: 19"]:::arch
+    arch_svc["> Services: 92"]:::arch
+    arch_views["> Views: 76"]:::arch
+    arch_data["> Collections: 25 schema | 0 files"]:::arch
     arch_tools["> Tools: 30"]:::arch
     arch_gaps["> Gaps: 8"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
@@ -32,6 +32,9 @@ flowchart LR
     route_get_pages_slug["GET /pages/{slug}"]:::route
     route_post_pages_slug_enquiry["POST /pages/{slug}/enquiry"]:::route
     route_get_pages_slug_downloads_revision_id["GET /pages/{slug}/downloads/{revision}/{id}"]:::route
+    route_post_pages_slug_booking["POST /pages/{slug}/booking"]:::route
+    route_get_pages_slug_booking_id["GET /pages/{slug}/booking/{id}"]:::route
+    route_get_pages_slug_booking_id_downloads_file["GET /pages/{slug}/booking/{id}/downloads/{file}"]:::route
     route_get_about["GET /about — About SPS — story, values, CTA"]:::route
     route_get_ai_assistants["GET /ai-assistants"]:::route
     route_get_llms_txt["GET /llms.txt"]:::route
@@ -244,6 +247,7 @@ flowchart LR
     controller_authcontroller["AuthController"]:::code
     controller_basecontroller["BaseController"]:::code
     controller_blogcontroller["BlogController"]:::code
+    controller_campaignbookingcontroller["CampaignBookingController"]:::code
     controller_commercecontroller["CommerceController"]:::code
     controller_consultationcontroller["ConsultationController"]:::code
     controller_publicagentdiscoverycontroller["PublicAgentDiscoveryController"]:::code
@@ -284,6 +288,7 @@ flowchart LR
     service_blogservice["BlogService"]:::code
     service_campaigndownloadservice["CampaignDownloadService"]:::code
     service_campaignleadservice["CampaignLeadService"]:::code
+    service_campaignpaymentservice["CampaignPaymentService"]:::code
     service_cartservice["CartService"]:::code
     service_categoryservice["CategoryService"]:::code
     service_consultationservice["ConsultationService"]:::code
@@ -318,6 +323,7 @@ flowchart LR
     service_publicmcpservice["PublicMcpService"]:::code
     service_publicsiteurlservice["PublicSiteUrlService"]:::code
     service_ratelimiter["RateLimiter"]:::code
+    service_razorpaypaymentlinkservice["RazorpayPaymentLinkService"]:::code
     service_remotecartexception["RemoteCartException"]:::code
     service_remotecartservice["RemoteCartService"]:::code
     service_remotecheckoutservice["RemoteCheckoutService"]:::code
@@ -400,6 +406,7 @@ flowchart LR
     view_public_authored_page["public/authored-page"]:::code
     view_public_blog["public/blog"]:::code
     view_public_blog_post["public/blog-post"]:::code
+    view_public_campaign_booking["public/campaign-booking"]:::code
     view_public_cart["public/cart"]:::code
     view_public_categories["public/categories"]:::code
     view_public_checkout["public/checkout"]:::code
@@ -441,6 +448,7 @@ flowchart LR
     collection_addresses["addresses"]:::data
     collection_agent_carts["agent_carts"]:::data
     collection_checkout_attempts["checkout_attempts"]:::data
+    collection_campaign_bookings["campaign_bookings"]:::data
     collection_products["products"]:::data
     collection_astrologers["astrologers"]:::data
     collection_temples["temples"]:::data
@@ -523,6 +531,7 @@ flowchart LR
   controller_publiccontroller -. declared service .-> service_markdownrenderer
   controller_publiccontroller -. declared service .-> service_campaignleadservice
   controller_publiccontroller -. declared service .-> service_campaigndownloadservice
+  controller_publiccontroller -. declared service .-> service_campaignpaymentservice
   controller_publiccontroller -. declared related view .-> view_public_authored_page
   route_post_pages_slug_enquiry -- registered handler --> controller_publiccontroller
   controller_publiccontroller -. declared service .-> service_authoredpageservice
@@ -535,6 +544,20 @@ flowchart LR
   controller_publiccontroller -. declared service .-> service_authoredpageservice
   controller_publiccontroller -. declared service .-> service_campaigndownloadservice
   controller_publiccontroller -. declared related view .-> view_public_authored_page
+  route_post_pages_slug_booking -- registered handler --> controller_campaignbookingcontroller
+  controller_campaignbookingcontroller -. declared service .-> service_campaignpaymentservice
+  controller_campaignbookingcontroller -. declared service .-> service_authoredpageservice
+  controller_campaignbookingcontroller -. declared service .-> service_databaseservice
+  controller_campaignbookingcontroller -. declared service .-> service_ratelimiter
+  controller_campaignbookingcontroller -. declared related view .-> view_public_campaign_booking
+  route_get_pages_slug_booking_id -- registered handler --> controller_campaignbookingcontroller
+  controller_campaignbookingcontroller -. declared service .-> service_campaignpaymentservice
+  controller_campaignbookingcontroller -. declared service .-> service_razorpaypaymentlinkservice
+  controller_campaignbookingcontroller -. declared related view .-> view_public_campaign_booking
+  route_get_pages_slug_booking_id_downloads_file -- registered handler --> controller_campaignbookingcontroller
+  controller_campaignbookingcontroller -. declared service .-> service_campaignpaymentservice
+  controller_campaignbookingcontroller -. declared service .-> service_campaigndownloadservice
+  controller_campaignbookingcontroller -. declared related view .-> view_public_campaign_booking
   route_get_about -- registered handler --> controller_publiccontroller
   controller_publiccontroller -. declared related view .-> view_public_about
   route_get_ai_assistants -- registered handler --> controller_publiccontroller
@@ -664,6 +687,8 @@ flowchart LR
   controller_remotecheckoutcontroller -. declared related view .-> view_public_agent_payment
   route_post_api_payments_razorpay_webhook -- registered handler --> controller_remotecheckoutcontroller
   controller_remotecheckoutcontroller -. declared service .-> service_remotecheckoutservice
+  controller_remotecheckoutcontroller -. declared service .-> service_campaignpaymentservice
+  controller_remotecheckoutcontroller -. declared service .-> service_razorpaypaymentlinkservice
   controller_remotecheckoutcontroller -. declared service .-> service_paymentservice
   controller_remotecheckoutcontroller -. declared service .-> service_verifiedorderservice
   controller_remotecheckoutcontroller -. declared service .-> service_databaseservice
@@ -1429,6 +1454,7 @@ flowchart LR
   controller_admincontroller -. static reference .-> service_blogdraftservice
   controller_admincontroller -. static reference .-> service_campaigndownloadservice
   controller_admincontroller -. static reference .-> service_campaignleadservice
+  controller_admincontroller -. static reference .-> service_campaignpaymentservice
   controller_admincontroller -. static reference .-> service_enterprisetoolregistry
   controller_admincontroller -. static reference .-> service_gstregisterservice
   controller_admincontroller -. static reference .-> service_mailtemplateservice
@@ -1485,6 +1511,11 @@ flowchart LR
   controller_blogcontroller -. source new .-> service_blogservice
   controller_blogcontroller -- extends --> controller_basecontroller
   controller_blogcontroller -. static reference .-> service_blogservice
+  controller_campaignbookingcontroller -. source new .-> service_campaigndownloadservice
+  controller_campaignbookingcontroller -. source new .-> service_campaignpaymentservice
+  controller_campaignbookingcontroller -. static reference .-> service_authoredpageservice
+  controller_campaignbookingcontroller -. static reference .-> service_campaignpaymentservice
+  controller_campaignbookingcontroller -. static reference .-> service_ratelimiter
   controller_commercecontroller -. source new .-> integration_razorpayclient
   controller_commercecontroller -. source new .-> integration_stripeclient
   controller_commercecontroller -. source new .-> service_addressservice
@@ -1527,6 +1558,7 @@ flowchart LR
   controller_publiccontroller -. static reference .-> service_authoredpageservice
   controller_publiccontroller -. static reference .-> service_campaigndownloadservice
   controller_publiccontroller -. static reference .-> service_campaignleadservice
+  controller_publiccontroller -. static reference .-> service_campaignpaymentservice
   controller_publiccontroller -. static reference .-> service_contactservice
   controller_publiccontroller -. static reference .-> service_publicknowledgeservice
   controller_publiccontroller -. static reference .-> service_ratelimiter
@@ -1622,12 +1654,20 @@ flowchart LR
   service_authoredpageservice -. source new .-> service_markdownrenderer
   service_authoredpageservice -. static reference .-> service_campaigndownloadservice
   service_authoredpageservice -. static reference .-> service_campaignleadservice
+  service_authoredpageservice -. static reference .-> service_campaignpaymentservice
   service_authoredpageservice -. static reference .-> service_mediaservice
   service_blogdraftservice -. source new .-> service_markdownrenderer
   service_blogservice -. source new .-> service_blogconflictexception
   service_blogservice -. source new .-> service_markdownrenderer
   service_blogservice -. static reference .-> service_mediaservice
   service_campaigndownloadservice -. static reference .-> service_authoredpageservice
+  service_campaignpaymentservice -. source new .-> service_databaseservice
+  service_campaignpaymentservice -. source new .-> service_remotecartexception
+  service_campaignpaymentservice -. source new .-> service_secretservice
+  service_campaignpaymentservice -. static reference .-> service_campaigndownloadservice
+  service_campaignpaymentservice -. static reference .-> service_databaseservice
+  service_campaignpaymentservice -. static reference .-> service_razorpaypaymentlinkservice
+  service_campaignpaymentservice -. static reference .-> service_remotecheckoutservice
   service_cartservice -. source new .-> service_productservice
   service_categoryservice -. source new .-> service_databaseservice
   service_consultationservice -. source new .-> service_databaseservice
@@ -1643,6 +1683,7 @@ flowchart LR
   service_databaseservice -. source new .-> service_taxservice
   service_databaseservice -. static reference .-> service_authoredpageservice
   service_databaseservice -. static reference .-> service_campaignleadservice
+  service_databaseservice -. static reference .-> service_campaignpaymentservice
   service_databaseservice -. static reference .-> service_contactservice
   service_databaseservice -. static reference .-> service_mailqueueservice
   service_databaseservice -. static reference .-> service_mediaservice
@@ -1714,6 +1755,8 @@ flowchart LR
   service_publicmcpservice -. static reference .-> service_remotecartservice
   service_publicmcpservice -. static reference .-> service_remotecheckoutservice
   service_publicmcpservice -. static reference .-> service_taxservice
+  service_razorpaypaymentlinkservice -. source new .-> integration_razorpayclient
+  service_razorpaypaymentlinkservice -. static reference .-> service_paymentservice
   service_remotecartservice -. source new .-> service_databaseservice
   service_remotecartservice -. source new .-> service_productservice
   service_remotecartservice -. source new .-> service_publicknowledgeservice
@@ -1723,7 +1766,7 @@ flowchart LR
   service_remotecartservice -. static reference .-> service_publicknowledgeservice
   service_remotecartservice -. static reference .-> service_publicsiteurlservice
   service_remotecartservice -. static reference .-> service_remotecheckoutservice
-  service_remotecheckoutservice -. source new .-> integration_razorpayclient
+  service_remotecheckoutservice -. source new .-> service_campaignpaymentservice
   service_remotecheckoutservice -. source new .-> service_cartservice
   service_remotecheckoutservice -. source new .-> service_couponservice
   service_remotecheckoutservice -. source new .-> service_databaseservice
@@ -1736,8 +1779,8 @@ flowchart LR
   service_remotecheckoutservice -. source new .-> service_verifiedorderservice
   service_remotecheckoutservice -. static reference .-> service_authservice
   service_remotecheckoutservice -. static reference .-> service_cartservice
-  service_remotecheckoutservice -. static reference .-> service_paymentservice
   service_remotecheckoutservice -. static reference .-> service_publicsiteurlservice
+  service_remotecheckoutservice -. static reference .-> service_razorpaypaymentlinkservice
   service_remotecheckoutservice -. static reference .-> service_remotecartservice
   service_remotecheckoutservice -. static reference .-> service_taxservice
   service_remotecheckoutstateservice -. source new .-> service_remotecartexception
@@ -1853,9 +1896,12 @@ flowchart LR
   service_databaseservice -. collection reference .-> collection_contact_submissions
   service_databaseservice -. collection reference .-> collection_agent_carts
   service_databaseservice -. collection reference .-> collection_checkout_attempts
+  service_databaseservice -. collection reference .-> collection_campaign_bookings
   service_remotecartservice -. collection reference .-> collection_agent_carts
   service_remotecheckoutservice -. collection reference .-> collection_agent_carts
   service_remotecheckoutservice -. collection reference .-> collection_checkout_attempts
+  service_campaignpaymentservice -. collection reference .-> collection_settings
+  service_campaignpaymentservice -. collection reference .-> collection_campaign_bookings
   service_verifiedorderservice -. collection reference .-> collection_orders
   tool_generate_project_map --> systematic_map["docs/systematic-map.mmd"]:::data
   tool_validate_project_map --> systematic_map
