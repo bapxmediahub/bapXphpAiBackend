@@ -219,3 +219,61 @@ try { $pages->delete('guide', $deletedRevision); throw new RuntimeException('Old
 catch (DomainException) {}
 check($pages->find('guide') !== null, 'A new page at the same address has independent revision identity');
 echo "PASS authored page creation, collision, publication, public exclusions, and stale revisions.\n";
+
+foreach (['contact_submissions','mail_inbox'] as $table) {
+    $pdo->exec("CREATE TEMPORARY TABLE $table (id VARCHAR(64) PRIMARY KEY, _data JSON NOT NULL,
+        _owner VARCHAR(100), _status VARCHAR(64), _created_at DATETIME, _updated_at DATETIME) ENGINE=InnoDB");
+}
+$leadInput = array_replace($initial, ['slug'=>'campaign', 'campaign_form'=>[
+    ['id'=>'detail_2', 'type'=>'text', 'label'=>'Question', 'required'=>true],
+]]);
+$pages->save($leadInput);
+$draft = $pages->find('campaign');
+$leadId = 'lead_'.str_repeat('a', 24);
+$answers = ['name'=>'Fixture visitor', 'email'=>'fixture@example.invalid', 'detail_2'=>'First answer'];
+check($store->saveCampaignLead($leadId, 'campaign', $draft['revision'], $answers) === 'stale', 'Drafts cannot receive public enquiries');
+$pages->save(array_replace($leadInput, ['status'=>'published', 'expected_revision'=>$draft['revision']]));
+$published = $pages->findPublic('campaign');
+$revision = $published['revision'];
+check($store->saveCampaignLead($leadId, 'campaign', $revision, $answers + ['detail_1'=>'Forged field']) === 'invalid',
+    'The database host rejects forged fields against the locked published definition');
+check($store->find('contact_submissions', $leadId) === null && $store->find('mail_inbox', 'in_'.$leadId) === null,
+    'Neither projection exists after an invalid enquiry');
+check($store->saveCampaignLead($leadId, 'campaign', $revision, $answers) === 'received', 'A published campaign accepts validated contact answers');
+$contact = $store->find('contact_submissions', $leadId);
+$inbox = $store->find('mail_inbox', 'in_'.$leadId);
+check($contact['name'] === 'Fixture visitor' && $contact['email'] === 'fixture@example.invalid', 'Contacts retain basic identity');
+foreach (['contact_submissions'=>$leadId, 'mail_inbox'=>'in_'.$leadId] as $table=>$id) {
+    $timestamps = $store->query("SELECT _created_at, _updated_at FROM $table WHERE id = ?", [$id])[0];
+    check(strtotime($timestamps['_created_at']) > 0 && $timestamps['_created_at'] === $timestamps['_updated_at'],
+        'The database stores valid creation and update times on both records');
+}
+check($inbox['source_id'] === $leadId && $inbox['from_email'] === $contact['email'], 'Inbox retains the existing contact source contract');
+check($contact['campaign_slug'] === 'campaign' && $inbox['campaign_slug'] === 'campaign'
+    && $contact['campaign_revision'] === $revision && $inbox['campaign_revision'] === $revision,
+    'Both owner records retain bounded publication provenance');
+$store->upsert('mail_inbox', ['id'=>'in_'.$leadId, 'status'=>'read']);
+check($store->saveCampaignLead($leadId, 'campaign', $revision, array_replace($answers, ['detail_2'=>'Changed on retry'])) === 'received',
+    'Retry acknowledges the original receipt');
+check($store->find('contact_submissions', $leadId) === $contact && $store->find('mail_inbox', 'in_'.$leadId)['status'] === 'read',
+    'Retry does not replace answers or reset Inbox state');
+$store->delete('contact_submissions', $leadId);
+check($store->saveCampaignLead($leadId, 'campaign', $revision, $answers) === 'received'
+    && $store->find('contact_submissions', $leadId) === null, 'A retained Inbox receipt prevents replay after owner deletion');
+
+// A disposable replacement missing the status column forces the Inbox write to fail.
+$pdo->exec('DROP TEMPORARY TABLE mail_inbox');
+$pdo->exec('CREATE TEMPORARY TABLE mail_inbox (id VARCHAR(64) PRIMARY KEY, _data JSON NOT NULL,
+    _owner VARCHAR(100), _created_at DATETIME, _updated_at DATETIME) ENGINE=InnoDB');
+$failedLeadId = 'lead_'.str_repeat('b', 24);
+try {
+    $store->saveCampaignLead($failedLeadId, 'campaign', $revision, $answers);
+    throw new RuntimeException('Expected the isolated Inbox projection write to fail');
+} catch (PDOException) {}
+check($store->find('contact_submissions', $failedLeadId) === null && $store->find('mail_inbox', 'in_'.$failedLeadId) === null,
+    'A rejected Inbox write rolls back its contact');
+
+$pages->save(array_replace($leadInput, ['status'=>'published', 'expected_revision'=>$revision, 'campaign_form'=>[]]));
+check($store->saveCampaignLead($failedLeadId, 'campaign', $revision, $answers) === 'stale', 'An amended field definition invalidates outstanding submissions');
+check(count($store->read('mail_queue')) === count($queueRecords), 'Campaign admissions do not enqueue messages');
+echo "PASS campaign lead validation, exact revision, atomic Contact and Inbox, replay protection, and no email.\n";

@@ -1282,8 +1282,12 @@ final class AdminController extends BaseController {
         foreach (['title','slug','status','content','original_slug','expected_revision','header_image_url','header_image_alt'] as $name) {
             $form[$name] = is_string($_POST[$name] ?? null) ? $_POST[$name] : '';
         }
+        $form['campaign_enabled'] = $_POST['campaign_enabled'] ?? null;
+        $form['campaign_fields'] = $_POST['campaign_fields'] ?? [];
         $preview = $error = null;
         try {
+            $form['campaign_form'] = \App\Services\CampaignLeadService::fromEditor(
+                $form['campaign_enabled'], $form['campaign_fields']);
             foreach (['header_image_url', 'header_image_alt'] as $field) {
                 if (isset($_POST[$field]) && !is_string($_POST[$field])) {
                     throw new \InvalidArgumentException('Choose a header image and plain alternative text.');

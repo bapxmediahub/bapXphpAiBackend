@@ -4,48 +4,48 @@
     "reviews": {
         "agents": {
             "source_sha256": "160120446ef0d740a9f76c3a65d2459efbe35fc9d1c263ab61530ea0a9d7f7a0",
-            "references_sha256": "922ac380f9c09674d66cf45663822d448babf8298de57437e723121727beb7cd",
-            "review_note": "Compared the owner Chat and Monitoring layouts with the active scoped tool and trace guidance. Authored header validation and the upload lock remain in the developer backend guidance and existing PHP content boundary."
+            "references_sha256": "fb177fc551cf4a99f5f0779433c7c0cebf8fb9fc7408c583783f8290b83d6432",
+            "review_note": "Reviewed the updated developer persistence skill and generated tool reference against the customer and owner runtime agents; neither tool allowlist receives campaign answers or mutation access."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
-            "references_sha256": "54af9d4d2d11ada9af9ae5548b5b4b639b47b8226d6dd67ad5d40dad20fba125",
-            "review_note": "Verified the authored header controls remain on the existing owner admin GET and CSRF-guarded POST, with published-only guest content. The backend guidance retains the existing role and account isolation described in authentication docs."
+            "references_sha256": "e2412f540c3fe005a6d79e12514470e938b31a1718ba341ee6ddc2c1c28c8b43",
+            "review_note": "Checked campaign CSRF, session-bound submission token and owner Inbox authorization against existing login/account policy, including guest and customer access checks."
         },
         "commerce": {
             "source_sha256": "4d8f53718f4495182ccef03d41eacb3da729dbe5ff1b5db5b54cbfd88957749e",
-            "references_sha256": "c954dba2a6dbbaac3a7592de46f23b2ed712d3027a5c1e3a1f47586e65f6d611",
-            "review_note": "Reviewed the authored-page data section added to the backend skill alongside catalogue, orders and tax references. The new optional settings fields and upload row lock apply to authored headers, leaving the documented commerce record and payment flows intact."
+            "references_sha256": "079ae8d53b0448564cbc5195d8cfda515ef03890b278632a54ae868c15447db0",
+            "review_note": "Reviewed the campaign additions against the order and catalogue contracts; campaign validation and owner CRM records do not enter commerce order, checkout or revenue processing."
         },
         "content": {
-            "source_sha256": "4021501cfcb3e4cbf7281930adea01bcce723c21a72921c5c818b9fb7a355a39",
-            "references_sha256": "a8450a9fc7c2dad537751ddb4f97f410bf3abb1249ae209153e0e98cf56a001a",
-            "review_note": "Checked the shared authored page PHP template, bounded header attributes, Markdown renderer and revision checks against the content guide and linked server-rendering reference. Drafts retain the existing publication gate and text-only records remain valid."
+            "source_sha256": "f5828a98597000e5012e0fe8ec662c42c79cdf4822c2df80afc44f7d9c301618",
+            "references_sha256": "5fa5744fab349197760618e9289cd978941770f2a90ca8152ac4d4f2970f7375",
+            "review_note": "Reviewed authored page revision validation, fixed slots, PHP preview and real HTTP route together with browser recovery and owner publication guidance."
         },
         "foundation": {
-            "source_sha256": "63ad590d37c769c3d39753bd4f149ca77985c01d32c569900f0cb57208c2b61b",
-            "references_sha256": "185f906cb2170ba47183425b0a3da23b534d6bebc5d299297d18d16da548df4b",
-            "review_note": "Compared the owner title and role-gated layout with the rendering boundary. The authored page attaches an owned upload under the normal settings revision through direct PDO and the authenticated remote transport."
+            "source_sha256": "3a8cb6a86d557809d6992a449a28aae3b86e2e805631e3998a848c4f7385b7c2",
+            "references_sha256": "d662c82d5107cfdb842c2481427c6e4cf8c57154ff87dbc37b0ef533adc45622",
+            "review_note": "Reviewed schema, database-host transaction and safe transport boundary; Contact and Inbox remain hosted MySQL records while admission keeps existing private hashed state."
         },
         "google-tags": {
             "source_sha256": "47986bb64b609894dcba3d76df180c51043c20441d2e1ca1f99c3f37fc68c4a8",
-            "references_sha256": "f97f8bd08a0edd6ee125c583e1dbadbc000f3c422b469875bb4f718abf3d8191",
-            "review_note": "Checked both layout diffs against public tag and owner reporting guidance. The document CSS moved to the shared sheet and the adjusted owner title keeps the existing Google setup and displayed reporting states."
+            "references_sha256": "ff26c92aaada1fc91c37e7bd793baa4307a33127f3ac97e61312da912c76dbfc",
+            "review_note": "Cross-checked the frontend skill addition against the existing reporting and public integration contracts; campaign feedback uses the authored form and introduces no tagging fields or requests."
         },
         "http-errors": {
             "source_sha256": "63602cadbe59868b0d25a1b00729a589e75d1b31c6ea3a1b25c1e5a46fd06d50",
-            "references_sha256": "0328e92ddba3b69d790e8c4c69158891f80a8888b510be88c4a855ef9f4c609b",
-            "review_note": "Compared the admin heading selection and authored page validation with canonical error rendering. Header eligibility failures remain expected owner form feedback, and transport and handler failures retain sanitized status and correlation behavior."
+            "references_sha256": "f5a7e88a8eb384a858c816522ae302bcdf67c8d8917ae1e887bacfbd6637c8c5",
+            "review_note": "Checked the native enquiry route failure handling against the HTTP response guard; unavailable writes are presented on-page and the campaign path logs a generic outcome."
         },
         "interface": {
-            "source_sha256": "6463a197e81b69bbe30ba1280f462636531db4e967a822df6a5e7658948758eb",
-            "references_sha256": "f72e8ed85a6ee3a564c9c82bda162cce8505d3703d34a17256d3ef1ac62b28bf",
-            "review_note": "Matched the merged owner navigation, directory and ticket layout to Design and the admin skill. The compiled styles retain the scoped native Pages picker and reading surface used by both preview and publication."
+            "source_sha256": "dd11560e1b247c591241c2c4c6b0c0220c060ae2a23b78febae3bb86e6f12bb5",
+            "references_sha256": "6df8a67178c9fbec7ab7b6e6f78e09b4f2921759494e9a546f3d3aefbfb40dc5",
+            "review_note": "Compared mobile field order, native controls and feedback focus, admin preview, draft recovery and owner Inbox details with the canonical design and frontend/admin skills."
         },
         "mail": {
-            "source_sha256": "ad37670c884849d8d45db4a66b868a062a9ac91415897e32424f6b361e90c529",
-            "references_sha256": "d4dbc02c5a391de33b25b183a057d6f6c84d8cabacd508b79e5ac2b389875f41",
-            "review_note": "Reviewed the AdminController additions against mail and audit contracts. Page preview shows unsaved content and the header upload uses the existing owner media endpoint and its audit; mail queue and recipient selection continue through their existing controllers."
+            "source_sha256": "ed872a42554c8475d036fe00487332d240ef89da8cbe88fda940d164ec8e7407",
+            "references_sha256": "b1e04cedcc7e8a69e2df75ace16c7c08801fd8929d66ad6436b5cf4ca0f3ffa9",
+            "review_note": "Compared actual Contact and Inbox projection, source metadata, duplicate receipt and zero automatic queue writes with public enquiry containment and the owner Inbox guide."
         },
         "mcp-clients": {
             "source_sha256": "38828d52259fbd6b6555d790e463ff775e79be85872a5d5b5aea78e599fba3ac",
@@ -54,23 +54,23 @@
         },
         "media": {
             "source_sha256": "edc32a5a9f73cf7f2954eac135a2eaed1394089034bac24ea835af48c4d9600e",
-            "references_sha256": "c746cd47dd5256ab8d85e0abfc75bf1d199b06662523c0ac1a5875837c17d459",
-            "review_note": "Reviewed the owner UI guidance and authored-page picker alongside existing Media Library edit, confirm and quarantine behavior. A page attachment and metadata removal coordinate through the same upload row lock."
+            "references_sha256": "d7d3b0233cd2e30aa1a24d8fd5e82def1bf89d4b55443eeef62b86eb4351fab4",
+            "review_note": "Checked admin skill changes against current header picker and stored upload contract; campaign form options stay with the page revision and create no media references."
         },
         "operator-help": {
-            "source_sha256": "3bf7c327883bc86527ae059bc57c6178d3784ad3be61768be6511a34860ed560",
-            "references_sha256": "b40d736d67c3ef3e7cdb0233206eae42c6f0d05d0ed8e07932a86193d9a4eef6",
-            "review_note": "Checked the merged Pages controls, public reading preview and published content workflow against the operator guide. Owner drawer, ticket controls and scoped Enterprise prompts retain the independent guidance added on main."
+            "source_sha256": "aa89836cb1ebf48fc2262c37b3ff4defc2be47305706e7a4130a8fa86b7ebf81",
+            "references_sha256": "4f54dbe281f40d6b79edc0ccbaa2fe6fe939c8e79e3bf105c5b1783f55d102ed",
+            "review_note": "Compared Pages settings, disabled draft preview, browser restore and Inbox campaign details with the publishing and email operator guides and their source references."
         },
         "public-mcp": {
-            "source_sha256": "d9f31c99f6a3ed60e514698bb1d62d0bbf611a33ed1588e7c0f1dc8023cf2cc5",
-            "references_sha256": "49f145b54368e95240f2bfe5b347b3b18ac1b2b09931a252aaf9f69d8ffc5d31",
-            "review_note": "Checked the project route declaration change against the fixed public MCP registry and discovery documentation. The MediaService associations apply only to the existing owner page editor and save route."
+            "source_sha256": "84520963295097fbbd9b17609489d3c0fcbc9b4b2a347559fcc16f2b9198d43b",
+            "references_sha256": "dffe6c3f2848c483be1141280dc7fdaeace1304acd45927a3468fbb23dc45a33",
+            "review_note": "Checked route inventories and PHP developer instructions against the public MCP allowlist; campaign POST and owner records have no MCP capability or discovery exposure."
         },
         "remote-commerce": {
-            "source_sha256": "b6261908d13966fc317c847e56e6f54194c493f56e1f609a19b658de5e09b65e",
-            "references_sha256": "5276f42ec317eeb8a204ca3e647297b2629d8d051e1cff7f111229172e4cd504",
-            "review_note": "Reviewed the merged authenticated database and public layout dependencies against the checkout and Support references. Header attachment applies to page settings and owned media while the existing native payment and quote flows remain intact."
+            "source_sha256": "17d88f338244a814318d09e52f63b611a9de50ff7b59b5861b17e2c0f5d387ea",
+            "references_sha256": "22d8667e58cbf8badddcdfe74a61bb1938c6b62c32d76ecede85dc9e172366d2",
+            "review_note": "Reviewed the separately scoped campaign mutation on the database host, held-contact boundaries and schema fields; verified the documented checkout mutation contract remains accurate."
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",
@@ -78,9 +78,9 @@
             "review_note": "Compared the MediaService additions with the Merchant Feed and product image inspection contracts. Header choices are filtered only for the owner authored editor, and catalogue image eligibility and feed URLs retain their existing resolution."
         },
         "workflow": {
-            "source_sha256": "81570d1d11848a8ca5e05ca61abc4c8d0ac11978756d1b13790a24a0a407c720",
+            "source_sha256": "53ef150e70f1394c5f35fc671af1df54f66bc5317985c6b0b90d68ae6dc192b8",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Cross-checked owner drawer and table browser guidance and authored content verification in the merged skills, and regenerated the project index from the combined sources."
+            "review_note": "Checked source-first documentation areas, current schema and generated route maps, and verified the new campaign HTTP and Chromium checks are wired into existing CI."
         }
     }
 }

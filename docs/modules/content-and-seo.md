@@ -167,6 +167,23 @@ the page clears or replaces that image. Media Library image URLs serve the
 uploaded assets while the authored page and its unsaved preview remain under
 their existing publication and owner access rules.
 
+**Enquiry form** adds a native form after the Markdown. Name and email are
+required. The owner can add up to three fields with fixed slot IDs, choose short
+text, long text or phone number, and mark each included field required.
+An enabled form with no additional fields collects only name and email. A page
+without a saved form keeps its original article. Owner preview shows the
+current draft fields with disabled inputs.
+
+The published page and its form share a revision. Each rendered form has a
+session-bound submission token valid for 30 minutes. The server checks CSRF,
+the publication revision, and the configured fields before applying the
+shared public contact admission limits. A revised form asks the visitor to
+review the current fields. A withdrawn page no longer accepts enquiries.
+Successful submissions create a Contact and its Inbox entry together under
+one receipt ID. The records keep the campaign slug and exact revision.
+Repeating an accepted submission preserves the existing receipt. Raw answers
+stay in the owner records. The public acknowledgement does not enqueue email.
+
 The dedicated About route uses the deployment-owned public story descriptor
 in config/about.php and a reusable PHP editorial view, with semantic theme
 tokens, approved image dimensions, and existing contact and module services.

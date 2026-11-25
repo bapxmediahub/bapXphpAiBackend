@@ -46,18 +46,18 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 502
-  relationships: 451
+  concepts: 504
+  relationships: 457
   by_type:
     blog: 16
     controller: 18
     doc: 55
     image: 89
     operator_guide: 12
-    route: 182
+    route: 183
     runtime_instruction: 6
     schema: 24
-    service: 88
+    service: 89
     skill: 12
 concepts:
   - id: "blog:benefits-of-rudraksha"
@@ -3665,6 +3665,7 @@ concepts:
     services:
       - "AuthoredPageService"
       - "MarkdownRenderer"
+      - "CampaignLeadService"
     view: "public/authored-page"
     response: null
     provenance: "route_registry"
@@ -4720,6 +4721,7 @@ concepts:
     controller: "AdminController@saveAuthoredPage"
     services:
       - "AuthoredPageService"
+      - "CampaignLeadService"
       - "MediaService"
       - "AuditLogService"
       - "AuthService"
@@ -5116,6 +5118,25 @@ concepts:
     services:
       - "DatabaseService"
     view: "public/login"
+    response: null
+    provenance: "route_registry"
+  - id: "route:post__pages__slug__enquiry"
+    type: "route"
+    title: "POST /pages/{slug}/enquiry"
+    description: "pages.enquiry"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "POST"
+    path: "/pages/{slug}/enquiry"
+    controller: "PublicController@campaignEnquiry"
+    services:
+      - "AuthoredPageService"
+      - "CampaignLeadService"
+      - "ContactService"
+      - "RateLimiter"
+    view: "public/authored-page"
     response: null
     provenance: "route_registry"
   - id: "route:post__payment_verify"
@@ -5772,6 +5793,14 @@ concepts:
     title: "BlogService"
     description: "Service: BlogService"
     resource: "app/Services/BlogService.php"
+    tags:
+      - "code"
+      - "service"
+  - id: "service:CampaignLeadService"
+    type: "service"
+    title: "CampaignLeadService"
+    description: "Service: CampaignLeadService"
+    resource: "app/Services/CampaignLeadService.php"
     tags:
       - "code"
       - "service"
@@ -6441,6 +6470,9 @@ relationships:
     to: "service:BlogService"
     relation: "declared_service"
   - from: "controller:AdminController"
+    to: "service:CampaignLeadService"
+    relation: "declared_service"
+  - from: "controller:AdminController"
     to: "service:CategoryService"
     relation: "declared_service"
   - from: "controller:AdminController"
@@ -6669,6 +6701,9 @@ relationships:
     to: "service:BlogService"
     relation: "declared_service"
   - from: "controller:PublicController"
+    to: "service:CampaignLeadService"
+    relation: "declared_service"
+  - from: "controller:PublicController"
     to: "service:CartService"
     relation: "declared_service"
   - from: "controller:PublicController"
@@ -6876,6 +6911,9 @@ relationships:
     to: "service:BlogService"
     relation: "explains"
   - from: "operator_guide:blog-publishing"
+    to: "service:CampaignLeadService"
+    relation: "explains"
+  - from: "operator_guide:blog-publishing"
     to: "service:AdminHelpService"
     relation: "rendered_by"
   - from: "operator_guide:catalogue"
@@ -6910,6 +6948,9 @@ relationships:
     relation: "explains"
   - from: "operator_guide:email"
     to: "service:MailQueueService"
+    relation: "explains"
+  - from: "operator_guide:email"
+    to: "service:MailStorageService"
     relation: "explains"
   - from: "operator_guide:email"
     to: "service:MailTemplateService"
@@ -7523,6 +7564,9 @@ relationships:
   - from: "route:post__login"
     to: "controller:AuthController"
     relation: "handled_by"
+  - from: "route:post__pages__slug__enquiry"
+    to: "controller:PublicController"
+    relation: "handled_by"
   - from: "route:post__payment_verify"
     to: "controller:CommerceController"
     relation: "handled_by"
@@ -7588,6 +7632,9 @@ relationships:
     relation: "collection_reference"
   - from: "service:ContactService"
     to: "schema:contact_submissions"
+    relation: "collection_reference"
+  - from: "service:ContactService"
+    to: "schema:mail_inbox"
     relation: "collection_reference"
   - from: "service:CouponService"
     to: "schema:coupons"

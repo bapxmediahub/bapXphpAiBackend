@@ -776,6 +776,65 @@ final class DatabaseService {
         return $query->rowCount() === 1;
     }
 
+    /** Store a validated campaign contact and its Inbox projection together on the DB host. */
+    public function saveCampaignLead(string $id, string $slug, string $revision, array $answers): string {
+        if (!preg_match('/^lead_[a-f0-9]{24}$/D', $id) || !AuthoredPageService::validSlug($slug)
+            || !AuthoredPageService::validRevision($revision)) {
+            throw new \InvalidArgumentException('Invalid campaign submission identity.');
+        }
+        if ($this->isTestMode()) throw new \LogicException('Campaign leads require an isolated database.');
+        if ($this->isRemote()) {
+            $result = $this->remoteMutation('save_campaign_lead', 'contact_submissions', compact('id','slug','revision','answers'));
+            $outcome = $result['outcome'] ?? null;
+            if (!in_array($outcome, ['received','stale','invalid'], true)) {
+                throw new \RuntimeException('Campaign submission was not confirmed.');
+            }
+            return $outcome;
+        }
+
+        $pdo = $this->db();
+        $pdo->beginTransaction();
+        try {
+            // A concurrent editor must not replace or withdraw the definition during an accepted lead write.
+            $rows = $this->query('SELECT _data FROM settings WHERE id = ? FOR UPDATE', ['pg:'.$slug]);
+            $page = $rows === [] ? [] : json_decode($rows[0]['_data'], true, flags: JSON_THROW_ON_ERROR);
+            $definition = CampaignLeadService::pageDefinition($page);
+            if (($page['slug'] ?? null) !== $slug || ($page['revision'] ?? null) !== $revision
+                || ($page['status'] ?? null) !== 'published' || $definition === null) {
+                $pdo->rollBack();
+                return 'stale';
+            }
+
+            // A retained Inbox receipt also prevents a replay after owner deletion from Contacts.
+            $contacts = new ContactService($this);
+            if ($contacts->hasCampaignReceipt($id, $slug, $revision)) {
+                $pdo->commit();
+                return 'received';
+            }
+
+            $validation = CampaignLeadService::validate($definition, $answers);
+            if ($validation['errors']) {
+                $pdo->rollBack();
+                return 'invalid';
+            }
+            $contact = CampaignLeadService::contactRecord($id, $slug, $revision, $definition, $validation['values']);
+            if (ContactService::validationErrors($contact, ['Campaign enquiry'=>'Campaign enquiry'])) {
+                $pdo->rollBack();
+                return 'invalid';
+            }
+            if ($this->insertIfAbsent('contact_submissions', $contact)['inserted']) {
+                (new MailStorageService($this))->recordInboxFromContact($contact);
+            } elseif (!$contacts->hasCampaignReceipt($id, $slug, $revision)) {
+                throw new \RuntimeException('Campaign submission was not confirmed.');
+            }
+            $pdo->commit();
+            return 'received';
+        } catch (\Throwable $error) {
+            if ($pdo->inTransaction()) $pdo->rollBack();
+            throw $error;
+        }
+    }
+
     /** A single settings record owns public header order, independently of the general settings forms. */
     public function saveHeaderMenu(array $items, int $revision): bool {
         SettingsService::validateMenuItems($items);

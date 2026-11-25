@@ -4480,3 +4480,56 @@ body { background: var(--color-bg); }
 @media (max-width: 743px) {
     .authored-page__title { font-size: 1.65rem; }
 }
+
+.campaign-form-settings,
+.campaign-form-settings__field {
+    display: grid;
+    gap: var(--space-xs);
+    min-width: 0;
+    margin: var(--space-md) 0;
+    padding: var(--space-md);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-md);
+}
+.campaign-form-settings__field { margin: 0; }
+.campaign-form-settings legend { padding-inline: 4px; font-weight: 700; }
+.campaign-form-settings p { margin: 0 0 var(--space-xs); color: var(--color-text-muted); }
+.campaign-form-settings .campaign-form-settings__checkbox {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-xs);
+    min-height: 44px;
+    font-size: .875rem;
+    letter-spacing: normal;
+    text-transform: none;
+}
+.campaign-form-settings__checkbox input { flex: none; accent-color: var(--color-maroon); }
+
+.campaign-enquiry {
+    min-width: 0;
+    margin-block-start: var(--space-xl);
+    background: var(--color-bg-alt);
+    overflow-wrap: anywhere;
+}
+.campaign-enquiry .campaign-enquiry__title { margin: 0 0 var(--space-sm); color: var(--color-maroon); font: 700 1.25rem/1.3 var(--font-main); }
+.campaign-enquiry p { margin-block: 0 var(--space-sm); }
+.campaign-enquiry__fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-md);
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+.campaign-enquiry__field--wide,
+.campaign-enquiry__submit { grid-column: 1 / -1; }
+.campaign-enquiry :is(a, input, textarea, button):focus-visible,
+.campaign-enquiry:focus { outline: 2px solid var(--color-maroon); outline-offset: 2px; }
+.campaign-enquiry__field .error { color: var(--color-error); }
+.campaign-enquiry__optional { font-weight: 400; }
+@media (max-width: 743px) {
+    .campaign-enquiry__fields { grid-template-columns: minmax(0, 1fr); }
+    .campaign-enquiry .campaign-enquiry__submit { justify-self: stretch; }
+}

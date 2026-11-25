@@ -67,6 +67,13 @@ contact options in the Public Site Profile, users can use them when the form
 is limited. Public contact fields are independent of SMTP configuration. These limits are a containment measure,
 not proof of human identity or spam classification.
 
+Published campaign enquiry forms share these admission budgets. A validated
+campaign submission stores the contact and Inbox entry together, with the page
+slug and exact publication revision. A repeat of an accepted submission
+acknowledges the existing receipt. Owners can expand **Campaign** to inspect
+its revision and **Read enquiry** to see the full text. Campaign admission
+creates no email queue row.
+
 Existing pending contact and legacy appointment automation is excluded from
 worker selection and cannot acquire a database-host delivery claim. Outbox
 shows the held subset separately from eligible due messages. Historical rows,
