@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "3c6e1cb910ca0d8ad6ca0e30e7c295bb08df0df79ff147624fc80603a23a8525",
+            "source_sha256": "0cfdd2d4b867020f3a7733093f3ac152b9f97292fae0bc21025fc73cbee96de9",
             "references_sha256": "57f1008d0d400462339e81b0bda1b2f023ddbf86826b0eabd0c0c1da4d91bc83",
-            "review_note": "Reviewed the reconciled PHP endpoint and monitoring declarations alongside runtime and observability docs. Agent Monitor retains its sanitized provider, tool and answer-quality evidence as the commerce actions move to Dashboard."
+            "review_note": "Checked the direct OpenAI Luna tool-call setting and JSON list and finish validation in AiClient against the runtime and Integrations guides. Reviewed the separate Support and Enterprise provider, tool and feedback evidence in Agent Monitoring."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -29,8 +29,8 @@
         },
         "google-tags": {
             "source_sha256": "4834fd90479519dba801e19dbd3c1e434d62cf7cb6a4915eed9905f1c21bb8b5",
-            "references_sha256": "9789624757ffb0db61f3558073a31f66a1941a6cea7f7aa4af76da35c88df7dd",
-            "review_note": "Reviewed Google reporting and PageSpeed destinations alongside the reconciled Integrations help. The new Site analytics path keeps authorization, connection states, and dashboard periods as documented."
+            "references_sha256": "ac5f69a9cfd73428a1702be69cd944a1ee4f8ed3211c040ed755356134044065",
+            "review_note": "Checked the dashboard and Site analytics links against the Google reporting and PageSpeed guides. The views expose the existing connection, data window and unavailable states, and the Luna example applies to the separate AI connection."
         },
         "http-errors": {
             "source_sha256": "63602cadbe59868b0d25a1b00729a589e75d1b31c6ea3a1b25c1e5a46fd06d50",
@@ -49,8 +49,8 @@
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
-            "references_sha256": "4274d502f7d2500a1a88e8dbb5d2626a6930d3b01197a0698083f41c03981144",
-            "review_note": "Reviewed the merged Integrations page references against the MCP client guide and approved route inventory. Display-group changes are owner navigation and preserve the client capability and config instructions."
+            "references_sha256": "73c4e7ed550ac139d52f0e560ab34a74738e8f4aa2ae6fc87c9e635c9dcd4d43",
+            "review_note": "Checked the merged Integrations guide against the local MCP client controller and form. The owner issues and revokes a paid-sales grant, and the trusted STDIO client receives it through its process environment."
         },
         "media": {
             "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
