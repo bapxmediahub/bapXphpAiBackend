@@ -96,5 +96,37 @@ $campaignWithdrawn = $campaignDefinition === null && isset($campaignErrors['form
                 <?php endif; ?>
             </section>
         <?php endif; ?>
+        <?php
+        $downloadManifest = \App\Services\CampaignDownloadService::manifest($page);
+        if (($downloadManifest['enabled'] ?? false) && $downloadManifest['files']):
+        ?>
+            <section id="campaign-downloads" class="contact-form-card campaign-downloads" aria-labelledby="campaign-downloads-title">
+                <?php if ($authoredPreview): ?>
+                    <h4 id="campaign-downloads-title">Downloads</h4>
+                <?php else: ?>
+                    <h2 id="campaign-downloads-title">Downloads</h2>
+                <?php endif; ?>
+                <?php if ($authoredPreview || !empty($campaignDownloadAccess)): ?>
+                    <ul>
+                        <?php foreach ($downloadManifest['files'] as $download): ?>
+                            <li>
+                                <?php if ($authoredPreview): ?>
+                                    <span class="campaign-download__name"><?= e($download['name']) ?></span>
+                                <?php else: ?>
+                                    <a class="campaign-download__name" href="/pages/<?= e($page['slug']) ?>/downloads/<?= e($page['revision']) ?>/<?= e($download['id']) ?>"><?= e($download['name']) ?></a>
+                                <?php endif; ?>
+                                <span class="campaign-download__size"><?= e(number_format($download['bytes'])) ?> bytes</span>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                    <?php if ($authoredPreview): ?><p>Download links appear on the published page when access is available.</p><?php endif; ?>
+                <?php elseif ($campaignDefinition !== null): ?>
+                    <p>Send an enquiry to unlock the downloads.</p>
+                    <a class="btn btn-outline" href="#campaign-enquiry">Go to enquiry form</a>
+                <?php else: ?>
+                    <p>Downloads are currently unavailable.</p>
+                <?php endif; ?>
+            </section>
+        <?php endif; ?>
     </div>
 </section>

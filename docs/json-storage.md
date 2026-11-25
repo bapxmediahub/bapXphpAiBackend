@@ -37,6 +37,12 @@ directory.
 - Product/media binaries: bundled `assets/images/` or persistent uploaded
   `.sps-media` next to the deployed checkout. Upload metadata remains MySQL
   `media_files`.
+- Campaign download binaries: immutable names in the private sibling
+  `.sps-downloads/<page-slug>/<file-id>` directory. Each authored-page MySQL
+  revision stores the enabled flag and its ordered file descriptors. Owner
+  edits control which files the published route can resolve. Keep this directory
+  with deployment backups so saved page revisions and confirmed deliveries can
+  recover their referenced bytes.
 - Offline deterministic agent experiment snapshots, **only on explicit CLI
   request**: `storage/agent-evals/eval-<timestamp>-<fixture-hash>.json`. These
   contain test scores and version hashes, never customer messages.

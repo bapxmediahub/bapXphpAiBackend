@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{SettingsService,AuthService,BlogService,ProductService,TempleService,CategoryService,SecretService,SeoService,ContactService,ReviewService,MarkdownRenderer,AuthoredPageService,CampaignLeadService,RateLimiter};
+use App\Services\{SettingsService,AuthService,BlogService,ProductService,TempleService,CategoryService,SecretService,SeoService,ContactService,ReviewService,MarkdownRenderer,AuthoredPageService,CampaignLeadService,CampaignDownloadService,RateLimiter};
 final class PublicController extends BaseController {
     
     public function home(): void {
@@ -35,6 +35,19 @@ final class PublicController extends BaseController {
         $this->renderAuthoredPage($page, ['received'=>$received]);
     }
 
+    public function campaignDownload(string $slug, string $revision, string $id): void {
+        header('Cache-Control: private, no-store');
+        $page = (new AuthoredPageService())->findPublic($slug);
+        if ($page !== null && ($page['revision'] ?? null) === $revision
+            && CampaignDownloadService::canAccess($page, $_SESSION)) {
+            $manifest = CampaignDownloadService::manifest($page);
+            foreach ($manifest['files'] as $file) {
+                if ($file['id'] === $id && (new CampaignDownloadService())->stream($slug, $file)) return;
+            }
+        }
+        $this->renderNotFound();
+    }
+
     public function campaignEnquiry(string $slug): void {
         header('Cache-Control: no-store');
         $pages = new AuthoredPageService();
@@ -61,7 +74,7 @@ final class PublicController extends BaseController {
 
         $contacts = new ContactService();
         try {
-            if ($id !== null && $contacts->hasCampaignReceipt($id, $slug, $revision)) $this->campaignReceived($slug);
+            if ($id !== null && $contacts->hasCampaignReceipt($id, $slug, $revision)) $this->campaignReceived($page, $revision);
             if ($definition === null || $revision !== ($page['revision'] ?? null)) {
                 $this->campaignFormError($page, 409, self::campaignChangedMessage($definition));
                 return;
@@ -97,7 +110,7 @@ final class PublicController extends BaseController {
             $this->campaignFormError($page, 422, 'Review the enquiry fields and try again.', compact('values','token'));
             return;
         }
-        $this->campaignReceived($slug);
+        $this->campaignReceived($page, $revision);
     }
 
     private static function campaignChangedMessage(?array $definition): string {
@@ -106,7 +119,9 @@ final class PublicController extends BaseController {
             : 'This form changed. Review the current fields and try again.';
     }
 
-    private function campaignReceived(string $slug): never {
+    private function campaignReceived(array $page, string $revision): never {
+        CampaignDownloadService::grant($_SESSION, $page, $revision);
+        $slug = $page['slug'];
         $_SESSION['campaign_enquiry_received'] = $slug;
         http_response_code(303);
         $this->redirect('/pages/'.$slug);
@@ -118,6 +133,7 @@ final class PublicController extends BaseController {
     }
 
     private function renderAuthoredPage(array $page, array $campaignState): void {
+        $campaignDownloadAccess = CampaignDownloadService::canAccess($page, $_SESSION);
         $definition = CampaignLeadService::pageDefinition($page);
         if ($definition === null || !AuthoredPageService::validRevision($page['revision'] ?? null)) {
             unset($page['campaign_form']);
@@ -130,7 +146,7 @@ final class PublicController extends BaseController {
         $html = AuthoredPageService::renderContent($page['content']);
         $this->seoOverrides = ['title'=>$page['title'], 'canonical'=>$this->siteUrl('/pages/'.$page['slug']),
             'description'=>mb_substr(trim(preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags($html))) ?? ''), 0, 160)];
-        $this->render('public/authored-page', compact('page','html','campaignState'));
+        $this->render('public/authored-page', compact('page','html','campaignState','campaignDownloadAccess'));
     }
 
     public function search(): void {

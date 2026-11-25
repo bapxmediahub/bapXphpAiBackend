@@ -7,7 +7,10 @@
     const requiredFields = ['title', 'slug', 'content'];
     const campaign = form.querySelector('.campaign-form-settings');
     const campaignControls = Array.from(campaign?.querySelectorAll('input[name], select[name]') ?? []);
-    const fields = [...requiredFields, 'header_image_url', 'header_image_alt', ...campaignControls.map(control => control.name)];
+    const downloadSettings = form.querySelector('.campaign-download-settings');
+    const downloadControls = Array.from(downloadSettings?.querySelectorAll('select[name], input[type=checkbox]') ?? []);
+    const settingsControls = [...campaignControls, ...downloadControls];
+    const fields = [...requiredFields, 'header_image_url', 'header_image_alt', ...settingsControls.map(control => control.name)];
     const recovery = document.getElementById('page-draft-recovery');
     const message = document.getElementById('page-draft-message');
     const status = document.getElementById('page-draft-status');
@@ -17,7 +20,7 @@
     const edit = document.getElementById('page-draft-fields');
     const value = control => control.type === 'checkbox' ? (control.checked ? control.value : '') : control.value;
     const values = () => Object.fromEntries(fields.map(name => [name, value(form.elements[name])]));
-    function validCampaignValue(control, saved) {
+    function validSettingValue(control, saved) {
         if (saved === undefined) return true;
         if (control.type === 'checkbox') return saved === '' || saved === control.value;
         if (control.options) return Array.from(control.options).some(option => option.value === saved);
@@ -27,7 +30,7 @@
         && typeof item.token === 'string' && /^[a-f0-9]{32}$/.test(item.token)
         && requiredFields.every(name => typeof item.values?.[name] === 'string')
         && fields.every(name => item.values[name] === undefined || typeof item.values[name] === 'string')
-        && campaignControls.every(control => validCampaignValue(control, item.values[control.name]));
+        && settingsControls.every(control => validSettingValue(control, item.values[control.name]));
     let token = '', candidate = null, timer, dirty = false, submitting = false;
     const read = () => JSON.parse(localStorage.getItem(key));
     const unavailable = () => {status.textContent = 'Browser draft storage is unavailable. Save or copy your work.';};
@@ -44,7 +47,7 @@
             if (new TextEncoder().encode(current.content).length > 65536
                 || current.title.length > 320 || current.slug.length > 32
                 || current.header_image_url.length > 512 || current.header_image_alt.length > 510
-                || !campaignControls.every(control => validCampaignValue(control, current[control.name]))) {
+                || !settingsControls.every(control => validSettingValue(control, current[control.name]))) {
                 status.textContent = 'Draft exceeds the page limits. Copy your work before leaving.';
                 return;
             }
@@ -125,10 +128,20 @@
         }
         return '\n\n## Enquiry form settings\n\n' + lines.join('\n') + '\n';
     }
+    function downloadNotes(saved) {
+        if (!downloadSettings || saved.download_enabled === undefined) return '';
+        const lines = [saved.download_enabled ? 'Enabled.' : 'Disabled.'];
+        for (const row of downloadSettings.querySelectorAll('[data-download-name]')) {
+            const position = saved[row.querySelector('select').name];
+            if (position === undefined) continue;
+            lines.push('- ' + row.dataset.downloadName + ' (' + (position ? 'position ' + position : 'remove') + ')');
+        }
+        return '\n\n## Download settings\n\n' + lines.join('\n') + '\n';
+    }
     download.addEventListener('click', () => {
         if (!candidate) return;
         const {title, content} = candidate.values;
-        const blob = new Blob(['# ', title, '\n\n', content, campaignNotes(candidate.values)], {type:'text/markdown;charset=utf-8'});
+        const blob = new Blob(['# ', title, '\n\n', content, campaignNotes(candidate.values), downloadNotes(candidate.values)], {type:'text/markdown;charset=utf-8'});
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url; link.download = 'page-draft.md'; link.click();
@@ -231,4 +244,28 @@
             upload.disabled = file.disabled = false;
         }
     });
+})();
+
+(() => {
+    const section = document.querySelector('.campaign-download-settings');
+    if (!section) return;
+    const input = section.querySelector('input[type=file]');
+    const status = section.querySelector('#campaign-download-total');
+    const existing = Array.from(section.querySelectorAll('[data-download-bytes]'));
+    const maxFiles = Number(section.dataset.maxFiles);
+    const maxBytes = Number(section.dataset.maxBytes);
+    function showTotal() {
+        const retained = existing.filter(row => row.querySelector('select').value !== '');
+        const selected = Array.from(input.files);
+        const bytes = retained.reduce((total, row) => total + Number(row.dataset.downloadBytes), 0)
+            + selected.reduce((total, file) => total + file.size, 0);
+        const count = retained.length + selected.length;
+        const over = count > maxFiles || bytes > maxBytes;
+        const message = over ? 'Keep up to ' + maxFiles + ' files totalling ' + maxBytes.toLocaleString() + ' bytes or less.' : '';
+        input.setCustomValidity(message);
+        status.textContent = count ? (message ? message + ' ' : '') + count + (count === 1 ? ' file selected. ' : ' files selected. ') + bytes.toLocaleString() + ' bytes total.' : '';
+    }
+    section.addEventListener('change', showTotal);
+    section.closest('form').addEventListener('page-draft-restored', showTotal);
+    showTotal();
 })();
