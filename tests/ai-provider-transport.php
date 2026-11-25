@@ -106,9 +106,12 @@ if (PHP_SAPI === 'cli-server') {
     if (in_array($scenario, ['tool_probe', 'tool_probe_bad_signature', 'tool_probe_large_signature'], true)) {
         $tools = json_decode($payload)->tools ?? [];
         $tool = $tools[0] ?? null;
+        $knownGemma = $google && in_array($id, ['gemma-4-31b-it','gemma-4-26b-a4b-it'], true);
+        $thinking = $request['extra_body'] ?? null;
         if (($tool->type ?? null) !== 'function' || ($tool->function->name ?? null) !== 'connection_probe'
             || !is_object($tool->function->parameters->properties ?? null)
-            || ($tool->function->parameters->additionalProperties ?? null) !== false) {
+            || ($tool->function->parameters->additionalProperties ?? null) !== false
+            || $thinking !== ($knownGemma ? ['google'=>['thinking_config'=>['thinking_level'=>'minimal']]] : null)) {
             http_response_code(400);
             echo '{"error":{"message":"Wrong tool schema"}}';
             return;
@@ -453,6 +456,7 @@ try {
     echo "PASS exact three-model ordered retry cycle: ".implode(' -> ',array_column($attempts,'model'))."\n";
     AgentTraceService::reset();
 
+    $probeFailureMessage = new ReflectionMethod(AiClient::class, 'probeFailureMessage');
     foreach (['auth_ordered', 'auth_independent', 'auth_cycle'] as $scenario) {
         $endpoint = 'http://'.$address.'/'.$scenario;
         $google = ['provider'=>'google','endpoint'=>$googleEndpoint($scenario),'apiKey'=>'fixture-google',
@@ -470,15 +474,24 @@ try {
             check(array_column($attempts,'provider') === ['google','google','openrouter'], 'Remaining models on the rejected OpenRouter connection are skipped');
             check($client->failureCategory() === 'authentication' && str_contains($reply,'OpenRouter API Key')
                 && !str_contains($reply,'Google API Key'), 'The owner receives the actual rejected connection field');
+            $message = $probeFailureMessage->invoke(null, 'authentication', end($attempts));
+            check(str_contains($message, 'OpenRouter API Key') && !str_contains($message, 'Google API Key')
+                && !str_contains($message, $endpoint) && !str_contains($message, 'private-fixture-auth-details'),
+                'Owner diagnostics preserve the rejected connection hint without upstream details');
         } elseif ($scenario === 'auth_independent') {
             check(array_column($attempts,'status') === [401,200] && $reply === 'independent connection ok',
                 'A rejected key skips its own models and leaves the next connection eligible');
+            $message = $probeFailureMessage->invoke(null, 'authentication', $attempts[0]);
+            check(str_contains($message, 'Compatible API Key'), 'Compatible endpoint rejection identifies its own key field');
         } else {
             check(array_column($attempts,'status') === [503,503,503,401,403,403]
                 && array_column($attempts,'cycle') === array_fill(0,6,1),
                 'A later 401 prevents an earlier model on that connection from re-entering cycle two');
             check(str_contains($reply,'Google connection permissions') && !str_contains($reply,'API Key'),
                 '403 guides the owner to connection permissions');
+            $message = $probeFailureMessage->invoke(null, 'authentication', end($attempts));
+            check(str_contains($message, 'Google connection permissions') && !str_contains($message, 'API Key'),
+                'Owner diagnostic keeps 403 distinct from a rejected key');
         }
     }
     echo "PASS credential rejection skips the connection within both cycles and identifies the right field\n";

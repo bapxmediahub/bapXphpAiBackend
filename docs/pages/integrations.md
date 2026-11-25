@@ -76,15 +76,18 @@ allows an exact provider/model target (even when two connections have the same
 model ID) or the enabled fallback route. The text test requires the expected
 response; the tool test calls an isolated read-only synthetic tool and verifies
 the returned challenge. No order, customer or product data is sent by this
-diagnostic. It records the actual attempted provider, model and safe status
-without displaying keys or provider response bodies. Run the same tests locally
-with `./bapXphp ai:probe text` or `./bapXphp ai:probe tools`, optionally followed
-by a quoted `provider|model` selector. Verify both modes separately for each
-enabled Gemma ID and for `openrouter|openrouter/free` when it is configured.
-Verify the enabled custom model in the same way. Then exercise both agents
-with an authorized lookup on the deployed release. The loopback tests prove
-request and continuation handling. Live probes establish which exact models
-complete both modes with the deployment's credentials and provider access.
+diagnostic. It displays the attempted provider, model, and safe status. A 401
+names the API key field for the rejected connection. A 403 points to that
+connection's access settings. The browser result card omits endpoints, keys
+and provider response bodies. [OpenAI API error codes](https://developers.openai.com/api/docs/guides/error-codes).
+
+Run the same tests locally with `./bapXphp ai:probe text` or
+`./bapXphp ai:probe tools`, optionally followed by a quoted `provider|model`
+selector. Verify both modes separately for each enabled Gemma ID, for
+`openrouter|openrouter/free` when configured, and for each enabled custom model.
+Then exercise both agents with an authorized lookup on the deployed release.
+Loopback tests verify request and continuation handling. Live probes establish
+which exact models complete both modes with the deployment's provider access.
 
 ## Secrets Storage
 

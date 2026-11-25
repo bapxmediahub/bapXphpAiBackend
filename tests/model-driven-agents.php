@@ -29,7 +29,7 @@ if(PHP_SAPI==='cli-server'){
     $tokenField = $modernTokenField ? 'max_completion_tokens' : 'max_tokens';
     $allowedFields = ['model','messages','tools','tool_choice',$tokenField];
     if ($luna) $allowedFields[] = 'reasoning_effort';
-    if ($google) $allowedFields[] = 'temperature';
+    if ($google) $allowedFields = [...$allowedFields, 'temperature', 'extra_body'];
     if ($_SERVER['REQUEST_METHOD'] !== 'POST'
         || $route !== [$scenario,$provider,'chat','completions']
         || ($_SERVER['HTTP_AUTHORIZATION'] ?? '') !== 'Bearer fixture-'.$credential
@@ -38,7 +38,8 @@ if(PHP_SAPI==='cli-server'){
         || !in_array($r['model'] ?? null, $expectedModels, true)
         || !isset($r[$tokenField]) || !is_array($r['messages'] ?? null)
         || ($luna && ($r['reasoning_effort'] ?? null) !== 'none')
-        || ($google && !in_array($r['temperature'] ?? null, [0.2, 0.3], true))
+        || ($google && (!in_array($r['temperature'] ?? null, [0.2, 0.3], true)
+            || ($r['extra_body'] ?? null) !== ['google'=>['thinking_config'=>['thinking_level'=>'minimal']]]))
         || array_diff(array_keys($r), $allowedFields)) {
         $fail('Unexpected Chat Completions request');
         return;

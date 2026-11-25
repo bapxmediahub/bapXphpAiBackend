@@ -242,6 +242,12 @@ connection and stay in memory for the current request. The owner can configure
 direct OpenAI or another compatible service through the existing custom HTTPS
 URL, key and model fields. See [custom connection configuration](pages/integrations.md#configure-the-optional-custom-connection).
 
+The built-in Google route requests the existing minimal thinking level for the
+two hosted Gemma 4 models through the compatible endpoint's
+`extra_body.google.thinking_config` option. Other configured model IDs use
+their provider defaults. [Google compatibility options](https://aistudio.google.com/docs/openai#thinking) ·
+[Hosted Gemma model settings](https://gemma.ai/deployment/gemini-api/#thinking).
+
 OpenAI-compatible text endpoints are not automatically tool-capable models.
 Each enabled model needs a successful live tool round trip. The portable
 `tool_search` and `read_runtime_skill` functions are application-owned, not the
