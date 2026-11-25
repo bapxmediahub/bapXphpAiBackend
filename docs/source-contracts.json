@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "b75b02aeb1d03d91da0de1a23668db1d7348440c21cdded7501f2e7dc1fc7dfa",
-            "references_sha256": "1787b64eb38150f6ec3fd5d9415a6b6615cdb913e02f75f2356604b31fb7d6c2",
-            "review_note": "Compared role and module declaration filtering, bounded tool discovery, and agent scope docs with the first-round owner help route. Both provider fixtures require exactly one authorized guide lookup and two round trips."
+            "source_sha256": "5bc528985312485b9732d829b75addacb345765dfc1c767c85e38db4faa2ac99",
+            "references_sha256": "f5c7361b8ca9c867682dbafcde10dd099cdd71d35190bc7aaea8d770ba2d53ff",
+            "review_note": "Reviewed initial plan, candidate and per-transfer hold checks against runtime/observability docs and backend skill. Holds stop locally before model-attempt evidence, short waits reread current health, explicit probes bypass the gate, and locked tools never replay. Credentials remain confined to private health state."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -58,9 +58,9 @@
             "review_note": "Compared active-chat restoration and attachment changes with the media operator instructions, and confirmed upload and in-memory draft attachment regressions pass."
         },
         "operator-help": {
-            "source_sha256": "dc97b548e563c16ed440701b604ec0bdc22827f677d8704c0dd7fa19442d2d33",
+            "source_sha256": "9a11083a8d85cdf8f270aa672361a11b2f59ccd9438823e31e371c8c19e53cd2",
             "references_sha256": "30a0eb61344f0c02630c45cd7f3d082c6d64ce2cb8ed9a619c07615b4c159a9c",
-            "review_note": "Compared customer sign-in and account controls with their published help. The registration text uses the actual group and button labels, and the address form remains directly reachable by fragment."
+            "review_note": "Compared customer sign-in, registration and saved-address form navigation with the published account guide. Reviewed the Enterprise initial dated-order declaration against operator help after main exposed the existing all_time selection within the owner role."
         },
         "public-mcp": {
             "source_sha256": "06a7b8ef4b99e3c70cbae0dbf6ee2b7c97029aabb851906dc8e2e50d9f81c253",
