@@ -87,8 +87,9 @@ Both agents use the shared AiClient synchronous fallback loop. Ordinary transien
 failures never reorder the next request. A recorded quota or positive provider
 retry delay can temporarily exclude that model; disabled/unconfigured models
 are not called. Explicit diagnostics retain actual transfers. Tool exchanges
-stay on their originating model. Owner capability questions are ordinary model
-turns; explicit /help and /capabilities are separate user-selected UI commands.
+stay on their originating model. Owner capability and help questions use the
+model, including messages typed as `/help` or `/capabilities`. The authenticated
+Help page and the task disclosure give the owner direct access to the guidance.
 See [agent observability](agent-observability.md) for evidence and budgets.
 
 ## Native processing loop: three RAG layers
@@ -243,8 +244,8 @@ product-detail tools. Missing, hidden or ambiguous identities must not be filled
 with unrelated products. Previous displayed slugs are referents, not current facts.
 Public A2UI follows actual retrieved identities rather than question regexes.
 Enterprise uses `operator_guide` when the model needs instructions about an
-admin task. Only explicit `/help` and `/capabilities` commands and the task-guide
-disclosure are separate UI operations; ordinary questions invoke inference.
+admin task. The task disclosure lists approved owner operations and lets the
+owner fill the composer with a question. Chat submissions use the model-led flow.
 
 The public STDIO MCP policy contract retains its original four keys. Native
 Support can also retrieve domestic/international delivery estimates and retired

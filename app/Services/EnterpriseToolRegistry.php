@@ -38,7 +38,7 @@ final class EnterpriseToolRegistry extends AgentToolRegistry {
             ['tool'=>'list_public_services','title'=>'Service enquiry options','description'=>'Read the published enquiry options. This does not create a booking.',
                 'prompt'=>'What service enquiries can customers submit?'],
             ['tool'=>'operator_guide','title'=>'Admin task guidance','description'=>'Get the official steps for a supported admin task.',
-                'prompt'=>'/help enterprise-agent'],
+                'prompt'=>'What does the Enterprise Agent guide say about reopening chats?'],
         ];
         return array_values(array_filter($tasks, static fn(array $task): bool =>
             AgentCapabilityPolicy::allows(AgentCapabilityPolicy::ENTERPRISE, $task['tool'], $actor)));
@@ -57,41 +57,6 @@ final class EnterpriseToolRegistry extends AgentToolRegistry {
                 $entry['name'], AgentCapabilityPolicy::tools(AgentCapabilityPolicy::ENTERPRISE), true
             )
         ));
-    }
-
-    /** Resolve explicit help requests before sending a question to an external provider. */
-    public function guideAnswer(string $question): ?string {
-        if (!AgentCapabilityPolicy::allows(AgentCapabilityPolicy::ENTERPRISE, 'operator_guide', $_SESSION['user'] ?? null)) return null;
-        $question = trim($question);
-        if (preg_match('~^(?:/capabilities|what can you (?:do|help(?: me)? with)(?: (?:for me|in (?:my|this) store))?|how can you help(?: me)?|what kinds? of (?:store|business|admin) tasks can you help(?: me)? with)[?!. ]*$~iD', $question)) {
-            $lines = ['I can help with these owner tasks:'];
-            foreach (self::capabilities($_SESSION['user'] ?? null) as $task) {
-                $lines[] = '- ' . $task['title'] . ': ' . $task['description'];
-            }
-            $lines[] = "\n" . self::capabilityLimits();
-            $lines[] = 'Use /create-blog or /add-product to prepare an editable draft.';
-            return implode("\n", $lines);
-        }
-        $draftHelp = false;
-        if (preg_match('~^/help(?:\s+([a-z-]+))?$~iD', $question, $matches)) {
-            $topic = strtolower($matches[1] ?? '');
-            $topics = array_column(AdminHelpService::references(), 'slug');
-            if (!in_array($topic, $topics, true)) return 'Choose a guide with /help followed by one of these topics: ' . implode(', ', $topics) . '.';
-        } elseif (preg_match('~^how (?:do I|can I|to) (?:draft|prepare|write|create|save) (?:a |an |my )?(?:(?:new|unpublished|draft|blog) )*(?:article|post)(?: as a draft| without publishing(?: it)?)?[?!. ]*$~iD', $question)) {
-            $draftHelp = true;
-            $topic = 'blog-publishing';
-        } else {
-            return null;
-        }
-        $args = ['topic'=>$topic];
-        if ($draftHelp) $args['section'] = 'Prepare an unpublished article';
-        $result = $this->run('operator_guide', $args);
-        if (isset($result['error'])) return null;
-        if ($draftHelp) return $result['instructions'];
-        $answer = $result['title'] . "\n\n" . $result['instructions'];
-        $otherSections = array_diff($result['sections'], [$result['section']]);
-        if ($otherSections) $answer .= "\n\nAlso in this guide:\n- " . implode("\n- ", $otherSections);
-        return $answer;
     }
 
     public function run(string $name, array $args): array {

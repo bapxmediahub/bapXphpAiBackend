@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "24a8a591ae8d7d517a39e6fb3962ae6dc4d4f7a8f5acf689e2ff3140980ab0cf",
-            "references_sha256": "ea15acbc68cb83d87aa629cffc4804a68898473617383636709338b1a6c6f33d",
-            "review_note": "Reviewed chronological actor-owned dialogue, trusted instruction channels, role-filtered retrieval and function-result correlation for both providers against the runtime contract and captured loopback wire."
+            "source_sha256": "d3ad36921767ce1fa7b7dd7e4b1128711e688a746d3bfdd3c924d802e374439b",
+            "references_sha256": "83319904182f71c17653bdb5cf329ffda8b53aedaa5d557187b0d79e9c6afffd",
+            "review_note": "Reviewed both agent loops for removed canned and regex reply paths, accepted-model-only history, actual tool scope, explicit error outcomes and 64 fixture provider cases. Updated runtime and observability guidance."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -23,9 +23,9 @@
             "review_note": "Read the account help Markdown and its source view. The article explains the picture placeholder beside the email."
         },
         "foundation": {
-            "source_sha256": "9ee93c3fa2796431a0ef3bcb0dbe7f699ebe511b767336d9fb592450d0f95e5f",
+            "source_sha256": "34f7d56a79bb37c25496092a5de21d3d15ab78000eb33a9c5b0302eca64694bb",
             "references_sha256": "6eba6651fd8e747d8053034a7812f9d41e6dba5a405bc1d1ed669556c8f2474b",
-            "review_note": "Verified the native model-turn structure, existing one-shot transport callers, failover-before-tools, provider lock after tools and private conversation scope against the documented architecture."
+            "review_note": "Verified native PHP application boundaries after pruning unused answer and broad context paths. Owner and Support keep authority in named typed tools and the same private conversation files."
         },
         "google-tags": {
             "source_sha256": "cb62a05f8d83f991e38d6f1593e8ccb31a0006cfb3bed28033056679f7106f63",
@@ -43,9 +43,9 @@
             "review_note": "Cross-checked Design, Enterprise history and Support New chat against actual page markup and Chromium regressions for role scope, local recovery, keyboard and A2UI restoration."
         },
         "mail": {
-            "source_sha256": "1038cef0f4adf6f9a7edeb515aafb29ae773c257af6b2f87536fa9bf79ddc13f",
+            "source_sha256": "48ce3e94a6e75539434618c1eeb421e48ca391957baa42c6a5c8a0671416e7fc",
             "references_sha256": "903e7da848c1e0472ce9a1823b94afc21004e564d12041ee0456918176a6cc72",
-            "review_note": "Reviewed the AdminController diff against mail responsibilities. The changed method composes the owner inference turn and does not use mail transport or queues."
+            "review_note": "Reviewed the owner controller diff against mail setup and transport documentation. Changed methods manage Agent inference and existing integration diagnostics."
         },
         "mcp-clients": {
             "source_sha256": "38828d52259fbd6b6555d790e463ff775e79be85872a5d5b5aea78e599fba3ac",
@@ -58,14 +58,14 @@
             "review_note": "Compared active-chat restoration and attachment changes with the media operator instructions, and confirmed upload and in-memory draft attachment regressions pass."
         },
         "operator-help": {
-            "source_sha256": "871508ed2c2fb761b7aef269a8f02fec831c2d90d58980808b6c4fb84ea3f287",
-            "references_sha256": "eade3ce9f5666b9678b0c7d16fbdda7f423bde6dc7118ff83bf0416d23c3beca",
-            "review_note": "Checked owner guidance against the actual controller. Open chats retain bounded successful history and the latest allowed question and reference data are passed in a single current user message."
+            "source_sha256": "4cbf688d05379d8bf282e5dd605c4462bda972843ebbee55b6a115a0d8762cbf",
+            "references_sha256": "0b6f98d469ec75bea6b386149fd46a6899cf15402fa354a3e92b2af9d05ebb40",
+            "review_note": "Checked the real Help page, task panel and operator guide tool against the revised Enterprise guide. Typed questions now use the model and the former local chat strings have been removed."
         },
         "public-mcp": {
-            "source_sha256": "767c89caa73e8c057b62607e5b029ab2424b65a702c558612dbde225908f2178",
-            "references_sha256": "7188c628083dfc2704d98649d139f1b2c0a0d43db12ab8a321d7c1870c96f86a",
-            "review_note": "Cross-checked the public A2UI and MCP projections with the separated native chat transport. Scope and exact recorded presentation still derive from actual permitted reads."
+            "source_sha256": "06a7b8ef4b99e3c70cbae0dbf6ee2b7c97029aabb851906dc8e2e50d9f81c253",
+            "references_sha256": "e78d7cca0b62659190fdfe23f3ed927f456533f97faaa8297cc08ae004008b33",
+            "review_note": "Checked removal of the question-to-A2UI heuristic alongside public MCP and A2UI details. Public and chat presenters consume typed authorized source evidence and selected published products."
         },
         "remote-commerce": {
             "source_sha256": "1573658d95dac28bb53f540081e22a5f29e7121bf8d1acb2dfc72b6554b7d0b1",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed SettingsService module resolution and Merchant feed guidance. Dropping a retired header slot leaves the saved catalog eligibility inputs intact."
         },
         "workflow": {
-            "source_sha256": "887b68c7404b5c76ebd4576772e05d00dee63de486210b33c8f2e741df30e99b",
-            "references_sha256": "33ef1add65e24bf06ad36e6d39cf4f873178ed19a4df404ec3eeb0107c2d788b",
-            "review_note": "Checked the native turn node and regenerated maps against the application-owned request loop and the existing issue-first QA workflow."
+            "source_sha256": "1e46d78f6c3bbe46a284facb813ef84705e65fe3095815c77acdbff28243f322",
+            "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
+            "review_note": "Cross-checked the live model boundary in AGENTS and the issue-based test workflow. Retained genuine controller and tool regressions in place of assertions over obsolete generated prose."
         }
     }
 }

@@ -17,10 +17,10 @@ final class AgentEvaluationService {
         $checks['no_invalid_tool_names'] = count(array_filter($tools, static fn(array $t): bool =>
             !in_array($t['name'] ?? '', $activityNames, true)
         )) === 0;
-        if ($surface === 'admin' && preg_match('/\b(?:revenue|sales|orders|gst|support tickets?)\b/i', $question)) {
-            // Exact local controller reports can be grounded without function calls.
-            // A model-synthesized number with no observed tool warrants review.
-            $checks['source_lookup_used'] = $tools !== [] || $outcome === 'local';
+        if ($surface === 'admin' && $outcome === 'model' && preg_match('/\b(?:revenue|sales|orders|gst|support tickets?)\b/i', $question)) {
+            $checks['source_lookup_used'] = count(array_filter($tools, static fn(array $tool): bool =>
+                ($tool['status'] ?? '') === 'complete'
+            )) > 0;
         }
         return [
             'passed' => count(array_filter($checks)) === count($checks),
@@ -120,16 +120,15 @@ final class AgentEvaluationService {
             'usage' => AgentTraceService::usageFromResponse(json_encode($case['response'],JSON_THROW_ON_ERROR)) === $case['expected'],
             'catalogue_decision' => self::fixtureCatalogueDecision($case),
             'public_links' => self::publicProductLinksSupported((string)$case['answer'],[['sources'=>$case['sources']]]) === (bool)$case['expected_pass'],
-            'policy_reply' => SupportBotService::policyAnswer((string)$case['question'],(array)$case['policies']) === $case['expected'],
+            'policy_tool' => (new SupportToolRegistry(null))->run('public_policy',(array)$case['arguments']) === $case['expected'],
             'collection' => self::fixtureCollection($case),
             'permission' => AgentCapabilityPolicy::allows(
                 (string)($case['agent']??''),(string)($case['tool']??''),$case['actor']??null)
                 === (bool)($case['expected_allowed']??false),
-            'financial_answer' => self::fixtureFinancialAnswer($case),
+            'financial_evidence' => self::fixtureFinancialEvidence($case),
             'gst_evidence' => self::fixtureGstEvidence($case),
             'sales' => self::fixtureSales($case),
-            'ticket_intent' => (SupportBotService::ticketLookupRequest((string)($case['question']??''))!==null)
-                === (bool)($case['expected_lookup']??false),
+            'ticket_scope' => self::fixtureTicketScope($case),
             'report_context' => self::fixtureReportContext($case),
             'guardrail' => self::evaluate((string)($case['agent']??'support'),
                 (string)($case['question']??''),(string)($case['answer']??''))['passed']
@@ -160,13 +159,14 @@ final class AgentEvaluationService {
             && (float)($result['revenue']??-1)===(float)($case['expected_revenue']??-2);
     }
 
-    private static function fixtureFinancialAnswer(array $case): bool {
+    private static function fixtureFinancialEvidence(array $case): bool {
         $facts=AgentToolRegistry::salesFacts((array)$case['orders'],(array)$case['range']);
-        $answer=AgentToolRegistry::aggregateAnswerFromSummary((string)$case['question'],$facts,(int)$case['days']);
         $evidence=AgentTraceService::toolEvidence('sales_summary',(array)$case['range'],$facts);
-        return $answer===$case['expected_answer']&&(int)$facts['orders']===(int)$case['expected_orders']
+        return (int)$facts['orders']===(int)$case['expected_orders']
             &&(float)$facts['revenue']===(float)$case['expected_revenue']
-            &&$evidence['filters']===$case['range']&&$evidence['facts']['revenue']===(float)$case['expected_revenue'];
+            &&$evidence['filters']===$case['range']
+            &&$evidence['facts']['orders']===(int)$case['expected_orders']
+            &&$evidence['facts']['revenue']===(float)$case['expected_revenue'];
     }
 
     private static function fixtureGstEvidence(array $case): bool {
@@ -178,11 +178,13 @@ final class AgentEvaluationService {
     }
 
     private static function fixtureReportContext(array $case): bool {
-        $tool = new AgentToolRegistry(ownerQuestion:(string)($case['question']??''),
-            previousReport:(array)($case['previous_report']??[]));
-        $scope = $tool->followUpContext();
-        return is_array($scope) && ($scope['from']??null) === ($case['expected_from']??null)
-            && ($scope['to']??null) === ($case['expected_to']??null);
+        $tool = new AgentToolRegistry(previousReport:(array)$case['previous_report']);
+        return $tool->validatedPreviousReport() === $case['expected_context'];
+    }
+
+    private static function fixtureTicketScope(array $case): bool {
+        $facts = AgentContextService::supportTicketFacts((array)$case['tickets'], null, $case['status'], $case['period']);
+        return $facts['count'] === count($case['expected_recent']) && $facts['recent'] === $case['expected_recent'];
     }
 
     /** Staff-declared review labels, not model-generated accuracy or customer satisfaction. */

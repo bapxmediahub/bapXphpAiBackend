@@ -2,13 +2,13 @@
 
 Open Enterprise Agent → Chat. Name the business fact and time period you need, such as paid sales for a specific date range or support-ticket counts. The agent uses named read-only tools and current permitted records. An unavailable query is different from a valid zero result.
 
-For instructions, type **/help** to see available topics or **/help blog-publishing** to open the article workflow in chat. The answer links to the same owner guide you can read in Help.
+Open **Help & Docs** for the owner guides. To get help in chat, ask about a specific task, such as how to prepare an unpublished blog post. Enterprise can read the matching guide and link to it from its answer.
 
 Answers use readable sections and relevant cards. When a completed report tool provides figures, the answer shows labelled facts with the recorded source, date range and observation time. Missing figures remain unavailable. Use the source link to inspect the underlying report.
 
 ## Choose an owner task
 
-Open **What can I ask?** above the conversation or type **/capabilities**. The guide is based on the tools your authenticated owner session can use. **Use this question** fills the composer so you can add a product name or change the period before sending.
+Open **What can I ask?** above the conversation. It lists tasks your authenticated owner session can use. **Use this question** fills the composer so you can add a product name or change the period before sending.
 
 | Task | Example question | What the answer means |
 |---|---|---|

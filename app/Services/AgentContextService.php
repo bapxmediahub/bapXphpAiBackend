@@ -4,15 +4,6 @@ namespace App\Services;
 final class AgentContextService {
     public function __construct(private DatabaseService $store = new DatabaseService(), private SchemaService $schema = new SchemaService()) {}
 
-    public function forUserEmail(string $email, string $message = ''): array {
-        $email = strtolower(trim($email));
-        return [
-            'orders' => $email !== '' ? $this->supportOrders($email, $message) : [],
-            'settings' => $this->publicSettings(),
-            'site' => $this->siteContext($message),
-        ];
-    }
-
     public function forSupportTickets(string $email, ?string $reference, ?string $status, ?array $period = null): array {
         $tickets = (new SupportTicketService($this->store))->forUser($email);
         return self::supportTicketFacts($tickets, $reference, $status, $period);
@@ -58,46 +49,6 @@ final class AgentContextService {
         return ['entity' => $entity, 'count' => count($this->store->read($entity))];
     }
 
-    /** Owner analytics contain aggregate figures only; never include customer identifiers. */
-    public function forOwnerAnalytics(): string {
-        return self::ownerAnalyticsFromRecords($this->store->read('orders'), count($this->store->read('users')),
-            count($this->store->read('products')), count($this->store->read('appointments')), count($this->store->read('support_tickets')));
-    }
-
-    public static function ownerAnalyticsFromRecords(array $orders, int $userCount, int $productCount, int $appointmentCount, int $ticketCount): string {
-        $confirmed = array_filter($orders, fn($o) => ($o['status'] ?? '') === 'confirmed');
-        $pending = array_filter($orders, fn($o) => ($o['status'] ?? '') === 'pending');
-        $total = array_sum(array_column($orders, 'total'));
-        $units = [];
-        $revenue = [];
-        foreach ($confirmed as $order) {
-            foreach (($order['items'] ?? []) as $item) {
-                $name = (string)($item['name'] ?? $item['slug'] ?? '');
-                if ($name === '') continue;
-                $units[$name] = ($units[$name] ?? 0) + (int)($item['qty'] ?? 1);
-                $revenue[$name] = ($revenue[$name] ?? 0) + (float)($item['line_total'] ?? 0);
-            }
-        }
-        arsort($units);
-        $top = '';
-        foreach (array_slice($units, 0, 5, true) as $name => $count) {
-            $top .= "\n  - {$name}: {$count} sold, ₹" . number_format($revenue[$name] ?? 0, 2);
-        }
-        if ($top === '') $top = "\n  - no confirmed sales yet";
-        $orderCount = count($orders);
-        return "Site data (aggregate statistics):\n"
-            . '- Total users: ' . $userCount . "\n"
-            . '- Total orders: ' . $orderCount . ' (confirmed: ' . count($confirmed) . ', pending: ' . count($pending) . ")\n"
-            . '- Products: ' . $productCount . "\n"
-            . '- Appointments: ' . $appointmentCount . "\n"
-            . '- Support tickets: ' . $ticketCount . "\n"
-            . '- Total revenue: ₹' . number_format($total, 2) . "\n"
-            . '- Confirmed revenue: ₹' . number_format(array_sum(array_column($confirmed, 'total')), 2) . "\n"
-            . '- Pending revenue (unconfirmed): ₹' . number_format(array_sum(array_column($pending, 'total')), 2) . "\n"
-            . '- Average order value: ₹' . number_format($orderCount ? $total / $orderCount : 0, 2) . "\n"
-            . '- Top 5 products by units sold:' . $top;
-    }
-
     /** Explicit model-selected retrieval; identity is supplied only by the server actor. */
     public function ownOrderFacts(string $email,?string $reference=null): array {
         $email=strtolower(trim($email));
@@ -125,39 +76,31 @@ final class AgentContextService {
     }
 
     public function publicCatalogueFacts(string $query): array {
-        $site=$this->siteContext($query);
-        return ['products'=>$site['products'],'collection'=>$site['matched_collection'],
-            'available_collections'=>$site['available_collections'],
-            'retrieval'=>$site['retrieval'],'count'=>count($site['products'])];
-    }
-
-    /** Share the order state needed for support without delivery addresses or payment identifiers. */
-    private function supportOrders(string $email, string $message): array {
-        $orders = array_values(array_filter($this->store->read('orders'), static fn(array $order): bool =>
-            strtolower(trim((string)($order['customer_email'] ?? ''))) === $email));
-        if (preg_match('/\b(?:order\s*#?\s*)?([a-f0-9]{16})\b/i', $message, $match)) {
-            $orders = array_values(array_filter($orders, static fn(array $order): bool =>
-                strcasecmp((string)($order['id'] ?? ''), $match[1]) === 0));
-        }
-        usort($orders, static fn(array $a, array $b): int =>
-            (strtotime((string)($b['created_at'] ?? '')) ?: 0) <=> (strtotime((string)($a['created_at'] ?? '')) ?: 0));
-        $schemaFields = $this->schema->agentContextFields('orders');
-        $safeFields = array_flip(array_intersect($schemaFields, ['id', 'status', 'total', 'shipped_at', 'invoice_number', 'invoice_date']));
-        return array_map(static function (array $order) use ($safeFields, $schemaFields): array {
-            $facts = array_intersect_key($order, $safeFields);
-            if (in_array('items', $schemaFields, true)) {
-                $facts['items'] = array_map(static fn(array $item): array => [
-                    'name' => mb_substr(strip_tags((string)($item['name'] ?? '')), 0, 120),
-                    'quantity' => (int)($item['qty'] ?? 0),
-                ], array_slice(array_filter((array)($order['items'] ?? []), 'is_array'), 0, 10));
-            }
-            return $facts;
-        }, array_slice($orders, 0, 5));
-    }
-
-    private function publicSettings(): array {
-        $settings = (new SettingsService($this->store))->public();
-        return array_intersect_key($settings, array_flip(['currency', 'timezone', 'shipping_mode', 'flat_rate']));
+        $visibleProducts = (new ProductService($this->store))->visible();
+        $collectionQuery = !self::isProductComparison($query)
+            && (bool)preg_match('/\b(?:festival|festive|collection|sale)\b|பண்டிகை|திருவிழா|அய்யப்ப|ஐயப்ப|சஷ்டி/iu', $query);
+        $collections = $collectionQuery ? (new CategoryService($this->store))->collections() : [];
+        $selection = self::catalogueSelection($visibleProducts, $query, $collections);
+        $collection = $selection['collection'];
+        // The published product service applies visibility and the current offer window.
+        $products = array_map(static fn(array $item): array => [
+            'name' => $item['name'] ?? '',
+            'slug' => $item['slug'] ?? '',
+            'url' => '/product/' . rawurlencode((string)($item['slug'] ?? '')),
+            'price' => $item['offer_price'] ?? $item['price'] ?? null,
+            'stock_status' => $item['stock_status'] ?? '',
+            'description' => mb_substr(strip_tags((string)($item['description'] ?? '')), 0, 2000),
+            'highlights' => $item['highlights'] ?? [],
+            'description_points' => $item['description_points'] ?? [],
+            'specifications' => $item['specifications'] ?? [],
+        ], $selection['products']);
+        return [
+            'products' => $products,
+            'collection' => $collection !== null ? ['name'=>(string)$collection['name'], 'slug'=>(string)$collection['slug']] : null,
+            'available_collections' => array_slice(array_values(array_filter(array_column($collections, 'name'), 'is_string')), 0, 12),
+            'retrieval' => array_diff_key($selection, array_flip(['products', 'collection'])),
+            'count' => count($products),
+        ];
     }
 
     /** Match only exact public catalogue aliases, not loose words that can collide. */
@@ -333,63 +276,7 @@ final class AgentContextService {
             'result_sha256'=>hash('sha256',json_encode(array_map(static fn(array $p):array=>array_intersect_key($p,array_flip(['slug','name','price','offer_price','stock_status','updated_at'])),$chosen),JSON_THROW_ON_ERROR|JSON_UNESCAPED_UNICODE))];
     }
 
-    public static function supportProducts(array $visibleProducts, string $message): array {
-        return self::catalogueSelection($visibleProducts,$message)['products'];
-    }
-
     public static function isProductComparison(string $message): bool {
         return (bool)preg_match('/\b(?:compare|comparison|difference between|differ from|versus|vs)\b/i', $message);
-    }
-
-    private function siteContext(string $message): array {
-        $visibleProducts = (new ProductService($this->store))->visible();
-        $collection = null;
-        $collectionQuery=!self::isProductComparison($message)&&(bool)preg_match('/\b(?:festival|festive|collection|sale)\b|பண்டிகை|திருவிழா|அய்யப்ப|ஐயப்ப|சஷ்டி/iu',$message);
-        $collections=$collectionQuery?(new CategoryService($this->store))->collections():[];
-        $selection=self::catalogueSelection($visibleProducts,$message,$collections);
-        $collection=$selection['collection'];$selected=$selection['products'];
-        $products = array_map(fn($item) => [
-            'name' => $item['name'] ?? '',
-            'slug' => $item['slug'] ?? '',
-            'url' => '/product/' . rawurlencode((string)($item['slug'] ?? '')),
-            'price' => $item['offer_price'] ?? $item['price'] ?? null,
-            'stock_status' => $item['stock_status'] ?? '',
-            'description' => mb_substr(strip_tags((string)($item['description'] ?? '')), 0, 2000),
-            'highlights' => $item['highlights'] ?? [],
-            'description_points' => $item['description_points'] ?? [],
-            'specifications' => $item['specifications'] ?? [],
-        // Visible only, and priced through the offer window: the support bot must never
-        // recommend a product the shopper cannot buy, or quote an offer that has ended.
-        ], array_slice($selected, 0, 20));
-        // Reuse the exact published Markdown index used by Enterprise/MCP.
-        // Never read admin help, private instruction files or JSON transcripts.
-        $publicArticles = [];
-        if (preg_match('/\b(?:articles?|blogs?|guides?|help|pooja|puja|rituals?|how to)\b|பூஜை|உதவி/iu', $message)) {
-            try {
-                $publicArticles = (new PublicKnowledgeService())->articlesForAgent($message)['articles'] ?? [];
-            } catch (\Throwable) {
-                $publicArticles = []; // Public articles are optional; never fabricate a source.
-            }
-        }
-        return [
-            'pages' => [
-                'shop' => '/shop',
-                'cart' => '/cart',
-                'checkout' => '/checkout',
-                'contact' => '/contact',
-                'orders' => '/account/dashboard/orders',
-            ],
-            'contact' => (new PublicKnowledgeService())->contact(),
-            'services' => (new PublicKnowledgeService())->services()['services'],
-            'articles' => $publicArticles,
-            'products' => $products,
-            'retrieval' => array_diff_key($selection,array_flip(['products','collection'])),
-            'collection_query'=>$collectionQuery,
-            'available_collections'=>array_slice(array_values(array_filter(array_column($collections,'name'),'is_string')),0,12),
-            'matched_collection' => $collection !== null
-                ? ['name'=>(string)$collection['name'], 'slug'=>(string)$collection['slug']]
-                : null,
-            'support_scope' => 'Answer using current supplied evidence and authorized Support tools. Do not access arbitrary files, admin data or other users.',
-        ];
     }
 }

@@ -756,23 +756,6 @@ final class AdminController extends BaseController {
                 ownerQuestion: $message,
                 previousReport: $previousReport
             );
-            // Explicit slash commands are user-selected UI operations. Every ordinary
-            // natural-language question goes through model-selected knowledge/tools.
-            $localAnswer = $attachments['context'] === '' && preg_match('~^/(?:help(?:\\s+[a-z-]+)?|capabilities)\\s*$~iD',$message)
-                ? $tools->guideAnswer($message) : null;
-            if ($localAnswer !== null) {
-                (new AuditLogService())->agentRun('admin', 'local', $startedAt, tools: $tools->activity(), traceId: $traceId);
-                $record = $this->agentConversationRecord($actor, $conversationId, $message,
-                    $localAnswer, $traceId, 'local', $tools->activity(), $tools->reportContext());
-                $this->jsonResponse([
-                    'answer' => $localAnswer,
-                    'missing' => $attachments['missing'],
-                    'run' => $this->agentRunMeta($traceId, 'local', $startedAt, $tools),
-                ] + (new \App\Services\AgentAnswerPresentationService())->responseData(
-                    $localAnswer,'admin',$tools->sourceLinks(),
-                    $this->agentPublicReferences($message,$localAnswer,$tools->activity()),$tools->activity()) + $record);
-                return;
-            }
             $secrets = new SecretService();
             $modelConfig = $secrets->getModelConfig();
             $reason = null;
@@ -897,6 +880,7 @@ final class AdminController extends BaseController {
             . "Answer in plain language.\n"
             . "Use the current date in India provided as today in reference_data.\n"
             . "You decide what knowledge, instructions and capabilities to retrieve. Use tool_search and read_runtime_skill as needed, inspect results, then formulate the answer. Use the matching read-only tool before making any claim about store records or metrics. "
+            . "For an owner help question or /help topic, read the authorized operator guide. For /capabilities, describe the current authorized capabilities. "
             . "Tools cover orders, products, coupons, sales, GST, support tickets, store counts and published articles. "
             . "Use only the identifiers the owner supplied. For date-based questions use the requested period, "
             . "state the dates you checked, and distinguish empty results from failed lookups. "
@@ -1236,14 +1220,7 @@ final class AdminController extends BaseController {
     }
 
     public function fixPermissions(): void{(new StoragePermissionService())->fix(); (new AuditLogService())->record('fix','permissions','storage'); $this->flash('Storage permissions checked and updated where PHP is allowed.','success'); $this->redirect('/admin/settings');}
-    /**
-     * Ask the configured model one real question and report exactly what came back.
-     *
-     * Both agents fall back to a canned reply when a call is rejected — correct for a
-     * customer, but it left the owner unable to tell "the model is switched off" from
-     * "the model name is wrong" or "the key expired". Every one of those looked like a
-     * bot that had stopped thinking.
-     */
+    /** Probe the configured model and show the recorded provider result. */
     public function testAi(): void{
         $this->validateCsrf();
         $probe=is_string($_POST['probe']??null)?$_POST['probe']:'';

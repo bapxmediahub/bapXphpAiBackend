@@ -59,8 +59,9 @@ proposal does not submit a form or automatically create a ticket.
 **Enterprise:** verify admin/CSRF, load owned dialogue and validated previous
 report metadata, then invoke the same model loop with owner-only capabilities.
 The model decides which reports or documents to use and synthesizes the
-answer. Only explicit slash commands use the separate UI-operation path.
-Provider outages are recorded as errors, not successful local answers.
+answer. Typed help and capability questions use that loop. The separate
+draft controls prepare owner-reviewed forms. Provider outages are recorded
+and shown as explicit errors.
 Both surfaces save the produced turn and observed evidence in their private
 JSON conversation. New Chat clears the active ID; History reopens only the
 actor's previous chats.
@@ -275,14 +276,14 @@ References (patterns researched, not required installations):
 ## Follow-up contracts: context, action receipts, lifecycle and history
 
 - `contextForActor` authorizes the session first and supplies at most four prior
-  successful turns and an 8,000-byte JSON dialogue budget by default. The
+  accepted model turns and an 8,000-byte JSON dialogue budget by default. The
   provider receives those pairs in chronological user and assistant/model
   messages. The current question and scope data use the latest user message.
   Fixed runtime guidance uses the provider's separate instruction field.
   Product slugs come from
   turns inside the selected dialogue budget, and current details require a live
-  scoped lookup. Enterprise can reuse the last successful report scope. Failed
-  attempts remain visible in history and traces.
+  scoped lookup. Enterprise can reuse the last accepted model report scope.
+  History and traces also display recorded errors and earlier local notices.
 - Enterprise uses a session-scoped active chat reference to re-read its actor-owned
   history. A missing or foreign chat returns the same 404 response, while a
   temporarily unreadable chat returns 503. Pending requests keep their saved

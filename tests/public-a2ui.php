@@ -51,49 +51,47 @@ try {
     }
     $product=$service->present('products','',2);
     checkA2ui($product['messages'][0]['createSurface']['surfaceId']!==$surface['surfaceId'],'Surface IDs reused');
-    checkA2ui($service->forQuestion('Where are the ritual guides?')!==null,'Guide intent not detected');
-    checkA2ui($service->forQuestion('What is my private order number?')===null,'Private order request added public UI');
+    $completed = static fn(string $tool,array $args,array $result):array =>
+        ['name'=>$tool,'status'=>'complete','evidence'=>AgentTraceService::toolEvidence($tool,$args,$result)];
+    $articleArgs = ['query'=>'ritual'];
+    $articles = $completed('search_articles',$articleArgs,$knowledge->searchArticlesForAgent($articleArgs));
+    $articleCards = $service->forAgentEvidence([],[$articles],'Read /blog/open-guide.');
+    checkA2ui(($articleCards['messages'][0]['createSurface']['dataModel']['items'][0]['path']??null)==='/blog/open-guide',
+        'A published article cited from the model tool result must be shown');
+    checkA2ui($service->forAgentEvidence([],[$articles],'Read /blog/hidden-guide.')===null,
+        'A cited link absent from tool evidence cannot add an article');
+    $privateLookup = $completed('own_order_status',[],['count'=>1,'recent'=>[['reference'=>'private-fixture-order']]]);
+    checkA2ui($service->forAgentEvidence([],[$privateLookup],'Use /contact for your account.')===null,
+        'Private lookup evidence cannot select public references');
+    checkA2ui($service->forAgentEvidence([],[],'View /contact or /product/emerald-ring.')===null,
+        'Text alone cannot select a public card');
+    $contactTool = $completed('get_public_contact',[],$knowledge->contact());
+    $business = $service->forAgentEvidence([],[$contactTool],'Use /contact.')['messages'][0]['createSurface']??[];
+    checkA2ui(str_starts_with($business['surfaceId']??'','bapx_contact_')
+        &&count($business['dataModel']['items']??[])===4,'Completed public contact evidence must retain canonical contact fields');
+    checkA2ui($service->forAgentEvidence([],[array_replace($contactTool,['status'=>'error'])],'Use /contact.')===null,
+        'An incomplete tool cannot select public contact cards');
     foreach([
-        'What is my email address?', 'Change my phone number.', 'What service did I order?',
-        'What is the phone number on my account?', 'What email did I use for my order?',
-        'Show my registered contact details.', 'Email me.', 'Call me.', 'எனது தொலைபேசி எண் என்ன?',
-    ] as $question) {
-        checkA2ui($service->forQuestion($question)===null,'Personal request received business cards: '.$question);
-        checkA2ui($service->forQuestion($question,['public_business_view'=>'contact'])===null,'Public-tool hint overrode personal request guard');
-    }
-    foreach([
-        'How can I contact you?', 'What is your e-mail address?', 'What phone number do I call?',
-        'How can I contact you about my order?', 'உங்கள் தொடர்பு எண் என்ன?',
-    ] as $question) {
-        $business=$service->forQuestion($question)['messages'][0]['createSurface']??[];
-        checkA2ui(str_starts_with($business['surfaceId']??'','bapx_contact_')
-            &&count($business['dataModel']['items']??[])===4,'Public business contact intent was lost: '.$question);
-    }
-    foreach([
-        'What services do you provide?'=>['product','temple','order','general'],
-        'Tell me about temple guidance services.'=>['temple'],
-        'What product inquiry services are available?'=>['product'],
-        'What order support services are available?'=>['order'],
-        'What services are available for products?'=>['product'],
-        'Show me nonexistentuniqueterm services.'=>[],
-    ] as $question=>$subjects) {
-        $rows=$service->forQuestion($question)['messages'][0]['createSurface']['dataModel']['items']??null;
-        checkA2ui(is_array($rows)&&array_column($rows,'path')===array_map(
+        ''=>['product','temple','order','general'],
+        'temple'=>['temple'],
+        'product'=>['product'],
+        'order'=>['order'],
+        'nonexistentuniqueterm'=>[],
+    ] as $query=>$subjects) {
+        $tool = $completed('list_public_services',['query'=>$query],$knowledge->services($query));
+        $selected = $service->forAgentEvidence([],[$tool],'These are the currently published enquiry offerings.');
+        $rows = $selected['messages'][0]['createSurface']['dataModel']['items']??[];
+        checkA2ui(array_column($rows,'path')===array_map(
             static fn(string $subject):string=>'/contact?subject='.$subject.'#contact-form',$subjects),
-            'Service question lost its specific subject or showed unrelated cards: '.$question);
+            'Service evidence lost its returned subjects or showed unrelated cards: '.$query);
+        checkA2ui($subjects!==[] || $selected===null,'An empty published service result must not select unrelated service cards');
     }
     foreach([['private','',2],['products','',0],['products',str_repeat('x',121),1],['articles','',5]] as $bad) {
         try { $service->present(...$bad); throw new RuntimeException('Invalid UI request accepted'); }
         catch(InvalidArgumentException) {}
     }
-    // A named request cannot be silently replaced with the first catalogue page.
-    $query=PublicA2uiService::questionQuery('What is the price of the Emerald ring?');
-    $matched=(new ProductService())->discover([
-        ['name'=>'Ruby ring','slug'=>'ruby-ring'],['name'=>'Emerald ring','slug'=>'emerald-ring'],
-    ],$query,'');
-    checkA2ui(array_column($matched,'slug')===['emerald-ring'],'Named-product query selected an unrelated product');
-    $unmatched=$service->forQuestion('Show me articles about nonexistentuniqueterm');
-    checkA2ui(($unmatched['messages'][0]['createSurface']['dataModel']['items']??null)===[],'No-match question showed unrelated articles');
+    $unmatched=$service->present('articles','nonexistentuniqueterm');
+    checkA2ui(($unmatched['messages'][0]['createSurface']['dataModel']['items']??null)===[],'No-match lookup showed unrelated articles');
     $page=$service->fromResult('products',['products'=>[
         ['name'=>'Emerald ring','path'=>'/product/emerald-ring','priceInr'=>1250,'available'=>true,
             'description'=>'A real tool result.','imagePath'=>'/assets/images/ring.webp'],
@@ -132,8 +130,7 @@ try {
         try {$service->present(...$arguments);throw new RuntimeException('Invalid selected-product request accepted');}
         catch(InvalidArgumentException){}
     }
-    // Seed the real adapter's request cache: verify native question -> canonical
-    // name resolution -> exact selected detail -> comparison, without sockets.
+    // Seed the real adapter cache for public selection and model-evidenced references.
     $store=new DatabaseService();$fixtureUrl='http://127.0.0.1:1/a2ui-selection-fixture';
     (new ReflectionProperty(DatabaseService::class,'cfg'))->setValue($store,['remote_url'=>$fixtureUrl]);
     (new ReflectionProperty(DatabaseService::class,'remoteOnly'))->setValue($store,true);
@@ -150,12 +147,13 @@ try {
     try {
         $selectedKnowledge=new PublicKnowledgeService(new ProductService($store));
         $selectedService=new PublicA2uiService($selectedKnowledge);
-        $named=$selectedService->forQuestion('Compare the Emerald ring and the Ruby pendant.')['messages'][0]['createSurface']['dataModel'];
-        checkA2ui($named['presentation']==='product_compare'&&array_column($named['items'],'path')===['/product/emerald-ring','/product/ruby-pendant'],'Native named comparison did not use the shared published selection');
-        foreach(['What is the difference between the Emerald ring and the Ruby pendant?','How does the Emerald ring differ from the Ruby pendant?'] as $question) {
-            $phrased=$selectedService->forQuestion($question)['messages'][0]['createSurface']['dataModel'];
-            checkA2ui($phrased['presentation']==='product_compare'&&array_column($phrased['items'],'path')===['/product/emerald-ring','/product/ruby-pendant'],'Native comparison phrase lost shared resolver parity');
-        }
+        $paths = '/product/emerald-ring and /product/ruby-pendant';
+        $native = $selectedService->forAgentEvidence(['public_product_slugs'=>['emerald-ring','ruby-pendant']],[],$paths);
+        $nativeItems = $native['messages'][0]['createSurface']['dataModel']['items']??[];
+        checkA2ui(array_column($nativeItems,'path')===['/product/emerald-ring','/product/ruby-pendant'],
+            'Native cards retain the two exact model-evidenced products in order');
+        checkA2ui($selectedService->forAgentEvidence([],[],$paths)===null,
+            'A generated comparison text without recorded identities cannot select cards');
         $explicit=$selectedService->present('products','',2,'compare',['ruby-pendant','emerald-ring'])['messages'][0]['createSurface']['dataModel'];
         checkA2ui(array_column($explicit['items'],'path')===['/product/ruby-pendant','/product/emerald-ring'],'Explicit comparison lost requested order');
         $missing=$selectedService->present('products','',2,'compare',['private-ring','ruby-pendant'])['messages'][0]['createSurface']['dataModel'];

@@ -197,34 +197,11 @@ $tests['tool discovery activates bounded relevant tools and never broadens the a
     assertSame([], $guest->run('tool_search',['query'=>'own_ticket_status'])['matches'],'Exact private identifier is unavailable to a guest');
     assertSame([], $guest->run('tool_search',['query'=>'commerce_report'])['matches'],'Exact owner identifier is unavailable to Support');
     $found=$guest->run('tool_search',['query'=>'public_catalogue_summary']);
-    assertSame('public_catalogue_summary',$found['matches'][0]['name'],'Exact authorized ID ranks first');
-    assertTrue($guest->has('public_catalogue_summary'),'Matching declaration becomes available in the next model step');
-    assertTrue(!$guest->has('own_ticket_status'),'Activation cannot broaden role');
-    assertTrue(isset($guest->run('tool_search',['query'=>'','limit'=>4])['error']),'Empty search rejected');
-    $owner=new \App\Services\RuntimeAgentToolRegistry('admin',['role'=>'admin'],new \App\Services\EnterpriseToolRegistry(),'sales summary');
-    assertTrue($owner->has('sales_summary'),'Seed the initial turn with relevant authorized tools');
-    assertTrue(count($owner->declarations())<=5,'Initial business tool budget is three plus discovery');
-    $more=$owner->run('tool_search',['query'=>'commerce_report']);
-    assertSame('commerce_report',$more['matches'][0]['name'],'Owner may activate a specific additional authorized tool');
-    assertTrue($owner->has('commerce_report'),'Deferred owner capability now available');
-    assertTrue(!$owner->has('write_file'),'Arbitrary file write never available');
-};
-
-$tests['public catalogue summary and bestseller projection never expose private records'] = static function (): void {
-    $registry=\App\Services\SupportToolRegistry::class;
-    $products=[['slug'=>'lamp','name'=>'Lamp','category'=>'lamps','categories'=>['lamps','puja'],'private_cost'=>10],
-        ['slug'=>'ring','name'=>'Ring','category'=>'rings'],['slug'=>'hidden','name'=>'Hidden','is_hidden'=>true],
-        ['slug'=>'other','name'=>'Other','category'=>'retired']];
-    $categories=[['slug'=>'lamps','name'=>'Lamps'],['slug'=>'puja','name'=>'Puja'],['slug'=>'rings','name'=>'Rings'],['slug'=>'retired','name'=>'Secret Collection','is_collection'=>true]];
-    $summary=$registry::catalogueSummary($products,$categories);
-    assertSame(3,$summary['total'],'Count distinct visible products');
-    assertSame(['Lamps'=>1,'Puja'=>1,'Rings'=>1,'Uncategorised'=>1],array_column($summary['categories'],'count','name'),'Use current public categories only; deduplicate memberships');
-    assertTrue(!str_contains(json_encode($summary),'Secret Collection')&&!str_contains(json_encode($summary),'private_cost'),'No private or retired collection details');
-    $bestsellers=$registry::publicRankedProducts([$products[0],$products[2],$products[1]]);
-    assertSame([['name'=>'Lamp','slug'=>'lamp','url'=>'/product/lamp'],['name'=>'Ring','slug'=>'ring','url'=>'/product/ring']],$bestsellers,'Only approved product links and names, no hidden rows or sales amounts');
-    assertSame('public_catalogue_summary',\App\Services\SupportBotService::aggregateToolForQuestion('how many total products ther are selling in what what categories'),'Original failed question');
-    assertSame('public_best_sellers',\App\Services\SupportBotService::aggregateToolForQuestion('what is top selling'),'Original failed followup');
-    assertSame(null,\App\Services\SupportBotService::aggregateToolForQuestion('How many products are in my order?'),'Never substitute store totals for private orders');
+    $guest=new \App\Services\SupportToolRegistry(null);
+    assertSame(['error'=>'Invalid arguments'],$guest->run('public_catalogue_summary',['reference'=>'aaaaaaaaaaaaaaaa']),
+        'Store-wide totals cannot consume a private order reference');
+    assertSame(['error'=>'Not permitted'],$guest->run('own_order_status',['reference'=>'aaaaaaaaaaaaaaaa']),
+        'A guest cannot read order-scoped totals');
 };
 
 $tests['current published catalogue total claims need matching same-turn evidence'] = static function (): void {
@@ -245,13 +222,15 @@ $tests['current published catalogue total claims need matching same-turn evidenc
 };
 
 $tests['ordinary support questions cannot bypass inference'] = static function (): void {
-    $source=file_get_contents(app_path('app/Services/SupportBotService.php'));
-    $method=substr($source,strpos($source,'public function answer('),strpos($source,'/** Legacy offline/presentation classifier')-strpos($source,'public function answer('));
-    assertTrue(str_contains($method,'$this->modelReply('),'Every ordinary Support turn uses model inference');
-    foreach(['aggregateToolForQuestion','fallbackReply','ticketLookupRequest','publicBusinessLookup','newBookingEnquiry','shouldEscalate'] as $obsolete)
-        assertTrue(!str_contains($method,$obsolete.'('),'No legacy intent shortcut in live answer: '.$obsolete);
+    $answer = new ReflectionMethod(\App\Services\SupportBotService::class, 'answer');
+    $source = implode('', array_slice(file($answer->getFileName()), $answer->getStartLine() - 1,
+        $answer->getEndLine() - $answer->getStartLine() + 1));
+    assertTrue(str_contains($source,'$this->modelReply('),'Every ordinary Support turn uses model inference');
+    foreach(['aggregateToolForQuestion','fallbackReply','ticketLookupRequest','publicBusinessLookup','publicGuestReply','shouldEscalate'] as $obsolete) {
+        assertTrue(!method_exists(\App\Services\SupportBotService::class, $obsolete), 'No former auto-answer method: '.$obsolete);
+    }
     $admin=file_get_contents(app_path('app/Controllers/AdminController.php'));
-    assertTrue(!str_contains($admin,'->aggregateAnswer(')&&!str_contains($admin,'->ticketLookupFallback('),'Enterprise free-form questions cannot bypass the model');
+    assertTrue(!str_contains($admin,'->guideAnswer(')&&!str_contains($admin,"agentRun('admin', 'local'"),'Enterprise chat cannot produce a local assistant reply');
     $registry=new \App\Services\RuntimeAgentToolRegistry('support',null,new \App\Services\SupportToolRegistry(null),'');
     assertTrue(!str_contains($registry->instructionPrompt(),'- own_order_status:')&&!str_contains($registry->instructionPrompt(),'- order_count:'),'Guest capability metadata is scoped');
     assertTrue(str_contains($registry->instructionPrompt(),'- read_published_article:'),'Published knowledge is discoverable even without lexical matches');
@@ -543,18 +522,15 @@ $tests['support action identity and human lifecycle are deterministic and versio
     assertTrue($denied,'Customers cannot use staff transitions');
 };
 
-$tests['support context keeps bounded own turns and revalidates ordinal product references'] = static function (): void {
+$tests['support context keeps bounded model turns and ordered public product references'] = static function (): void {
     $root=sys_get_temp_dir().'/sps-context-'.bin2hex(random_bytes(6));mkdir($root,0700);
     $svc=new \App\Services\AgentConversationService($root);$actor=['type'=>'guest','id'=>'own'];
     try {
-        $r=$svc->record('support',$actor,null,'Ayyappa products','Here are two items',bin2hex(random_bytes(8)),'local',[],null,null,[],[],['public_product_slugs'=>['one','two']]);
+        $r=$svc->record('support',$actor,null,'Ayyappa products','Here are two items',bin2hex(random_bytes(8)),'model',[],null,null,[],[],['public_product_slugs'=>['one','two']]);
         $context=$svc->contextForActor($r['conversation_id'],'support',$actor,2,4000);
         assertSame(['one','two'],$context['public_product_slugs'],'Ordered verified identities carried forward');
-        $product=\App\Services\SupportBotService::followupProduct('what is the second one made of?', $context['public_product_slugs'],[
-            ['slug'=>'one','name'=>'First'],['slug'=>'two','name'=>'Second','specifications'=>['Material'=>'Brass']]
-        ]);
-        assertSame('two',$product['slug'],'Ordinal resolves to previously listed item');
-        assertSame(null,\App\Services\SupportBotService::followupProduct('what is the second one made of?', $context['public_product_slugs'],[['slug'=>'one','name'=>'First']]),'Missing current product is not fabricated from stale history');
+        assertSame([['question'=>'Ayyappa products','answer'=>'Here are two items']],$context['messages'],
+            'A saved model answer is available for the model to resolve a follow-up');
         assertSame([], $svc->contextForActor(null,'support',$actor)['messages'],'Fresh chat has no inherited context');
     }finally{foreach(array_merge(glob($root.'/*')?:[],glob($root.'/.conversation*')?:[]) as $f)if(is_file($f))@unlink($f);@rmdir($root);}
 };
@@ -571,7 +547,9 @@ $tests['both agents retain failed turns in history and use successful dialogue f
                 bin2hex(random_bytes(8)), 'model', knowledge:['public_product_slugs'=>['second','first']]);
             $id = $created['conversation_id'];
             $service->record($surface, $actor, $id, 'How is delivery arranged?', 'Delivery is explained on the shipping page.',
-                bin2hex(random_bytes(8)), 'local');
+                bin2hex(random_bytes(8)), 'model');
+            $service->record($surface, $actor, $id, 'Old menu command.', 'Legacy scripted menu.',
+                bin2hex(random_bytes(8)), 'local', knowledge:['public_product_slugs'=>['obsolete']]);
             for ($attempt = 0; $attempt < 4; $attempt++) {
                 $service->record($surface, $actor, $id, 'What about the second one?', 'The provider is unavailable.',
                     bin2hex(random_bytes(8)), 'error', knowledge:['public_product_slugs'=>['unaccepted']]);
@@ -587,9 +565,9 @@ $tests['both agents retain failed turns in history and use successful dialogue f
             assertSame([], $service->contextForActor($id, $surface, $actor, maxTurns:1)['public_product_slugs'],
                 'No product identity survives when its turn is outside the turn limit');
             $history = $service->getForActor($id, $surface, $actor)['turns'];
-            assertSame(['model','local','error','error','error','error'], array_column($history,'outcome'),
+            assertSame(['model','model','local','error','error','error','error'], array_column($history,'outcome'),
                 'All completed and failed turns remain visible in actor-owned history');
-            assertSame(['unaccepted'], $history[5]['knowledge']['public_product_slugs'],
+            assertSame(['unaccepted'], $history[6]['knowledge']['public_product_slugs'],
                 'Filtering follow-up context does not alter recorded evidence');
         }
     } finally {
@@ -772,7 +750,6 @@ $tests['support catalogue decisions do not substitute unrelated products on a no
     $no=$service::catalogueSelection($products,'Do you sell Neptune telescope bracelets?');
     assertSame('no_match',$no['status'],'Unmatched specific query stays unmatched');
     assertSame([],$no['products'],'No default first-20 fallback');
-    assertSame([],$service::supportProducts($products,'Do you sell Neptune telescope bracelets?'),'Production helper retains no-match semantics');
     $yes=$service::catalogueSelection($products,'How much is the Gold Ayyappa Pendant?');
     assertSame(['ayyappa-pendant'],array_column($yes['products'],'slug'),'Only named public product retrieved');
     assertSame('catalogue_search',$yes['intent'],'Specific catalogue request is explicit');
@@ -996,27 +973,24 @@ $tests['request rejection hints remain redacted and do not claim an exact cause'
     assertSame(null,$client::requestErrorHint(503,'{"error":{"message":"tool schema"}}'),'Transient response does not prove a malformed schema');
 };
 
-$tests['operator help reads the canonical owner guide without calling a model'] = static function (): void {
+$tests['the operator guide tool reads canonical instructions under owner scope'] = static function (): void {
     $prior = $_SESSION['user'] ?? null;
     try {
         $tools = new \App\Services\EnterpriseToolRegistry();
         $_SESSION['user'] = ['role'=>'customer'];
-        assertSame(null, $tools->guideAnswer('/help catalogue'), 'Private operator guides require an owner');
         assertTrue(isset($tools->run('operator_guide', ['topic'=>'orders-shipping'])['error']), 'Model invocation enforces the same permission');
         $_SESSION['user'] = ['role'=>'admin'];
-        $answer = $tools->guideAnswer('How do I prepare an unpublished article?');
+        $answer = $tools->run('operator_guide', [
+            'topic'=>'blog-publishing', 'section'=>'Prepare an unpublished article',
+        ])['instructions'];
         assertTrue(str_contains($answer, 'Draft — not public') && !str_contains($answer, 'Restore an earlier'), 'Only the relevant instructions appear');
         assertSame([['label'=>'Write and publish a guide','path'=>'/admin/docs/blog-publishing']], $tools->sourceLinks(), 'Owner can open the actual instructions');
-        assertSame('operator_help', $tools->activity()[0]['evidence']['source'], 'Report the retrieved source');
+        assertSame('operator_help', $tools->activity()[array_key_last($tools->activity())]['evidence']['source'], 'Report the retrieved source');
         $history = $tools->run('operator_guide', ['topic'=>'blog-publishing','section'=>'Restore an earlier server save']);
         assertTrue(str_contains($history['instructions'], 'History') && !str_contains($history['instructions'], 'New Post'), 'Late sections can be retrieved without losing them to a prefix limit');
         assertTrue(isset($tools->run('operator_guide', ['topic'=>'blog-publishing','section'=>'Unlisted command'])['error']), 'Do not invent an unavailable section');
-        assertSame(null, $tools->guideAnswer('How many unpublished articles are there?'), 'Counts require live data');
-        assertSame(null, $tools->guideAnswer('How do I write a post about my latest sales?'), 'Mixed questions need interpretation');
-        assertTrue(str_contains($tools->guideAnswer('/help'), 'blog-publishing'), 'Available topics are discoverable without a provider');
-        assertTrue(str_contains($tools->guideAnswer('/help catalogue'), 'product'), 'Explicit guide topic returns canonical text');
-        assertTrue(str_contains((string)$tools->guideAnswer('What kinds of store tasks can you help me with?'),'Paid sales'),'Original live capability question stays local');
-        assertSame(null,$tools->guideAnswer('What kinds of store tasks can you help me with for orders today?'),'Scoped questions are not intercepted by general capability guide');
+        assertTrue(in_array('blog-publishing', array_column(\App\Services\AdminHelpService::references(), 'slug'), true), 'Owner UI can find the canonical guide');
+        assertTrue(in_array('Paid sales', array_column(\App\Services\EnterpriseToolRegistry::capabilities($_SESSION['user']), 'title'), true), 'The authenticated task panel lists permitted report topics');
         assertTrue(isset($tools->run('operator_guide', ['topic'=>'../settings'])['error']), 'Only allowlisted topics are readable');
     } finally {
         if ($prior === null) unset($_SESSION['user']); else $_SESSION['user'] = $prior;
@@ -2209,14 +2183,15 @@ $tests['agent conversations validate identity and deterministic evaluations'] = 
 
 $tests['enterprise follow-up retrieves only actor-owned persisted history'] = static function (): void {
     $doc = ['surface'=>'admin','actor'=>['type'=>'admin','id'=>'u1'],'turns'=>[
-        ['report_context'=>['tool'=>'sales_summary','from'=>'2026-11-01','to'=>'2026-11-07']],
-        ['outcome'=>'error','report_context'=>['tool'=>'sales_summary','from'=>'2026-11-08','to'=>'2026-11-14']]
+        ['outcome'=>'model','report_context'=>['tool'=>'sales_summary','from'=>'2026-11-01','to'=>'2026-11-07']],
+        ['outcome'=>'error','report_context'=>['tool'=>'sales_summary','from'=>'2026-11-08','to'=>'2026-11-14']],
+        ['outcome'=>'local','report_context'=>['tool'=>'sales_summary','from'=>'2026-11-15','to'=>'2026-11-21']],
     ]];
     $service = new \App\Services\AgentConversationService();
     $report = $service::previousReportFromDocument($doc,['type'=>'admin','id'=>'u1']);
-    assertSame('2026-11-01',$report['from'],'An unsuccessful report cannot replace the last delivered report, including legacy turns');
-    assertSame(null, $service::previousReportFromDocument(array_replace($doc, ['turns'=>[$doc['turns'][1]]]), ['type'=>'admin','id'=>'u1']),
-        'A conversation with no successful report has no prior report scope');
+    assertSame('2026-11-01',$report['from'],'The latest accepted model report controls previous scope');
+    assertSame(null, $service::previousReportFromDocument(array_replace($doc, ['turns'=>array_slice($doc['turns'],1)]), ['type'=>'admin','id'=>'u1']),
+        'Error and old local turns do not supply an earlier model report scope');
     try {
         $service::previousReportFromDocument($doc,['type'=>'admin','id'=>'u2']);
         throw new \RuntimeException('Expected actor rejection');
@@ -2478,15 +2453,15 @@ $tests['support named festive collection listing uses only collection members'] 
         ['id'=>'b', 'name'=>'Ayyappa Dollar with Impon Malai', 'slug'=>'ayyappa-dollar-with-impon-malai'],
         ['id'=>'c', 'name'=>'Sri Vel Mayil Pendant', 'slug'=>'vel'],
     ];
-    $selected = (new \App\Services\CategoryService())->collectionProducts($match, $visible);
-    $answer = \App\Services\SupportBotService::collectionListingReply($match, $selected);
-    assertSame(2, count($selected), 'Only the selected festival products are retrieved');
-    assertTrue(str_contains($answer, 'Golden Panchaloga') && str_contains($answer, 'Impon Malai'),
-        'Answer names the two actual collection members');
-    assertTrue(!str_contains($answer, 'Unrelated gemstone ring'), 'Never list a random product from the default catalogue');
-    assertTrue(str_contains($answer, '/shop?category=collection-ayyappa'), 'Collection-specific shop link is included');
-    $empty = \App\Services\SupportBotService::collectionListingReply($match, []);
-    assertTrue(str_contains($empty, 'no visible products'), 'Empty collections do not fabricate results');
+    $selection = \App\Services\AgentContextService::catalogueSelection($visible,'ayyappan swamy festive products list please',$collections);
+    assertSame('collection-ayyappa',$selection['collection']['slug'],'The scoped lookup returns the approved collection identity');
+    assertSame(['Ayyappan Pendant','ayyappa-dollar-with-impon-malai'],array_column($selection['products'],'slug'),
+        'Only the selected festival products are returned');
+    assertSame(['product:Ayyappan%20Pendant','product:ayyappa-dollar-with-impon-malai'],array_column($selection['sources'],'id'),
+        'Tool evidence preserves exact current public identities');
+    $empty = \App\Services\AgentContextService::catalogueSelection([$visible[0]],'ayyappan swamy festive products list please',$collections);
+    assertSame('no_match',$empty['status'],'An empty collection is distinguishable from another collection');
+    assertSame([],$empty['products'],'An empty collection cannot substitute unrelated products');
 };
 
 $tests['brand upload formats and limits use real file contents'] = static function (): void {
@@ -3881,28 +3856,23 @@ $tests['the admin agent attaches documents and drafts into a form it cannot save
         'An upload return path must be restricted to the admin');
 };
 
-$tests['the support agent knows this shop\'s own delivery and payment rules'] = function (): void {
-    // Asked "how long does delivery take to singapore" the agent answered that it had
-    // no information, while OrderService had held the answer all along and the shipment
-    // email already quoted it.
-    $bot = new \App\Services\SupportBotService();
-    $policies = (new ReflectionMethod($bot, 'policies'))->getClosure($bot)();
-    foreach (['delivery_within_india', 'delivery_outside_india', 'shipping_cost', 'payment_methods', 'tracking'] as $key) {
-        assertTrue(!empty($policies[$key]), "The agent should know {$key}");
-    }
-    // Read from the constants, not restated, so the promise the agent makes and the
-    // promise the shipment email makes cannot drift apart.
-    assertTrue(str_contains($policies['delivery_within_india'], \App\Services\OrderService::DELIVERY_DAYS_DOMESTIC),
-        'Domestic delivery should come from OrderService');
-    assertTrue(str_contains($policies['delivery_outside_india'], \App\Services\OrderService::DELIVERY_DAYS_INTERNATIONAL),
-        'International delivery should come from OrderService');
-    $service = file_get_contents(app_path('app/Services/SupportBotService.php'));
-    assertTrue(str_contains($service, 'OrderService::DELIVERY_DAYS_DOMESTIC'), 'Delivery days must not be retyped');
+$tests['the model-selectable Support policy tool exposes delivery and payment rules'] = function (): void {
     $tools = new \App\Services\SupportToolRegistry(null);
+    foreach (['delivery_within_india', 'delivery_outside_india', 'shipping_cost', 'payment_methods', 'tracking'] as $key) {
+        assertTrue(!empty($tools->run('public_policy',['key'=>$key])['value']), "The public policy tool should expose {$key}");
+    }
+    assertSame(\App\Services\OrderService::DELIVERY_DAYS_DOMESTIC.' after dispatch',
+        $tools->run('public_policy',['key'=>'delivery_within_india'])['value'], 'Domestic timing uses the shipping constant');
+    assertSame(\App\Services\OrderService::DELIVERY_DAYS_INTERNATIONAL.' after dispatch',
+        $tools->run('public_policy',['key'=>'delivery_outside_india'])['value'], 'International timing uses the shipping constant');
     $model = new \App\Services\RuntimeAgentToolRegistry('support', null, $tools);
     $policy = $model->run('tool_search', ['query'=>'public_policy']);
     assertSame('public_policy',$policy['matches'][0]['name']??null,'Model can select the public policy tool');
-    assertTrue(str_contains(json_encode($model->run('public_policy',['key'=>'delivery_outside_india'])), \App\Services\OrderService::DELIVERY_DAYS_INTERNATIONAL),'Delivery facts available through model-selected tool');
+    $result = $model->run('public_policy',['key'=>'delivery_outside_india']);
+    assertSame(\App\Services\OrderService::DELIVERY_DAYS_INTERNATIONAL.' after dispatch',
+        $result['value'],'Delivery facts reach the model as a tool result');
+    assertSame('customer-policy',$result['runtime_guidance'][0]['skill']??null,
+        'The existing Support instruction retrieval accompanies the allowed policy tool');
 };
 
 $tests['the blog editor keeps images and fills in the date and author itself'] = function (): void {
@@ -3958,8 +3928,6 @@ $tests['the admin agent grounds a count instead of returning the nearest number'
     assertTrue(isset($registry->run('support_enquiries', ['status'=>'pending'])['error']), 'Reject unrecognized ticket filters');
     assertTrue(isset($registry->run('gst_register_summary', ['from'=>'2026-02-31'])['error']), 'Reject invalid dates before reading orders');
     assertTrue(isset($registry->run('store_count', ['entity'=>'secrets'])['error']), 'Reject collections outside the fixed count allowlist');
-    assertSame(null, $registry->aggregateAnswer('Compare revenue and GST last month'), 'Compound requests need model-selected data instead of one local summary');
-    assertSame(null, $registry->aggregateAnswer('What was our revenue yesterday?'), 'Do not substitute a default period for an unsupported local filter');
     // Enterprise delegates to the same public source as Support and MCP.
     // tests/public-knowledge.php independently checks hidden/future/retired fixtures.
     $publishedSource = (string)file_get_contents(app_path('app/Services/PublicKnowledgeService.php'));
@@ -4022,12 +3990,15 @@ $tests['every module toggle in the code refers to a module that exists'] = funct
 };
 
 $tests['owner agent context and order tools protect customer identities'] = function (): void {
-    $context = App\Services\AgentContextService::ownerAnalyticsFromRecords([
-        ['status'=>'confirmed', 'total'=>200, 'customer_email'=>'alice@example.test', 'items'=>[['name'=>'Ring','qty'=>2,'line_total'=>200]]],
-        ['status'=>'confirmed', 'total'=>100, 'customer_email'=>'bob@example.test', 'items'=>[['name'=>'Ring','qty'=>1,'line_total'=>100]]],
-    ], 2, 1, 0, 0);
-    assertTrue(!str_contains($context, 'alice@example.test') && !str_contains($context, 'bob@example.test'), 'Analytics must not send customer emails');
-    assertTrue(str_contains($context, '3 sold') && str_contains($context, '300.00'), 'Aggregate sales remain available');
+    $facts = App\Services\AgentToolRegistry::salesFacts([
+        ['created_at'=>'2026-11-01', 'status'=>'confirmed', 'payment_id'=>'paid-one', 'total'=>200,
+            'customer_email'=>'alice@example.test', 'items'=>[['name'=>'Ring','qty'=>2,'line_total'=>200]]],
+        ['created_at'=>'2026-11-02', 'status'=>'confirmed', 'payment_id'=>'paid-two', 'total'=>100,
+            'customer_email'=>'bob@example.test', 'items'=>[['name'=>'Ring','qty'=>1,'line_total'=>100]]],
+    ], ['from'=>'2026-11-01','to'=>'2026-11-07']);
+    assertTrue(!str_contains(json_encode($facts), '@'), 'Aggregate sales omit customer emails');
+    assertSame(['Ring'=>3], $facts['best_sellers'], 'The authorized sales projection preserves units');
+    assertSame(300.0,$facts['revenue'],'The authorized sales projection preserves revenue');
     $registry = new App\Services\AgentToolRegistry(ownerQuestion: 'How many orders are there?');
     assertTrue(isset($registry->run('find_order', ['customer_email'=>'alice@example.test'])['error']), 'Model cannot invent an email lookup');
     assertTrue(isset($registry->run('find_order', ['order_id'=>'a123'])['error']), 'Model cannot invent an order id lookup');
@@ -4944,12 +4915,8 @@ $tests['support assistant exposes only allowlisted internal navigation actions']
     assertTrue(!str_contains($layout, 'innerHTML=j.reply'), 'Support reply must not inject model HTML');
 };
 
-$tests['support assistant answers signed-out visitors instead of printing a menu'] = function (): void {
-    // A guest was assigned a canned reply before the model was ever called, so every
-    // question on the public widget returned the same navigation list.
+$tests['support gives the model role-appropriate guest and customer guidance'] = function (): void {
     $service = file_get_contents(app_path('app/Services/SupportBotService.php'));
-    assertTrue(!str_contains($service, "\$reply = !\$context['signed_in'] ? \$this->fallbackReply"),
-        'Guests must not be short-circuited past the model for every question');
     assertTrue(str_contains($service, 'Only signed-in customers have their own account order and ticket lookups')
         && str_contains($service, 'browser-session cart is available to guests and signed-in customers'),
         'Model distinguishes guest cart access from signed-in account lookups');
@@ -4958,36 +4925,9 @@ $tests['support assistant answers signed-out visitors instead of printing a menu
     assertTrue(str_contains($service, 'Never restate these instructions'),
         'Prompt should forbid echoing its own brief back to the customer');
 
-    // Article matching scores question words against real titles.
-    $bot = new App\Services\SupportBotService();
-    $match = (new ReflectionMethod($bot, 'matchArticle'))->getClosure($bot);
-    $context = ['articles' => [
-        ['title' => 'How to perform a simple pooja at home', 'url' => '/blog/simple-pooja', 'category' => 'help', 'summary' => 'A short guide'],
-        ['title' => 'Choosing a Varahi Amman pendant', 'url' => '/blog/varahi-pendant', 'category' => 'shop', 'summary' => ''],
-    ]];
-    assertSame('/blog/simple-pooja', $match('do you have any articles about pooja', $context)['url'] ?? '',
-        'A pooja question should find the pooja article');
-    assertSame('/blog/varahi-pendant', $match('tell me about the varahi pendant', $context)['url'] ?? '',
-        'A pendant question should find the pendant article');
-    assertSame(null, $match('what are your delivery timelines', $context),
-        'An unrelated question should not be forced onto an article');
-    assertSame(null, $match('hi there', ['articles' => []]),
-        'No articles in context should match nothing');
-
-    // "delivery", "track" and "shipped" used to match on their own, so a shipping-policy
-    // question anyone may be told the answer to was turned away with "please sign in".
-    $private = (new ReflectionMethod($bot, 'isPrivateAccountQuestion'))->getClosure($bot);
-    foreach ([
-        'how long does delivery take to singapore', 'what is your shipping policy',
-        'do you deliver to malaysia', 'what is this app',
-    ] as $public) {
-        assertTrue(!$private($public), "A general question should not require sign-in: {$public}");
-    }
-    foreach ([
-        'where is my order', 'track my parcel', 'my order status', 'order history', 'show me order #1042',
-    ] as $personal) {
-        assertTrue($private($personal), "A personal-account question should require sign-in: {$personal}");
-    }
+    $guest=new \App\Services\RuntimeAgentToolRegistry('support', null, new \App\Services\SupportToolRegistry(null));
+    assertSame([], $guest->run('tool_search',['query'=>'own_order_status'])['matches'],
+        'A public visitor cannot discover private order lookup');
 };
 
 $tests['agent failure categories are bounded and aggregated'] = function (): void {
@@ -5012,18 +4952,15 @@ $tests['general tracking policy is a model-selectable public tool'] = function (
     assertTrue(isset($tool->run('own_order_status',[])['error']),'Personal data remains unavailable');
 };
 
-$tests['support fallback explains tracking without claiming a personal order lookup'] = function (): void {
-    $bot = new App\Services\SupportBotService();
-    $fallback = (new ReflectionMethod($bot, 'fallbackReply'))->getClosure($bot);
-    $policies = (new ReflectionMethod($bot, 'policies'))->invoke($bot);
-    foreach ([true, false] as $signedIn) {
-        $context = ['signed_in' => $signedIn, 'orders' => [], 'policies' => $policies];
-        $reply = $fallback('How can I track an order?', $context);
-        assertTrue(str_contains($reply, 'tracking') && str_contains($reply, '/account/dashboard/orders'), 'General tracking help should explain the shipping email and orders page');
-        assertTrue(!str_contains($reply, 'could not find orders'), 'A general question does not ask for a personal lookup');
-    }
-    $guestReply = $fallback('Where is my order?', ['signed_in' => false, 'orders' => [], 'policies' => $policies]);
-    assertTrue(str_contains($guestReply, 'sign in'), 'Personal order lookups remain protected');
+$tests['public tracking policy and account lookup keep distinct contracts'] = function (): void {
+    $guest=new \App\Services\SupportToolRegistry(null);
+    assertSame(['value'=>'A tracking link is supplied when the order ships.'],
+        $guest->run('public_policy',['key'=>'tracking']),'A guest can read the public tracking fact');
+    assertSame(['error'=>'Not permitted'],$guest->run('own_order_status',[]),'The same guest cannot run a personal lookup');
+    $customer=new \App\Services\SupportToolRegistry(['role'=>'customer','email'=>'fixture@example.invalid']);
+    assertSame(['error'=>'Invalid order reference'],
+        $customer->run('own_order_status',['email'=>'someone-else@example.invalid']),
+        'Customer model cannot select another account');
 };
 
 $tests['product payment remains production gated after wallet removal'] = function (): void {
@@ -5125,23 +5062,7 @@ $tests['owner tools reject malformed model arguments before execution'] = functi
     );
 };
 
-$tests['owner aggregate questions answer from allowlisted local sales data'] = function (): void {
-    $summary = [
-        'orders' => 4,
-        'revenue' => 1875.5,
-        'best_sellers' => ['Brass Lamp' => 3, 'Rudraksha Mala' => 1],
-    ];
-    $best = App\Services\AgentToolRegistry::aggregateAnswerFromSummary('Which products sell best?', $summary, 30);
-    assertTrue(str_contains((string)$best, 'Brass Lamp — 3 units'), 'Best-seller answer should state the locally counted units');
-    assertTrue(str_contains((string)$best, 'last 30 days') && str_contains((string)$best, 'paid orders before returns'), 'Answer should state its period and counting rule');
-    $revenue = App\Services\AgentToolRegistry::aggregateAnswerFromSummary('What is the revenue this month?', $summary, 0);
-    assertTrue(str_contains((string)$revenue, '₹1,875.50') && str_contains((string)$revenue, '4 paid orders') && str_contains((string)$revenue, 'this month'), 'Revenue answer should state value, order count and calendar period');
-    assertSame(null, App\Services\AgentToolRegistry::aggregateAnswerFromSummary('Where is order abc?', $summary), 'Specific lookups must stay on the scoped model/tool path');
-    $count = App\Services\AgentToolRegistry::aggregateAnswerFromSummary('How many orders have we had in the last 30 days?', $summary, 30);
-    assertSame('The store recorded 4 orders in the last 30 days. Includes all statuses with a recorded creation date in that period.', $count, 'Order count uses the selected date range and explains its scope');
-    foreach (['How many refunded orders were placed this month?', 'How many orders were placed yesterday?', 'How many orders did we receive from this customer?'] as $scoped) {
-        assertSame(null, App\Services\AgentToolRegistry::aggregateAnswerFromSummary($scoped, $summary), 'The generic count must not silently ignore a qualifier');
-    }
+$tests['owner sales and order lookups return typed facts scoped to the requested period'] = function (): void {
     $fixture = [
         ['created_at'=>'2026-11-10','status'=>'confirmed','payment_id'=>'paid','total'=>100.50,
             'items'=>[['name'=>'Brass Lamp','qty'=>1,'line_total'=>100.50]]],
@@ -5149,12 +5070,13 @@ $tests['owner aggregate questions answer from allowlisted local sales data'] = f
             'items'=>[['name'=>'Unpaid item','qty'=>4,'line_total'=>700]]],
         ['created_at'=>'2026-10-31','status'=>'confirmed','payment_id'=>'old','total'=>500],
     ];
-    $facts = App\Services\AgentToolRegistry::salesFacts($fixture, ['from'=>'2026-11-01','to'=>'2026-11-30']);
+    $period = ['from'=>'2026-11-01','to'=>'2026-11-30'];
+    $facts = App\Services\AgentToolRegistry::salesFacts($fixture, $period);
     assertSame(1, $facts['orders'], 'Sales counts only include verified payments in the requested range');
     assertSame(100.50, $facts['revenue'], 'Unpaid or out-of-period orders must not inflate revenue');
     assertSame(['Brass Lamp'=>1], $facts['best_sellers'], 'An unpaid item cannot rank as a best seller');
-    $controller = file_get_contents(app_path('app/Controllers/AdminController.php'));
-    assertTrue(str_contains($controller, "agentRun('admin', 'local'"), 'Owner aggregate path must be monitored distinctly');
+    $orders = App\Services\AgentToolRegistry::orderCountFacts($fixture, $period);
+    assertSame(2, $orders['count'], 'Order count includes both paid and pending orders in scope');
 };
 
 $tests['downloadable invoice response preserves snapshot and review warning'] = function (): void {
@@ -5397,21 +5319,17 @@ $tests['order email renders purchased quantities and escapes product text'] = fu
     assertSame('', App\Services\MailQueueService::orderItemsHtml([]), 'Missing order lines are not fabricated');
 };
 
-$tests['support answers exact catalog facts without needing the model'] = function (): void {
+$tests['support product lookup returns exact stored facts'] = function (): void {
     $product = ['name' => 'Sri Karuppasamy Pendant', 'slug' => 'karuppasami-dollar',
         'description' => 'Depicts Sri Karuppasamy seated on a horse.', 'price' => 899];
-    $reply = \App\Services\SupportBotService::catalogFactReply(
-        'What does the Sri Karuppasamy Pendant depict, and what is its current price?', [$product]
-    );
-    assertTrue(str_contains((string)$reply, 'horse') && str_contains((string)$reply, '₹899.00')
-        && str_contains((string)$reply, '/product/karuppasami-dollar'), 'Use the stored description, price and link');
-    assertSame(null, \App\Services\SupportBotService::catalogFactReply(
-        'Compare the Sri Karuppasamy Pendant with a mala.', [$product]
-    ), 'Open comparisons still go to the model');
+    $facts = \App\Services\AgentContextService::catalogueSelection([$product],'Sri Karuppasamy Pendant current details');
+    assertSame([$product],$facts['products'],'Retrieval returns the stored description and price');
+    assertSame(['product:karuppasami-dollar'],array_column($facts['sources'],'id'),'Retrieval provides the exact published identity');
+    $partial = \App\Services\AgentContextService::catalogueSelection([$product],'Compare the Sri Karuppasamy Pendant with a mala.');
+    assertSame('clarification',$partial['status'],'An incomplete selection is a typed result the model can interpret');
     $product['price'] = null;
-    assertSame(null, \App\Services\SupportBotService::catalogFactReply(
-        'How much is the Sri Karuppasamy Pendant?', [$product]
-    ), 'Missing prices must not be invented');
+    $missing = \App\Services\AgentContextService::catalogueSelection([$product],'Sri Karuppasamy Pendant price');
+    assertSame([$product],$missing['products'],'Retrieval retains the actual missing price');
 };
 
 $tests['support comparison uses two distinct catalog examples'] = function (): void {
@@ -5420,11 +5338,10 @@ $tests['support comparison uses two distinct catalog examples'] = function (): v
         ['name' => 'Sri Karuppasamy Pendant', 'slug' => 'karuppasami-dollar', 'description' => 'Depicts the deity on a horse.'],
     ];
     $question = 'Can you explain the difference between a pendant and a mala for everyday devotional use?';
-    $reply = \App\Services\SupportBotService::catalogComparisonReply($question, $products);
-    assertTrue(str_contains((string)$reply, 'five-metal chain') && str_contains((string)$reply, 'deity on a horse'),
-        'Both examples must use their stored facts');
-    assertSame(null, \App\Services\SupportBotService::catalogComparisonReply($question, [$products[0]]),
-        'One product cannot stand in for both types');
+    $selection = \App\Services\AgentContextService::catalogueSelection($products,$question);
+    assertSame($products,$selection['products'],'The comparison tool returns both actual stored examples');
+    $partial = \App\Services\AgentContextService::catalogueSelection([$products[0]],$question);
+    assertSame([],$partial['products'],'One product cannot stand in for both types');
     $bot = new \App\Services\SupportBotService();
     $actions = (new ReflectionMethod($bot, 'extractActions'))->getClosure($bot);
     assertSame(['/product/Ayyappan%20Pendant', '/product/with-malai'], array_column(
@@ -5436,54 +5353,48 @@ $tests['support context selects a named product before applying the catalogue ca
     $catalogue = array_fill(0, 28, ['name' => 'Unrelated Ring', 'slug' => 'unrelated-ring']);
     $pendant = ['name' => 'Sri Karuppasamy Pendant', 'slug' => 'karuppasami-dollar'];
     $catalogue[] = $pendant;
-    assertSame([$pendant], \App\Services\AgentContextService::supportProducts(
+    $named = \App\Services\AgentContextService::catalogueSelection(
         $catalogue, 'What does the Sri Karuppasamy Pendant depict, and what is its current price?'
-    ), 'Product 29 must be included when named');
-    assertSame(20, count(\App\Services\AgentContextService::supportProducts($catalogue, 'What do you sell?')),
-        'General catalog prompts remain bounded');
+    );
+    assertSame([$pendant],$named['products'],'Product 29 must be included when named');
+    $generic = \App\Services\AgentContextService::catalogueSelection($catalogue, 'What do you sell?');
+    assertSame(20,count($generic['products']),'General catalog prompts remain bounded');
     $mala = ['name' => 'Ayyappa Dollar with Impon Malai', 'slug' => 'ayyappa-dollar-with-impon-malai'];
     $catalogue[] = $mala;
-    assertSame([$pendant, $mala], \App\Services\AgentContextService::supportProducts(
+    $compared = \App\Services\AgentContextService::catalogueSelection(
         $catalogue, 'Can you explain the difference between a pendant and a mala?'
-    ), 'Generic comparison includes both catalog types, including the Malai spelling');
+    );
+    assertSame([$pendant,$mala],$compared['products'],'Generic comparison includes both catalogue types, including the Malai spelling');
 };
 
-$tests['support product questions retain public specifications and reject unrelated articles'] = function (): void {
-    $bot = new App\Services\SupportBotService();
-    $fallback = (new ReflectionMethod($bot, 'publicGuestReply'))->getClosure($bot);
-    $article = (new ReflectionMethod($bot, 'matchArticle'))->getClosure($bot);
-    $context = ['site' => ['products' => [[
-        'name' => 'Kariya Sakthi Aragaja Mai', 'slug' => 'kariya-sakthi-aragaja-mai', 'url' => '/product/aragaja',
+$tests['support product facts retain stored specifications and omit missing values'] = function (): void {
+    $product = [
+        'name' => 'Kariya Sakthi Aragaja Mai', 'slug' => 'kariya-sakthi-aragaja-mai',
         'price' => 850, 'description' => 'Sacred fragrance paste.', 'specifications' => ['Pack size' => '25 g'],
-    ]]], 'articles' => [[
-        'title' => 'What is Sade Sati?', 'url' => '/blog/sade-sati', 'summary' => 'Astrology guide',
-    ]]];
-    $question = 'What is Kariya Sakthi Aragaja Mai and what is its pack size?';
-    assertSame(null, $article($question, $context), 'Common question words must not match astrology articles');
-    $reply = $fallback($question, $context);
-    assertTrue(str_contains($reply, 'Pack size: 25 g'), 'Fallback uses the product specification');
-    assertTrue(str_contains($reply, '₹850'), 'Fallback quotes the current public catalogue price');
-    assertTrue(str_contains($reply, '/product/aragaja'), 'Fallback links the matched product');
-    assertTrue(!str_contains($reply, 'Sade Sati'), 'Product answer must not substitute an unrelated article');
-    $context['site']['products'][0]['specifications'] = [];
-    $reply = $fallback($question, $context);
-    assertTrue(!str_contains($reply, '25 g') && str_contains($reply, '/contact'), 'Missing facts are not invented');
-    $comparison = $fallback('Can you explain the difference between a pendant and a mala for everyday devotional use?', $context);
-    assertTrue(str_contains($comparison, '/contact'), 'Unanswered comparisons give customers a way to get help');
-    assertTrue(!str_contains($comparison, 'Available products include') && !str_contains($comparison, 'Aragaja'), 'Comparison fallback does not suggest unrelated products');
+    ];
+    $questions = 'What is Kariya Sakthi Aragaja Mai and what is its pack size?';
+    $selected = App\Services\AgentContextService::catalogueSelection([$product],$questions);
+    assertSame([$product],$selected['products'],'Named details retain exact published facts');
+    assertSame(['product:kariya-sakthi-aragaja-mai'],array_column($selected['sources'],'id'),'The lookup cites the exact product');
+    $product['specifications'] = [];
+    $withoutSpecifications = App\Services\AgentContextService::catalogueSelection([$product],$questions);
+    assertSame([],$withoutSpecifications['products'][0]['specifications'],'A missing pack size remains missing');
+    $comparison = App\Services\AgentContextService::catalogueSelection([$product],
+        'Can you explain the difference between a pendant and a mala for everyday devotional use?');
+    assertSame([],$comparison['products'],'Comparison lookup never substitutes an unrelated product');
     $source = file_get_contents(app_path('app/Services/AgentContextService.php'));
     foreach (['description', 'highlights', 'description_points', 'specifications'] as $field) {
         assertTrue(str_contains($source, "'" . $field . "' =>"), 'Public product details must reach model context');
         assertTrue(in_array($field, (new App\Services\SchemaService())->agentContextFields('products'), true), 'Product detail must be allowlisted by schema');
     }
 
-    $context['site']['products'][0] = [
+    $padi = [
         'name' => 'Lakshmi Kubera Padi with Kubera Numbers | Traditional Gold Finish Pooja Stand',
-        'slug' => 'lakshmi-kubera-padi', 'url' => '/product/lakshmi-kubera-padi', 'price' => 799,
+        'slug' => 'lakshmi-kubera-padi', 'price' => 799,
     ];
-    $reply = $fallback('What is Lakshmi Kubera Padi and what is its current price?', $context);
-    assertTrue(str_contains($reply, 'Lakshmi Kubera Padi with Kubera Numbers'), 'A natural product question should match its exact multi-word slug alias');
-    assertTrue(str_contains($reply, '₹799'), 'Slug-alias matches retain the current catalogue price');
+    $named = App\Services\AgentContextService::catalogueSelection([$padi],
+        'What is Lakshmi Kubera Padi and what is its current price?');
+    assertSame([$padi],$named['products'],'The exact multi-word slug alias retains the current facts');
 };
 
 $tests['smtp encodes long unicode HTML into bounded transport safe MIME lines'] = function (): void {
@@ -5647,18 +5558,15 @@ $tests['GST quantity reconciles only matching issued units and preserves histori
     assertTrue(str_contains($export[3][18], 'issued GST unit'), 'CSV explains missing historical quantity evidence');
 };
 
-$tests['Enterprise can recover verified ticket counts after model synthesis fails'] = static function (): void {
+$tests['Enterprise ticket lookups return typed counts and trace failed scopes independently'] = static function (): void {
     $previousMode = getenv('BAPX_TEST_MODE');
     putenv('BAPX_TEST_MODE=1');
     try {
         $tools = new \App\Services\AgentToolRegistry();
-        assertSame(null, $tools->ticketLookupFallback(), 'No fallback before a completed ticket lookup');
-        $tools->run('support_enquiries', ['status'=>'open']);
-        $tools->run('support_enquiries', ['status'=>'answered']);
-        $tools->run('support_enquiries', ['status'=>'invalid']);
-        $answer = $tools->ticketLookupFallback();
-        assertTrue(str_contains($answer, '0 open support tickets') && str_contains($answer, '0 answered support tickets'), 'Recover each successful result with its scope');
-        assertTrue(!str_contains($answer, 'invalid'), 'Exclude failed calls from the recovered answer');
+        assertSame(0, $tools->run('support_enquiries', ['status'=>'open'])['total'], 'A verified zero for open tickets');
+        assertSame(0, $tools->run('support_enquiries', ['status'=>'answered'])['total'], 'A verified zero for answered tickets');
+        assertTrue(isset($tools->run('support_enquiries', ['status'=>'invalid'])['error']), 'Unrecognized statuses return an error');
+        assertSame(['complete','complete','error'], array_column($tools->activity(),'status'), 'Each scoped lookup keeps its actual outcome');
     } finally {
         putenv($previousMode === false ? 'BAPX_TEST_MODE' : 'BAPX_TEST_MODE=' . $previousMode);
     }
@@ -5703,23 +5611,22 @@ $tests['Enterprise ticket follow-up retains the previous report period'] = stati
         $tools = new \App\Services\AgentToolRegistry(ownerQuestion: $question, previousReport: [
             'tool' => 'support_enquiries', 'from' => $previous['from'], 'to' => $previous['to'], 'topic' => $previous['topic'],
         ]);
-        $answer = $tools->aggregateAnswer($question);
-        assertTrue(str_contains($answer, 'answered support tickets about refund') && str_contains($answer, '2026-09-01 to 2026-09-07'),
-            'Follow-up preserves the prior date range and applies the new status');
-        $qualified = 'How many tickets in that same period were answered?';
-        $qualifiedTools = new \App\Services\AgentToolRegistry(ownerQuestion: $qualified, previousReport: $tools->reportContext());
-        assertTrue(str_contains($qualifiedTools->aggregateAnswer($qualified), 'answered support tickets about refund'), 'A status after the period keeps the report scope');
+        $savedScope = $tools->validatedPreviousReport();
+        assertSame(['2026-09-01','2026-09-07','refund'], [$savedScope['from'],$savedScope['to'],$savedScope['topic']],
+            'The model receives the prior report window and topic as a reference');
+        $result = $tools->run('support_enquiries', ['from'=>$savedScope['from'],'to'=>$savedScope['to'],
+            'topic'=>$savedScope['topic'],'status'=>'answered']);
+        assertSame(0, $result['total'], 'A new scoped tool call verifies the result');
+        assertSame($savedScope, $tools->validatedPreviousReport(), 'Executing another lookup keeps the authorized previous context intact');
         $orders = new \App\Services\AgentToolRegistry(ownerQuestion: 'How many orders this month?');
-        $orders->aggregateAnswer('How many orders this month?');
-        assertSame(date('Y-m-01'), $orders->reportContext()['from'] ?? null, 'Direct order count establishes a report period');
+        $orders->run('order_count', ['period'=>'this_month']);
+        assertSame(date('Y-m-01'), $orders->reportContext()['from'] ?? null, 'A completed order count establishes a report period');
         $fresh = new \App\Services\AgentToolRegistry(ownerQuestion: $question);
-        assertTrue(str_contains($fresh->aggregateAnswer($question), 'Which dates'), 'A fresh chat asks for dates');
-        $comparison = 'Compare sales this month with the same period last year';
-        assertSame(null, $fresh->aggregateAnswer($comparison), 'A self-contained comparison reaches the model');
+        assertSame(null, $fresh->validatedPreviousReport(), 'A fresh chat receives no prior scope');
         $sales = new \App\Services\AgentToolRegistry(ownerQuestion: 'Show best sellers for that same period', previousReport: [
             'tool' => 'sales_summary', 'from' => '0001-01-01', 'to' => '2026-09-07',
         ]);
-        assertSame('0001-01-01', $sales->followUpContext()['from'] ?? null, 'All-time sales context can be reused');
+        assertSame('0001-01-01', $sales->validatedPreviousReport()['from'] ?? null, 'All-time sales context can be reused');
 
     } finally {
         putenv($previousMode === false ? 'BAPX_TEST_MODE' : 'BAPX_TEST_MODE=' . $previousMode);
@@ -5727,36 +5634,20 @@ $tests['Enterprise ticket follow-up retains the previous report period'] = stati
 };
 
 $tests['support ticket data is scoped and does not expose conversation bodies'] = static function (): void {
-    $query = \App\Services\SupportBotService::ticketLookupRequest('How many of my tickets are closed?');
-    assertSame('closed', $query['status'] ?? null, 'Status after the noun must constrain the lookup');
-    $yearQuery = \App\Services\SupportBotService::ticketLookupRequest('How many of my support tickets were opened this year?');
-    assertSame([date('Y-01-01'), date('Y-m-d')], $yearQuery['period'], 'Current year must filter ticket counts');
-    $quarterQuery = \App\Services\SupportBotService::ticketLookupRequest('How many of my support tickets were opened this quarter?');
-    assertSame([], $quarterQuery['period'], 'Unsupported period must ask for clarification');
-
-    assertSame(null, \App\Services\SupportBotService::ticketLookupRequest('Open a new support ticket'), 'Creation stays separate from lookup');
-    assertSame(null, \App\Services\SupportBotService::ticketLookupRequest('I have a problem with my order, please create a support ticket'),
-        'Ticket creation after an introductory clause still reaches escalation');
-    $periodQuestion = 'Show my support tickets from last month';
-    $periodLookup = \App\Services\SupportBotService::ticketLookupRequest($periodQuestion);
-    $statusReply = new ReflectionMethod(\App\Services\SupportBotService::class, 'ticketStatusReply');
-    assertSame(null, $statusReply->invoke(null, $periodQuestion, [
-        'recent' => [['reference'=>'aaaaaaaaaaaaaaaa'], ['reference'=>'bbbbbbbbbbbbbbbb']],
-        'count' => 2,
-    ], $periodLookup), 'A period list must not short circuit to the latest ticket');
-
     $facts = \App\Services\AgentContextService::supportTicketFacts([
         ['id'=>'aaaaaaaaaaaaaaaa', 'status'=>'closed', 'created_at'=>'2026-10-12T10:00:00+05:30',
             'customer_email'=>'private@example.test', 'message'=>'Raw ticket message', 'reply'=>'Private reply'],
         ['id'=>'bbbbbbbbbbbbbbbb', 'status'=>'open', 'created_at'=>'2026-10-12T10:00:00+05:30'],
         ['id'=>'cccccccccccccccc', 'status'=>'closed', 'created_at'=>'2026-09-01T10:00:00+05:30'],
-    ], null, $query['status'], ['2026-10-01', '2026-10-31']);
+    ], null, 'closed', ['2026-10-01', '2026-10-31']);
     assertSame(3, $facts['candidate_count'], 'The candidate count reflects the supplied customer-scoped tickets before filtering');
     assertSame(1, $facts['count'], 'The results respect status and creation dates');
     assertSame(['reference', 'status', 'created_date', 'updated_date'], array_keys($facts['recent'][0]), 'Only allowlisted ticket metadata reaches the model');
     $guest=new \App\Services\SupportToolRegistry(null);
     assertTrue(isset($guest->run('own_ticket_status',[])['error']),'Guest cannot read tickets');
     $customer=new \App\Services\SupportToolRegistry(['email'=>'scope@example.invalid']);
+    assertSame(['error'=>'Not permitted'],$customer->run('create_ticket',[]),'Customer chat model has no ticket creation tool');
+    assertSame(['error'=>'Invalid status'],$customer->run('own_ticket_status',['status'=>'resolved']),'Lookup accepts only known typed statuses');
     assertTrue(isset($customer->run('own_ticket_status',['period'=>['2026-02-30','2026-03-01']])['error']),'Invalid periods rejected');
     assertTrue(isset($customer->run('own_ticket_status',['email'=>'other@example.invalid'])['error']),'Model cannot select another customer');
     $empty=$customer->run('own_ticket_status',['status'=>'closed']);

@@ -1535,9 +1535,7 @@ flowchart LR
   service_agentcontextservice -. source new .-> service_categoryservice
   service_agentcontextservice -. source new .-> service_databaseservice
   service_agentcontextservice -. source new .-> service_productservice
-  service_agentcontextservice -. source new .-> service_publicknowledgeservice
   service_agentcontextservice -. source new .-> service_schemaservice
-  service_agentcontextservice -. source new .-> service_settingsservice
   service_agentcontextservice -. source new .-> service_supportticketservice
   service_agentcontextservice -. static reference .-> service_publicknowledgeservice
   service_agentconversationservice -. static reference .-> service_agentevaluationservice
@@ -1548,6 +1546,7 @@ flowchart LR
   service_agentdraftservice -. source new .-> service_schemaservice
   service_agentevaluationservice -. source new .-> service_agenttoolregistry
   service_agentevaluationservice -. source new .-> service_categoryservice
+  service_agentevaluationservice -. source new .-> service_supporttoolregistry
   service_agentevaluationservice -. static reference .-> service_agentcapabilitypolicy
   service_agentevaluationservice -. static reference .-> service_agentcontextservice
   service_agentevaluationservice -. static reference .-> service_agentconversationservice
@@ -1555,7 +1554,6 @@ flowchart LR
   service_agentevaluationservice -. static reference .-> service_agenttraceservice
   service_agentevaluationservice -. static reference .-> service_auditlogservice
   service_agentevaluationservice -. static reference .-> service_gstregisterservice
-  service_agentevaluationservice -. static reference .-> service_supportbotservice
   service_agentinstructionservice -. static reference .-> service_agentcapabilitypolicy
   service_agentinstructionservice -. static reference .-> service_agenttraceservice
   service_agenttoolregistry -. source new .-> service_adminhelpservice
@@ -1619,7 +1617,6 @@ flowchart LR
   service_databaseservice -. static reference .-> service_supportticketservice
   service_docsmapservice -. static reference .-> service_projectmapservice
   service_enterprisetoolregistry -- extends --> service_agenttoolregistry
-  service_enterprisetoolregistry -. static reference .-> service_adminhelpservice
   service_enterprisetoolregistry -. static reference .-> service_agentcapabilitypolicy
   service_envservice -. source new .-> service_settingsservice
   service_gstregisterservice -. static reference .-> service_taxservice
@@ -1657,9 +1654,7 @@ flowchart LR
   service_passwordresetservice -. source new .-> service_databaseservice
   service_productservice -. source new .-> service_databaseservice
   service_publica2uiservice -. source new .-> service_publicknowledgeservice
-  service_publica2uiservice -. static reference .-> service_agentcontextservice
   service_publica2uiservice -. static reference .-> service_agenttraceservice
-  service_publica2uiservice -. static reference .-> service_supportbotservice
   service_publicagentdiscoveryservice -. source new .-> service_publicmcpservice
   service_publicagentdiscoveryservice -. static reference .-> service_publicmcpservice
   service_publicagentdiscoveryservice -. static reference .-> service_remotecartservice
@@ -1667,7 +1662,6 @@ flowchart LR
   service_publicknowledgeservice -. source new .-> service_blogservice
   service_publicknowledgeservice -. source new .-> service_productservice
   service_publicknowledgeservice -. source new .-> service_settingsservice
-  service_publicknowledgeservice -. static reference .-> service_agentcontextservice
   service_publicknowledgeservice -. static reference .-> service_publicsiteurlservice
   service_publicknowledgeservice -. static reference .-> service_siteprofileservice
   service_publicmcpservice -. source new .-> service_publica2uiservice
@@ -1740,15 +1734,12 @@ flowchart LR
   service_supportbotservice -. source new .-> service_aiclient
   service_supportbotservice -. source new .-> service_aireplycleaner
   service_supportbotservice -. source new .-> service_auditlogservice
-  service_supportbotservice -. source new .-> service_blogservice
   service_supportbotservice -. source new .-> service_databaseservice
   service_supportbotservice -. source new .-> service_runtimeagenttoolregistry
   service_supportbotservice -. source new .-> service_secretservice
   service_supportbotservice -. source new .-> service_supporttoolregistry
-  service_supportbotservice -. static reference .-> service_agentcontextservice
   service_supportbotservice -. static reference .-> service_agentevaluationservice
   service_supportbotservice -. static reference .-> service_aiclient
-  service_supportbotservice -. static reference .-> service_orderservice
   service_supportbotservice -. static reference .-> service_siteprofileservice
   service_supportticketservice -. source new .-> service_auditlogservice
   service_supportticketservice -. source new .-> service_databaseservice
@@ -1776,7 +1767,6 @@ flowchart LR
   service_addressservice -. collection reference .-> collection_addresses
   service_agentcontextservice -. collection reference .-> collection_orders
   service_agentcontextservice -. collection reference .-> collection_users
-  service_agentcontextservice -. collection reference .-> collection_products
   service_agentcontextservice -. collection reference .-> collection_appointments
   service_agentcontextservice -. collection reference .-> collection_support_tickets
   service_appointmentservice -. collection reference .-> collection_appointments

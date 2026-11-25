@@ -20,7 +20,7 @@ if(PHP_SAPI==='cli-server'){
     $compatible=isset($r['messages']);
     $names=$compatible?array_column(array_column($r['tools']??[],'function'),'name'):array_column($r['tools'][0]['functionDeclarations']??[],'name');
     $contents=$compatible?$r['messages']:$r['contents'];
-    $owner=in_array($scenario,['owner','capability','owner_followup'],true);
+    $owner=in_array($scenario,['owner','capability','owner_followup','slash_capabilities','slash_help'],true);
     $guest=!$owner&&!in_array($scenario,['customer','ticket'],true);
     $hasHistory = str_starts_with($scenario, 'catalogue_') || $scenario === 'owner_followup';
     $assistantRole = $compatible ? 'assistant' : 'model';
@@ -127,6 +127,7 @@ if(PHP_SAPI==='cli-server'){
         'aggregate','catalogue_wrong','catalogue_current','catalogue_fallback','catalogue_locked'=>['public_catalogue_summary',[], 'total','catalogue'],
         'owner'=>['order_count',['period'=>'all_time'],'count','reporting'],
         'owner_followup'=>['order_count',['from'=>'2024-01-03','to'=>'2024-01-07'],'count','reporting'],
+        'slash_help'=>['operator_guide',['topic'=>'blog-publishing','section'=>'Prepare an unpublished article'],'instructions','reporting'],
         'customer'=>['own_order_status',[],'count','customer-policy'],
         'ticket'=>['own_ticket_status',[],'count','customer-policy'],
         'article'=>['read_published_article',['slug'=>'get-support'],'found','customer-policy'],
@@ -161,7 +162,7 @@ if(PHP_SAPI==='cli-server'){
         if($n===9)$parts[]=['text'=>'<final_answer>Not a completed answer.</final_answer>'];
     }elseif($scenario==='transient_start'){
         $parts=[['text'=>'<final_answer>Hello! How can I help?</final_answer>']];
-    }elseif($scenario==='guest'||$scenario==='capability'){
+    }elseif(in_array($scenario,['guest','capability','slash_capabilities'],true)){
         if($n!==1){$fail('Unexpected tool round');return;}
         $parts=[['text'=>'<final_answer>'.($scenario==='guest'?'Please sign in to view your own orders at /login.':'I can use your authorized business tools. Ask me what you would like to investigate.').'</final_answer>']];
     }elseif($choice!==null){
@@ -175,6 +176,7 @@ if(PHP_SAPI==='cli-server'){
                 'catalogue_wrong'=>'The catalogue contains '.($last['total']+1).' published products.',
                 'owner'=>'There are '.$last['count'].' dated order records in the requested period.',
                 'owner_followup'=>'There are '.$last['count'].' orders from '.$last['from'].' through '.$last['to'].'.',
+                'slash_help'=>'The owner guide describes how to save an unpublished draft.',
                 'customer'=>'Your matching order count is '.$last['count'].'.',
                 'ticket'=>'Your matching ticket count is '.$last['count'].'.',
                 'policy','transient_continuation'=>$last['value'],
@@ -226,6 +228,8 @@ try{
         ['article','support','guest','Read your support article.','read_published_article'],
         ['owner','admin','admin','How many orders in total?','order_count'],
         ['capability','admin','admin','What kinds of store tasks can you help me with?',null],
+        ['slash_capabilities','admin','admin','/capabilities',null],
+        ['slash_help','admin','admin','/help blog-publishing','operator_guide'],
         ['outage','support','guest','How many published products do you have?',null],
         ['outage','admin','admin','How many orders in total?',null],
     ];
