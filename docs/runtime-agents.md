@@ -268,8 +268,11 @@ times on the same model, with 1s then 2s backoff plus jitter; after the third fa
 models fail, restart from the first eligible model for a second cycle. Stop
 immediately on successful inference. Explicit authentication, invalid-request,
 missing-model, TLS, explicit daily/zero quota, quota without a short retry hint, and long Retry-After failures do not get blind
-retries. Each request has a 110-second inference deadline and at most 32
-transfers; both browsers wait up to 120 seconds. The trace enforces a
+retries. An observed HTTP 401 excludes the models sharing that connection's
+credential for the rest of the turn. Other connections can still recover before
+a tool exchange begins. The owner error names that connection's key field for
+401 or its permissions for 403. Each request has a 110-second inference
+deadline and at most 32 transfers; both browsers wait up to 120 seconds. The trace enforces a
 115-second total execution limit and the existing observed-token budget.
 The deadline or budget can stop a cycle early. Once tool exchange starts,
 three-attempt recovery resends only the correlated inference request to the

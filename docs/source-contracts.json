@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "b75b02aeb1d03d91da0de1a23668db1d7348440c21cdded7501f2e7dc1fc7dfa",
-            "references_sha256": "1787b64eb38150f6ec3fd5d9415a6b6615cdb913e02f75f2356604b31fb7d6c2",
-            "review_note": "Compared role and module declaration filtering, bounded tool discovery, and agent scope docs with the first-round owner help route. Both provider fixtures require exactly one authorized guide lookup and two round trips."
+            "source_sha256": "7727d5e4a8f32cd197a079fbf7ef662ae510e9c24fd4cc21ecd84802f70f228b",
+            "references_sha256": "174a5489597b865a31a302ce317abf54ca0629c2079a3c362515681a44d9d387",
+            "review_note": "Reviewed the shared provider loop, private attempt records, and administrator field labels against the runtime and operator guidance. An observed authentication rejection removes the remaining models of the same connection while independent fallbacks and raw evidence boundaries stay enforced."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
