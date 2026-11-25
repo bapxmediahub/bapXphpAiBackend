@@ -5,7 +5,7 @@
         "agents": {
             "source_sha256": "7e31fb3568a10a9ad1c0f5df618ce3fc2a01ce4efba073577a13718548ccd21d",
             "references_sha256": "7a90ad0744280242a119113d0526fcb7f68954deafc19df589383c73f1e6f963",
-            "review_note": "Compared report evidence validation, trace recording, historical replay and versioned fixtures with the agent observability guide. Fixture scope matches the tool result and the runtime receipt records only the observed typed business report."
+            "review_note": "Checked version 3 evaluation receipts against the tool, effective date range and observed facts. Existing receipts stay readable and display and operator review remain distinct from report evidence."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -18,9 +18,9 @@
             "review_note": "Compared canonical optional fields, verified payment snapshots, historical flags, HSN groups and CSV review aggregation with the GST commerce guide."
         },
         "content": {
-            "source_sha256": "212c08b38701ff11b88a9017c33cbefc734d241059b3b4d595ff8609de9ad282",
-            "references_sha256": "4a7c2e24302ce60d72e88914f1b756cf44e5fc65c6912f6b00ca4501aafbb4f0",
-            "review_note": "Read the account help Markdown and its source view. The article explains the picture placeholder beside the email."
+            "source_sha256": "9ca1ff8cd0fcc4302ca466ff646e1363396bac0780b7b40b2684486f3e87e465",
+            "references_sha256": "d283e57698fc4ae10cba725749a1723c0f5bea1825f89812b2bf7a15fb2daa20",
+            "review_note": "Reviewed published Markdown guides, search navigation and module filters against the merged catalogue and account source."
         },
         "foundation": {
             "source_sha256": "908874452b8774a7e683b6764cf8d4a973e0b6d09936db89dba6f75646c61c83",
@@ -29,8 +29,8 @@
         },
         "google-tags": {
             "source_sha256": "4f6a8463add868b4016e243e90638e9dc22e442dd5964fc6c25f71a578bc6e40",
-            "references_sha256": "f97f8bd08a0edd6ee125c583e1dbadbc000f3c422b469875bb4f718abf3d8191",
-            "review_note": "Reviewed preserved public head tag rendering with the integration guide and the owner dashboard heading change. Google reporting connection states, tag setup and permitted data links match the current templates."
+            "references_sha256": "5b221c86c8ea31a5e66710e5b2aa2cfb3bee4d921f0b1356c1b3967c29508d3c",
+            "review_note": "Reviewed public head registration and private Google reporting setup after the owner and customer navigation merge."
         },
         "http-errors": {
             "source_sha256": "63602cadbe59868b0d25a1b00729a589e75d1b31c6ea3a1b25c1e5a46fd06d50",
@@ -38,9 +38,9 @@
             "review_note": "Compared the layout-specific title assignment with the request-error boundary. Website error status, sanitized error text and public not-found rendering follow their existing handlers."
         },
         "interface": {
-            "source_sha256": "2cdf88a4a615183557660d35ab02a4c9877f511e98b29fa66f20b0487f4cfcf6",
-            "references_sha256": "fd790f419da6d11919d064db732c90fd8d945756999e4e1f3326b705e618b081",
-            "review_note": "Matched both layouts to the reconciled Design guidance. The owner drawer, table and ticket controls retain their responsive behavior, and public menu, footer and Support focus follow the merged interface guidance."
+            "source_sha256": "46c0da2ee4fa85f54130e1b7b41dcfc0e0d1af79f9134530cc79bc09829326c7",
+            "references_sha256": "a91a95841dc182236befb1ff651bb22b318c92a7e4e5fd8adac315a9e16cbb9f",
+            "review_note": "Verified the customer-specific forms, named pagination, address focus, reading layouts and their composition with the deployed owner and storefront controls."
         },
         "mail": {
             "source_sha256": "6895291447775bb17e9bef6c3d38d388ed65b3f5985b4c79bc71a9b4fa222c16",
@@ -58,9 +58,9 @@
             "review_note": "Cross-checked the revised owner UI skill with the current media selection, confirmation and metadata flows. The existing media documentation still describes those operations."
         },
         "operator-help": {
-            "source_sha256": "a313afd167af43fec751710bfa57a08e9b5d4bf9d6f8ae5d546ddf72a74900ea",
-            "references_sha256": "00126a5c3c862ff46efed68f3dafb9c26532dc8acd3c418d7079c3862859c100",
-            "review_note": "Compared the monitoring and owner review guide with saved evaluation receipts. Operator assessment and customer feedback remain distinct from the observed report-tool result."
+            "source_sha256": "0dd8bd3fd62788167f363c0bb875737191d131a4af3795aa1d9174f82b179eb9",
+            "references_sha256": "8993a3d96b2f0930673298bce0d268fc582bab2fb7fdf35e16f08abb9ac7c3f9",
+            "review_note": "Reconciled main customer guides with agent monitoring. Checked operator guidance against saved evaluation receipts and the existing customer account and public ordering templates from main."
         },
         "public-mcp": {
             "source_sha256": "234155f55b0f66f669f6422a85acc30a6a59ebf216d8f682d7a212cd01ee7358",
@@ -68,9 +68,9 @@
             "review_note": "Checked the rendered Support enquiry controls against the current public MCP and A2UI documentation. Focus scrolling keeps the existing tool and submission contracts."
         },
         "remote-commerce": {
-            "source_sha256": "0a504ca49d9995ea386d62a2783ae399dd7f8bf0eb0c10f5fffe1c5412a7b264",
-            "references_sha256": "e266e4f053a69063bbd61cfc06758b4e95d4424ff59cebcab1e355c4363130af",
-            "review_note": "Compared public Support checkout and enquiry panes with the revised Design, native checkout and A2UI contracts. Reopening focuses the active pane and checkout retains its cart, payment and recovery boundaries."
+            "source_sha256": "d240d614ae377c8a7195af73b09b5a49e762c87241bf86a1f65ff07985316f2e",
+            "references_sha256": "3855f1bbcafb7e5178cc56306a1909c6b074172af1cc6669040a9cec5c6944fc",
+            "review_note": "Checked the deployed shop and checkout review, customer account actions and Support checkout guidance against the merged markup and task help."
         },
         "sales-channels": {
             "source_sha256": "36385e3d18e26f524d0efdd12d26cd8386e368fb5d27441460c688ffdff28b92",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed SettingsService module resolution and Merchant feed guidance. Dropping a retired header slot leaves the saved catalog eligibility inputs intact."
         },
         "workflow": {
-            "source_sha256": "843a3be0d854e776a4359a283b5f3fe890ba1892b354f5dfde4654bc1836927c",
+            "source_sha256": "614b98e11a3869f127c0a1fbbefa123c1a705d2cc39b0e529335b98035a990db",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Cross-reviewed the owner and public UI skills with their browser verification and documentation review guidance and regenerated the project indexes from both released source changes."
+            "review_note": "Regenerated runtime and documentation indexes and verified the quick standalone search fixture and established browser release workflow on the combined sources."
         }
     }
 }

@@ -1,24 +1,23 @@
 <div class="auth-page">
-    <div class="auth-visual">
-        <h2>Welcome Back</h2>
-        <p>Sign in to track your orders, manage delivery addresses, and explore sacred collections.</p>
-    </div>
     <div class="auth-form-container">
         <div class="auth-card">
-            <h1>Sign In</h1>
-            <p>Enter the sanctuary of Sri Panchami Spiritual</p>
+            <h1>Sign in</h1>
+            <p>View your orders and manage your delivery addresses.</p>
             <form method="post" action="/login" class="auth-form">
                 <?php $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
-                <input type="hidden" name="_csrf" value="<?= $csrf ?>">
+                <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
                 <div class="form-group">
-                    <label for="login-identifier">Username or Email</label>
-                    <input id="login-identifier" type="text" name="identifier" required autocomplete="username" placeholder="Username or email">
+                    <label for="login-identifier">Username or email</label>
+                    <input id="login-identifier" type="text" name="identifier" required autocomplete="username" autocapitalize="none" spellcheck="false">
                 </div>
                 <div class="form-group">
-                    <label for="login-password">Password</label>
-                    <input id="login-password" type="password" name="password" required autocomplete="current-password" placeholder="Password">
+                    <div class="auth-form__label-row">
+                        <label for="login-password">Password</label>
+                        <a href="/forgot-password">Forgot password?</a>
+                    </div>
+                    <input id="login-password" type="password" name="password" required autocomplete="current-password">
                 </div>
-                <button class="btn btn-primary btn-block">Sign In</button>
+                <button class="btn btn-primary btn-block" type="submit">Sign in</button>
             </form>
             <?php if (!empty($googleAuthEnabled)): ?>
             <div class="auth-divider">or</div>
@@ -28,8 +27,7 @@
             </a>
             <?php endif; ?>
             <div class="auth-footer">
-                <p>New to our sanctuary? <a href="/register">Create an account</a></p>
-                <p><a href="/forgot-password">Forgot your password?</a></p>
+                <p>New here? <a href="/register">Create an account</a></p>
             </div>
         </div>
     </div>

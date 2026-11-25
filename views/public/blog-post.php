@@ -76,9 +76,16 @@
       <?php endif; ?>
     </article>
 
-    <aside class="blog-post__cta">
-      <div><span class="eyebrow">Shop</span><h2>Explore our collection</h2><p>Authentic spiritual products, sourced with care and delivered across India.</p></div>
-      <a href="/shop" class="btn btn-primary">Browse products</a>
-    </aside>
+    <?php if ($categorySlug === 'help'): ?>
+      <aside class="blog-post__cta">
+        <div><h2>More help guides</h2><p>Find answers about your account, orders, and payments.</p></div>
+        <a href="/blog/category/help" class="btn btn-outline">Browse Help</a>
+      </aside>
+    <?php elseif (module_on('shop')): ?>
+      <aside class="blog-post__cta">
+        <div><h2>Explore our collection</h2><p>Find spiritual products for daily worship and gifting.</p></div>
+        <a href="/shop" class="btn btn-primary">Browse products</a>
+      </aside>
+    <?php endif; ?>
   </div>
 </section>

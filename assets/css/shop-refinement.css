@@ -127,3 +127,11 @@
     .shop-layout .product-card, .shop-layout .product-card__image img { transition: none; }
     .shop-layout .product-card:hover, .shop-layout .product-card:hover .product-card__image img { transform: none; }
 }
+
+.shop-toolbar__count { padding: 4px 8px; color: var(--color-maroon); background: var(--color-bg-alt); border-radius: var(--radius-sm); }
+.shop-discovery { padding: var(--space-md); border: 1px solid var(--color-border-light); border-radius: var(--radius-lg); background: var(--color-white); }
+.shop-layout .product-card__image img { object-fit: contain; }
+.shop-layout .product-card__unavailable { display: flex; align-items: center; min-height: 44px; }
+@media (max-width: 470px) {
+    .shop-discovery { padding: 12px; }
+}
