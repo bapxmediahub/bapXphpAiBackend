@@ -7,6 +7,7 @@ namespace App\Services;
  */
 final class SiteTelemetryService {
     private const EVENTS = ['cart_add','checkout_initiated'];
+    private const WINDOW_SECONDS = 30 * 86400;
     public function record(string $event, array $attributes = []): void {
         if (!in_array($event,self::EVENTS,true)) return;
         $safe = ['event'=>$event];
@@ -20,9 +21,17 @@ final class SiteTelemetryService {
             error_log('Commerce telemetry failed: '.$error::class);
         }
     }
+    public static function recentCutoff(): int {
+        return time() - self::WINDOW_SECONDS;
+    }
+
+    public static function recentCounts(): array {
+        return (new DatabaseService())->storefrontActivitySince(self::recentCutoff());
+    }
+
     /** Pure aggregate over sanitized persisted events. */
-    public static function counts(array $events, ?int $since = null): array {
-        $since ??= time() - 86400 * 30;
+    public static function counts(iterable $events, ?int $since = null): array {
+        $since ??= self::recentCutoff();
         $counts = array_fill_keys(self::EVENTS,0);
         foreach ($events as $row) {
             if (($row['event']??'') !== 'commerce.event') continue;

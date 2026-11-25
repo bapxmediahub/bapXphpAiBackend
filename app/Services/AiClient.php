@@ -339,9 +339,19 @@ final class AiClient
         $attempts=$this->transferTimings;$last=end($attempts)?:[];
         $reason=$ok?null:($this->failureCategory??($withTool&&$this->toolCalls===0?'tool_not_called':'unexpected_probe_answer'));
         return ['ok'=>$ok,'mode'=>$withTool?'tools':'text','model'=>$last['model']??($plan[0]['model']??''),
-            'provider'=>$last['provider']??($plan[0]['provider']??''),'endpoint'=>$last['endpoint']??($plan[0]['endpoint']??''),
-            'message'=>$ok?($withTool?'Verified tool round trip.':'Verified text response.'):($reason==='not_configured'?'No matching enabled connection.':'Probe failed: '.$reason.'.'),
+            'provider'=>$last['provider']??($plan[0]['provider']??''),
+            'message'=>$ok?($withTool?'Verified tool round trip.':'Verified text response.'):self::probeFailureMessage($reason,$last),
             'reason'=>$reason,'timings'=>$attempts,'tool_calls'=>$withTool?$this->toolCalls:null];
+    }
+
+    private static function probeFailureMessage(string $reason, array $last): string
+    {
+        if ($reason === 'authentication' && ($last['curl_error'] ?? null) === 0
+            && in_array($last['status'] ?? null, [401, 403], true)) {
+            // Use the observed connection and status, never the upstream body or URL.
+            return self::describeFailure($last['status'], false, 0, $last['provider'] ?? null);
+        }
+        return $reason === 'not_configured' ? 'No matching enabled connection.' : 'Probe failed: '.$reason.'.';
     }
 
     private function route(string|AgentModelTurn $prompt,int $maxTokens,float $temperature,?string $override,

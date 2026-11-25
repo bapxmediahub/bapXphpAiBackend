@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "bde2bde8a9de8bf32dc819c741e87a13e30ec696f95f2049814fee7028c63a73",
-            "references_sha256": "eca25412da58ee1eef18bc49445b15a8adf04ca7a22a52eede085850e1bef285",
-            "review_note": "Reviewed backend skill updates alongside the fixed agent capability allowlists. The booking retry remains a private PHP form action."
+            "source_sha256": "bcce800df0740538faa391ff1ee86947fb220ddbf7a43ba3b9df991f770fa809",
+            "references_sha256": "7877fc3fefee280d90bd141197a06fdaeccf234a4c6cef9a67a2050535dce3ce",
+            "review_note": "Compared Support failure references and replay with the evaluated HTTP 503 contract, and checked Integrations 401 and 403 guidance against the selected provider and observed status."
         },
         "auth": {
             "source_sha256": "c34a5b34bc904f36cda184c26113f91e2cf36afa2b506217d1f74e22e9e0cefd",
@@ -18,19 +18,19 @@
             "review_note": "Reviewed provider parsing and existing product checkout and verified-order tests. A typed provider refusal preserves the existing numeric error for shop checkout."
         },
         "content": {
-            "source_sha256": "0cf3fdbab8334c87c055ab44c9d531774c37c03a6a52dc5d0ca7db013969f1a7",
-            "references_sha256": "1697d82dbf2d3fa5156c212ac256e71e4613b5598d29ef36bb1b7eda1f4aa576",
-            "review_note": "Compared the current campaign guide with exact revision checks, repaired-credentials submission, immutable fulfillment and ambiguous-response recovery."
+            "source_sha256": "6f6aee47caea344734b1f2662269fbcebf1615d4f4ecabe1a79e2a7818206e24",
+            "references_sha256": "bc4237849522973bf57590ab57c0b411f1d89999bfce542f2e4260ee65788177",
+            "review_note": "Compared published Support guidance with the contact link and validated reference in the widget. Campaign content and payment flows were preserved by the merge."
         },
         "foundation": {
-            "source_sha256": "94e60b2546b62d78d92a1ed3de92c9819d672075440da536f4c95842c3d04dea",
-            "references_sha256": "aca185b739c7bb3b343ced0c9c8118bd40babe9b0d64cecf0a6419c6ce61cd08",
-            "review_note": "Cross-checked the declared booking status and creation generation with its DB-host lock, legacy rows and provider result checks."
+            "source_sha256": "bc9602b5740065d44e0df045268297befe83f5b9c42a2330686d71e4100f2709",
+            "references_sha256": "44a4e54f393916877f478f74d7ed16b3e35594a37a7ce9a504b0adf24c607486",
+            "review_note": "Reviewed the one streamed audit SELECT, strict authenticated response and PDO cleanup alongside campaign booking persistence and protected storage."
         },
         "google-tags": {
-            "source_sha256": "366fdab983979cc3a1fec22fb6da4afb61072d6fd24cd0ba2271d67a0c063019",
-            "references_sha256": "655070d558837a1d942929e6860428b9d822cb9b89e2d0d95344fdfe5d88b87d",
-            "review_note": "Rechecked the current Site analytics, Google reporting and integration routes inherited from the merged base. Campaign booking changes add no tag or reporting behavior."
+            "source_sha256": "31cc53b5ce4ddd826a3c5a3d5b2fdd7c623005fc74a63f4d2598eeb8f345ea9e",
+            "references_sha256": "4a313261f50607bef910628e450d1ce4482bdca623ba5d77c09b4c85dc5a3f50",
+            "review_note": "Reviewed the shared layout and Integrations docs with the Support reference and safe AI diagnostic result. Google tag and reporting fields keep their existing configuration."
         },
         "http-errors": {
             "source_sha256": "0f920c297cfc4e216a87be02a35c20827cc254dd6934ba24a1fa9135520a0560",
@@ -38,19 +38,19 @@
             "review_note": "Reviewed sanitized provider failures and private booking responses against the existing dynamic response guard."
         },
         "interface": {
-            "source_sha256": "82b14d7ac04642c59d3078ae1c355cee4aa65d582a36ae6dff4fec93456f3f36",
-            "references_sha256": "404619f91aeea891998b9c1cb6ef921514f8dd59adb0ae4f24a58e03fdcade70",
-            "review_note": "Reviewed the independent amount toggle, disabled preview, keyboard booking review, and private pending and captured cards against Design and the browser fixtures."
+            "source_sha256": "16d1d84ab9413ed744d82606a7721d827acc68a4707854984b37af6ab4f6653e",
+            "references_sha256": "faf87e5a40e578bf97ed14d1f78efeec4269acf2fa897a74d9ef8e19351e4527",
+            "review_note": "Compared the Support error reference, keyboard recovery, and owner diagnostic card with the shared layout and both desktop and narrow viewport fixtures."
         },
         "mail": {
-            "source_sha256": "50f211eb00addc6fe811c0dfb270f1be9d2d28b2fd0a8e66d321ae83b2d28aec",
+            "source_sha256": "11a3b674d92d0714846359177499966c2f5ad2b1af5380a972280c64bb79b7b8",
             "references_sha256": "e638d8ea8f21b6f1d078de81bb24d9d9a743e98e953cdd672bd869b923832acf",
-            "review_note": "Checked the shared skill update against payment and enquiry mail event entry points. Retrying booking setup does not write a receipt or queue mail."
+            "review_note": "Compared the owner login and notice documentation against the existing controller and confirmed the dashboard count remains a read-only operation."
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
-            "references_sha256": "ac1bc03220b226d653c8a317355e57292d38c7d8f2320162ad1405d16a3a7bb8",
-            "review_note": "Reviewed local CLI and remote client guidance. Adding the isolated public search fixture to the CI command keeps existing client setup and capability contracts intact."
+            "references_sha256": "08f8b77746b0a94f8769df7fca6b79a7eed50fe2981575d35024d8f7b55f4a44",
+            "review_note": "Reviewed the CLI guide change against the existing admin MCP client workflow. The added release gate invokes only the synthetic public storefront search fixture."
         },
         "media": {
             "source_sha256": "edc32a5a9f73cf7f2954eac135a2eaed1394089034bac24ea835af48c4d9600e",
@@ -58,29 +58,29 @@
             "review_note": "Checked retained campaign file descriptors and protected streaming against Media Library behavior. Booking authorization is scoped to the frozen private manifest."
         },
         "operator-help": {
-            "source_sha256": "55249ee4eeb474786251d6e7886137db3628e04ddd85d03ee2f02688bcd56c22",
-            "references_sha256": "d7972865c18db0e7cab36b4fdf0cf22cf388c8fbde7bd5ae088de971afd212fe",
-            "review_note": "Checked the Pages and booking handoff against the new owner-bound form retry and the existing publish and preview behavior."
+            "source_sha256": "bad40e8687f42b9c69dcb8d4fd16d0f8717492b879ba9bc2cf14618b5d140538",
+            "references_sha256": "290f76393a7f1ff5ba583e3da9f3ac9d8b3f6580c1cdee7db531e981e2e1d99f",
+            "review_note": "Checked the public Support reference and contact instructions alongside the owner API key and access guidance shown by the read-only connection test."
         },
         "public-mcp": {
-            "source_sha256": "6817679be2290cbbea52d8a059df0770d1deb686132d09f9d57d0fbda5b62185",
+            "source_sha256": "737d1417edeec4f39402eaa1b659409d866db04476bf5f549d065deae57903f8",
             "references_sha256": "43e89d686d81a31e0d2e95a18c1904f88aab8a9688f54556a1331efe81cab83b",
-            "review_note": "Checked the generated gateway links and existing public MCP checkout boundary. The campaign retry stays on the campaign form POST."
+            "review_note": "Compared the regenerated route associations with Public MCP and A2UI. The Dashboard read stays on the authenticated database bridge."
         },
         "remote-commerce": {
-            "source_sha256": "16cdd579f0b1b79b1bdc841eefa697e7cb43663f2ef73407245dcfb268c26e77",
-            "references_sha256": "acdbab8bdbef2062372a3ebbf9026ce81ea5e60355e45c35c744aa25e108dee5",
-            "review_note": "Cross-checked the shared Razorpay creation parser, known rejected responses, duplicate reference recovery, and SQL-backed booking retry claim."
+            "source_sha256": "d9f1cadce366732ff62a1bc27cf619f0070f6eb1e5d432bc3015cee9673beed7",
+            "references_sha256": "0690a75fa3933ee49adb37677a6972a957f6bfc982431a03783492ae4c284993",
+            "review_note": "Reviewed the shared checkout layout and existing recovery paths after the Support transcript added an opaque failure reference."
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",
             "references_sha256": "584b563cb628dce2573081ef1aaf46071bd9815c6bc37e1c4bc18b295a9daa39",
-            "review_note": "Compared the CLI skill change with the Google sales-channel test and API requirements. The extra fixture covers local storefront search parity and calls no vendor service."
+            "review_note": "Compared the new storefront search check with the local CLI and product feed guidance. The search fixture checks public catalogue visibility without changing feed or analytics behavior."
         },
         "workflow": {
-            "source_sha256": "5f13f5445cd8142bff5b567e56424424e5cfe38a60c5e6494d54b80468180d47",
+            "source_sha256": "c4f3f6bae8ede7d9f360366852aafba6ddc3a7e30e80b892b45d4029755fa14f",
             "references_sha256": "c11003880ee0b940715945afbc145188e466086d8e2a3e4aeace1e9dbe10780b",
-            "review_note": "Rechecked the local storefront search test and independent mobile browser fixture on the final campaign base. Local CI now fails for a storefront search regression while continuing independent gates."
+            "review_note": "Confirmed local and GitHub release gates invoke the same storefront fixture, and the CLI regressions verify that search failure produces a nonzero result while later checks run."
         }
     }
 }
