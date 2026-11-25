@@ -876,15 +876,23 @@ final class DatabaseService {
                 if (!hash_equals($existing['owner_hash'], $owner) || $existing['slug'] !== $slug || $existing['revision'] !== $revision) {
                     throw new \DomainException('Invalid booking identity.');
                 }
-                $pdo->commit();
-                return ['outcome'=>'existing', 'booking'=>$existing];
+                if ($existing['status'] !== 'retryable' || isset($existing['provider_link_id'])) {
+                    $pdo->commit();
+                    return ['outcome'=>'existing', 'booking'=>$existing];
+                }
             }
             $amount = CampaignPaymentService::pageAmount($page);
             $published = ($page['status'] ?? null) === 'published' && ($page['slug'] ?? null) === $slug
                 && ($page['revision'] ?? null) === $revision && $amount !== null;
-            if (!$published || $mode === null) {
+            if (!$published || $mode === null || ($existing !== null && $existing['mode'] !== $mode)) {
                 $pdo->commit();
                 return ['outcome'=>$published ? 'unavailable' : 'stale'];
+            }
+            if ($existing !== null) {
+                $booking = CampaignPaymentService::claimCreation($existing, time());
+                $this->writeCampaignBooking($booking);
+                $pdo->commit();
+                return ['outcome'=>'retry', 'booking'=>$booking];
             }
 
             $booking = CampaignPaymentService::snapshot($page, $id, $owner, $mode, $amount, time());
@@ -921,13 +929,13 @@ final class DatabaseService {
             if ($booking === null) throw new \RuntimeException('Booking is unavailable.');
             $now = time();
             $before = $booking;
-            $claimed = $change === null && $booking['status'] !== 'captured' && $booking['reconcile_after'] <= $now;
+            $claimed = $change === null && !in_array($booking['status'], ['captured','retryable'], true)
+                && $booking['reconcile_after'] <= $now;
             if ($claimed) $booking['reconcile_after'] = $now+30;
             if ($change !== null) $booking = CampaignPaymentService::applyChange($booking, $change, $now);
             if ($booking !== $before) {
                 $booking['updated_at'] = gmdate('Y-m-d H:i:s', $now);
-                $statement = $pdo->prepare('UPDATE campaign_bookings SET _data = ?, _status = ?, _updated_at = ? WHERE id = ?');
-                $statement->execute([json_encode($booking, JSON_THROW_ON_ERROR), $booking['status'], $booking['updated_at'], $id]);
+                $this->writeCampaignBooking($booking);
             }
             $pdo->commit();
             return compact('booking', 'claimed');
@@ -935,6 +943,11 @@ final class DatabaseService {
             if ($pdo->inTransaction()) $pdo->rollBack();
             throw $error;
         }
+    }
+
+    private function writeCampaignBooking(array $booking): void {
+        $statement = $this->db()->prepare('UPDATE campaign_bookings SET _data = ?, _status = ?, _updated_at = ? WHERE id = ?');
+        $statement->execute([json_encode($booking, JSON_THROW_ON_ERROR), $booking['status'], $booking['updated_at'], $booking['id']]);
     }
 
     private function lockCampaignBooking(string $id): ?array {

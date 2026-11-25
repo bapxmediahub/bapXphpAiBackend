@@ -113,6 +113,7 @@ async function fixture() {
     await once(server,'listening');
     return {
         server, origin:'http://127.0.0.1:'+server.address().port,
+        reject() { bookingStatus = 'retryable'; },
         expire() { bookingStatus = 'expired'; },
         confirm() { bookingStatus = 'captured'; },
         count() { return submits; },
@@ -156,8 +157,16 @@ for (const width of [1280,375]) test('Campaign payment editor and booking status
         assert.equal(await page.getByRole('link',{name:'Open Razorpay in a new tab'}).getAttribute('href'),'https://rzp.io/rzp/no-network-fixture');
         assert.equal(await page.getByRole('link',{name:file.name}).count(),0);
         await fits();
-        app.expire();
+        app.reject();
         await page.getByRole('link',{name:'Check payment status'}).press('Enter');
+        assert.equal(await page.getByText('Payment setup is temporarily unavailable.',{exact:false}).isVisible(),true);
+        assert.equal(await page.getByRole('link',{name:'Open Razorpay in a new tab'}).count(),0);
+        await page.getByRole('link',{name:'Return to campaign page'}).press('Enter');
+        await page.getByRole('button',{name:'Review booking payment'}).press('Enter');
+        await page.waitForURL(app.origin+bookingPath);
+        assert.equal(app.count(),2);
+        app.expire();
+        await page.reload();
         assert.equal(await page.getByText('This payment link has expired.',{exact:false}).isVisible(),true);
         assert.equal(await page.getByRole('link',{name:'Open Razorpay in a new tab'}).count(),0);
         app.confirm();

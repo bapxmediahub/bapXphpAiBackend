@@ -38,12 +38,14 @@ $payable = !$expired && ($booking['status'] ?? null) === 'pending' && RazorpayPa
                 <?php elseif ($payable): ?>
                     <p>Complete payment on Razorpay, then return here to check your booking.</p>
                     <p><a class="btn btn-primary" href="<?= e($booking['provider_url']) ?>" target="_blank" rel="noopener noreferrer">Open Razorpay in a new tab</a></p>
+                <?php elseif ($booking['status'] === 'retryable'): ?>
+                    <p>Payment setup is temporarily unavailable. Return to the campaign page to retry this booking.</p>
                 <?php elseif ($expired): ?>
                     <p>This payment link has expired. If you already paid, check here for confirmation.</p>
                 <?php else: ?>
                     <p>The payment provider has not confirmed this booking. Check its status again before paying.</p>
                 <?php endif; ?>
-                <?php if (!$captured): ?><p><a href="<?= e($bookingPath) ?>">Check payment status</a></p><?php endif; ?>
+                <?php if (!$captured && $booking['status'] !== 'retryable'): ?><p><a href="<?= e($bookingPath) ?>">Check payment status</a></p><?php endif; ?>
             <?php endif; ?>
             <p><a href="<?= e($pagePath) ?>">Return to campaign page</a></p>
         </section>

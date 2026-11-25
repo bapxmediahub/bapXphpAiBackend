@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Integrations\Razorpay\RazorpayClient;
+use App\Integrations\Razorpay\{PaymentLinkCreationRejected, RazorpayClient};
 
 /** Shared validation and recovery for Razorpay Standard Payment Links. */
 final class RazorpayPaymentLinkService
@@ -25,6 +25,7 @@ final class RazorpayPaymentLinkService
         $keyId = trim((string)($secrets['razorpay_'.$mode.'_key_id'] ?? ''));
         $secret = trim((string)($secrets['razorpay_'.$mode.'_key_secret'] ?? ''));
         if (!self::isKeyForMode($keyId, $mode) || $secret === '') {
+            if ($operation === 'create_link') throw new PaymentLinkCreationRejected();
             throw new \RuntimeException('Payment credentials unavailable', 401);
         }
         $client = new RazorpayClient($keyId, $secret);

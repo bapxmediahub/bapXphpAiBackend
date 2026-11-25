@@ -439,6 +439,7 @@ flowchart LR
     integration_googlesitekitclient["GoogleSiteKitClient"]:::code
     integration_metapixelclient["MetaPixelClient"]:::code
     integration_pagespeedinsightsclient["PageSpeedInsightsClient"]:::code
+    integration_paymentlinkcreationrejected["PaymentLinkCreationRejected"]:::code
     integration_razorpayclient["RazorpayClient"]:::code
     integration_stripeclient["StripeClient"]:::code
   end
@@ -1586,6 +1587,7 @@ flowchart LR
   controller_supportcontroller -. static reference .-> service_agenttraceservice
   controller_supportcontroller -. static reference .-> service_aiclient
   integration_pagespeedinsightsclient -. static reference .-> service_publicsiteurlservice
+  integration_razorpayclient -. source new .-> integration_paymentlinkcreationrejected
   service_addressservice -. source new .-> service_databaseservice
   service_addressservice -. static reference .-> service_taxservice
   service_adminhelpservice -. source new .-> service_markdownrenderer
@@ -1755,6 +1757,7 @@ flowchart LR
   service_publicmcpservice -. static reference .-> service_remotecartservice
   service_publicmcpservice -. static reference .-> service_remotecheckoutservice
   service_publicmcpservice -. static reference .-> service_taxservice
+  service_razorpaypaymentlinkservice -. source new .-> integration_paymentlinkcreationrejected
   service_razorpaypaymentlinkservice -. source new .-> integration_razorpayclient
   service_razorpaypaymentlinkservice -. static reference .-> service_paymentservice
   service_remotecartservice -. source new .-> service_databaseservice
