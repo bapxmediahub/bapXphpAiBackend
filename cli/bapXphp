@@ -27,7 +27,7 @@ set -euo pipefail
 # ── Development ─────────────────────────────────────────────────
 #   bapXphp test                    — run test suite (php tests/run.php)
 #   bapXphp lint [path]             — PHP syntax check (php -l)
-#   bapXphp ci                      — non-mutating validation: lint → test → maps → smoke
+#   bapXphp ci                      — non-mutating validation: lint → test → storefront search → maps → smoke
 #   bapXphp check                   — alias for bapXphp ci
 #   bapXphp update                  — regenerate and validate both project maps
 #   bapXphp serve                   — start dev server on 127.0.0.1:6020
@@ -342,7 +342,7 @@ cmd_understand() {
   printf "${B}── Quick Reference ─────────────────────────${N}\n"
   printf "  ${C}bapXphp test${N}        php tests/run.php\n"
   printf "  ${C}bapXphp serve${N}       php -S 127.0.0.1:6020 index.php\n"
-  printf "  ${C}bapXphp ci${N}          lint → test → map validation → docs-map validation → smoke\n"
+  printf "  ${C}bapXphp ci${N}          lint → test → storefront search → map validation → docs-map validation → smoke\n"
   printf "  ${C}bapXphp check${N}       alias for ci\n"
   printf "  ${C}bapXphp update${N}      regenerate and validate both repository maps\n"
   printf "  ${C}bapXphp db query <col>${N}  --where 'field=val' --limit 10\n"
@@ -641,6 +641,9 @@ cmd_ci() {
 
   echo "── test ──"
   cmd_test || { failed=1; warn "TESTS FAILED"; }
+
+  echo "── storefront-search ──"
+  php "$ROOT/tests/storefront-search.php" 2>&1 || { failed=1; warn "STOREFRONT SEARCH FAILED"; }
 
   echo "── agent-contracts:check ──"
   php "$ROOT/cli/agent-contracts.php" --check 2>&1 || { failed=1; warn "AGENT TOOL DOCUMENTATION STALE"; }

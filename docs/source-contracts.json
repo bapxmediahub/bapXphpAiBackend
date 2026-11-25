@@ -49,8 +49,8 @@
         },
         "mcp-clients": {
             "source_sha256": "38828d52259fbd6b6555d790e463ff775e79be85872a5d5b5aea78e599fba3ac",
-            "references_sha256": "4b78788e4d1216bbecb12b3e575767be766afc9e917c80879f3d4d91f2833c27",
-            "review_note": "Reviewed the revised Settings help alongside MCP client setup guidance. The change is confined to public Header menu guidance."
+            "references_sha256": "a4dbf19ad5b162f5b897d4881c70a52ab68d7f300316fa04f54ba04006759c96",
+            "review_note": "Checked the shared CLI skill change against the existing local MCP reporting guide and admin grant action. The added verification gate is scoped to public search and uses synthetic data."
         },
         "media": {
             "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
@@ -74,13 +74,13 @@
         },
         "sales-channels": {
             "source_sha256": "36385e3d18e26f524d0efdd12d26cd8386e368fb5d27441460c688ffdff28b92",
-            "references_sha256": "ed194e15ddaa5ac6ee1118994fceeb94723165cedba02bc92ad745a196a18fd1",
-            "review_note": "Reviewed SettingsService module resolution and Merchant feed guidance. Dropping a retired header slot leaves the saved catalog eligibility inputs intact."
+            "references_sha256": "584b563cb628dce2573081ef1aaf46071bd9815c6bc37e1c4bc18b295a9daa39",
+            "review_note": "Compared the revised CLI validation description with the documented Merchant feed and preflight commands. The storefront search test exercises published search visibility through its own fixture."
         },
         "workflow": {
-            "source_sha256": "843a3be0d854e776a4359a283b5f3fe890ba1892b354f5dfde4654bc1836927c",
-            "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Cross-reviewed the owner and public UI skills with their browser verification and documentation review guidance and regenerated the project indexes from both released source changes."
+            "source_sha256": "dc6f3d72c6c6d092d231a94050893468cd2106855e9f6992841676e48da998a1",
+            "references_sha256": "c11003880ee0b940715945afbc145188e466086d8e2a3e4aeace1e9dbe10780b",
+            "review_note": "Compared the existing GitHub storefront search step, new local CI invocation and failure-propagation fixture with the CLI skill and developer workflow. The existing search checks run in both paths and failures finish CI unsuccessfully after independent gates."
         }
     }
 }
