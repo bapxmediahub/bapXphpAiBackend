@@ -197,6 +197,18 @@ try {
     if (!str_contains($packingExample['text'] ?? '', "parcel:\n  label: paper")) {
         throw new RuntimeException('Published passage collapsed indentation inside a code example.');
     }
+    $write('packing-tracking', 'Packing tracking', true, '2026-01-01', body:
+        "```yaml\n  parcel:\n    label: paper\n  tracking: bronze\n```");
+    $tracking = $service->readArticleForAgent(['slug'=>'packing-tracking','query'=>'tracking'])['articles'][0] ?? [];
+    if (!str_starts_with($tracking['text'] ?? '', "  parcel:\n    label: paper\n  tracking: bronze")) {
+        throw new RuntimeException('Keyword retrieval trimmed leading YAML indentation.');
+    }
+    $write('packing-scalar', 'Packing scalar', true, '2026-01-01', body:
+        "## Packing notes\n\n```yaml\nparcel: |+\n  keep these blank lines\n\n\n```");
+    $scalar = $service->readArticleForAgent(['slug'=>'packing-scalar','query'=>'blank lines'])['articles'][0] ?? [];
+    if (!str_ends_with($scalar['text'] ?? '', "  keep these blank lines\n\n\n")) {
+        throw new RuntimeException('Keyword retrieval trimmed a YAML scalar’s final line breaks.');
+    }
     $productPath = new ReflectionMethod(PublicKnowledgeService::class, 'productPath');
     foreach (['legacy item.v2'=>'/product/legacy%20item.v2', '珊瑚 pendant'=>'/product/%E7%8F%8A%E7%91%9A%20pendant',
         'தமிழ் pendant'=>'/product/%E0%AE%A4%E0%AE%AE%E0%AE%BF%E0%AE%B4%E0%AF%8D%20pendant',

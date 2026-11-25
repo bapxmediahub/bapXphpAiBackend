@@ -536,7 +536,7 @@ final class PublicKnowledgeService
             $anchor = $phrasePosition === false ? $termPosition : $phrasePosition;
             $start = max(0, min($anchor - 800, mb_strlen($text) - self::ARTICLE_PASSAGE_LIMIT));
             $best = [
-                'text'=>trim(mb_substr($text, $start, self::ARTICLE_PASSAGE_LIMIT)),
+                'text'=>mb_substr($text, $start, self::ARTICLE_PASSAGE_LIMIT),
                 'section_index'=>$index + 1,
             ];
             if ($heading !== '') $best['heading'] = $heading;

@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "351f1b7da3a7e9a98bc291f993deb1a2998d392e590b71f3f320708f1df573c3",
-            "references_sha256": "d4d0640942b1c99f65d544f04c832d7bfc4c80706480f70c5924d2d17ef1fae2",
-            "review_note": "Reviewed both native registries, published-data gates, and passage evidence allowlists on the merged tree. Both agents share optional topic selection and sanitized digests, and the Chat Completions tool correlation and refusal handling remain intact. Rechecked the Luna-aware HTTP path and both role fixtures on this merge."
+            "source_sha256": "c7ef1f278efa4c7fb65c4be3d8dc8bcf88d2cbe918078520ba0e6833789655b1",
+            "references_sha256": "8536d6b95e1e4319c8ca0ba8d886c5b353790547936dbebbff69428ce04d84ed",
+            "review_note": "Reviewed both native registries, published-data gates, and passage evidence allowlists on the merged tree. Both agents share optional topic selection and sanitized digests, and the Chat Completions tool correlation and refusal handling remain intact. Rechecked the Luna-aware HTTP path and both role fixtures on this merge. Verified the merged short-hold readiness path, including original-model continuation and the existing correlation/reference behavior."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -23,9 +23,9 @@
             "review_note": "Verified the blog guide against published Markdown fixtures for inline text, heading/list/table/blockquote/figure boundaries, and literal fenced YAML indentation."
         },
         "foundation": {
-            "source_sha256": "181363d06412a04481afe4b71e027c6a26bcf5d861d0f41b82f09a984127636a",
+            "source_sha256": "bd8455dc0ce3ab55d393c964729d38f34ce612746766a424e1680b754a8acce3",
             "references_sha256": "19374082935b4847bbb5f384debd59d75beac6e118415585f5434701c8264cf5",
-            "review_note": "Reviewed plain rendered passage text and HTML removal. Preserving code indentation does not alter published-source guards, private chat storage or the allowlisted evidence projection."
+            "review_note": "Reviewed plain rendered passage text and HTML removal. Preserving code indentation does not alter published-source guards, private chat storage or the allowlisted evidence projection. Published Markdown recovery now preserves leading YAML indentation and trailing scalar line breaks through the complete read path."
         },
         "google-tags": {
             "source_sha256": "a02edc85b6bd4cc5f95748217edaf7ea3fae53a6d67edd0098c99848290122d8",
@@ -63,9 +63,9 @@
             "review_note": "Compared the enterprise-agent guide dependencies and published support guide. Passage evidence adds hashes and a section index to the existing authorized review context. Operator Help remains behind the owner gate."
         },
         "public-mcp": {
-            "source_sha256": "fc6109fd3cdaa44358f1632cdd47bd8d1d4062ebc6104cb607b3f83fbbc00770",
+            "source_sha256": "c3b26cd7dc5ff89fac092067797cba546211b21472cf4dc0911fd364cc719d36",
             "references_sha256": "8999944fc0137b069e1433c7ae750ce3e0cb2a67f7fdd3fcea63173126b96d26",
-            "review_note": "Rechecked unchanged public and STDIO projection alongside native article text. Native passages preserve visible block boundaries and preformatted code indentation without changing public queries."
+            "review_note": "Rechecked unchanged public and STDIO projection alongside native article text. Native passages preserve visible block boundaries and preformatted code indentation without changing public queries. Bounded keyword excerpts preserve literal whitespace at either edge of preformatted Markdown code."
         },
         "remote-commerce": {
             "source_sha256": "d4727219602e3533680fbc91389cb2648ede2b15ef7dfa8ea866f2ed8bcd25c9",
