@@ -249,6 +249,23 @@ try {
         $client=new AiClient(health:$health);
         $reply=$routeAll->invoke($client,'Reply connection ok',256,0.0,null,null,0,$plan);
         check(AiClient::isError($reply)&&$client->failureCategory()==='provider_cooldown'&&$client->transferTimings()===[],'All cooled models return honest local outcome without transfers');
+        $rotated = $plan;
+        $rotated[0]['apiKey'] = 'replacement-fixture-key';
+        $rotated[0]['models'] = [SecretService::FALLBACK_MODEL];
+        $rotated[0]['model'] = SecretService::FALLBACK_MODEL;
+        $client = new AiClient(health: new \App\Services\AiProviderHealthService($healthFile));
+        $reply = $routeAll->invoke($client, 'Reply connection ok', 256, 0.0, null, null, 0, $rotated);
+        check($reply === 'connection ok' && count($client->transferTimings()) === 1,
+            'Replacement credential reaches the provider while the old credential is held');
+        check($health->availablePlan($plan) === [], 'Replacement success leaves the old credential holds intact');
+        $healthContents = file_get_contents($healthFile);
+        $entries = json_decode($healthContents, true)['entries'];
+        $diagnostics = json_encode($client->transferTimings());
+        check(!str_contains($diagnostics, 'replacement-fixture-key') && !str_contains($healthContents, 'fixture-key'),
+            'Neither transport diagnostics nor health storage reveal credentials');
+        foreach (array_keys($entries) as $fingerprint) {
+            check(!str_contains($diagnostics, $fingerprint), 'Private health identity never enters attempt diagnostics');
+        }
         $diagnosticPlan=$plan;$diagnosticPlan[0]['models']=[SecretService::FALLBACK_MODEL];$diagnosticPlan[0]['model']=SecretService::FALLBACK_MODEL;
         $reply=$routeAll->invoke($client,'Reply connection ok',256,0.0,null,null,0,$diagnosticPlan,true);
         check($reply==='connection ok'&&count($client->transferTimings())===1,'Explicit diagnostic bypasses cooldown');
@@ -329,15 +346,48 @@ try {
     }
     echo "PASS credential rejection skips the connection within both cycles and identifies the right field\n";
 
+    // A concurrent hold observed after a tool executes must stop the locked continuation.
+    $lockedHealth = new \App\Services\AiProviderHealthService($cycleDir . '/locked-health.json');
+    $lockedConfig = ['provider'=>'google','endpoint'=>'http://'.$address.'/tool_probe','apiKey'=>'fixture-key',
+        'model'=>SecretService::PRIMARY_MODEL,'models'=>SecretService::GOOGLE_MODELS,'configured'=>true];
+    $holdingTool = new class($lockedHealth, $lockedConfig) extends \App\Services\AgentToolRegistry {
+        public function __construct(private \App\Services\AiProviderHealthService $health, private array $connection) {}
+        public function declarations(): array {
+            return [['name'=>'connection_probe','description'=>'Synthetic fixture',
+                'parameters'=>['type'=>'object','properties'=>(object)[],'additionalProperties'=>false]]];
+        }
+        public function run(string $name, array $args): array {
+            $this->health->record($this->connection, SecretService::PRIMARY_MODEL, 429, 0, 60000);
+            return ['challenge'=>'fixture-observed-challenge'];
+        }
+    };
+    AgentTraceService::begin(bin2hex(random_bytes(8)), null, AiClient::agentLimits());
+    $client = new AiClient(health: $lockedHealth);
+    $routeAll = new ReflectionMethod(AiClient::class, 'route');
+    $reply = $routeAll->invoke($client, 'Call the tool.', 256, 0.0, null, $holdingTool, 2, [$lockedConfig]);
+    check($client->failureCategory() === 'provider_cooldown' && str_contains($reply, 'provider hold'),
+        'A hold recorded during tool execution stops the continuation locally');
+    check(count($client->transferTimings()) === 1 && $client->toolCalls() === 1,
+        'A held continuation neither transfers nor replays its tool through fallback');
+    $modelSpans = array_filter(AgentTraceService::snapshot()['spans'], static fn(array $span): bool => $span['type'] === 'model_attempt');
+    check(count($modelSpans) === 1, 'A held continuation has no synthetic model attempt span');
+    AgentTraceService::reset();
+    AgentTraceService::begin(bin2hex(random_bytes(8)), null, AiClient::agentLimits());
+    $client = new AiClient(health: $lockedHealth);
+    $reply = $routeAll->invoke($client, 'Call the tool.', 256, 0.0, null, $holdingTool, 2, [$lockedConfig], true);
+    check($reply === 'fixture-observed-challenge' && count($client->transferTimings()) === 2,
+        'Explicit diagnostics bypass holds at both selection and continuation');
+    AgentTraceService::reset();
+
     // Structured Google RetryInfo can exceed a Retry-After header. The client
     // must wait the full minimum and retain only bounded quota metadata.
     foreach(['body_retry','daily_quota'] as $scenario){
         AgentTraceService::begin(bin2hex(random_bytes(8)),null,AiClient::agentLimits());
-        $client=new AiClient();
+        $client=new AiClient(health: new \App\Services\AiProviderHealthService($cycleDir . '/health-' . $scenario . '.json'));
         $cfg=[['provider'=>'google','endpoint'=>'http://'.$address.'/'.$scenario,'apiKey'=>'fixture','model'=>SecretService::PRIMARY_MODEL,'models'=>[SecretService::PRIMARY_MODEL],'configured'=>true]];
         $routeAll=new ReflectionMethod(AiClient::class,'route');
         $start=hrtime(true);
-        $reply=$routeAll->invoke($client,'Fixture',64,0.0,null,null,0,$cfg,true);
+        $reply=$routeAll->invoke($client,'Fixture',64,0.0,null,null,0,$cfg);
         $attempts=$client->transferTimings();
         check(($attempts[0]['retry_after_ms']??null)===1250,'Body RetryInfo is not truncated to smaller header');
         check(($attempts[0]['quota_kind']??null)===($scenario==='daily_quota'?'daily':'minute'),'Safe quota classification retained');

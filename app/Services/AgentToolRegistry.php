@@ -207,7 +207,7 @@ class AgentToolRegistry
                 'description' => 'List existing public store enquiry offerings and their contact form links, without creating a booking or message.',
                 'parameters' => PublicKnowledgeService::serviceInputSchema(),
             ],
-            ['name'=>'order_count','description'=>'Count all recorded orders (not just paid orders) within explicit inclusive dates. Returns status breakdown; no customer details.',
+            ['name'=>'order_count','description'=>'Count dated order records across all statuses, including unpaid and cancelled, with a status breakdown and no customer details. Use period all_time for total orders or provide explicit inclusive dates.',
                 'parameters'=>['type'=>'object','properties'=>self::DATE_PROPERTIES+[
                     'period'=>['type'=>'string','enum'=>['all_time','this_month']]],
                     'additionalProperties'=>false]],

@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "1270bb0e3936847bca34439fa7277e75a49282ec0f83ec1d4b41e4b3a9d8e87b",
-            "references_sha256": "174a5489597b865a31a302ce317abf54ca0629c2079a3c362515681a44d9d387",
-            "review_note": "Reviewed the merged Enterprise chat and Monitoring UI against authorized requests, saved evidence and the provider guidance. An observed 401 excludes only the rejected connection models and independent fallbacks remain eligible. A 403 points to connection permissions. The displayed owner states and private attempt evidence match the documented boundaries."
+            "source_sha256": "160120446ef0d740a9f76c3a65d2459efbe35fc9d1c263ab61530ea0a9d7f7a0",
+            "references_sha256": "f5c7361b8ca9c867682dbafcde10dd099cdd71d35190bc7aaea8d770ba2d53ff",
+            "review_note": "Reviewed Enterprise chat and Monitoring against scoped first-round tool declarations, recorded request evidence and credential-scoped provider holds. Rechecks before transfer keep local skips outside attempt counts. Diagnostic probes bypass holds, and tool exchanges stay on their original model. The owner UI presents authorized prompts, saved history and bounded evidence."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -58,9 +58,9 @@
             "review_note": "Cross-checked the revised owner UI skill with the current media selection, confirmation and metadata flows. The existing media documentation still describes those operations."
         },
         "operator-help": {
-            "source_sha256": "16642b8443c6e9a943f754dbee3b79a01b0b9fb744b198e954a22625074e04ed",
+            "source_sha256": "c093482a19eae9b5bbe3650e002cfb1e95b49f72f2a02d232968839b0f3da0e0",
             "references_sha256": "00126a5c3c862ff46efed68f3dafb9c26532dc8acd3c418d7079c3862859c100",
-            "review_note": "Matched owner titles, keyboard navigation, Enterprise prompts and ticket controls to the task guides. Decorative navigation graphics leave group labels clear."
+            "review_note": "Compared the owner sidebar, prompt controls, saved chat and ticket workflows against the operator guides. The Enterprise declaration keeps all_time order counts within the owner role and guidance distinguishes dated records across statuses from paid commerce."
         },
         "public-mcp": {
             "source_sha256": "06a7b8ef4b99e3c70cbae0dbf6ee2b7c97029aabb851906dc8e2e50d9f81c253",

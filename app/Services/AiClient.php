@@ -43,6 +43,9 @@ final class AiClient
     private int $cycle = 1;
     private int $modelAttempt = 1;
     private array $activeConnection = [];
+    // Health identity needs the selected credential. Keep it out of transfer diagnostics.
+    private array $activeHealthConnection = [];
+    private bool $bypassProviderHolds = false;
 
     /** Bounded operational category; never includes provider messages or credentials. */
     public function failureCategory(): ?string { return $this->failureCategory; }
@@ -343,8 +346,9 @@ final class AiClient
 
     private function route(string|AgentModelTurn $prompt,int $maxTokens,float $temperature,?string $override,
         AgentToolRegistry|RuntimeAgentToolRegistry|null $tools,int $rounds,?array $selectedPlan=null,bool $diagnostic=false): string {
-        $this->failureCategory=null;$this->transferTimings=[];$this->toolCalls=0;$this->toolExchangeStarted=false;$this->activeConnection=[];
+        $this->failureCategory=null;$this->transferTimings=[];$this->toolCalls=0;$this->toolExchangeStarted=false;$this->activeConnection=[];$this->activeHealthConnection=[];
         $this->cycle=1;$this->modelAttempt=1;$this->inferenceRound=1;$this->quotaKind=null;$this->retryAfterMs=null;
+        $this->bypassProviderHolds = $diagnostic || $override !== null;
         $plan=$selectedPlan??$this->secrets->getProviderPlan();
         // A deliberate diagnostic model probe must not silently switch model or provider.
         if($override!==null){
@@ -357,7 +361,7 @@ final class AiClient
             $plan=$this->health->availablePlan($plan,null,true);
             if(!$plan){
                 $this->failureCategory='provider_cooldown';
-                return 'AI request failed: the configured models are briefly cooling down after recent transport failures. Try again shortly.';
+                return $this->failureMessage(0, false);
             }
         }
         if(!function_exists('curl_init')){$this->failureCategory='transport';return 'AI request failed: cURL is not available on this server.';}
@@ -383,6 +387,12 @@ final class AiClient
             $this->cycle=$cycle;$next=[];
             foreach($eligible as [$connectionIndex,$config]){
                 if(isset($rejectedConnections[$connectionIndex]))continue;
+                // A different request may have observed a hold since route selection.
+                // Skip long holds before spending a model-switch backoff on them.
+                if (!$this->providerHoldAllowsAttempt($config, $config['model'], $deadline, false)) {
+                    $answer = $this->failureMessage(0, false);
+                    continue;
+                }
                 $identity=$connectionIndex."\0".$config['model'];
                 $delay=max($nextDelay,(int)ceil((($notBefore[$identity]??0)-hrtime(true))/1_000_000));
                 if($delay>0&&!$this->waitForRetry($delay,$deadline)){
@@ -392,6 +402,7 @@ final class AiClient
                     $this->failureCategory='request_deadline';return $this->failureMessage(0,false);
                 }
                 $this->activeConnection=['provider'=>$config['provider'],'endpoint'=>$config['endpoint']];
+                $this->activeHealthConnection = $this->activeConnection + ['apiKey' => $config['apiKey']];
                 $before=count($this->transferTimings);
                 $this->inferenceRound=1;
                 $answer=$generate($config);
@@ -762,7 +773,7 @@ final class AiClient
     /** Retry a recoverable inference transfer, never a business action.
      * Explicit quota or a long provider Retry-After is a provider hold. */
     private function retryableInferenceFailure(int $status): bool {
-        return !in_array($this->failureCategory,['request_deadline','provider_budget'],true)
+        return !in_array($this->failureCategory,['request_deadline','provider_budget','provider_cooldown'],true)
             &&!in_array($this->quotaKind,['daily','zero'],true)
             &&$status!==404&&($this->retryAfterMs??0)<=8000
             &&($status!==429||($this->retryAfterMs??0)>0)
@@ -805,9 +816,29 @@ final class AiClient
     }
 
     private function waitForFailover(int $status,int $deadline,int $index): bool {
-        if(in_array($this->failureCategory,['request_deadline','provider_budget'],true)
+        if(in_array($this->failureCategory,['request_deadline','provider_budget','provider_cooldown'],true)
             ||!self::canFailOver($status,$this->transportError))return false;
         return $this->waitForRetry(self::backoffMs($index+1,$this->retryAfterMs),$deadline);
+    }
+
+    /** Recheck immediately before a transfer, including after another worker's update.
+     * Short hints can recover within this turn. Long holds leave other candidates eligible.
+     * No model-attempt span or transfer is recorded for a local hold stop. */
+    private function providerHoldAllowsAttempt(array $connection, string $model, int $deadline, bool $wait = true): bool {
+        if ($this->bypassProviderHolds || $this->health === null) return true;
+        while (($remaining = $this->health->providerHoldRemainingMs($connection, $model)) > 0) {
+            if ($remaining > 8000 || $remaining + self::MIN_ATTEMPT_MS > self::remainingProviderMs($deadline)) {
+                $this->failureCategory = 'provider_cooldown';
+                return false;
+            }
+            if (!$wait) return true;
+            if (!$this->waitForRetry($remaining, $deadline)) {
+                $this->failureCategory = 'provider_cooldown';
+                return false;
+            }
+            // A concurrent request may have extended the hold while this one waited.
+        }
+        return true;
     }
 
     private function failureMessage(int $status, string|false $body): string
@@ -815,6 +846,7 @@ final class AiClient
         return match ($this->failureCategory) {
             'request_deadline' => 'AI request failed: the time available for this request was exhausted.',
             'provider_budget' => 'AI request failed: the model call or token limit for this request was reached.',
+            'provider_cooldown' => 'AI request failed: a provider hold currently prevents this model attempt. Try again shortly or use an integration diagnostic.',
             default => self::describeFailure($status, $body, $this->transportError, $this->activeConnection['provider'] ?? null),
         };
     }
@@ -833,6 +865,7 @@ final class AiClient
             $this->failureCategory = 'request_deadline';
             return false;
         }
+        if (!$this->providerHoldAllowsAttempt($this->activeHealthConnection, $model, $deadline)) return false;
         DatabaseService::releaseIdleConnection();
         try {
             $span = AgentTraceService::startSpan('model_attempt', $model);
@@ -899,7 +932,7 @@ final class AiClient
         $diagnosticFields+=self::responseMetadata($status,$body);
         $usage=AgentTraceService::usageFromResponse($body);
         $diagnosticFields['usage']=$usage;
-        $this->health?->record($this->activeConnection,$model,$status,$this->transportError,$this->retryAfterMs);
+        $this->health?->record($this->activeHealthConnection,$model,$status,$this->transportError,$this->retryAfterMs);
         $this->transferTimings[] = [
             'model' => $model,
             'cycle'=>$this->cycle,'attempt_in_model'=>$this->modelAttempt,

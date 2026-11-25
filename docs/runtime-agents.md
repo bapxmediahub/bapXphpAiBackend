@@ -56,6 +56,11 @@ business tools per turn. The `tool_search` meta-tool can enable up to four
 matching declarations per search, with eight active business tools total; an
 unknown exact identifier never activates a substitute. Both provider loops
 refresh declarations each round while retaining correlated tool-call history.
+The initial declarations cover common wording for the published shop total,
+delivery charges, and total orders. Support can use the public catalogue or
+shipping policy directly. Enterprise can request `order_count` with `all_time`
+to count dated orders across all statuses. A model-selected direct call returns
+the matching task guidance with its result in the same tool exchange.
 Discovery returns metadata, not records. The full role-filtered tool metadata
 catalogue is visible to the model; lexical seeding only prioritizes declarations.
 A fresh free-form turn has no server-selected business lookup or answer bypass.
@@ -274,6 +279,13 @@ a tool exchange begins. The owner error names that connection's key field for
 401 or its permissions for 403. Each request has a 110-second inference
 deadline and at most 32 transfers; both browsers wait up to 120 seconds. The trace enforces a
 115-second total execution limit and the existing observed-token budget.
+Provider holds are scoped to the configured API key, endpoint and model. A replacement
+key starts eligible, and delayed responses under the previous key update only that
+key's health entry. The local version-2 health file stores HMAC identities and expiry
+metadata. Unscoped legacy entries are ignored. Each transfer rechecks current provider holds.
+A short hold can expire within the turn's remaining budget. Longer holds skip
+the candidate before recording a transfer. Tool exchanges remain on their original
+model, and an explicit integration diagnostic bypasses these hold checks.
 The deadline or budget can stop a cycle early. Once tool exchange starts,
 three-attempt recovery resends only the correlated inference request to the
 same model, never repeating completed PHP tools or switching the exchange

@@ -54,7 +54,7 @@ Read published products using a customer question.
 
 ### `public_policy`
 
-Read the public shipping, returns, or payment policy.
+Read the public shipping, returns, or payment policy. Use shipping_cost for delivery charges and shipping cost.
 
 **Access:** Guest or authenticated customer, limited to approved public data.
 
@@ -171,7 +171,7 @@ Read only the authenticated customer support-ticket metadata.
 
 ### `public_catalogue_summary`
 
-Count all currently published products and their configured public category memberships. Use for overall catalogue counts and category overview, not a named product or private order.
+Count currently published products and their configured public category memberships. Use for the total items in the shop, published catalogue size, and category overview.
 
 **Access:** Guest or authenticated customer, limited to approved public data. Requires the public Shop module.
 
@@ -656,7 +656,7 @@ List existing public store enquiry offerings and their contact form links, witho
 
 ### `order_count`
 
-Count all recorded orders (not just paid orders) within explicit inclusive dates. Returns status breakdown; no customer details.
+Count dated order records across all statuses, including unpaid and cancelled, with a status breakdown and no customer details. Use period all_time for total orders or provide explicit inclusive dates.
 
 **Access:** Authenticated admin, enforced server-side.
 
