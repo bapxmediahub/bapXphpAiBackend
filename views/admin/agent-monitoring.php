@@ -1,12 +1,11 @@
 <?php use App\Services\AuditLogService; ?>
 <div class="admin-card" style="margin-bottom:var(--space-lg);">
-    <h1>Agent Monitoring</h1>
     <h2>Last 24 hours</h2>
     <p>Track response paths and failures for customer support and Enterprise Agent. Model responses still need quality review; these counts do not measure answer accuracy.</p>
     <?php if (($agentMonitoring ?? null) === null): ?>
         <p role="status">Monitoring is temporarily unavailable.</p>
     <?php else: ?>
-        <div class="table-wrap"><table>
+        <div class="table-wrap" data-no-table-search><table>
             <thead><tr><th>Agent</th><th>Requests</th><th>Model</th><th>Local data</th><th>Fallback</th><th>Sign-in guidance</th><th>Drafts</th><th>Errors</th><th>Average time</th><th>Median (p50)</th><th>95th percentile</th><th>Request error rate</th><th>Provider attempt errors</th><th>Tool errors</th></tr></thead>
             <tbody><?php foreach ($agentMonitoring as $surface => $metrics): ?>
                 <tr><th><?= $surface === 'support' ? 'Customer support' : 'Enterprise Agent' ?></th>
@@ -22,7 +21,7 @@
         <p style="font-size:0.8rem;color:var(--color-text-muted);">Monitoring records timing, outcomes, failure categories and provider attempt metadata. It omits questions, answers, provider messages, customer identities and secrets.</p>
         <h3>Provider and model reliability</h3>
         <p>HTTP success is not the same as a completed answer. Counts use observed transfers in recorded runs over the last 24 hours. Older records may lack provider, phase or token data.</p>
-        <div class="table-wrap"><table>
+        <div class="table-wrap" data-no-table-search><table>
         <thead><tr><th>Agent</th><th>Provider / requested model</th><th>Transfers</th><th>HTTP success</th><th>Transfer errors</th><th>Accepted answers</th><th>Mean transfer time</th><th>Observed tokens</th><th>Failure evidence</th></tr></thead>
         <tbody><?php foreach($agentMonitoring as $surface=>$metrics): foreach(($metrics['provider_models']??[]) as $m): ?>
         <tr><th><?= $surface==='support'?'Support':'Enterprise' ?></th><td><?= e($m['provider']) ?> · <?= e($m['model']) ?></td>
@@ -45,7 +44,7 @@
                 <details>
                     <summary><?= $surface === 'support' ? 'Customer support' : 'Enterprise Agent' ?> latest provider run · <?= e($run['outcome']) ?></summary>
                     <p><time datetime="<?= e($run['at']) ?>"><?= e($run['at']) ?></time></p>
-                    <div class="table-wrap"><table>
+                    <div class="table-wrap" data-no-table-search><table>
                         <thead><tr><th>Attempt</th><th>Model</th><th>HTTP status</th><th>Transport error</th><th>Elapsed</th><th>Transfer result</th></tr></thead>
                         <tbody><?php foreach ($run['attempts'] as $index => $attempt): ?>
                             <tr><th><?= $index + 1 ?></th>

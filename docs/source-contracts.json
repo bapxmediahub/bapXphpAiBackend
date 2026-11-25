@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "5bc528985312485b9732d829b75addacb345765dfc1c767c85e38db4faa2ac99",
+            "source_sha256": "160120446ef0d740a9f76c3a65d2459efbe35fc9d1c263ab61530ea0a9d7f7a0",
             "references_sha256": "922ac380f9c09674d66cf45663822d448babf8298de57437e723121727beb7cd",
-            "review_note": "Reviewed the backend developer guidance addition against the runtime agent and observability references. Header validation and the upload lock are owned by the page and media services; runtime prompt selection and tool permissions retain their current sources."
+            "review_note": "Compared the owner Chat and Monitoring layouts with the active scoped tool and trace guidance. Authored header validation and the upload lock remain in the developer backend guidance and existing PHP content boundary."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -23,24 +23,24 @@
             "review_note": "Checked the shared authored page PHP template, bounded header attributes, Markdown renderer and revision checks against the content guide and linked server-rendering reference. Drafts retain the existing publication gate and text-only records remain valid."
         },
         "foundation": {
-            "source_sha256": "89c1ec8fd1d4a30cc1cfa524ae79cdd170301d334a792e2e15fed2066fd89fce",
+            "source_sha256": "63ad590d37c769c3d39753bd4f149ca77985c01d32c569900f0cb57208c2b61b",
             "references_sha256": "185f906cb2170ba47183425b0a3da23b534d6bebc5d299297d18d16da548df4b",
-            "review_note": "Reviewed the authored settings record and media metadata coordination through direct PDO and the authenticated remotedb path. The attachment references existing local public assets and stores its editable fields in MySQL with the normal page revision."
+            "review_note": "Compared the owner title and role-gated layout with the rendering boundary. The authored page attaches an owned upload under the normal settings revision through direct PDO and the authenticated remote transport."
         },
         "google-tags": {
-            "source_sha256": "dd0bcdc502cf36e78443eab1a71e00cbabf3a1319202d3d00215a34d24286227",
+            "source_sha256": "47986bb64b609894dcba3d76df180c51043c20441d2e1ca1f99c3f37fc68c4a8",
             "references_sha256": "f97f8bd08a0edd6ee125c583e1dbadbc000f3c422b469875bb4f718abf3d8191",
-            "review_note": "Compared the shared layout diff with documented gtag rendering. The changed section moves only document presentation rules to the shared stylesheet, with Google tag registration, consent and reporting behavior retained."
+            "review_note": "Checked both layout diffs against public tag and owner reporting guidance. The document CSS moved to the shared sheet and the adjusted owner title keeps the existing Google setup and displayed reporting states."
         },
         "http-errors": {
-            "source_sha256": "2e2fee3211f50641844c05f86381f277f9c6c10b7fb60fb750c52937b0868e12",
+            "source_sha256": "63602cadbe59868b0d25a1b00729a589e75d1b31c6ea3a1b25c1e5a46fd06d50",
             "references_sha256": "0328e92ddba3b69d790e8c4c69158891f80a8888b510be88c4a855ef9f4c609b",
-            "review_note": "Reviewed how authored page validation and shared media locking use existing error outcomes. Expected selection errors remain local owner form feedback and database transport failures stay under the existing request failure boundary."
+            "review_note": "Compared the admin heading selection and authored page validation with canonical error rendering. Header eligibility failures remain expected owner form feedback, and transport and handler failures retain sanitized status and correlation behavior."
         },
         "interface": {
-            "source_sha256": "4b5889aae3705fc06f8b9d18c3b3ad84e7f62728491a42b2e4301346fe540948",
-            "references_sha256": "3443cd7c0b80bd799dac8201a3505759acebc6501e15291f88e6ec56e8b16e69",
-            "review_note": "Compared the shared authored PHP template and reading typography with Design. The editor supports native choice, clear, upload status and preview, and long Markdown remains inside the public and 375px preview content rail."
+            "source_sha256": "6463a197e81b69bbe30ba1280f462636531db4e967a822df6a5e7658948758eb",
+            "references_sha256": "f72e8ed85a6ee3a564c9c82bda162cce8505d3703d34a17256d3ef1ac62b28bf",
+            "review_note": "Matched the merged owner navigation, directory and ticket layout to Design and the admin skill. The compiled styles retain the scoped native Pages picker and reading surface used by both preview and publication."
         },
         "mail": {
             "source_sha256": "ad37670c884849d8d45db4a66b868a062a9ac91415897e32424f6b361e90c529",
@@ -54,13 +54,13 @@
         },
         "media": {
             "source_sha256": "edc32a5a9f73cf7f2954eac135a2eaed1394089034bac24ea835af48c4d9600e",
-            "references_sha256": "3cc5e3fb14ffac2e5f6d1034fc90906cd0479c995e79714e3612193f40845a3f",
-            "review_note": "Cross-checked uploaded raster ownership, native selection, page save and media removal. The guard rereads authored references with the same database row lock and existing quarantine rollback preserves files after metadata rejection."
+            "references_sha256": "c746cd47dd5256ab8d85e0abfc75bf1d199b06662523c0ac1a5875837c17d459",
+            "review_note": "Reviewed the owner UI guidance and authored-page picker alongside existing Media Library edit, confirm and quarantine behavior. A page attachment and metadata removal coordinate through the same upload row lock."
         },
         "operator-help": {
-            "source_sha256": "8ca0c910f498aff1446bcd1ca002b031c60d0e81736da097132d9cced1d050d5",
-            "references_sha256": "0145eaec1ca70c2920d4d3bba78741dbb8cd86bb31999cb22983da280bc1265e",
-            "review_note": "Compared the Pages editing guide with the native input, upload and preview controls. Shared document styles give the preview the public reading surface while the existing Help links and owner access policy retain their current behavior."
+            "source_sha256": "3bf7c327883bc86527ae059bc57c6178d3784ad3be61768be6511a34860ed560",
+            "references_sha256": "b40d736d67c3ef3e7cdb0233206eae42c6f0d05d0ed8e07932a86193d9a4eef6",
+            "review_note": "Checked the merged Pages controls, public reading preview and published content workflow against the operator guide. Owner drawer, ticket controls and scoped Enterprise prompts retain the independent guidance added on main."
         },
         "public-mcp": {
             "source_sha256": "d9f31c99f6a3ed60e514698bb1d62d0bbf611a33ed1588e7c0f1dc8023cf2cc5",
@@ -69,8 +69,8 @@
         },
         "remote-commerce": {
             "source_sha256": "b6261908d13966fc317c847e56e6f54194c493f56e1f609a19b658de5e09b65e",
-            "references_sha256": "5cf6292e7228e0bec0d1a6883aca0fdd9ff33462d1c8fa195fb02782a8b4ccab",
-            "review_note": "Reviewed the database and remotedb changes for the existing authored page action and upload protection. The shared layout change moves document styling to band.css; the documented checkout, quote and payment contracts retain their implementation."
+            "references_sha256": "5276f42ec317eeb8a204ca3e647297b2629d8d051e1cff7f111229172e4cd504",
+            "review_note": "Reviewed the merged authenticated database and public layout dependencies against the checkout and Support references. Header attachment applies to page settings and owned media while the existing native payment and quote flows remain intact."
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",
@@ -78,9 +78,9 @@
             "review_note": "Compared the MediaService additions with the Merchant Feed and product image inspection contracts. Header choices are filtered only for the owner authored editor, and catalogue image eligibility and feed URLs retain their existing resolution."
         },
         "workflow": {
-            "source_sha256": "250ccb189cbb386a050e50d12e987c7054f3b3ac2995f3fe70327c850fa18844",
+            "source_sha256": "81570d1d11848a8ca5e05ca61abc4c8d0ac11978756d1b13790a24a0a407c720",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Reviewed the added authored-page media and test guidance against the development workflow. Route associations and schema are generated into the current project indexes, and disposable browser and bridge fixtures exercise established save and upload paths."
+            "review_note": "Cross-checked owner drawer and table browser guidance and authored content verification in the merged skills, and regenerated the project index from the combined sources."
         }
     }
 }

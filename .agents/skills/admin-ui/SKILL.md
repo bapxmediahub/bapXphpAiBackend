@@ -46,6 +46,21 @@ Keep whole-scope health above the bounded search results. Verify reference searc
 combined filters, blank results and pagination with JavaScript disabled at desktop
 and 375px. Explicit SMTP acceptance and legacy sent have separate labels.
 
+## Owner shell and record lists
+
+- Keep native sidebar groups available through Menu and Close navigation in
+  the page flow with JavaScript disabled. The enhanced mobile drawer returns
+  focus on Close or Escape. Keep the
+  skip link, visible group labels and the current destination.
+- Show server save and error feedback in the page where the action took
+  place. For an in-page filter, label the table and announce the matching
+  row count or the empty state. Leave paginated searches on their existing
+  server query.
+- Keep wide tabular records keyboard-scrollable. Stack ticket records at
+  375px and give Manage ticket a native disclosure. The labelled reply and
+  action fields stay inside it. Cancel collapses the editor and returns
+  focus to its summary, and opening the disclosure works without JavaScript.
+
 ## Admin Panel Agent
 
 The interface at `/admin/agent` is the Enterprise Agent chat workspace.
@@ -101,7 +116,8 @@ Log into `/admin` and click through the page you changed, including its form sub
 
 For reports and agents, verify desktop and exact 375px separately. A mobile workspace is
 not a squeezed desktop: remove side rails, keep the scoped-context summary visible, keep
-the composer above the safe area, and prevent horizontal tables.
+the composer above the prompt examples and within reach, and prevent page-level
+horizontal scrolling. Leave attachment and draft guidance on screen at 375px.
 
 Keep admin action labels beside their decorative icons. In the Users directory,
 show the applied filters below the toolbar. Each removal keeps the other criteria
