@@ -8,9 +8,9 @@
             "review_note": "Reviewed both native registries, published-data gates, and passage evidence allowlists on the merged tree. Both agents share optional topic selection and sanitized digests, and the Chat Completions tool correlation and refusal handling remain intact. Rechecked the Luna-aware HTTP path and both role fixtures on this merge. Verified the merged short-hold readiness path, including original-model continuation and the existing correlation/reference behavior. Cross-checked the latest Monitoring split and the unchanged separation of publication evidence from storefront analytics."
         },
         "auth": {
-            "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
-            "references_sha256": "010923f54a278b46c83358472b0052fda2aab463cdf2310c8729930b6b780b64",
-            "review_note": "Compared the backend skill update with auth boundaries. Shared public article policy controls publication access, and the Enterprise tool registry retains its owner requirement and existing account identity checks."
+            "source_sha256": "c34a5b34bc904f36cda184c26113f91e2cf36afa2b506217d1f74e22e9e0cefd",
+            "references_sha256": "a4253536bffaadd6f7dc7d3b3f0470ec88aa839175c8e1068b4f9948f3a5528c",
+            "review_note": "Compared the backend skill update with auth boundaries. Shared public article policy controls publication access, and the Enterprise tool registry retains its owner requirement and existing account identity checks. Cross-checked the merged sign-in response and existing login notice behavior against stored agent evidence and published article scope."
         },
         "commerce": {
             "source_sha256": "4d8f53718f4495182ccef03d41eacb3da729dbe5ff1b5db5b54cbfd88957749e",
@@ -43,9 +43,9 @@
             "review_note": "Checked the merged campaign reading column, native feedback and 44px underlined download links with editor selection, preview, lock and mobile design contracts."
         },
         "mail": {
-            "source_sha256": "5227980c18b489b2f985b67c057a1f94a95c6784bd1e3b594f7fd2294ce37179",
-            "references_sha256": "b925d90525af3b4fce423db3faccd01813fd78befb89bac57e419ebd83dfa422",
-            "review_note": "Compared the backend skill addition with mail and support boundaries. Published article retrieval uses BlogService and records public source evidence without entering the mail queue or SMTP flow. Reviewed the merged campaign enquiry and owner Inbox guidance. Business article and report evidence remain scoped to their agent tools."
+            "source_sha256": "72b1c4a0ac6e5d88b2edb4e8190bbc9bb8271e1c9b25880f6d4ea068b2f82b56",
+            "references_sha256": "6002b3512786bb94bec7e431e39b8b3efb8d4b24d72713dc66c351ec403d5c43",
+            "review_note": "Compared the backend skill addition with mail and support boundaries. Published article retrieval uses BlogService and records public source evidence without entering the mail queue or SMTP flow. Reviewed the merged campaign enquiry and owner Inbox guidance. Business article and report evidence remain scoped to their agent tools. Cross-checked the merged sign-in response and existing login notice behavior against stored agent evidence and published article scope."
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed the independent private download storage against the existing owner Media Library, header image and deletion documentation. Download files keep their own private root."
         },
         "operator-help": {
-            "source_sha256": "ca95977aaf0cba34ab82e51909085c6adeea7d0380535091cada87eaa4469bff",
+            "source_sha256": "84fcab2201a1fd0e0c68b0bd55e3bbdd7cf7fcde362d04d865064f17ee2a670e",
             "references_sha256": "f5c667e8fdb836b615fc47f2c1e84fe62d463ccf085757a8f354a0542de7d2c7",
-            "review_note": "Compared the enterprise-agent guide dependencies and published support guide. Passage evidence adds hashes and a section index to the existing authorized review context. Operator Help remains behind the owner gate. Checked the merged authored-page media workflow and preserved existing publication and owner access boundaries. Reviewed the merged campaign enquiry and owner Inbox guidance. Business article and report evidence remain scoped to their agent tools. Reviewed published blog evidence and the separately scoped authored-page download and storage guides in the merged tree."
+            "review_note": "Compared the enterprise-agent guide dependencies and published support guide. Passage evidence adds hashes and a section index to the existing authorized review context. Operator Help remains behind the owner gate. Checked the merged authored-page media workflow and preserved existing publication and owner access boundaries. Reviewed the merged campaign enquiry and owner Inbox guidance. Business article and report evidence remain scoped to their agent tools. Reviewed published blog evidence and the separately scoped authored-page download and storage guides in the merged tree. Cross-checked the merged sign-in response and existing login notice behavior against stored agent evidence and published article scope."
         },
         "public-mcp": {
             "source_sha256": "4281b40017e338bb529daa24d33a9303254ec3a153276a8873f2b93141c41bfe",
