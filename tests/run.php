@@ -941,6 +941,137 @@ $tests['provider cooldown is bounded, deployment local, and stores no raw creden
     } finally {foreach(glob($dir.'/*')?:[] as $file)unlink($file);rmdir($dir);}
 };
 
+$tests['provider holds follow configured credentials across rotation and legacy state'] = static function (): void {
+    $directory = sys_get_temp_dir() . '/bapx-health-rotation-' . bin2hex(random_bytes(6));
+    mkdir($directory, 0700);
+    $path = $directory . '/health.json';
+    $now = 1800000000;
+    $oldPlan = [['provider' => 'google', 'endpoint' => 'https://fixture.example.invalid/v1',
+        'apiKey' => 'fixture-old-private-key', 'models' => ['primary'], 'model' => 'primary']];
+    $newPlan = $oldPlan;
+    $newPlan[0]['apiKey'] = 'fixture-new-private-key';
+    try {
+        $oldWorker = new \App\Services\AiProviderHealthService($path);
+        $newWorker = new \App\Services\AiProviderHealthService($path);
+        $oldWorker->record($oldPlan[0], 'primary', 429, 0, 60000, $now);
+        assertSame([], $newWorker->availablePlan($oldPlan, $now, true), 'A fresh worker retains the same credential hold');
+        assertSame($newPlan, $newWorker->availablePlan($newPlan, $now, true), 'A replacement credential starts eligible');
+        $newWorker->record($newPlan[0], 'primary', 429, 0, 60000, $now + 1);
+        assertSame([], $oldWorker->availablePlan($newPlan, $now + 1, true), 'New credential holds survive another worker read');
+        $oldWorker->record($oldPlan[0], 'primary', 200, 0, null, $now + 2);
+        assertSame([], $newWorker->availablePlan($newPlan, $now + 2, true), 'Old-key success cannot clear a replacement-key hold');
+        $newWorker->record($newPlan[0], 'primary', 200, 0, null, $now + 3);
+        $oldWorker->record($oldPlan[0], 'primary', 429, 0, 60000, $now + 4);
+        assertSame($newPlan, $newWorker->availablePlan($newPlan, $now + 4, true), 'Late old-key failure cannot suppress replacement');
+        assertSame([], $newWorker->availablePlan($oldPlan, $now + 4, true), 'Late old-key failure stays scoped to its observed credential');
+        $missingKey = $oldPlan;
+        unset($missingKey[0]['apiKey']);
+        $oldWorker->record($missingKey[0], 'primary', 429, 0, 60000, $now + 5);
+        assertSame($missingKey, $newWorker->availablePlan($missingKey, $now + 5, true), 'Missing credentials cannot create unscoped holds');
+        $stored = file_get_contents($path);
+        assertTrue(!str_contains($stored, 'fixture-old-private-key') && !str_contains($stored, 'fixture-new-private-key')
+            && !str_contains($stored, 'fixture.example.invalid'), 'Health files contain no raw connection or credential');
+
+        $legacyKey = hash('sha256', "google\0https://fixture.example.invalid/v1\0primary");
+        foreach ([$now + 600, ['until' => $now + 600, 'provider_hold' => true]] as $legacy) {
+            file_put_contents($path, json_encode([$legacyKey => $legacy]));
+            assertSame($newPlan, $newWorker->availablePlan($newPlan, $now, true), 'Unscoped legacy holds cannot suppress a credential');
+        }
+        $newWorker->record($newPlan[0], 'primary', 429, 0, 60000, $now);
+        $migrated = json_decode(file_get_contents($path), true);
+        assertSame(2, $migrated['version'], 'The first new observation replaces legacy data with the scoped format');
+        assertSame(1, count($migrated['entries']), 'Unscoped legacy entries are discarded during replacement');
+    } finally {
+        foreach (glob($directory . '/*') ?: [] as $file) unlink($file);
+        rmdir($directory);
+    }
+};
+
+$tests['provider hold rechecks skip stale candidates without synthetic transfer attempts'] = static function (): void {
+    $directory = sys_get_temp_dir() . '/bapx-hold-recheck-' . bin2hex(random_bytes(6));
+    mkdir($directory, 0700);
+    $health = new \App\Services\AiProviderHealthService($directory . '/health.json');
+    $plan = [['provider' => 'google', 'endpoint' => 'https://fixture.invalid/v1', 'apiKey' => 'fixture-private-key',
+        'model' => 'primary', 'models' => ['primary', 'fallback']]];
+    $client = new \App\Services\AiClient(health: $health);
+    $ordered = new ReflectionMethod($client, 'completeWithFallbacks');
+    $failure = new ReflectionProperty($client, 'failureCategory');
+    $seen = [];
+    \App\Services\AgentTraceService::begin(bin2hex(random_bytes(8)), null, \App\Services\AiClient::agentLimits());
+    try {
+        $snapshot = $health->availablePlan($plan, null, true);
+        $reply = $ordered->invoke($client, $snapshot, hrtime(true) + 10_000_000_000, false,
+            static function (array $config) use ($client, $health, $plan, $failure, &$seen): string {
+                $seen[] = $config['model'];
+                // A different worker observes a quota hold after this request selected its plan.
+                $health->record($plan[0], 'fallback', 429, 0, 60000);
+                $failure->setValue($client, 'provider_server');
+                return 'AI request failed: synthetic primary unavailable.';
+            });
+        assertSame(['primary'], $seen, 'A candidate held after plan selection never reaches the wire adapter');
+        assertSame([], $client->transferTimings(), 'A local hold never invents transfer evidence');
+        assertSame('provider_cooldown', $client->failureCategory(), 'Local hold stop is separate from previous upstream failure');
+        assertTrue(str_contains($reply, 'provider hold'), 'The final response identifies the local hold stop');
+        assertSame([], array_values(array_filter(\App\Services\AgentTraceService::snapshot()['spans'],
+            static fn(array $span): bool => $span['type'] === 'model_attempt')), 'Skipped candidates create no model attempt spans');
+
+        $wait = new ReflectionMethod($client, 'providerHoldAllowsAttempt');
+        assertSame(false, $wait->invoke($client, $plan[0], 'fallback', hrtime(true) + 1_000_000_000), 'A long hold stops immediately');
+        $replacement = $plan[0];
+        $replacement['apiKey'] = 'replacement-private-key';
+        assertSame(true, $wait->invoke($client, $replacement, 'fallback', hrtime(true) + 1_000_000_000), 'Hold checks retain credential isolation');
+        $health->record($plan[0], 'primary', 503, 0);
+        assertSame(0, $health->providerHoldRemainingMs($plan[0], 'primary'), 'Ordinary server cooldown does not block eligible attempts');
+        $bypass = new ReflectionProperty($client, 'bypassProviderHolds');
+        $bypass->setValue($client, true);
+        assertSame(true, $wait->invoke($client, $plan[0], 'fallback', hrtime(true) + 1_000_000_000), 'Explicit diagnostic bypasses per-transfer holds');
+    } finally {
+        \App\Services\AgentTraceService::reset();
+        foreach (glob($directory . '/*') ?: [] as $file) unlink($file);
+        rmdir($directory);
+    }
+};
+
+$tests['provider hold extended by another worker is rechecked after waiting'] = static function (): void {
+    $directory = sys_get_temp_dir() . '/bapx-hold-extension-' . bin2hex(random_bytes(6));
+    mkdir($directory, 0700);
+    $path = $directory . '/health.json';
+    $connection = ['provider' => 'google', 'endpoint' => 'https://fixture.invalid/v1', 'apiKey' => 'fixture-key'];
+    $health = new \App\Services\AiProviderHealthService($path);
+    $worker = <<<'PHP'
+require $argv[1];
+usleep(150000);
+$health = new App\Services\AiProviderHealthService($argv[2]);
+$health->record(['provider'=>'google','endpoint'=>'https://fixture.invalid/v1','apiKey'=>'fixture-key'], 'primary', 429, 0, 60000);
+PHP;
+    $process = null;
+    \App\Services\AgentTraceService::begin(bin2hex(random_bytes(8)), null, \App\Services\AiClient::agentLimits());
+    try {
+        $health->record($connection, 'primary', 429, 0, 1000);
+        $process = proc_open([PHP_BINARY, '-r', $worker, app_path('app/bootstrap.php'), $path],
+            [0=>['pipe','r'], 1=>['pipe','w'], 2=>['pipe','w']], $pipes);
+        assertTrue(is_resource($process), 'The synthetic concurrent worker starts');
+        fclose($pipes[0]);
+        $client = new \App\Services\AiClient(health: $health);
+        $wait = new ReflectionMethod($client, 'providerHoldAllowsAttempt');
+        assertSame(false, $wait->invoke($client, $connection, 'primary', hrtime(true) + 10_000_000_000),
+            'A short wait cannot ignore a concurrent long hold extension');
+        assertSame('provider_cooldown', $client->failureCategory(), 'Concurrent extension stops locally');
+        assertSame([], $client->transferTimings(), 'Waiting for a hold is not a provider transfer');
+        stream_get_contents($pipes[1]);
+        $errors = stream_get_contents($pipes[2]);
+        fclose($pipes[1]); fclose($pipes[2]);
+        assertSame(0, proc_close($process), 'Concurrent worker exits successfully');
+        $process = null;
+        assertSame('', $errors, 'Concurrent worker emits no error');
+    } finally {
+        if (is_resource($process)) { proc_terminate($process); proc_close($process); }
+        \App\Services\AgentTraceService::reset();
+        foreach (glob($directory . '/*') ?: [] as $file) unlink($file);
+        rmdir($directory);
+    }
+};
+
 $tests['Google structured quota recovery respects provider delays and redacts project metadata'] = static function (): void {
     $client=\App\Services\AiClient::class;
     $body=json_encode(['error'=>['message'=>'private-project-detail','details'=>[
