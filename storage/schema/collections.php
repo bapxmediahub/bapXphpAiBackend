@@ -474,6 +474,7 @@
                 'header_image_url' => ['type' => 'string', 'max_length' => 512, 'description' => 'Root-relative URL of a library raster upload'],
                 'header_image_alt' => ['type' => 'string', 'max_length' => 255],
                 'campaign_form' => ['type' => 'array', 'items' => 'object', 'description' => 'Optional bounded authored-page lead form'],
+                'campaign_downloads' => ['type' => 'object', 'description' => 'Authored-page download visibility and ordered immutable file metadata'],
                 'status' => ['type' => 'enum', 'values' => ['draft', 'published']], 'revision' => ['type' => 'string'],
                 // The dedicated header_menu row uses the same JSON-backed settings table.
                 'header_menu' => ['type' => 'array', 'items' => 'string'],

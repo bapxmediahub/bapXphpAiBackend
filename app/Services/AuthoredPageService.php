@@ -31,6 +31,9 @@ final class AuthoredPageService
         $record = ['id'=>'pg:'.$slug, 'slug'=>$slug, 'title'=>$title, 'content'=>$content,
             'status'=>$input['status'], 'revision'=>bin2hex(random_bytes(16))];
         if (isset($input['campaign_form'])) $record['campaign_form'] = CampaignLeadService::definition($input['campaign_form']);
+        if (isset($input['campaign_downloads'])) {
+            $record['campaign_downloads'] = CampaignDownloadService::definition($input['campaign_downloads']);
+        }
         $url = $input['header_image_url'] ?? '';
         if ($url === '') return $record;
         if (!MediaService::isPageHeaderPath($url)) {

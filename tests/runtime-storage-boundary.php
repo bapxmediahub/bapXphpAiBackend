@@ -99,6 +99,10 @@ const APPROVED_STORAGE_WRITES = [
         'mkdir $this->postsDir' => 1, 'fopen $temp' => 1, 'fwrite $handle' => 1,
         'rename $file' => 1, 'fopen $path' => 1,
     ],
+    // Immutable campaign file bytes in a verified private sibling directory.
+    'app/Services/CampaignDownloadService.php' => [
+        'move_uploaded_file $target' => 1, 'mkdir $root' => 1, 'mkdir $folder' => 1,
+    ],
     // Deployment-local environment configuration.
     'app/Services/EnvService.php' => ['file_put_contents $path' => 1],
     // Legacy repository-document cache and CLI-generated project index.

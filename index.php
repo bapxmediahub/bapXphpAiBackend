@@ -16,15 +16,14 @@ if ($uri === '/storage' || str_starts_with((string)$uri, '/storage/')) {
     exit('Not found');
 }
 
-// Runtime agent rules and developer harness instructions are private even when
-// php -S would otherwise serve an existing Markdown file before routing.
+// Private instructions and download storage stay blocked before PHP static serving.
 $privatePath = (string)$uri;
 for ($decodePass=0; $decodePass<3; $decodePass++) {
     $decoded = rawurldecode($privatePath);
     if ($decoded === $privatePath) break;
     $privatePath = $decoded;
 }
-if (preg_match('~(?:^|/)(?:\.agents|\.bapX)(?:/|$)|^/cli(?:/|$)|^/AGENTS\.md$|^/content/help/admin(?:/|$)|^/content/blog/posts(?:/|$)~i', $privatePath)) {
+if (preg_match('~(?:^|/)(?:\.agents|\.bapX|\.sps-downloads)(?:/|$)|^/cli(?:/|$)|^/AGENTS\.md$|^/content/help/admin(?:/|$)|^/content/blog/posts(?:/|$)~i', $privatePath)) {
     http_response_code(404);
     header('Cache-Control: no-store');
     exit('Not found');

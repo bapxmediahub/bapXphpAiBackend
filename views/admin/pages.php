@@ -11,6 +11,10 @@ $campaignFields = is_array($form['campaign_fields'] ?? null)
     ? $form['campaign_fields']
     : array_column($savedCampaignFields ?? [], null, 'id');
 $campaignTypes = ['' => 'Unused'] + \App\Services\CampaignLeadService::OPTIONAL_TYPES;
+$downloadManifest = \App\Services\CampaignDownloadService::manifest($form);
+$downloadEnabled = array_key_exists('download_enabled', $form)
+    ? $form['download_enabled'] === '1' : ($downloadManifest['enabled'] ?? false);
+$downloadPositions = is_array($form['download_existing'] ?? null) ? $form['download_existing'] : null;
 ?>
 <section class="admin-card" aria-labelledby="pages-title">
     <h1 id="pages-title">Pages</h1>
@@ -26,7 +30,7 @@ $campaignTypes = ['' => 'Unused'] + \App\Services\CampaignLeadService::OPTIONAL_
     <?php if (!empty($error)): ?><p role="alert"><?= e($error) ?></p>
         <?php if (!empty($form['slug'])): ?><p><a href="/admin/pages?edit=<?= e(rawurlencode($form['slug'])) ?>">Reopen the saved page</a></p><?php endif; ?>
     <?php endif; ?>
-    <form class="admin-form" action="/admin/pages/save" method="post" id="page-draft-form"
+    <form class="admin-form" action="/admin/pages/save" method="post" enctype="multipart/form-data" id="page-draft-form"
           data-draft-owner="<?= e($pageDraftOwner ?? '') ?>" data-saved-draft="<?= e($savedPageDraftToken ?? '') ?>"
           data-submitted="<?= isset($preview) || !empty($error) ? '1' : '0' ?>">
         <section id="page-draft-recovery" hidden aria-labelledby="page-draft-heading">
@@ -106,6 +110,43 @@ $campaignTypes = ['' => 'Unused'] + \App\Services\CampaignLeadService::OPTIONAL_
                     </label>
                 </fieldset>
             <?php endforeach; ?>
+        </fieldset>
+        <fieldset class="campaign-form-settings campaign-download-settings"
+            data-max-files="<?= \App\Services\CampaignDownloadService::MAX_FILES ?>"
+            data-max-bytes="<?= \App\Services\CampaignDownloadService::MAX_BYTES ?>" aria-describedby="campaign-download-settings-help">
+            <legend>Downloads</legend>
+            <input type="hidden" name="download_editor" value="1">
+            <label class="campaign-form-settings__checkbox">
+                <input type="checkbox" name="download_enabled" value="1" <?= $downloadEnabled ? 'checked' : '' ?>>
+                Enable downloads
+            </label>
+            <p id="campaign-download-settings-help">Choose up to <?= \App\Services\CampaignDownloadService::MAX_FILES ?> files totalling 5 MB (5,000,000 bytes). A published enquiry form asks visitors to submit before they can download.</p>
+            <?php if ($downloadManifest['files'] ?? []): ?>
+                <ul class="campaign-download-settings__files" aria-label="Saved download files">
+                    <?php foreach ($downloadManifest['files'] as $index => $file): ?>
+                        <?php $position = $downloadPositions === null ? (string)($index + 1) : ($downloadPositions[$file['id']] ?? ''); ?>
+                        <li data-download-bytes="<?= $file['bytes'] ?>" data-download-name="<?= e($file['name']) ?>">
+                            <span class="campaign-download__name"><?= e($file['name']) ?></span>
+                            <label>
+                                <span>Position <span class="sr-only">for <?= e($file['name']) ?></span></span>
+                                <select name="download_existing[<?= e($file['id']) ?>]">
+                                    <option value="" <?= $position === '' ? 'selected' : '' ?>>Remove</option>
+                                    <?php for ($number = 1; $number <= \App\Services\CampaignDownloadService::MAX_FILES; $number++): ?>
+                                        <option value="<?= $number ?>" <?= $position === (string)$number ? 'selected' : '' ?>><?= $number ?></option>
+                                    <?php endfor; ?>
+                                </select>
+                            </label>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+                <small>Choose a different position for each retained file. New files go after them.</small>
+            <?php endif; ?>
+            <label for="campaign-download-new">Add files</label>
+            <input type="file" id="campaign-download-new" name="download_files[]" multiple
+                accept=".pdf,.zip,.txt,.png,.jpg,.jpeg,.webp" aria-describedby="campaign-download-formats">
+            <small id="campaign-download-formats">PDF, ZIP, TXT, PNG, JPG and WebP. Select files again after previewing or reopening a draft.</small>
+            <p id="campaign-download-total" role="status" aria-atomic="true"></p>
+            <?php if (!empty($downloadNotice)): ?><p role="status"><?= e($downloadNotice) ?></p><?php endif; ?>
         </fieldset>
         <label>Visibility <select name="status">
             <option value="draft">Draft</option>
