@@ -1,36 +1,28 @@
-<section class="section">
-    <div class="container about-story-grid">
-        <div class="about-story-card reveal">
-            <span class="eyebrow serif-accent">Traditional Wisdom</span>
-            <h1 class="section-title">Sri Panchami Spiritual</h1>
-            <p class="lede">A focused guide for devotional practice, sacred products, and temple visits through Sri Panchami Spiritual.</p>
-            <p>Use this page as a starting point for authentic spiritual products and Panchami temple guidance.</p>
-            <div style="display:flex; gap:var(--space-sm); flex-wrap:wrap; margin-top:var(--space-lg);">
-                <a class="btn btn-primary" href="/shop">Shop Sacred Products</a>
-                <a class="btn btn-outline" href="/temples">Explore Temple Guides</a>
-            </div>
-        </div>
-        <div class="about-story-card reveal">
-            <span class="eyebrow serif-accent">Quick Paths</span>
-            <h2>Plan Your Spiritual Journey</h2>
-            <ul style="margin:var(--space-md) 0 0; padding-left:1.1rem; color:var(--color-text-muted); line-height:1.7;">
-                <li><a href="/temples">Explore temple guides</a> for timings, addresses, and pooja context.</li>
-                <li><a href="/shop">Browse spiritual products</a> for daily worship and sacred gifting.</li>
-                <li><a href="/contact#contact-form">Send a general enquiry</a> for product or temple guidance.</li>
-            </ul>
-        </div>
-    </div>
-</section>
-
-<section class="section section--alt">
+<?php $shopEnabled = module_on('shop'); ?>
+<section class="section spiritual-guide" aria-labelledby="spiritual-guide-title">
     <div class="container">
-        <div class="page-cta-card reveal">
-            <div>
-                <span class="page-cta-card__eyebrow">Need Guidance?</span>
-                <h3>Send a General Enquiry</h3>
-                <p>Use the contact form for product questions, order help, or temple guidance.</p>
-            </div>
-            <a class="btn btn-primary page-cta-card__button" href="/contact#contact-form">Let’s Get Connected →</a>
+        <header class="spiritual-guide__header">
+            <h1 id="spiritual-guide-title">Devotional practice and temple visits</h1>
+            <p class="lede">Explore temple timings, addresses, and pooja information<?= $shopEnabled ? ', or find products for daily worship' : '' ?>.</p>
+        </header>
+        <div class="spiritual-guide__paths">
+            <article class="about-story-card">
+                <h2>Temple guides</h2>
+                <p>Find opening hours, addresses, and directions where available.</p>
+                <a class="btn btn-primary" href="/temples">Explore temple guides</a>
+            </article>
+            <?php if ($shopEnabled): ?>
+                <article class="about-story-card">
+                    <h2>Spiritual products</h2>
+                    <p>Browse the collection for daily worship and sacred gifting.</p>
+                    <a class="btn btn-outline" href="/shop">Browse products</a>
+                </article>
+            <?php endif; ?>
+            <article class="about-story-card">
+                <h2>General enquiries</h2>
+                <p>Ask our team about a temple visit, a pooja, or an order.</p>
+                <a class="btn btn-outline" href="/contact#contact-form">Contact us</a>
+            </article>
         </div>
     </div>
 </section>

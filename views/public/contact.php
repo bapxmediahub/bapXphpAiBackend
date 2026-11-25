@@ -20,7 +20,7 @@
                         <a class="contact-direct-link" href="tel:<?= e($phone['number']) ?>"><?= e($phone['label']) ?></a>
                     <?php endforeach; ?>
                     <?php if ($hasEmail): ?>
-                    <a class="contact-direct-link contact-direct-link--mail" href="mailto:<?= e($publicContact['email']) ?>"><span class="contact-email-address"><?= e($publicContact['email']) ?></span><span class="contact-email-label">Email support</span></a>
+                    <a class="contact-direct-link contact-direct-link--mail" href="mailto:<?= e($publicContact['email']) ?>"><?= e($publicContact['email']) ?></a>
                     <?php endif; ?>
                 </div>
                 <?php if ($publicContact['hours']): ?><p><?= e(implode(' · ', array_map(static fn(array $slot): string => $slot['days'] . ', ' . $slot['hours'], $publicContact['hours']))) ?></p><?php endif; ?>
