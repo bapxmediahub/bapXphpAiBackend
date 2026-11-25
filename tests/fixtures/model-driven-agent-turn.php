@@ -37,12 +37,23 @@ namespace {
     $_SESSION=['csrf_token'=>'fixture','support_guest_id'=>'fixture-guest'];
     if($role!=='guest')$_SESSION['user']=['role'=>$role,'id'=>'fixture-actor','email'=>'fixture@example.invalid'];
     $_POST=['message'=>$argv[4],'_csrf'=>'fixture','request_id'=>bin2hex(random_bytes(16))];
+    $catalogueFollowup = str_starts_with($scenario, 'catalogue_');
+    if ($catalogueFollowup) {
+        $conversations = new \App\Services\AgentConversationService();
+        $actor = $conversations::actor('support', null);
+        $previous = $conversations->record('support', $actor, null, 'How many products were published?',
+            'There are currently 43 products published in the shop.', str_repeat('b', 16), 'model');
+        $_POST['conversation_id'] = $previous['conversation_id'];
+    }
     ob_start();
-    register_shutdown_function(static function()use($directory):void{
+    register_shutdown_function(static function()use($directory,$catalogueFollowup):void{
         $response=json_decode(ob_get_clean(),true);
         $files=glob($directory.'/agent-conversations/*.json')?:[];
-        $turn=$files?(json_decode(file_get_contents($files[0]),true)['turns'][0]??[]):[];
-        echo json_encode(['status'=>http_response_code(),'response'=>$response,'turn'=>$turn],JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);
+        $turns=$files?(json_decode(file_get_contents($files[0]),true)['turns']??[]):[];
+        $result=['status'=>http_response_code(),'response'=>$response,'turn'=>$turns[array_key_last($turns)]??[]];
+        if($catalogueFollowup)$result['history_preserved']=count($turns)===2
+            &&($turns[0]['answer']??null)==='There are currently 43 products published in the shop.';
+        echo json_encode($result,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);
         foreach(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directory,\FilesystemIterator::SKIP_DOTS),\RecursiveIteratorIterator::CHILD_FIRST) as $entry){
             if($entry->isDir())rmdir($entry->getPathname());else unlink($entry->getPathname());
         }

@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "7e1df21cfab97ef6ea24cf894f03de2cf3e02a725be9a645dc2b719926a08f8f",
-            "references_sha256": "cf0488976972faffaf0cc6e621bb476b2a51a8d996d532f16354a25f398c0c5c",
-            "review_note": "Compared runtime and monitoring documentation with first-byte trace evidence, model eligibility, provider RetryInfo timing, fallback intervals, and unchanged ordered retry limits."
+            "source_sha256": "940c2b1b8c884af745fc6a21657be2384cbbe1f942558fce334d16773a3579a7",
+            "references_sha256": "089774a2b9818a0e14fbb4c1a0c3d5b7d664afebb0ac70d4b2256e04efd06ae8",
+            "review_note": "Compared Support prompt, same-turn catalogue tool evidence, recognized reply forms, error event and persistent turn behavior against the agent runtime and monitoring guides."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -23,9 +23,9 @@
             "review_note": "Reviewed Blog direct-route gating, sitemap module filtering, canonical URL and optional brand image defaults. Profile story is published as bounded plain paragraphs."
         },
         "foundation": {
-            "source_sha256": "0f824a341e6e70cb0e5f0184a2a9fd047865be430e810f7870a86a54b1a0c142",
+            "source_sha256": "d7203f45d3abd4a6584742bb922191eb37721ebaa26a6663c47d609d3c81c4a3",
             "references_sha256": "6eba6651fd8e747d8053034a7812f9d41e6dba5a405bc1d1ed669556c8f2474b",
-            "review_note": "Reviewed direct runtime file-writer coverage against JSON storage and architecture, preserving the PHP/MySQL business boundary, private chat files, operational files, Markdown, and media."
+            "review_note": "Reviewed existing PHP actor flow, private JSON conversations, public read-only tools and deployed business data boundaries for the catalogue reply validation."
         },
         "google-tags": {
             "source_sha256": "187c8971da4cad73fccba340fb2f7424e60c4cb704bed864594f6c2dd3308c72",
@@ -48,9 +48,9 @@
             "review_note": "Checked the reconciled AdminController change in product editing. Mail defaults, rendering and queue behavior remain as documented."
         },
         "mcp-clients": {
-            "source_sha256": "78b45576da2d1ffc37e26fdf5701db6321d7df0b22488288b1879d91472778f1",
+            "source_sha256": "8e5f932402eee0b3b101cd5e6e86a1b49c095eba78f356fc843bdf31ad7b9551",
             "references_sha256": "d19b8a3fce5a93fac4c742428a288b1d7f06777b4ec6c2c1cff72a5fff2760b9",
-            "review_note": "The Settings help addition covers public profile fields. Reviewed isolated owner reporting grants, revocation and STDIO scope, which retain their existing behavior."
+            "review_note": "Verified this validation is applied only by the native Support reply path. Shared public MCP data and tool contracts remain as documented."
         },
         "media": {
             "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
@@ -58,9 +58,9 @@
             "review_note": "Checked shared admin UI guidance and product validation. Media reference ownership and reviewed deletion remain as documented."
         },
         "operator-help": {
-            "source_sha256": "deeb36e5050c659bbefd045781c0217cb56faa20ac49541250ac85eade70f1e6",
+            "source_sha256": "50485ec90e43b373582a043b1d8356fa54f84755ddf0a30ae557fad4230b4d00",
             "references_sha256": "4085806967ce3add36533b16ad368aa9e84651519cc1ec2ef4b5bab00f2eb10c",
-            "review_note": "Reviewed product tax edits, Reports help, checkout-email account help and the reconciled admin layout. Unit fields and historical review rules match the forms and exports."
+            "review_note": "Checked the owner Monitoring reason, scope and persisted response status against operator guidance. Existing guest and owner workflows remain separate."
         },
         "public-mcp": {
             "source_sha256": "e5d2bb67604d7b9c3588dba3d04e75ad9925c1c686f3a4d13dffd1dc8dd99325",

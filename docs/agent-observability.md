@@ -342,9 +342,13 @@ into instruction-like text.
 
 The same JSON turn retains the sanitized decision and the observed retrieval
 span. Model product links must belong to the retrieved product references;
-invented links fail the deterministic guardrail. This does not establish
-semantic correctness of every sentence, factual accuracy or calibrated confidence.
-Public shipping-policy answers can be resolved locally from approved values.
+invented links fail the deterministic guardrail. Support also checks recognized
+numeric whole-shop totals against the current turn's successful catalogue
+summary. A missing or conflicting result records an unverified catalogue
+total in Agent Monitoring and offers the Shop when available. The proposed
+number stays out of the reply. Historical turns retain their original answers. These checks cover
+specific claims and do not measure general factual accuracy or confidence.
+The model retrieves approved shipping-policy data using `public_policy`.
 
 The 24-hour operational table now separates failed provider **attempts** from
 failed tool **calls** and request errors; each denominator is shown explicitly.

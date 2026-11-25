@@ -3,10 +3,11 @@ namespace App\Services;
 
 final class AuditLogService {
     private const RUN_REASONS = ['not_configured', 'timeout', 'transport', 'authentication', 'rate_limit',
-        'provider_server', 'provider_request', 'provider_response', 'empty_response', 'rejected_response',
+        'provider_server', 'provider_request', 'provider_response', 'empty_response', 'rejected_response', 'catalogue_total_unverified',
         'internal_error', 'lookup_unavailable', 'provider_cooldown', 'request_deadline', 'provider_budget', 'trace_step_budget'];
 
     public const DIAGNOSTICS = [
+        'catalogue_total_unverified' => ['Current catalogue total could not be verified', 'Compare the model response with the same-turn catalogue summary. The proposed total was withheld.'],
         'transfer_timeout' => ['Transfer timed out', 'Check the recorded HTTP status and first-byte timing. A timeout alone cannot identify where the delay occurred.'],
         'transport_error' => ['Transport error', 'Use the cURL error number to check DNS, connectivity or TLS on the application host.'],
         'upstream_http' => ['Upstream service error', 'Check the provider status page and the attempt time before making another request.'],
