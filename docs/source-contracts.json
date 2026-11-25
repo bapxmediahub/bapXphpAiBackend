@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "160120446ef0d740a9f76c3a65d2459efbe35fc9d1c263ab61530ea0a9d7f7a0",
-            "references_sha256": "f5c7361b8ca9c867682dbafcde10dd099cdd71d35190bc7aaea8d770ba2d53ff",
-            "review_note": "Reviewed Enterprise chat and Monitoring against scoped first-round tool declarations, recorded request evidence and credential-scoped provider holds. Rechecks before transfer keep local skips outside attempt counts. Diagnostic probes bypass holds, and tool exchanges stay on their original model. The owner UI presents authorized prompts, saved history and bounded evidence."
+            "source_sha256": "cad0f26ee82509be8d7b176fc69dbda897f9f58cbef8fcbedd6d8969e43d9e99",
+            "references_sha256": "654f613deac82c31d373ee022e4d5cf4f45288824cdab87954093ffa1c74dea5",
+            "review_note": "Reviewed the Monitoring and Enterprise templates against the agent evidence and runtime guides. The reference label is display-only, and model, tool, feedback and audit evidence remain role-scoped."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -23,14 +23,14 @@
             "review_note": "Read the account help Markdown and its source view. The article explains the picture placeholder beside the email."
         },
         "foundation": {
-            "source_sha256": "908874452b8774a7e683b6764cf8d4a973e0b6d09936db89dba6f75646c61c83",
+            "source_sha256": "2d4bb586f2aa71a68702c704197743fa1dba2e7189b307e47154c966fb04309b",
             "references_sha256": "6eba6651fd8e747d8053034a7812f9d41e6dba5a405bc1d1ed669556c8f2474b",
-            "review_note": "Reviewed admin title and native navigation regression coverage against the rendering and request boundary. The browser checks keyboard expansion, visible destinations and module controls."
+            "review_note": "Reviewed the reference-profile label and neutral fallback against the white-label and private presentation boundaries. The label is outside public profile fields and the existing authentication paths remain authoritative."
         },
         "google-tags": {
-            "source_sha256": "4f6a8463add868b4016e243e90638e9dc22e442dd5964fc6c25f71a578bc6e40",
-            "references_sha256": "f97f8bd08a0edd6ee125c583e1dbadbc000f3c422b469875bb4f718abf3d8191",
-            "review_note": "Reviewed preserved public head tag rendering with the integration guide and the owner dashboard heading change. Google reporting connection states, tag setup and permitted data links match the current templates."
+            "source_sha256": "12e326bd61a1281101032aeb26328458c0ca19ebae671e4a888d7e2c9a69e369",
+            "references_sha256": "4b5f6deaa304ea489c82dba30df7f4754ffba47bdd8ab8488dc6b8a441ba6c99",
+            "review_note": "Compared the Site analytics anchor and Google configuration links with the actual Dashboard reports, reporting setup and PageSpeed view. Configured tags, connected data and diagnostics remain distinct."
         },
         "http-errors": {
             "source_sha256": "63602cadbe59868b0d25a1b00729a589e75d1b31c6ea3a1b25c1e5a46fd06d50",
@@ -38,39 +38,39 @@
             "review_note": "Compared the layout-specific title assignment with the request-error boundary. Website error status, sanitized error text and public not-found rendering follow their existing handlers."
         },
         "interface": {
-            "source_sha256": "2cdf88a4a615183557660d35ab02a4c9877f511e98b29fa66f20b0487f4cfcf6",
-            "references_sha256": "fd790f419da6d11919d064db732c90fd8d945756999e4e1f3326b705e618b081",
-            "review_note": "Matched both layouts to the reconciled Design guidance. The owner drawer, table and ticket controls retain their responsive behavior, and public menu, footer and Support focus follow the merged interface guidance."
+            "source_sha256": "2836ea3929827e66a2663a553ee3df9bec3bce2d29d9fdc4a357dd9ff9f1a0c6",
+            "references_sha256": "8f6839b910bb5f6e797e4eebda5efe0a6372b457506a62c556378366a33b8502",
+            "review_note": "Compared the separate owner menu groups, current anchor state, 30-day storefront totals and unavailable states with Design and the operator guide. Site analytics links to existing traffic, search and performance pages."
         },
         "mail": {
-            "source_sha256": "6895291447775bb17e9bef6c3d38d388ed65b3f5985b4c79bc71a9b4fa222c16",
+            "source_sha256": "20e83e649ed008a9061724716681cff8a4c7888b7e5520459aed8843abdc5cda",
             "references_sha256": "903e7da848c1e0472ce9a1823b94afc21004e564d12041ee0456918176a6cc72",
-            "review_note": "Reviewed Support controller failure and replay handling against email configuration and ticket boundaries. Verified outbound mail and persisted receipt handling remain separate from chat presentation."
+            "review_note": "Checked the two changed AdminController rendering paths against owner email and delivery-state guidance. Queue and mailbox behavior continues through the existing mail actions."
         },
         "mcp-clients": {
             "source_sha256": "38828d52259fbd6b6555d790e463ff775e79be85872a5d5b5aea78e599fba3ac",
-            "references_sha256": "4b78788e4d1216bbecb12b3e575767be766afc9e917c80879f3d4d91f2833c27",
-            "review_note": "Reviewed the revised Settings help alongside MCP client setup guidance. The change is confined to public Header menu guidance."
+            "references_sha256": "c03c08ae447150894d9f4bcc6022521112ac586ab0bdf77dbba17d2bd1cf99d9",
+            "review_note": "Compared the Site analytics entry point in the Integrations guide with the local MCP grant and management page. Setup remains governed by the existing owner forms."
         },
         "media": {
             "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
-            "references_sha256": "34433348ceb97accb0aea9b04f930b1ec0936825154d70c9ae872f155e0d2cbd",
-            "review_note": "Cross-checked the revised owner UI skill with the current media selection, confirmation and metadata flows. The existing media documentation still describes those operations."
+            "references_sha256": "743e6fad151e2f5729436c3d42b7a23bbd7b1ccde63ec7b26823c4e0cb505c95",
+            "review_note": "Reviewed the owner skill changes against media selection, deletion and metadata guidance. The new analytics section describes navigation and owner counts, and the media controls follow their documented path."
         },
         "operator-help": {
-            "source_sha256": "b509a9c0404b90c247b4551ab69d740b2af5997cb0ee1f0cbccacd7a666dd0b8",
-            "references_sha256": "00126a5c3c862ff46efed68f3dafb9c26532dc8acd3c418d7079c3862859c100",
-            "review_note": "Compared owner navigation, ticket controls and scoped Enterprise prompts with the operator guides. Checked the public Blog-gated Support guide and the preserved enquiry pane focus path."
+            "source_sha256": "72f15e29f98cdc21133071bb8797eab552a03dda732d7c5e1e017a588cfec3d9",
+            "references_sha256": "86f3f26e90b21a2a15e32dde64c6685c42742646e4e3715fabeb32dc9ca51feb",
+            "review_note": "Reviewed the role-scoped Vinod display label, separate Site analytics destinations and Commerce counts against the owner getting-started and Enterprise guides. The links use the current owner routes."
         },
         "public-mcp": {
-            "source_sha256": "234155f55b0f66f669f6422a85acc30a6a59ebf216d8f682d7a212cd01ee7358",
+            "source_sha256": "6855ccd4ae97d341559568e5e6799115f860d8bed5216f003680919a474ab934",
             "references_sha256": "d1e0824e500f825020b2cccfaad7fd435a8fefbe73d61e1b5f05fd54fed0b829",
-            "review_note": "Checked the rendered Support enquiry controls against the current public MCP and A2UI documentation. Focus scrolling keeps the existing tool and submission contracts."
+            "review_note": "Cross-checked the updated route associations with Public MCP and A2UI guidance. The moved storefront evidence is rendered through the authenticated Dashboard and the published contracts stay scoped."
         },
         "remote-commerce": {
             "source_sha256": "0a504ca49d9995ea386d62a2783ae399dd7f8bf0eb0c10f5fffe1c5412a7b264",
-            "references_sha256": "e266e4f053a69063bbd61cfc06758b4e95d4424ff59cebcab1e355c4363130af",
-            "review_note": "Compared public Support checkout and enquiry panes with the revised Design, native checkout and A2UI contracts. Reopening focuses the active pane and checkout retains its cart, payment and recovery boundaries."
+            "references_sha256": "4ba0207d2a7b8c162e081f7c76a2a2308a0113b8c80dc820cbe93a1896ae31b7",
+            "review_note": "Compared the owner analytics movement with the native Support checkout and payment guides. The displayed count comes from ordinary storefront events and the checkout behaviors follow their existing paths."
         },
         "sales-channels": {
             "source_sha256": "36385e3d18e26f524d0efdd12d26cd8386e368fb5d27441460c688ffdff28b92",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed SettingsService module resolution and Merchant feed guidance. Dropping a retired header slot leaves the saved catalog eligibility inputs intact."
         },
         "workflow": {
-            "source_sha256": "843a3be0d854e776a4359a283b5f3fe890ba1892b354f5dfde4654bc1836927c",
+            "source_sha256": "4489856d4f946809e8d937a57c72d67d35aa374cc1b814add6e8adf66081dc75",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Cross-reviewed the owner and public UI skills with their browser verification and documentation review guidance and regenerated the project indexes from both released source changes."
+            "review_note": "Checked the route registry move and owner skill updates against the release and source-review workflow. The regenerated maps place storefront telemetry on Dashboard and retain the existing read routes."
         }
     }
 }

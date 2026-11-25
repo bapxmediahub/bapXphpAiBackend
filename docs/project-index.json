@@ -103,7 +103,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 88
+            "line": 94
         },
         {
             "from": "controller:AdminController",
@@ -111,7 +111,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 77
+            "line": 83
         },
         {
             "from": "controller:AdminController",
@@ -127,7 +127,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 635
+            "line": 639
         },
         {
             "from": "controller:AdminController",
@@ -135,7 +135,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 704
+            "line": 708
         },
         {
             "from": "controller:AdminController",
@@ -143,7 +143,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 580
+            "line": 585
         },
         {
             "from": "controller:AdminController",
@@ -151,7 +151,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 740
+            "line": 744
         },
         {
             "from": "controller:AdminController",
@@ -159,7 +159,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 893
+            "line": 897
         },
         {
             "from": "controller:AdminController",
@@ -167,7 +167,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 892
+            "line": 896
         },
         {
             "from": "controller:AdminController",
@@ -175,7 +175,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 861
+            "line": 865
         },
         {
             "from": "controller:AdminController",
@@ -183,7 +183,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 135
+            "line": 69
         },
         {
             "from": "controller:AdminController",
@@ -199,7 +199,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1245
+            "line": 1249
         },
         {
             "from": "controller:AdminController",
@@ -207,7 +207,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1490
+            "line": 1494
         },
         {
             "from": "controller:AdminController",
@@ -223,7 +223,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 167
+            "line": 173
         },
         {
             "from": "controller:AdminController",
@@ -231,7 +231,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 435
+            "line": 441
         },
         {
             "from": "controller:AdminController",
@@ -239,7 +239,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 108
+            "line": 114
         },
         {
             "from": "controller:AdminController",
@@ -247,7 +247,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 755
+            "line": 759
         },
         {
             "from": "controller:AdminController",
@@ -255,7 +255,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 508
+            "line": 514
         },
         {
             "from": "controller:AdminController",
@@ -263,7 +263,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1046
+            "line": 1050
         },
         {
             "from": "controller:AdminController",
@@ -271,7 +271,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1093
+            "line": 1097
         },
         {
             "from": "controller:AdminController",
@@ -279,7 +279,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1465
+            "line": 1469
         },
         {
             "from": "controller:AdminController",
@@ -287,7 +287,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 492
+            "line": 498
         },
         {
             "from": "controller:AdminController",
@@ -311,7 +311,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 111
+            "line": 117
         },
         {
             "from": "controller:AdminController",
@@ -319,7 +319,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 812
+            "line": 816
         },
         {
             "from": "controller:AdminController",
@@ -335,7 +335,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 878
+            "line": 882
         },
         {
             "from": "controller:AdminController",
@@ -351,7 +351,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 224
+            "line": 230
         },
         {
             "from": "controller:AdminController",
@@ -359,7 +359,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 75
+            "line": 81
         },
         {
             "from": "controller:AdminController",
@@ -375,7 +375,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1222
+            "line": 1226
         },
         {
             "from": "controller:AdminController",
@@ -399,7 +399,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 641
+            "line": 645
         },
         {
             "from": "controller:AdminController",
@@ -407,7 +407,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 600
+            "line": 604
         },
         {
             "from": "controller:AdminController",
@@ -415,7 +415,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 738
+            "line": 742
         },
         {
             "from": "controller:AdminController",
@@ -423,7 +423,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 585
+            "line": 589
         },
         {
             "from": "controller:AdminController",
@@ -431,7 +431,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 726
+            "line": 730
         },
         {
             "from": "controller:AdminController",
@@ -439,7 +439,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 727
+            "line": 731
         },
         {
             "from": "controller:AdminController",
@@ -447,7 +447,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 573
+            "line": 579
         },
         {
             "from": "controller:AdminController",
@@ -455,7 +455,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1516
+            "line": 1520
         },
         {
             "from": "controller:AdminController",
@@ -463,7 +463,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 706
+            "line": 710
         },
         {
             "from": "controller:AdminController",
@@ -471,7 +471,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1541
+            "line": 1545
         },
         {
             "from": "controller:AdminController",
@@ -479,7 +479,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1043
+            "line": 1047
         },
         {
             "from": "controller:AdminController",
@@ -487,7 +487,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1109
+            "line": 1113
         },
         {
             "from": "controller:AdminController",
@@ -495,7 +495,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 146
+            "line": 152
         },
         {
             "from": "controller:AdminController",
@@ -503,7 +503,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1656
+            "line": 1660
         },
         {
             "from": "controller:AdminController",
@@ -511,7 +511,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 535
+            "line": 541
         },
         {
             "from": "controller:AdminController",
@@ -519,7 +519,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 404
+            "line": 410
         },
         {
             "from": "controller:AdminController",
@@ -535,7 +535,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 515
+            "line": 521
         },
         {
             "from": "controller:AdminController",
@@ -543,7 +543,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 581
+            "line": 69
         },
         {
             "from": "controller:AdminController",
@@ -559,7 +559,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 301
+            "line": 307
         },
         {
             "from": "controller:AdminController",
@@ -567,7 +567,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 479
+            "line": 485
         },
         {
             "from": "controller:AdminController",
@@ -575,7 +575,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 240
+            "line": 246
         },
         {
             "from": "controller:AdminGoogleReportingController",
@@ -3023,7 +3023,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SiteProfileService.php",
-            "line": 55
+            "line": 57
         },
         {
             "from": "service:SiteProfileService",
@@ -3031,7 +3031,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SiteProfileService.php",
-            "line": 53
+            "line": 55
         },
         {
             "from": "service:SiteTelemetryService",
@@ -3562,6 +3562,8 @@
                 "OrderService",
                 "StoreStatsService",
                 "SiteInsightsService",
+                "AuditLogService",
+                "SiteTelemetryService",
                 "AuthService"
             ]
         },
@@ -3676,7 +3678,6 @@
                 "DatabaseService",
                 "AgentConversationService",
                 "AgentEvaluationService",
-                "SiteTelemetryService",
                 "AuthService"
             ]
         },
