@@ -15,6 +15,10 @@ $downloadManifest = \App\Services\CampaignDownloadService::manifest($form);
 $downloadEnabled = array_key_exists('download_enabled', $form)
     ? $form['download_enabled'] === '1' : ($downloadManifest['enabled'] ?? false);
 $downloadPositions = is_array($form['download_existing'] ?? null) ? $form['download_existing'] : null;
+$savedBookingAmount = \App\Services\CampaignPaymentService::pageAmount($form);
+$paymentEnabled = array_key_exists('campaign_payment_enabled', $form)
+    ? $form['campaign_payment_enabled'] === '1' : $savedBookingAmount !== null;
+$bookingAmount = $form['campaign_booking_amount'] ?? ($savedBookingAmount !== null ? \App\Services\CampaignPaymentService::rupees($savedBookingAmount) : '');
 ?>
 <section class="admin-card" aria-labelledby="pages-title">
     <h1 id="pages-title">Pages</h1>
@@ -148,6 +152,20 @@ $downloadPositions = is_array($form['download_existing'] ?? null) ? $form['downl
             <p id="campaign-download-total" role="status" aria-atomic="true"></p>
             <?php if (!empty($downloadNotice)): ?><p role="status"><?= e($downloadNotice) ?></p><?php endif; ?>
         </fieldset>
+        <fieldset class="campaign-form-settings" data-campaign-payment-editor>
+            <legend>Booking payment</legend>
+            <label class="campaign-form-settings__checkbox">
+                <input type="checkbox" name="campaign_payment_enabled" value="1" <?= $paymentEnabled ? 'checked' : '' ?>>
+                Enable payment
+            </label>
+            <div class="campaign-payment-amount">
+                <label for="campaign-booking-amount">Booking amount (INR)</label>
+                <input id="campaign-booking-amount" name="campaign_booking_amount" type="text" inputmode="decimal"
+                    maxlength="16" aria-describedby="campaign-booking-help" value="<?= e(is_string($bookingAmount) ? $bookingAmount : '') ?>">
+                <p id="campaign-booking-help">Enter ₹1 or more. Use up to two decimal places.</p>
+            </div>
+        </fieldset>
+
         <label>Visibility <select name="status">
             <option value="draft">Draft</option>
             <option value="published" <?= ($form['status'] ?? '') === 'published' ? 'selected' : '' ?>>Published</option>

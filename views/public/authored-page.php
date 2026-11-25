@@ -6,6 +6,9 @@ $campaignValues = $authoredPreview ? [] : ($campaignState['values'] ?? []);
 $campaignErrors = $authoredPreview ? [] : ($campaignState['errors'] ?? []);
 $campaignReceived = !$authoredPreview && !empty($campaignState['received']);
 $campaignWithdrawn = $campaignDefinition === null && isset($campaignErrors['form']);
+$bookingAmount = \App\Services\CampaignPaymentService::pageAmount($page);
+$downloadManifest = \App\Services\CampaignDownloadService::manifest($page);
+$paidDownloads = array_key_exists('campaign_payment', $page);
 ?>
 <section class="section document-page<?= $authoredPreview ? ' authored-page--preview' : '' ?>">
     <div class="container container--narrow">
@@ -96,10 +99,29 @@ $campaignWithdrawn = $campaignDefinition === null && isset($campaignErrors['form
                 <?php endif; ?>
             </section>
         <?php endif; ?>
-        <?php
-        $downloadManifest = \App\Services\CampaignDownloadService::manifest($page);
-        if (($downloadManifest['enabled'] ?? false) && $downloadManifest['files']):
-        ?>
+        <?php if ($bookingAmount !== null): ?>
+            <section class="contact-form-card campaign-enquiry" id="campaign-booking" aria-labelledby="campaign-booking-title">
+                <?php if ($authoredPreview): ?>
+                    <h4 id="campaign-booking-title" class="campaign-enquiry__title">Book this campaign</h4>
+                <?php else: ?>
+                    <h2 id="campaign-booking-title" class="campaign-enquiry__title">Book this campaign</h2>
+                <?php endif; ?>
+                <p><strong>₹<?= e(\App\Services\CampaignPaymentService::rupees($bookingAmount)) ?> INR</strong></p>
+                <?php if (($downloadManifest['enabled'] ?? false) && $downloadManifest['files']): ?>
+                    <p>The confirmed booking includes downloadable files.</p>
+                <?php endif; ?>
+                <?php if ($authoredPreview): ?>
+                    <p>Preview only. Booking is disabled.</p>
+                <?php else: ?>
+                    <form method="post" action="/pages/<?= e(rawurlencode($page['slug'])) ?>/booking">
+                        <input type="hidden" name="_csrf" value="<?= e($_SESSION['csrf_token'] ??= bin2hex(random_bytes(16))) ?>">
+                        <input type="hidden" name="revision" value="<?= e($page['revision']) ?>">
+                        <button class="btn btn-primary" type="submit">Review booking payment</button>
+                    </form>
+                <?php endif; ?>
+            </section>
+        <?php endif; ?>
+        <?php if (($authoredPreview || !$paidDownloads) && ($downloadManifest['enabled'] ?? false) && $downloadManifest['files']): ?>
             <section id="campaign-downloads" class="contact-form-card campaign-downloads" aria-labelledby="campaign-downloads-title">
                 <?php if ($authoredPreview): ?>
                     <h4 id="campaign-downloads-title">Downloads</h4>

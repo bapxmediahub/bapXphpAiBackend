@@ -26,7 +26,7 @@ final class RazorpayClient {
         return $this->get('orders/'.rawurlencode($orderId).'/payments');
     }
 
-    /** Called once per durably persisted checkout attempt; a timeout is reconciled by reference. */
+    /** Create under a durable claim. Reconcile timeouts by reference. */
     public function createPaymentLink(array $payload):array {
         // https://razorpay.com/docs/api/payments/payment-links/create-standard
         $payload=array_intersect_key($payload,array_flip(['amount','currency','accept_partial','reference_id','expire_by','description','notify','reminder_enable']));
@@ -35,9 +35,30 @@ final class RazorpayClient {
             CURLOPT_POSTFIELDS=>json_encode($payload,JSON_THROW_ON_ERROR),CURLOPT_HTTPHEADER=>['Content-Type: application/json'],
             CURLOPT_USERPWD=>$this->keyId.':'.$this->keySecret,CURLOPT_TIMEOUT=>20]);
         $body=curl_exec($ch);$status=curl_getinfo($ch,CURLINFO_HTTP_CODE);curl_close($ch);
-        $decoded=is_string($body)&&$body!==''?json_decode($body,true):null;
-        // Do not propagate provider error bodies: they can echo contact or request data.
-        if($status<200||$status>=300||!is_array($decoded))throw new \RuntimeException('Razorpay payment-link request failed',$status?:503);
+        return self::paymentLinkResult($body, $status);
+    }
+
+    public static function paymentLinkResult(string|false $body, int $status): array {
+        $decoded = is_string($body) && $body !== '' ? json_decode($body, true) : null;
+        $error = $decoded['error'] ?? null;
+        // Explicit pre-creation refusals from the Standard Payment Link response.
+        // A duplicate reference also returns 400 and must be reconciled instead.
+        // https://razorpay.com/docs/api/payments/payment-links/create-standard
+        if (is_array($error) && !isset($decoded['id']) && ($error['code'] ?? null) === 'BAD_REQUEST_ERROR'
+            && is_string($error['description'] ?? null)) {
+            $reason = strtolower(rtrim(trim($error['description']), '.'));
+            $authentication = in_array($status, [400, 401], true)
+                && in_array($reason, ['the api key provided is invalid', 'authentication failed'], true);
+            $accountDenied = $status === 400 && in_array($reason, [
+                'invalid access: cannot create a payment link in live mode, as live mode is disabled for merchant',
+                'invalid access: cannot create a payment link, as merchant is suspended',
+            ], true);
+            if ($authentication || $accountDenied) throw new PaymentLinkCreationRejected($status);
+        }
+        // Provider bodies can echo customer or request data.
+        if ($status < 200 || $status >= 300 || !is_array($decoded)) {
+            throw new \RuntimeException('Razorpay payment-link request failed', $status ?: 503);
+        }
         return $decoded;
     }
 

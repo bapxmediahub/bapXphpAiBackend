@@ -1289,6 +1289,8 @@ final class AdminController extends BaseController {
         }
         $form['campaign_enabled'] = $_POST['campaign_enabled'] ?? null;
         $form['campaign_fields'] = $_POST['campaign_fields'] ?? [];
+        $form['campaign_payment_enabled'] = $_POST['campaign_payment_enabled'] ?? null;
+        $form['campaign_booking_amount'] = $_POST['campaign_booking_amount'] ?? '';
         $downloadEditor = ($_POST['download_editor'] ?? null) === '1';
         if ($downloadEditor) {
             $form['download_enabled'] = $_POST['download_enabled'] ?? null;
@@ -1314,6 +1316,8 @@ final class AdminController extends BaseController {
             }
             $form['campaign_form'] = \App\Services\CampaignLeadService::fromEditor(
                 $form['campaign_enabled'], $form['campaign_fields']);
+            $form['campaign_payment'] = \App\Services\CampaignPaymentService::fromEditor(
+                $form['campaign_payment_enabled'], $form['campaign_booking_amount']);
             foreach (['header_image_url', 'header_image_alt'] as $field) {
                 if (isset($_POST[$field]) && !is_string($_POST[$field])) {
                     throw new \InvalidArgumentException('Choose a header image and plain alternative text.');

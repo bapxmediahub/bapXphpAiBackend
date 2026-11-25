@@ -4,48 +4,48 @@
     "reviews": {
         "agents": {
             "source_sha256": "bde2bde8a9de8bf32dc819c741e87a13e30ec696f95f2049814fee7028c63a73",
-            "references_sha256": "bcdcc214a330193a60997d89de5d77b4e09754b26e1483c3679684a1dd9a3b22",
-            "review_note": "Cross-checked ready-first provider selection, bounded cooldown and native tool routing against the updated runtime and observability docs. Protected files remain scoped to PHP."
+            "references_sha256": "eca25412da58ee1eef18bc49445b15a8adf04ca7a22a52eede085850e1bef285",
+            "review_note": "Reviewed backend skill updates alongside the fixed agent capability allowlists. The booking retry remains a private PHP form action."
         },
         "auth": {
             "source_sha256": "c34a5b34bc904f36cda184c26113f91e2cf36afa2b506217d1f74e22e9e0cefd",
-            "references_sha256": "3b0ae5857696e6a3783f663fb5921a02a29d7fd82757fdda2fd50196715d993e",
-            "review_note": "Verified configured owner authentication, session regeneration and flash persistence before native response finalization and confirmed other login paths retain their routes."
+            "references_sha256": "02468e51e754311543db925388862cbffe9fb02cb9aa5a3dbc658dfea2dcf6c9",
+            "review_note": "Checked the browser and actor owner hash, CSRF form validation, and the database retry identity check."
         },
         "commerce": {
-            "source_sha256": "4d8f53718f4495182ccef03d41eacb3da729dbe5ff1b5db5b54cbfd88957749e",
-            "references_sha256": "9f2b8970b34f4cc6e0a07951ebd67feafe3412ec41ee0a3fba803908621837a2",
-            "review_note": "Reviewed the downloaded file resolver and schema field against the source contracts for product orders and payments. This route uses the authored page publication and enquiry grant."
+            "source_sha256": "c53c5c291d70428a6219887de1da8c789c7fc0f23afb3b909b75ac55f034306a",
+            "references_sha256": "fca25b2f0eb90e32d76a1000e38ca464ae7e7e0dfe7b067eaa885fff82a60e16",
+            "review_note": "Reviewed provider parsing and existing product checkout and verified-order tests. A typed provider refusal preserves the existing numeric error for shop checkout."
         },
         "content": {
-            "source_sha256": "375b2bd190de1a6c8179aa3c70e0c4be53776afa38847d2e859be67e4b8ec110",
-            "references_sha256": "b86513fa3175b30fae3a1e16dfb1bcddaa69a1c2d380809d14cd421b31556312",
-            "review_note": "Compared the merged one-column campaign shell and native receipt focus with the ordered file manifest, protected upload, revision gates, campaign-only UTC SQL timestamp binding and content/hosting guidance."
+            "source_sha256": "0cf3fdbab8334c87c055ab44c9d531774c37c03a6a52dc5d0ca7db013969f1a7",
+            "references_sha256": "1697d82dbf2d3fa5156c212ac256e71e4613b5598d29ef36bb1b7eda1f4aa576",
+            "review_note": "Compared the current campaign guide with exact revision checks, repaired-credentials submission, immutable fulfillment and ambiguous-response recovery."
         },
         "foundation": {
-            "source_sha256": "1bcc201874515c3d7068bd38fb2237ce6332b9df1e089d43d72fee2829a9051a",
-            "references_sha256": "edb833e6497897729ae4c0a1e1eca65934b466c547881885d7e8abb770eeda5b",
-            "review_note": "Compared the hosted page fields and private immutable binaries with the application and host storage contracts, deployment backup instructions, campaign-only SQL timestamp normalization and actual direct-path denial."
+            "source_sha256": "94e60b2546b62d78d92a1ed3de92c9819d672075440da536f4c95842c3d04dea",
+            "references_sha256": "aca185b739c7bb3b343ced0c9c8118bd40babe9b0d64cecf0a6419c6ce61cd08",
+            "review_note": "Cross-checked the declared booking status and creation generation with its DB-host lock, legacy rows and provider result checks."
         },
         "google-tags": {
             "source_sha256": "366fdab983979cc3a1fec22fb6da4afb61072d6fd24cd0ba2271d67a0c063019",
-            "references_sha256": "4f45021d1a3d34906fd47b1d74a23b9efde06284298f50fa6b7edc2975e15239",
-            "review_note": "Compared the updated integration and provider examples with the Google reporting and analytics contracts, and cross-reviewed native download links against the frontend skill."
+            "references_sha256": "655070d558837a1d942929e6860428b9d822cb9b89e2d0d95344fdfe5d88b87d",
+            "review_note": "Rechecked the current Site analytics, Google reporting and integration routes inherited from the merged base. Campaign booking changes add no tag or reporting behavior."
         },
         "http-errors": {
             "source_sha256": "0f920c297cfc4e216a87be02a35c20827cc254dd6934ba24a1fa9135520a0560",
-            "references_sha256": "08e0e1b9c8e9e4135e255ef70a7d950b288f711f2ad6c7104e7c195c34bde242",
-            "review_note": "Compared the front-controller and Apache path guards, private resolution and upload errors with the shared request-boundary documentation."
+            "references_sha256": "36c125f4e885edeafe9d19dbad28c6ffab66a1a08c9078349a2259fe6d1026a9",
+            "review_note": "Reviewed sanitized provider failures and private booking responses against the existing dynamic response guard."
         },
         "interface": {
-            "source_sha256": "ea5a8fecc5689f03bbe430db89e242f12f7d947ac3abb85ee47d240fef0e8ae4",
-            "references_sha256": "af5ab7f563f3179499adfc25b9b432edf03dcd73106769341fa96156ef02694b",
-            "review_note": "Checked the merged campaign reading column, native feedback and 44px underlined download links with editor selection, preview, lock and mobile design contracts."
+            "source_sha256": "82b14d7ac04642c59d3078ae1c355cee4aa65d582a36ae6dff4fec93456f3f36",
+            "references_sha256": "404619f91aeea891998b9c1cb6ef921514f8dd59adb0ae4f24a58e03fdcade70",
+            "review_note": "Reviewed the independent amount toggle, disabled preview, keyboard booking review, and private pending and captured cards against Design and the browser fixtures."
         },
         "mail": {
-            "source_sha256": "72b1c4a0ac6e5d88b2edb4e8190bbc9bb8271e1c9b25880f6d4ea068b2f82b56",
-            "references_sha256": "b570c94d1b4f038514750f1f5550593ae54324f0da7b659b2d8a184b1baf0fa2",
-            "review_note": "Compared the single configured-owner security notice with the existing claim and settlement rules. Supported SAPIs finish the stored-session response before entering the same mail path."
+            "source_sha256": "50f211eb00addc6fe811c0dfb270f1be9d2d28b2fd0a8e66d321ae83b2d28aec",
+            "references_sha256": "e638d8ea8f21b6f1d078de81bb24d9d9a743e98e953cdd672bd869b923832acf",
+            "review_note": "Checked the shared skill update against payment and enquiry mail event entry points. Retrying booking setup does not write a receipt or queue mail."
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
@@ -54,23 +54,23 @@
         },
         "media": {
             "source_sha256": "edc32a5a9f73cf7f2954eac135a2eaed1394089034bac24ea835af48c4d9600e",
-            "references_sha256": "1011ad8c368684766c4694dbc430e61737314b7c0bba1e97f1776fd509dad7f5",
-            "review_note": "Reviewed the independent private download storage against the existing owner Media Library, header image and deletion documentation. Download files keep their own private root."
+            "references_sha256": "bb02d897e7b68e33511130766ce52a09d9b74f352c9c52e43c45706712515ef8",
+            "review_note": "Checked retained campaign file descriptors and protected streaming against Media Library behavior. Booking authorization is scoped to the frozen private manifest."
         },
         "operator-help": {
-            "source_sha256": "0137a8c4d62463a45b610abf6eae73b5a60e0c101fa5eb4a1252706b2238bc9f",
-            "references_sha256": "f5c667e8fdb836b615fc47f2c1e84fe62d463ccf085757a8f354a0542de7d2c7",
-            "review_note": "Checked the unified owner sign-in success path and operator email guidance against the existing single queue attempt and authenticated redirect."
+            "source_sha256": "55249ee4eeb474786251d6e7886137db3628e04ddd85d03ee2f02688bcd56c22",
+            "references_sha256": "d7972865c18db0e7cab36b4fdf0cf22cf388c8fbde7bd5ae088de971afd212fe",
+            "review_note": "Checked the Pages and booking handoff against the new owner-bound form retry and the existing publish and preview behavior."
         },
         "public-mcp": {
-            "source_sha256": "ad08f180ca73336364b9cd907dfcbc99fafe564bfbc5555611ed1c41949b4de4",
-            "references_sha256": "4e016c2896dbeb1b1c300436bc89b235e56245aa9cd9cade4fdd1c4605cf1e6a",
-            "review_note": "Compared the new public HTTP route with the MCP capability and discoverability contracts. Campaign assets do not extend the existing agent tool surface."
+            "source_sha256": "6817679be2290cbbea52d8a059df0770d1deb686132d09f9d57d0fbda5b62185",
+            "references_sha256": "43e89d686d81a31e0d2e95a18c1904f88aab8a9688f54556a1331efe81cab83b",
+            "review_note": "Checked the generated gateway links and existing public MCP checkout boundary. The campaign retry stays on the campaign form POST."
         },
         "remote-commerce": {
-            "source_sha256": "e1002a568f4707c36a240b3d2297e7fe44f4dc047266ed569fc1b51ab6446364",
-            "references_sha256": "f9c8aa084e1f0e49bea48d97b588303f78f6457ee8128f5da9b33f0f369d432c",
-            "review_note": "Checked the authored-page revision write and schema addition against the remote-checkout contract. Validated public download links use the separate published-page resolver and campaign-only UTC database envelope bindings."
+            "source_sha256": "16cdd579f0b1b79b1bdc841eefa697e7cb43663f2ef73407245dcfb268c26e77",
+            "references_sha256": "acdbab8bdbef2062372a3ebbf9026ce81ea5e60355e45c35c744aa25e108dee5",
+            "review_note": "Cross-checked the shared Razorpay creation parser, known rejected responses, duplicate reference recovery, and SQL-backed booking retry claim."
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",
@@ -78,9 +78,9 @@
             "review_note": "Compared the MediaService additions with the Merchant Feed and product image inspection contracts. Header choices are filtered only for the owner authored editor, and catalogue image eligibility and feed URLs retain their existing resolution."
         },
         "workflow": {
-            "source_sha256": "bc575cfbdbc5b84cf65eff4b81988ead2592d89a6cc4ec8e3c9c4887b65296b1",
+            "source_sha256": "557d811d12496019f64ed17c4955829aee9c3c62a5d5d3ee62301bc9c06aa6e7",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Cross-checked the generated route inventory and revised content review dependencies. The existing campaign HTTP and browser CI entries exercise the new behaviors."
+            "review_note": "Reviewed the new provider exception in generated inventory and the restored booking fixture with the disposable MySQL concurrency path."
         }
     }
 }

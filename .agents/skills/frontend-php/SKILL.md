@@ -23,6 +23,9 @@ description: Use when editing public, account, shop, consultant, temple, cart, c
 - Render campaign download names and URLs only after the controller confirms
   access. Put locked-state guidance beside the article and preserve native
   download and enquiry behavior at 375px without JavaScript.
+- Campaign bookings use a native form and a private status page. Verify pending,
+  expired and captured states on desktop and at 375px. Put downloadable files on
+  the captured receipt only and check the correct version with the same browser.
 - Use the shared public site profile for the header, footer, About and Contact.
   Test absent contact methods, app metadata and module-off URLs in an
   independent synthetic deployment as well as the reference layout.

@@ -1,6 +1,6 @@
 <?php
 namespace App\Controllers;
-use App\Services\{SettingsService,AuthService,BlogService,ProductService,TempleService,CategoryService,SecretService,SeoService,ContactService,ReviewService,MarkdownRenderer,AuthoredPageService,CampaignLeadService,CampaignDownloadService,RateLimiter};
+use App\Services\{SettingsService,AuthService,BlogService,ProductService,TempleService,CategoryService,SecretService,SeoService,ContactService,ReviewService,MarkdownRenderer,AuthoredPageService,CampaignLeadService,CampaignDownloadService,CampaignPaymentService,RateLimiter};
 final class PublicController extends BaseController {
     
     public function home(): void {
@@ -146,6 +146,9 @@ final class PublicController extends BaseController {
         $html = AuthoredPageService::renderContent($page['content']);
         $this->seoOverrides = ['title'=>$page['title'], 'canonical'=>$this->siteUrl('/pages/'.$page['slug']),
             'description'=>mb_substr(trim(preg_replace('/\s+/u', ' ', html_entity_decode(strip_tags($html))) ?? ''), 0, 160)];
+        if (CampaignPaymentService::pageAmount($page) !== null) {
+            $_SESSION['campaign_payment_key'] ??= bin2hex(random_bytes(32));
+        }
         $this->render('public/authored-page', compact('page','html','campaignState','campaignDownloadAccess'));
     }
 
