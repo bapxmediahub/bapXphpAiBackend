@@ -98,6 +98,14 @@ Site-wide Search is a fixed magnifier beside Cart. Keep the top-centered native
 dialog and direct link fallback. Check field focus, Escape with a filled field,
 and real results at desktop and 375px. Verify the 375px Menu and Close menu
 links with JavaScript disabled, including keyboard operation.
+Verify that Skip to content focuses the main region and that Escape closes the
+enhanced mobile menu and returns focus to its toggle. In the footer, keep each
+destination in one group and show Journal only when Blog is enabled.
+
+When Support opens, focus the visible pane heading without opening the mobile
+keyboard. Return focus to the launcher on Close or Escape, and to the initiating
+link when returning from an enquiry. Keep Close at 44px and verify the composer
+remains visible on a short screen with the cart tray present.
 
 ## Public browser tools
 

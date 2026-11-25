@@ -28,9 +28,9 @@
             "review_note": "Checked architecture and private JSON storage against controller replay. Only accepted model responses use native presentation on replay and no replay refreshes business data or changes access scope."
         },
         "google-tags": {
-            "source_sha256": "55d5b46aafaf292fdd19001910dc1072be3ebb1f1cea31a7dbfc3948db3b178f",
-            "references_sha256": "9595745f8e0f6323c60b7728ce8ba4a57f00d5f06da032ad67caed13bd9e9659",
-            "review_note": "Cross-checked public page guidance with the shared layout and Google integration pages. Customer view and form presentation preserve the existing Google OAuth URLs and tag delivery."
+            "source_sha256": "683b99f0a3158682ae753aef309c0a7339cdc4005f2e640b4e5c94d5f05fac49",
+            "references_sha256": "5915d48a37215c8a344d37c271e63ca66dbb21f3bafe3a3a6ba93a42a41ff9d3",
+            "review_note": "Compared the current layout head with the documented Google integration. Customer forms and public reading layouts retain the existing Google configuration and consent behavior."
         },
         "http-errors": {
             "source_sha256": "2e2fee3211f50641844c05f86381f277f9c6c10b7fb60fb750c52937b0868e12",
@@ -38,9 +38,9 @@
             "review_note": "Reviewed the new hosting instructions against existing request-failure guidance. A transport receipt remains distinct from a rendering response, and the worker preserves the canonical queue before reporting an outcome."
         },
         "interface": {
-            "source_sha256": "bac1543ddd27f265e40b4f1f408f1b75b6fcb8205ec005658a098a93e947ff8d",
-            "references_sha256": "2ed9b1fd5b3036408e0bfaa8394dcd14c30a55293d925ac76c6f536a08f389af",
-            "review_note": "Reviewed customer search, authentication, account forms, invoices, temple direction controls and Markdown against Design and frontend guidance. Address fragments keep native scroll and focus the labelled form. The temple list keeps the established enquiry action and accepted heading."
+            "source_sha256": "b90553f96231a25e489274359cbef2ebc6d67afbd17abd7f8f0fed46163834e9",
+            "references_sha256": "9537986a93d47115a99a7c28d41f6e67e89a9ed5fe5053e11a3b840a12b79bdd",
+            "review_note": "Preserved the deployed footer guidance and new document reading guidance. Verified the named pagination landmark, exact destinations, current account forms, and responsive customer template contracts."
         },
         "mail": {
             "source_sha256": "6895291447775bb17e9bef6c3d38d388ed65b3f5985b4c79bc71a9b4fa222c16",
@@ -58,19 +58,19 @@
             "review_note": "Compared active-chat restoration and attachment changes with the media operator instructions, and confirmed upload and in-memory draft attachment regressions pass."
         },
         "operator-help": {
-            "source_sha256": "9a11083a8d85cdf8f270aa672361a11b2f59ccd9438823e31e371c8c19e53cd2",
+            "source_sha256": "1a39ffaa3686527b675a74072f6ee5103584ced7b98b1241f833c1564d153359",
             "references_sha256": "30a0eb61344f0c02630c45cd7f3d082c6d64ce2cb8ed9a619c07615b4c159a9c",
-            "review_note": "Compared customer sign-in, registration and saved-address form navigation with the published account guide. Reviewed the Enterprise initial dated-order declaration against operator help after main exposed the existing all_time selection within the owner role."
+            "review_note": "Checked the public help article routes, sign-in and account affordances, and their shared footer guide visibility against current Help content and source."
         },
         "public-mcp": {
-            "source_sha256": "06a7b8ef4b99e3c70cbae0dbf6ee2b7c97029aabb851906dc8e2e50d9f81c253",
-            "references_sha256": "e78d7cca0b62659190fdfe23f3ed927f456533f97faaa8297cc08ae004008b33",
-            "review_note": "Checked removal of the question-to-A2UI heuristic alongside public MCP and A2UI details. Public and chat presenters consume typed authorized source evidence and selected published products."
+            "source_sha256": "234155f55b0f66f669f6422a85acc30a6a59ebf216d8f682d7a212cd01ee7358",
+            "references_sha256": "d1e0824e500f825020b2cccfaad7fd435a8fefbe73d61e1b5f05fd54fed0b829",
+            "review_note": "Checked the rendered Support enquiry controls against the current public MCP and A2UI documentation. Focus scrolling keeps the existing tool and submission contracts."
         },
         "remote-commerce": {
-            "source_sha256": "fe653f18d2ff851f92e4ad7bbf4a9df97ea29f828837aeae00c8aece1b3ecec0",
-            "references_sha256": "31a31281a4c34639379d8ddeb922b8718b418328d820e6cc38d4be2f6c38ed28",
-            "review_note": "Reviewed the checkout and chat checkout presentation references alongside the updated shared design guidance. Customer search, account and document layouts preserve each commerce form and payment workflow."
+            "source_sha256": "0a504ca49d9995ea386d62a2783ae399dd7f8bf0eb0c10f5fffe1c5412a7b264",
+            "references_sha256": "9ad7c82ae5308c4527c0ddbbd863282163e4601abefabc5c07d5fa863b809ff5",
+            "review_note": "Reviewed the merged shared frontend guidance, checkout UI and customer help steps. Payment, delivery and Support contracts stay consistent with the public docs."
         },
         "sales-channels": {
             "source_sha256": "36385e3d18e26f524d0efdd12d26cd8386e368fb5d27441460c688ffdff28b92",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed SettingsService module resolution and Merchant feed guidance. Dropping a retired header slot leaves the saved catalog eligibility inputs intact."
         },
         "workflow": {
-            "source_sha256": "4f84b9ecfc3c5944b5828623a583dde790f2ef0f6adf6593f94dbbfaa0b7b2ad",
+            "source_sha256": "3a737d56ca60600323831b2677a42e5e7233e79f35128b926c6b5989685fbff8",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Reviewed the updated frontend skill against the browser evidence workflow. The added checks use native controls, a document viewport and synthetic account data."
+            "review_note": "Regenerated indexed references and verified the same public route, module and search pagination acceptance on the merged source."
         }
     }
 }
