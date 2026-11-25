@@ -28,9 +28,9 @@
             "review_note": "Checked architecture and private JSON storage against controller replay. Only accepted model responses use native presentation on replay and no replay refreshes business data or changes access scope."
         },
         "google-tags": {
-            "source_sha256": "55d5b46aafaf292fdd19001910dc1072be3ebb1f1cea31a7dbfc3948db3b178f",
-            "references_sha256": "327d47f02e4a8ad21085d0a1d09c4cc515fb2da60c56659fecfccebb0d4a40ef",
-            "review_note": "Compared the public layout submission handler against the Google rendering boundary and Integrations guide. The response change is outside tag markup, IDs, and consent."
+            "source_sha256": "683b99f0a3158682ae753aef309c0a7339cdc4005f2e640b4e5c94d5f05fac49",
+            "references_sha256": "f97f8bd08a0edd6ee125c583e1dbadbc000f3c422b469875bb4f718abf3d8191",
+            "review_note": "Reviewed unchanged public layout head rendering against the documented Google tag integration."
         },
         "http-errors": {
             "source_sha256": "2e2fee3211f50641844c05f86381f277f9c6c10b7fb60fb750c52937b0868e12",
@@ -38,9 +38,9 @@
             "review_note": "Reviewed the new hosting instructions against existing request-failure guidance. A transport receipt remains distinct from a rendering response, and the worker preserves the canonical queue before reporting an outcome."
         },
         "interface": {
-            "source_sha256": "60713aa23c3b3e211cbc890c5080ecf76ddc0574c3cdf696df33e1cee9ae822e",
-            "references_sha256": "99cc04fc48e47c2686cc6efa23f470e7acc6d654dcc91336499ab570364cced6",
-            "review_note": "Compared the shared Design waiting and error pattern with both templates and browser tests. Empty answers and failed payloads use explicit status feedback without rendering an answer card."
+            "source_sha256": "108179ff3bf10f1a1a2bdd30b8dd48b373954c74e642ee59761a6b3b5a7475eb",
+            "references_sha256": "f278b12b1588f010fd7a0f51c357d7554396cc6fb7f53588c1ec198efda09c60",
+            "review_note": "Verified focus and visibility when reopening a scrolled Support enquiry at 375px, alongside the menu, footer and shared accessibility guidance."
         },
         "mail": {
             "source_sha256": "6895291447775bb17e9bef6c3d38d388ed65b3f5985b4c79bc71a9b4fa222c16",
@@ -58,19 +58,19 @@
             "review_note": "Compared active-chat restoration and attachment changes with the media operator instructions, and confirmed upload and in-memory draft attachment regressions pass."
         },
         "operator-help": {
-            "source_sha256": "39a67c36e7f4338ce4d9fe837b1a904e769e7e9f02a63efaf196f633e711e9cb",
+            "source_sha256": "d4df8c61faae0b85fc48b8629ffc1519f43656271defcb0e9dfdbe9b568b691f",
             "references_sha256": "7a684be61b80d3002adcfb6a344e0c4bf547d9c8082bee3fa151bd61b1dc9d98",
-            "review_note": "Reviewed the Enterprise tool declaration and guide scope against the operator help references. The initial dated-order declaration exposes the existing all_time selection within the owner role."
+            "review_note": "Cross-checked merged Enterprise declaration and scoped operator-guide behavior with the operator references. Verified that the public Support guide stays in the Blog gate and the public enquiry restores visible pane focus."
         },
         "public-mcp": {
-            "source_sha256": "06a7b8ef4b99e3c70cbae0dbf6ee2b7c97029aabb851906dc8e2e50d9f81c253",
-            "references_sha256": "e78d7cca0b62659190fdfe23f3ed927f456533f97faaa8297cc08ae004008b33",
-            "review_note": "Checked removal of the question-to-A2UI heuristic alongside public MCP and A2UI details. Public and chat presenters consume typed authorized source evidence and selected published products."
+            "source_sha256": "234155f55b0f66f669f6422a85acc30a6a59ebf216d8f682d7a212cd01ee7358",
+            "references_sha256": "d1e0824e500f825020b2cccfaad7fd435a8fefbe73d61e1b5f05fd54fed0b829",
+            "review_note": "Checked the rendered Support enquiry controls against the current public MCP and A2UI documentation. Focus scrolling keeps the existing tool and submission contracts."
         },
         "remote-commerce": {
-            "source_sha256": "fe653f18d2ff851f92e4ad7bbf4a9df97ea29f828837aeae00c8aece1b3ecec0",
-            "references_sha256": "135d6012b4cf58ce8c5942ea0f98245fd8e8e8c38175ea0c839e8a258777d287",
-            "review_note": "Reviewed native Support checkout and WebMCP action registration against the public layout. Scoped verified purchase receipts and recovery remain available independently of failed chat answers."
+            "source_sha256": "0a504ca49d9995ea386d62a2783ae399dd7f8bf0eb0c10f5fffe1c5412a7b264",
+            "references_sha256": "233a298972f70b9eaa75c089da038a8d4e589686e2118f81235a5f32088ce1d5",
+            "review_note": "Reviewed both existing Support panes and verified nested heading focus on reopen. Checkout and commerce contracts remain as documented."
         },
         "sales-channels": {
             "source_sha256": "36385e3d18e26f524d0efdd12d26cd8386e368fb5d27441460c688ffdff28b92",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed SettingsService module resolution and Merchant feed guidance. Dropping a retired header slot leaves the saved catalog eligibility inputs intact."
         },
         "workflow": {
-            "source_sha256": "1e46d78f6c3bbe46a284facb813ef84705e65fe3095815c77acdbff28243f322",
+            "source_sha256": "0f5ec4723ce72247773717eae57bc723e10147e4a59b70a1ea4f491c4353ad08",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Cross-checked the live model boundary in AGENTS and the issue-based test workflow. Retained genuine controller and tool regressions in place of assertions over obsolete generated prose."
+            "review_note": "Regenerated source indexes after the layout focus fix and checked the established review and browser verification steps."
         }
     }
 }
