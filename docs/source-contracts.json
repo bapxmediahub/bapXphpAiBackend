@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "867dad532227d4210d5345ed341a768bc3def20d4e87378c141ff5e7ed09cc8a",
+            "source_sha256": "29b308b4b40ae8f147f267e128cfeaa2b50b26014c50e094978c53f942d490c9",
             "references_sha256": "74554e8088c03307c6980c42fa647ddf6709700a862a6fa6674185f8238b23c8",
-            "review_note": "Compared native article discovery, keyword passage selection, public file revision and excerpt hashes, and trace projections with the role guidance and wire fixtures."
+            "review_note": "Reviewed the shared PHP runtime tool envelopes, publication gates, passaging and trace source allowlist against the runtime and observability docs. Chat Completions use and protected data boundaries remain preserved."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -18,29 +18,29 @@
             "review_note": "Reviewed the retrieval addition to the backend skill against the commerce guides. Article claims use source evidence; product, order and payment projections still use their named data services."
         },
         "content": {
-            "source_sha256": "212c08b38701ff11b88a9017c33cbefc734d241059b3b4d595ff8609de9ad282",
-            "references_sha256": "dffa496299280f3eff7e427f21d0973ebb0f3f4b09ef687ce4d8115f6a2ce5e2",
-            "review_note": "Compared BlogService publication and generated HTML with the article documentation. Both native agents now find published body matches and read bounded exact-slug passages."
+            "source_sha256": "9ca1ff8cd0fcc4302ca466ff646e1363396bac0780b7b40b2684486f3e87e465",
+            "references_sha256": "d525d12bc3a3babb8f0ab391c1cbdac34e0944f2be4bdfd2b3cb4ff0832e3a20",
+            "review_note": "Reviewed shared publication filtering, the public versus agent search modes, exact slug reads and article display after the latest blog UI release. The blog reference explains the preserved public schema and bounded section results."
         },
         "foundation": {
-            "source_sha256": "149c6db0439f2e2859fafaf91942524d151f261f7dc25ed2c7f9b9a471325714",
+            "source_sha256": "1f2cbe6d964d560d7711c135cf9d64e36edee74640ac30d571e3084767457ff7",
             "references_sha256": "19374082935b4847bbb5f384debd59d75beac6e118415585f5434701c8264cf5",
-            "review_note": "Reviewed passage retrieval against the native PHP, private JSON and published Markdown boundaries. The tool result carries the passage; the private trace keeps its identity, digests and numeric section only."
+            "review_note": "Reviewed public projection, conversation trace and request boundaries in the backend skill and architecture references. The new exposed evidence is limited to public revision and excerpt identifiers and section number."
         },
         "google-tags": {
-            "source_sha256": "683b99f0a3158682ae753aef309c0a7339cdc4005f2e640b4e5c94d5f05fac49",
-            "references_sha256": "f97f8bd08a0edd6ee125c583e1dbadbc000f3c422b469875bb4f718abf3d8191",
-            "review_note": "Reviewed unchanged public layout head rendering against the documented Google tag integration."
+            "source_sha256": "4f6a8463add868b4016e243e90638e9dc22e442dd5964fc6c25f71a578bc6e40",
+            "references_sha256": "5b221c86c8ea31a5e66710e5b2aa2cfb3bee4d921f0b1356c1b3967c29508d3c",
+            "review_note": "Reviewed public head registration and private Google reporting setup after the owner and customer navigation merge."
         },
         "http-errors": {
-            "source_sha256": "2e2fee3211f50641844c05f86381f277f9c6c10b7fb60fb750c52937b0868e12",
+            "source_sha256": "63602cadbe59868b0d25a1b00729a589e75d1b31c6ea3a1b25c1e5a46fd06d50",
             "references_sha256": "1455f6c2ccaeba8657640148cdc9e92732a9b0c5d6ae6eae999e6f2a59f4e33f",
-            "review_note": "Compared Blog setting and publication checks with the PHP failure boundary. A missing passage is a normal tool result and a failed settings read still surfaces as a source failure."
+            "review_note": "Compared file reads and request failure behavior with the scoped error docs and backend skills. Missing or disallowed published evidence remains governed by the existing empty result and request boundary."
         },
         "interface": {
-            "source_sha256": "108179ff3bf10f1a1a2bdd30b8dd48b373954c74e642ee59761a6b3b5a7475eb",
-            "references_sha256": "f278b12b1588f010fd7a0f51c357d7554396cc6fb7f53588c1ec198efda09c60",
-            "review_note": "Verified focus and visibility when reopening a scrolled Support enquiry at 375px, alongside the menu, footer and shared accessibility guidance."
+            "source_sha256": "46c0da2ee4fa85f54130e1b7b41dcfc0e0d1af79f9134530cc79bc09829326c7",
+            "references_sha256": "a91a95841dc182236befb1ff651bb22b318c92a7e4e5fd8adac315a9e16cbb9f",
+            "review_note": "Verified the customer-specific forms, named pagination, address focus, reading layouts and their composition with the deployed owner and storefront controls."
         },
         "mail": {
             "source_sha256": "6895291447775bb17e9bef6c3d38d388ed65b3f5985b4c79bc71a9b4fa222c16",
@@ -54,13 +54,13 @@
         },
         "media": {
             "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
-            "references_sha256": "e46a00af045b0f554d796d480bc4c7bfe25b8464276587147872d4c29e2701f1",
-            "review_note": "Compared active-chat restoration and attachment changes with the media operator instructions, and confirmed upload and in-memory draft attachment regressions pass."
+            "references_sha256": "34433348ceb97accb0aea9b04f930b1ec0936825154d70c9ae872f155e0d2cbd",
+            "review_note": "Cross-checked the revised owner UI skill with the current media selection, confirmation and metadata flows. The existing media documentation still describes those operations."
         },
         "operator-help": {
-            "source_sha256": "1966dfa3c44a464203517ba643bf1c106122df8d6ed3066ebb967c454c1fdb07",
-            "references_sha256": "7a684be61b80d3002adcfb6a344e0c4bf547d9c8082bee3fa151bd61b1dc9d98",
-            "review_note": "Cross-checked the published customer help guide with the new article lookup. Exact-slug reads use the public Blog gate and cannot select the authenticated operator guide."
+            "source_sha256": "92fbfdf83014fedae6810a8d3ecdae92a062f5139d4c30734ccf8f74deda83b5",
+            "references_sha256": "8993a3d96b2f0930673298bce0d268fc582bab2fb7fdf35e16f08abb9ac7c3f9",
+            "review_note": "Reviewed customer article links and owner Help boundaries. Targeted runtime passage reads only published public content and the existing operator help stays restricted."
         },
         "public-mcp": {
             "source_sha256": "517200df08254008f1b4312f19981c9a88e6e915743ec16645c4503e3579f287",
@@ -68,9 +68,9 @@
             "review_note": "Compared the shared knowledge service with the public MCP article schema. The MCP and browser clients still receive title and summary ranking and the same result fields."
         },
         "remote-commerce": {
-            "source_sha256": "0a504ca49d9995ea386d62a2783ae399dd7f8bf0eb0c10f5fffe1c5412a7b264",
-            "references_sha256": "0d06bd95f7056026c42294c864042483bc0b1dba8d5fbd7f64d4694a3bdf8633",
-            "review_note": "Reviewed the backend skill change against the remote checkout contracts. The published article lookup remains a read and does not use cart or payment capabilities."
+            "source_sha256": "d240d614ae377c8a7195af73b09b5a49e762c87241bf86a1f65ff07985316f2e",
+            "references_sha256": "aa06fd0d20459bff7a98fe83718599ca59f887b7c08de88cf491ef78da26e629",
+            "review_note": "Reviewed backend evidence guidance against the deployed customer page base. Article revision evidence is scoped to published retrieval and the remote-commerce persistence and authorization contracts are untouched."
         },
         "sales-channels": {
             "source_sha256": "36385e3d18e26f524d0efdd12d26cd8386e368fb5d27441460c688ffdff28b92",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed SettingsService module resolution and Merchant feed guidance. Dropping a retired header slot leaves the saved catalog eligibility inputs intact."
         },
         "workflow": {
-            "source_sha256": "b8bbbcc806f5f1752866b6dc5ddcac81022d59ab844fe6ab08ad45650c01819e",
+            "source_sha256": "948420c0162a5c445a33a78b85cfe339dfd46756aaeffa93a5cf09c08eabe0eb",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Reviewed the new backend skill guidance and Chat Completions loopback assertions against the source review workflow. The approved authored Markdown and versioned tool contract remain the sources of truth."
+            "review_note": "Reviewed current source contract workflow and existing golden tests. The updated agent article branch keeps the same release procedures and explicit separation of offline evaluation and live answer accuracy."
         }
     }
 }

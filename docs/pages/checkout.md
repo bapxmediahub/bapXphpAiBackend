@@ -12,6 +12,11 @@ Controller: `PublicController@checkout`
 
 Purpose: collect shipping contact details and start Razorpay or Stripe checkout when that gateway is configured.
 
+On a narrow screen, **Review order** jumps from the checkout heading to the
+order summary. **Edit cart** returns to the cart to change quantities. Enter
+shipping details and select a configured option in the **Payment method**
+group before starting payment.
+
 The shared PHP bootstrap explicitly maps `App\Integrations\Stripe\StripeClient`
 to `integrations/stripe/StripeClient.php` for checkout creation and the Stripe
 return handler. The regression in `tests/run.php` captures this class-loading

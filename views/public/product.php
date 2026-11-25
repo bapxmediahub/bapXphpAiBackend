@@ -1,4 +1,4 @@
-<section class="section">
+<section class="section product-page">
     <?php if(empty($product)): ?>
         <div class="container container--narrow">
             <div class="about-story-card reveal" style="text-align:center; padding:var(--space-3xl);">
@@ -11,13 +11,15 @@
     <?php else: ?>
         <?php
             $hasOffer = !empty($product['offer_price']) && $product['offer_price'] < $product['price'];
+            $canPurchase = in_array($product['stock_status'] ?? '', ['in_stock', 'active'], true);
+            $placeholder = placeholder_img($product['name']);
             $gallery = [];
             if (!empty($product['image_urls'])) {
                 $gallery = is_array($product['image_urls']) ? $product['image_urls'] : preg_split('/[\r\n,]+/', (string)$product['image_urls']);
             }
             if (!empty($product['image_url'])) array_unshift($gallery, $product['image_url']);
             $gallery = array_values(array_unique(array_filter(array_map(fn($image) => webp_src(trim((string)$image)), $gallery))));
-            if (empty($gallery)) $gallery[] = placeholder_img($product['name']);
+            if (empty($gallery)) $gallery[] = $placeholder;
         ?>
         <?php if (!empty($adminPreview)): ?>
             <div class="container product-copy-block" role="note">
@@ -28,8 +30,8 @@
         <?php endif; ?>
         <div class="product-detail">
             <div class="product-gallery reveal" data-product-gallery>
-                <div class="product-gallery__main" id="gallery-main" style="position:relative;">
-                    <img id="product-main-image" src="<?= e($gallery[0]) ?>" data-product-image-fallback="<?= e(placeholder_img($product['name'])) ?>" alt="<?= e($product['name']) ?>">
+                <div class="product-gallery__main" id="gallery-main">
+                    <img id="product-main-image" src="<?= e($gallery[0]) ?>" data-product-image-fallback="<?= e($placeholder) ?>" alt="<?= e($product['name']) ?>">
                     <?php if(count($gallery) > 1): ?>
                         <button type="button" id="gallery-prev" class="product-gallery-arrow" aria-label="Previous image" hidden>‹</button>
                         <button type="button" id="gallery-next" class="product-gallery-arrow" aria-label="Next image" hidden>›</button>
@@ -40,7 +42,7 @@
                     <div class="product-gallery__thumbs" role="group" aria-label="Product images" hidden>
                         <?php foreach($gallery as $index => $image): ?>
                             <button type="button" class="product-gallery__thumb <?= $index === 0 ? 'active' : '' ?>" data-index="<?= e((string)$index) ?>" data-image="<?= e($image) ?>" aria-label="View product image <?= e((string)($index + 1)) ?>">
-                                <img src="<?= e($image) ?>" alt="">
+                                <img src="<?= e($image) ?>" data-product-image-fallback="<?= e($placeholder) ?>" alt="" loading="lazy" decoding="async">
                             </button>
                         <?php endforeach; ?>
                     </div>
@@ -48,33 +50,61 @@
             </div>
             <div class="product-info">
                  <nav class="breadcrumb" aria-label="Breadcrumb">
-                    <a href="/">Home</a> / <a href="/shop">Shop</a><?php if(!empty($product['category'])): ?> / <a href="/shop?category=<?= e(rawurlencode(trim((string)$product['category']))) ?>"><?= e($product['category']) ?></a><?php endif; ?> / <span style="color:var(--color-ink);"><?= e($product['name']) ?></span>
+                    <a href="/">Home</a> / <a href="/shop">Shop</a><?php if(!empty($product['category'])): ?> / <a href="/shop?category=<?= e(rawurlencode(trim((string)$product['category']))) ?>"><?= e($product['category']) ?></a><?php endif; ?><span class="product-info__breadcrumb-current" aria-current="page"> / <?= e($product['name']) ?></span>
                 </nav>
                 <?php if(!empty($product['category'])): ?>
-                    <span class="eyebrow serif-accent" style="font-size:0.75rem; display:block; margin-bottom:var(--space-xs);"><?= e($product['category']) ?></span>
+                    <span class="eyebrow serif-accent product-info__category"><?= e($product['category']) ?></span>
                 <?php endif; ?>
                 <h1><?= e($product['name']) ?></h1>
                 <?php $productRating = $reviewSummary['average'] ?? 0; $productReviewCount = $reviewSummary['count'] ?? 0; ?>
                 <div class="product-info__meta">
                     <div class="product-info__rating">
-                        <span class="rating-stars" aria-label="<?= e((string)$productRating) ?> star product rating">
+                        <span class="rating-stars" aria-hidden="true">
                             <?php for($i=1;$i<=5;$i++):?>
                                 <svg class="icon-star" width="16" height="16" viewBox="0 0 24 24" fill="<?= $productRating >= $i ? 'var(--color-rating)' : 'none' ?>" stroke="var(--color-rating)" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                             <?php endfor;?>
                         </span>
-                        <span style="color:var(--color-text-muted); font-size:0.8rem;"><?= $productReviewCount > 0 ? e((string)$productRating) . ' from ' . e((string)$productReviewCount) . ' reviews' : 'No reviews yet' ?></span>
+                        <span style="color:var(--color-text-muted); font-size:0.8rem;"><?= $productReviewCount > 0 ? e((string)$productRating) . ' from ' . e((string)$productReviewCount) . ($productReviewCount === 1 ? ' review' : ' reviews') : 'No reviews yet' ?></span>
                     </div>
                 </div>
                 <div class="product-info__price">
-                    <span class="price">₹<?= e((string)(($product['offer_price'] ?? 0) ?: ($product['price'] ?? 0))) ?></span>
+                    <span class="price">₹<?= e(number_format((float)(($product['offer_price'] ?? 0) ?: ($product['price'] ?? 0)), 2)) ?></span>
                     <?php if($hasOffer): ?>
-                        <span class="old-price">₹<?= e($product['price']) ?></span>
+                        <span class="old-price">₹<?= e(number_format((float)$product['price'], 2)) ?></span>
                         <?php $pct = round((1 - $product['offer_price'] / ($product['price'] ?: 1)) * 100); ?>
                         <span class="badge badge--success">Save <?= $pct ?>%</span>
                     <?php endif; ?>
                 </div>
+                <?php if (empty($adminPreview)): ?>
+                    <div class="product-buy" id="product-purchase" data-page-section="Purchase" tabindex="-1">
+                        <?php if ($canPurchase): ?>
+                            <form id="product-cart-form" method="post" action="/cart/add">
+                                <input type="hidden" name="slug" value="<?= e($product['slug']) ?>">
+                                <?php $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
+                                <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+                                <div class="product-buy__quantity">
+                                    <label for="qty-input">Quantity</label>
+                                    <div class="qty-input">
+                                        <button type="button" aria-label="Decrease quantity" data-quantity-step="-1" hidden>−</button>
+                                        <input type="number" name="qty" value="1" min="1" max="99" id="qty-input" required>
+                                        <button type="button" aria-label="Increase quantity" data-quantity-step="1" hidden>+</button>
+                                    </div>
+                                </div>
+                                <div class="product-buy__actions">
+                                    <button name="redirect" value="/product/<?= e(rawurlencode(trim($product['slug']))) ?>" class="btn btn-primary">Add to Cart</button>
+                                    <button name="redirect" value="/checkout" class="btn btn-outline">Buy Now</button>
+                                </div>
+                            </form>
+                        <?php else: ?>
+                            <strong>Out of stock</strong>
+                            <a href="/shop">Browse available products</a>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+                <?php if (!empty($product['description'])): ?>
+                    <p class="product-info__desc"><?= e($product['description']) ?></p>
+                <?php endif; ?>
                 <div data-section-index hidden></div>
-                <p class="product-info__desc"><?= e($product['description'] ?? 'A sacred spiritual product crafted with devotion and care.') ?></p>
                 <?php if(!empty($product['highlights']) && is_array($product['highlights'])): ?>
                     <div class="product-copy-block">
                         <h2 id="product-features" data-page-section="Features" tabindex="-1">Key Features</h2>
@@ -108,31 +138,6 @@
                         </dl>
                     </div>
                 <?php endif; ?>
-                <?php if (empty($adminPreview)): ?>
-                 <div class="product-info__form" id="product-purchase" data-page-section="Purchase" tabindex="-1">
-                     <form id="product-cart-form" method="post" action="/cart/add" style="display:flex; gap:var(--space-md); align-items:center; width:100%;">
-                         <input type="hidden" name="slug" value="<?= e($product['slug']) ?>">
-                         <?php $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
-                         <input type="hidden" name="_csrf" value="<?= $csrf ?>">
-                         <div class="qty-input">
-
-                            <button type="button" aria-label="Decrease quantity" onclick="this.nextElementSibling.stepDown(); this.nextElementSibling.dispatchEvent(new Event('change'))">−</button>
-                            <input type="number" name="qty" value="1" min="1" max="99" id="qty-input" aria-label="Quantity">
-                            <button type="button" aria-label="Increase quantity" onclick="this.previousElementSibling.stepUp(); this.previousElementSibling.dispatchEvent(new Event('change'))">+</button>
-                        </div>
-                        <button name="redirect" value="/product/<?= e(rawurlencode(trim($product['slug']))) ?>" class="btn btn-primary btn-lg" style="flex:1;">Add to Cart</button>
-                    </form>
-                </div>
-                <div class="product-info__actions">
-                    <button type="submit" form="product-cart-form" name="redirect" value="/checkout" class="btn btn-outline btn-lg btn-block">Buy Now →</button>
-                </div>
-                <div class="product-info__features">
-                    <div class="product-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> Secure Payment</div>
-                    <div class="product-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg> Fast Delivery</div>
-                    <div class="product-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Authentic Product</div>
-                    <div class="product-feature"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> Blessed & Energized</div>
-                </div>
-                <?php endif; ?>
             </div>
         </div>
         <?php if (!empty($related) && is_array($related)): ?>
@@ -150,11 +155,13 @@
                     <?php
                         $itemSlug = trim((string)($item['slug'] ?? ''));
                         $productUrl = '/product/' . rawurlencode($itemSlug);
-                        $isPurchasable = in_array((string)($item['stock_status'] ?? 'in_stock'), ['in_stock', 'active'], true);
+                        $itemPlaceholder = placeholder_img($item['name']);
+                        $itemImage = trim((string)($item['image_url'] ?? '')) ?: $itemPlaceholder;
+                        $isPurchasable = in_array((string)($item['stock_status'] ?? ''), ['in_stock', 'active'], true);
                     ?>
                     <article class="product-card reveal">
                         <a class="product-card__image" href="<?= e($productUrl) ?>" aria-label="View <?= e($item['name']) ?>">
-                            <img src="<?= e(webp_src($item['image_url'] ?? placeholder_img($item['name']))) ?>" data-product-image-fallback="<?= e(placeholder_img($item['name'])) ?>" alt="<?= e($item['name']) ?>" decoding="async">
+                            <img src="<?= e(webp_src($itemImage)) ?>" data-product-image-fallback="<?= e($itemPlaceholder) ?>" alt="<?= e($item['name']) ?>" decoding="async">
                         </a>
                         <div class="product-card__body">
                             <h3><a class="product-card__title" href="<?= e($productUrl) ?>"><?= e($item['name']) ?></a></h3>
@@ -172,14 +179,14 @@
                                 <input type="hidden" name="slug" value="<?= e($itemSlug) ?>">
                                 <input type="hidden" name="_csrf" value="<?= $csrf ?>">
                                 <input type="hidden" name="redirect" value="/checkout">
-                                <button class="btn btn-sm btn-primary" type="submit">Buy Now</button>
+                                <button class="btn btn-sm btn-primary" type="submit" aria-label="Buy Now: <?= e($item['name']) ?>">Buy Now</button>
                             </form>
                             <div class="product-cart-control">
                                 <form method="post" action="/cart/add" data-cart-add <?= $inCart > 0 ? 'hidden' : '' ?>>
                                     <input type="hidden" name="slug" value="<?= e($itemSlug) ?>">
                                     <input type="hidden" name="_csrf" value="<?= $csrf ?>">
                                     <input type="hidden" name="redirect" value="<?= e('/product/' . rawurlencode(trim($product['slug']))) ?>">
-                                    <button class="btn btn-sm btn-outline" type="submit">Add to Cart</button>
+                                    <button class="btn btn-sm btn-outline" type="submit" aria-label="Add to Cart: <?= e($item['name']) ?>">Add to Cart</button>
                                 </form>
                                 <div class="product-cart-control__stepper" data-cart-stepper <?= $inCart > 0 ? '' : 'hidden' ?>>
                                     <?php foreach (['dec' => '−', 'inc' => '+'] as $cartAction => $symbol): ?>
@@ -209,6 +216,16 @@
 </section>
 <script>
 (() => {
+    const quantity = document.getElementById('qty-input');
+    quantity?.closest('.qty-input').querySelectorAll('[data-quantity-step]').forEach(button => {
+        button.hidden = false;
+        button.addEventListener('click', () => {
+            if (button.dataset.quantityStep === '-1') quantity.stepDown();
+            else quantity.stepUp();
+            quantity.dispatchEvent(new Event('change', {bubbles: true}));
+        });
+    });
+
     const gallery = document.querySelector('[data-product-gallery]');
     const group = gallery?.querySelector('.product-gallery__thumbs');
     if (!group) return;
@@ -218,10 +235,16 @@
     const next = gallery.querySelector('#gallery-next');
     const position = gallery.querySelector('#gallery-position');
     let current = 0;
+    let currentImage = image.getAttribute('src');
 
     function show(index) {
         current = (index + thumbs.length) % thumbs.length;
-        image.src = thumbs[current].dataset.image;
+        const source = thumbs[current].dataset.image;
+        if (currentImage !== source) {
+            currentImage = source;
+            delete image.dataset.fallbackApplied;
+            image.src = source;
+        }
         position.textContent = `Image ${current + 1} of ${thumbs.length}`;
         thumbs.forEach((thumb, i) => {
             thumb.classList.toggle('active', i === current);
