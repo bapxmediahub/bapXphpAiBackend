@@ -48,6 +48,12 @@ scans suppress ordinary successful parser lines while retaining all failed
 filenames. A failed default scan must not print its success summary, and `ci`
 must retain the lint failure while collecting the remaining gate results.
 
+The local `ci` command also runs `php tests/storefront-search.php`, the same
+fixture used by GitHub. It checks the native search route with mixed results,
+pagination, visibility, Shop and Blog settings, malformed input and a module
+settings outage. This test uses a synthetic loopback bridge. A nonzero exit
+prints `STOREFRONT SEARCH FAILED` and makes CI fail after the other gates.
+
 ## Content, database and operations
 
 ```bash
@@ -80,8 +86,9 @@ credentials, secret values or customer records.
 
 For lint/CI changes, run `node --test tests/cli-lint.test.cjs` with native PHP.
 It copies the actual CLI launchers into a temporary miniature project and uses
-real parser failures, paths with spaces and multiple malformed files. Only
-unrelated CI stages are replaced by passing fixture scripts. The application
+real parser failures, paths with spaces and multiple malformed files. It also
+checks that a failing storefront search stage fails CI while later stages run.
+The miniature project uses valid PHP stand-ins for CI stages outside these assertions. The application
 checkout and business data are untouched. A PHP wrapper that reports syntax
 errors but exits zero cannot establish parser-status acceptance; the fixture
 fails explicitly in that environment rather than skipping the check.

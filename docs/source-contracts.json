@@ -49,8 +49,8 @@
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
-            "references_sha256": "73c4e7ed550ac139d52f0e560ab34a74738e8f4aa2ae6fc87c9e635c9dcd4d43",
-            "review_note": "Checked the merged Integrations guide against the local MCP client controller and form. The owner issues and revokes a paid-sales grant, and the trusted STDIO client receives it through its process environment."
+            "references_sha256": "ac1bc03220b226d653c8a317355e57292d38c7d8f2320162ad1405d16a3a7bb8",
+            "review_note": "Reviewed local CLI and remote client guidance. Adding the isolated public search fixture to the CI command keeps existing client setup and capability contracts intact."
         },
         "media": {
             "source_sha256": "edc32a5a9f73cf7f2954eac135a2eaed1394089034bac24ea835af48c4d9600e",
@@ -74,13 +74,13 @@
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",
-            "references_sha256": "ed194e15ddaa5ac6ee1118994fceeb94723165cedba02bc92ad745a196a18fd1",
-            "review_note": "Compared the MediaService additions with the Merchant Feed and product image inspection contracts. Header choices are filtered only for the owner authored editor, and catalogue image eligibility and feed URLs retain their existing resolution."
+            "references_sha256": "584b563cb628dce2573081ef1aaf46071bd9815c6bc37e1c4bc18b295a9daa39",
+            "review_note": "Compared the CLI skill change with the Google sales-channel test and API requirements. The extra fixture covers local storefront search parity and calls no vendor service."
         },
         "workflow": {
-            "source_sha256": "557d811d12496019f64ed17c4955829aee9c3c62a5d5d3ee62301bc9c06aa6e7",
-            "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Reviewed the new provider exception in generated inventory and the restored booking fixture with the disposable MySQL concurrency path."
+            "source_sha256": "5f13f5445cd8142bff5b567e56424424e5cfe38a60c5e6494d54b80468180d47",
+            "references_sha256": "c11003880ee0b940715945afbc145188e466086d8e2a3e4aeace1e9dbe10780b",
+            "review_note": "Rechecked the local storefront search test and independent mobile browser fixture on the final campaign base. Local CI now fails for a storefront search regression while continuing independent gates."
         }
     }
 }

@@ -169,6 +169,20 @@ No malformed fixture is written into the application checkout. The direct
 parser-status precheck fails if an interpreter wrapper prints syntax errors
 but returns zero; that environment cannot substitute for native PHP acceptance.
 
+## Storefront search release gate
+
+`./bapXphp ci` runs `php tests/storefront-search.php` after the main PHP
+test suite. GitHub also runs the same fixture directly. The fixture drives the
+native search route and checks mixed product, article and temple pagination,
+public visibility, Shop and Blog settings, malformed queries and the failure
+path when module settings are unavailable. It uses disposable Markdown and a
+loopback database bridge with synthetic records.
+
+A failed fixture prints `STOREFRONT SEARCH FAILED`, leaves independent gates
+running and makes the final CI status nonzero. The CLI regression in
+`tests/cli-lint.test.cjs` exercises that failure with a valid PHP stand-in
+that returns a nonzero exit status.
+
 ## Source-to-documentation review gate
 
 `config/documentation.php` maps source areas to their durable guides/skills.
