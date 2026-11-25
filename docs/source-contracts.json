@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "466706c116ed40e7c762efb343d7ce2ac8bfb15bee7de64f02980ff769f5257a",
-            "references_sha256": "c7fe91e79969f37bbde7042b03e330052b9edce97cab50af334fc15295f2f1db",
-            "review_note": "Compared the version 3 report observation and version 2 receipt retention against conversation storage and the observability guide. Checked Luna tool calls against the documented reasoning setting and the Chat Completions JSON list boundary against the loopback cases."
+            "source_sha256": "62fc3aa161aa3ed7891b267744b4353ee41699a4cedab307519d6b028ffff128",
+            "references_sha256": "be133914596d80a2e2b21715a713116f65826c890ae16f61541d2f6fe4db887b",
+            "review_note": "Compared the version 3 typed report observation and retained version 2 receipts with conversation storage and the observability guide. Cross-checked ready-model preference, bounded short-hold recovery and the per-transfer readiness check against the runtime guide and loopback cases."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -60,7 +60,7 @@
         "operator-help": {
             "source_sha256": "0083eeb417f56c09e8b6c23202dee46241262cf40bdd32f312e82b8fb2c46956",
             "references_sha256": "c4f92ef1a785d3800380a6878286c4fec17e3c8f7e377d248b5f4f00bbc419c0",
-            "review_note": "Compared Agent Monitoring and answer review with the saved receipt and authorized JSON export. Report observations remain independent of guardrail status and staff assessments. Checked the settings guide against the provider plan and targeted diagnostic controls."
+            "review_note": "Compared Agent Monitoring, its authorized JSON export and staff review with the saved report observation and independent guardrail status. Checked the provider cooldown guidance and exact-model diagnostic bypass against the merged routing behavior."
         },
         "public-mcp": {
             "source_sha256": "234155f55b0f66f669f6422a85acc30a6a59ebf216d8f682d7a212cd01ee7358",
