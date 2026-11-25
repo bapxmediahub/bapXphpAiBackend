@@ -41,6 +41,12 @@ final class RateLimiter {
         return self::consumeAtomic($limits,$path,$now);
     }
 
+    /** Apply the normal per-IP budget before creating an external booking link. */
+    public static function consumeCampaignBooking(string $ip): bool {
+        return self::consumeAtomic([hash('sha256', 'campaign-booking:ip:'.$ip) => [5, 60]],
+            storage_path('logs/campaign-booking-admission.json'), null);
+    }
+
     /** Independent budgets for public account-triggered mail, never for paid-order or admin mail. */
     public static function consumeAccountMail(string $event,string $ip,string $email,?string $path=null,?int $now=null): bool {
         if(!in_array($event,['register','recovery'],true) || !filter_var($email,FILTER_VALIDATE_EMAIL))

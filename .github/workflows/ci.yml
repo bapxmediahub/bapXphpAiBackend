@@ -49,6 +49,8 @@ jobs:
         run: node --test tests/review-automation.test.cjs
       - name: Verify atomic contact admission and flood containment
         run: php tests/contact-admission.php
+      - name: Verify campaign booking with deterministic gateway and payment replay
+        run: php tests/campaign-booking.php
       - name: Verify published campaign form HTTP and remote mutation contracts
         run: php tests/campaign-form-http.php
       - name: Verify guarded deletion and stale upload history
@@ -106,7 +108,7 @@ jobs:
       - name: Exercise reusable About layout and live-link contracts
         run: NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/about-release-browser.cjs tests/site-profile-browser.cjs
       - name: Exercise campaign page editing, preview, and enquiry feedback in Chromium
-        run: NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/campaign-form-browser.cjs
+        run: NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/campaign-form-browser.cjs tests/campaign-booking-browser.cjs
       - name: Exercise owner Users directory and customer Profile in Chromium
         run: NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/users-directory-browser.cjs tests/account-profile-browser.cjs
       - name: Exercise owner scheduled mail confirmation in Chromium
@@ -173,6 +175,8 @@ jobs:
         run: |
           php tests/remote-cart-mysql.php
           php tests/remote-checkout-mysql.php
+      - name: Verify campaign booking against isolated MySQL
+        run: php tests/campaign-booking.php --mysql
       - name: Test concurrent private JSON conversation appends
         run: php tests/agent-concurrency.php
       - name: Test concurrent structured answer review in private JSON
@@ -249,3 +253,5 @@ jobs:
         run: |
           php tests/admin-list-pagination.php
           php tests/storefront-activity-mysql.php
+      - name: Verify campaign booking on the hosted database family
+        run: php tests/campaign-booking.php --mysql

@@ -14,9 +14,12 @@ final class ProjectMapService {
         $routes = [
             ['method'=>'GET','path'=>'/','name'=>'home','page'=>'public/home','controller'=>'PublicController@home','services'=>['ProductService','TempleService','CategoryService']],
             ['method'=>'GET','path'=>'/search','name'=>'search','page'=>'public/search','controller'=>'PublicController@search','services'=>['AuthoredPageService','ProductService','BlogService','TempleService']],
-            ['method'=>'GET','path'=>'/pages/{slug}','name'=>'pages.show','page'=>'public/authored-page','controller'=>'PublicController@authoredPage','services'=>['AuthoredPageService','MarkdownRenderer','CampaignLeadService','CampaignDownloadService']],
+            ['method'=>'GET','path'=>'/pages/{slug}','name'=>'pages.show','page'=>'public/authored-page','controller'=>'PublicController@authoredPage','services'=>['AuthoredPageService','MarkdownRenderer','CampaignLeadService','CampaignDownloadService','CampaignPaymentService']],
             ['method'=>'POST','path'=>'/pages/{slug}/enquiry','name'=>'pages.enquiry','page'=>'public/authored-page','controller'=>'PublicController@campaignEnquiry','services'=>['AuthoredPageService','CampaignLeadService','CampaignDownloadService','ContactService','RateLimiter']],
             ['method'=>'GET','path'=>'/pages/{slug}/downloads/{revision}/{id}','name'=>'pages.download','page'=>'public/authored-page','controller'=>'PublicController@campaignDownload','services'=>['AuthoredPageService','CampaignDownloadService']],
+            ['method'=>'POST','path'=>'/pages/{slug}/booking','name'=>'pages.booking.start','page'=>'public/campaign-booking','controller'=>'CampaignBookingController@start','services'=>['CampaignPaymentService','AuthoredPageService','DatabaseService','RateLimiter']],
+            ['method'=>'GET','path'=>'/pages/{slug}/booking/{id}','name'=>'pages.booking.status','page'=>'public/campaign-booking','controller'=>'CampaignBookingController@status','services'=>['CampaignPaymentService','RazorpayPaymentLinkService']],
+            ['method'=>'GET','path'=>'/pages/{slug}/booking/{id}/downloads/{file}','name'=>'pages.booking.download','page'=>'public/campaign-booking','controller'=>'CampaignBookingController@download','services'=>['CampaignPaymentService','CampaignDownloadService']],
             ['method'=>'GET','path'=>'/about','name'=>'about','page'=>'public/about','controller'=>'PublicController@about','services'=>[]],
             ['method'=>'GET','path'=>'/ai-assistants','name'=>'ai-assistants','page'=>'public/ai-assistants','controller'=>'PublicController@aiAssistants','services'=>['PublicMcpService','MarkdownRenderer']],
             ['method'=>'GET','path'=>'/llms.txt','name'=>'ai-assistants.text','page'=>'public/ai-assistants','controller'=>'PublicController@assistantInstructions','services'=>['PublicMcpService','MarkdownRenderer']],
@@ -54,7 +57,7 @@ final class ProjectMapService {
             ['method'=>'POST','path'=>'/cart/agent-checkout','name'=>'cart.agent-checkout.import','module'=>'shop','page'=>'public/agent-checkout','controller'=>'CommerceController@importAgentCheckout','services'=>['RemoteCartService','CartService','DatabaseService']],
             ['method'=>'GET','path'=>'/checkout','name'=>'checkout','module'=>'shop','page'=>'public/checkout','controller'=>'PublicController@checkout','services'=>['CartService','ProductService','SecretService','AddressService','SettingsService']],
             ['method'=>'GET','path'=>'/checkout/payment','name'=>'checkout.payment-handoff','page'=>'public/agent-payment','controller'=>'RemoteCheckoutController@payment','services'=>['RemoteCheckoutService','DatabaseService']],
-            ['method'=>'POST','path'=>'/api/payments/razorpay-webhook','name'=>'checkout.payment-webhook','response'=>'json','controller'=>'RemoteCheckoutController@webhook','services'=>['RemoteCheckoutService','PaymentService','VerifiedOrderService','DatabaseService','SecretService']],
+            ['method'=>'POST','path'=>'/api/payments/razorpay-webhook','name'=>'checkout.payment-webhook','response'=>'json','controller'=>'RemoteCheckoutController@webhook','services'=>['RemoteCheckoutService','CampaignPaymentService','RazorpayPaymentLinkService','PaymentService','VerifiedOrderService','DatabaseService','SecretService']],
             ['method'=>'GET','path'=>'/feeds/google-products.xml','name'=>'merchant.feed','module'=>'shop','page'=>'public/merchant-feed','controller'=>'PublicController@merchantFeed','services'=>['MerchantFeedService','ProductService','SettingsService']],
             ['method'=>'GET','path'=>'/sitemap.xml','name'=>'sitemap','page'=>'public/sitemap','controller'=>'PublicController@sitemap','services'=>['BlogService','ProductService','AuthoredPageService']],
             ['method'=>'GET','path'=>'/contact','name'=>'contact','page'=>'public/contact','controller'=>'PublicController@contact','services'=>['PublicKnowledgeService']],
@@ -847,10 +850,11 @@ final class ProjectMapService {
     private static function applyManualOverrides(array &$mapping): void {
         $overrides = [
             'AgentContextService' => ['users', 'orders', 'appointments', 'support_tickets'],
-            'DatabaseService' => ['users', 'addresses', 'products', 'orders', 'appointments', 'consultation_messages', 'consultation_signals', 'secrets', 'mail_inbox', 'mail_outbox', 'contact_submissions', 'agent_carts', 'checkout_attempts'],
+            'DatabaseService' => ['users', 'addresses', 'products', 'orders', 'appointments', 'consultation_messages', 'consultation_signals', 'secrets', 'mail_inbox', 'mail_outbox', 'contact_submissions', 'agent_carts', 'checkout_attempts', 'campaign_bookings'],
             // Fixed atomic database protocols are not recognized by the generic CRUD scan.
             'RemoteCartService' => ['agent_carts'],
             'RemoteCheckoutService' => ['agent_carts', 'checkout_attempts'],
+            'CampaignPaymentService' => ['settings', 'campaign_bookings'],
             'VerifiedOrderService' => ['orders'],
         ];
         foreach ($overrides as $service => $cols) {

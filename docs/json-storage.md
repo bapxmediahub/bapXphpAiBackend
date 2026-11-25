@@ -125,3 +125,8 @@ The shipped catalogue is archived in `storage/migrations/legacy-media/products.y
 Run `./bapXphp media:reconcile` for a read-only comparison of source rows, unique IDs, missing rows, missing fields, conflicting ID/URL ownership and covered rows. Existing MySQL fields win, including empty descriptions or usage arrays. The tool accepts up to 250 historical rows and 1 MiB of source data, rejects unsupported YAML, and reports counts without item contents.
 
 If rows need migration, run `./bapXphp media:reconcile --apply` from a checkout with direct access to the target MySQL. A serializable transaction adds missing rows, fills only absent fields, and verifies coverage before committing. A conflicting URL, ID or context blocks the whole batch. Run the read-only command again and compare `verified` with `unique_ids`. Repeat applies preserve the existing records. Neither mode changes binaries or removes source files. Keep installation-specific compatibility files until the owner has verified their own migration.
+
+Campaign bookings are business records in MySQL. The `campaign_bookings`
+collection retains the approved INR amount, page revision, checkout mode and
+selected download descriptors. A verified receipt is stored on the same record.
+The protected file bytes are retained separately under their immutable IDs.
