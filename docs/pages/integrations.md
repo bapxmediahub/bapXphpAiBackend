@@ -44,6 +44,30 @@ The native PHP client applies these patterns synchronously; there is no schedule
 fallback job. Three attempts per model, the connection order and total budgets
 are product choices, not mandates from the providers.
 
+## Run Support and Enterprise through Chat Completions
+
+1. Under **AI Providers and Models**, enable **Custom OpenAI-compatible connection**
+   and select **OpenAI-compatible API** as the preferred provider.
+2. Enter the HTTPS API base URL, the API key issued for that endpoint, and one
+   or more exact model IDs in fallback order. For direct OpenAI, use
+   `https://api.openai.com/v1` and a Chat Completions model with function
+   calling, such as `gpt-4.1-mini`.
+3. For endpoint-only routing, disable **Enable Google models** and
+   **Enable OpenRouter Free**. Save the AI provider settings. Both agents then
+   use the custom connection, including Enterprise draft generation.
+4. Select the exact connection and model in **Test AI connection**. Run the
+   text test and the tool test before relying on that model for either agent.
+
+PHP posts to `{baseUrl}/chat/completions` with Bearer authentication. Set
+**Chat Completions token limit field** to match the endpoint. **Automatic**
+uses `max_completion_tokens` for direct OpenAI and `max_tokens` for existing
+compatible connections. Choose `max_completion_tokens` explicitly for a custom
+endpoint that expects the current field.
+The endpoint must also support Chat Completions function declarations and
+multi-turn messages with `tool_call_id`.
+[Chat Completions HTTP reference](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create) ·
+[GPT-4.1 mini capabilities](https://developers.openai.com/api/docs/models/gpt-4.1-mini).
+
 ## Verify an actual provider response
 
 The connection diagnostic uses the same guarded AiClient as both agents and
@@ -124,7 +148,7 @@ Use Tag Assistant to verify collection and Search Console to verify site ownersh
 
 ## Owner reporting
 
-Open **Google reporting** from the dashboard or Integrations. In the Cloud
+Open **Google reporting** from Site analytics or Integrations. In the Cloud
 project that owns the configured web OAuth client, enable Analytics Admin API,
 Analytics Data API and Search Console API. Add the displayed configured-origin
 `/admin/google-reporting/callback` URI to the client. Configure the consent
@@ -154,7 +178,7 @@ References:
 
 ## Built-in Google PageSpeed Insights
 
-From the existing owner dashboard, open **PageSpeed Insights** at
+From Site analytics, open **PageSpeed Insights** at
 `/admin/google-pagespeed`. The native view uses the site's configured HTTPS
 origin and retrieves mobile/desktop results from Google's **fixed**
 PageSpeed Insights v5 API endpoint only after the authenticated owner presses

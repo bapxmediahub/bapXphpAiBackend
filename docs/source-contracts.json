@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "160120446ef0d740a9f76c3a65d2459efbe35fc9d1c263ab61530ea0a9d7f7a0",
-            "references_sha256": "922ac380f9c09674d66cf45663822d448babf8298de57437e723121727beb7cd",
-            "review_note": "Compared the owner Chat and Monitoring layouts with the active scoped tool and trace guidance. Authored header validation and the upload lock remain in the developer backend guidance and existing PHP content boundary."
+            "source_sha256": "3c6e1cb910ca0d8ad6ca0e30e7c295bb08df0df79ff147624fc80603a23a8525",
+            "references_sha256": "6a2e4b76d53221fa23cdfc72c181ed899d1f10e89858c6e82b6c0991f6a95676",
+            "review_note": "Reviewed the Chat Completions role, finish reason and tool call contracts with the runtime and observability guides. Admin Pages preview stays within the existing owner MVC boundary."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -23,14 +23,14 @@
             "review_note": "Compared the published search and Blog module guidance with the merged templates. The authored view keeps the released document structure and renders the same image and Markdown during preview and after publication."
         },
         "foundation": {
-            "source_sha256": "63ad590d37c769c3d39753bd4f149ca77985c01d32c569900f0cb57208c2b61b",
+            "source_sha256": "d24c91f5fc87058aeda5d42d2f4ef3e2fcd431ee88cd650e05573ba2f4dd3172",
             "references_sha256": "185f906cb2170ba47183425b0a3da23b534d6bebc5d299297d18d16da548df4b",
-            "review_note": "Compared the owner title and role-gated layout with the rendering boundary. The authored page attaches an owned upload under the normal settings revision through direct PDO and the authenticated remote transport."
+            "review_note": "Reviewed the changed reference profile, navigation and authored PDO validation against architecture. Deployment-owned defaults, admin permissions and hosted content storage remain in their existing paths."
         },
         "google-tags": {
-            "source_sha256": "47986bb64b609894dcba3d76df180c51043c20441d2e1ca1f99c3f37fc68c4a8",
-            "references_sha256": "5b221c86c8ea31a5e66710e5b2aa2cfb3bee4d921f0b1356c1b3967c29508d3c",
-            "review_note": "Checked the reconciled shared layout against public head and owner reporting guidance. Its authored-document styles move to the shared stylesheet and tag registration keeps its existing sources."
+            "source_sha256": "366fdab983979cc3a1fec22fb6da4afb61072d6fd24cd0ba2271d67a0c063019",
+            "references_sha256": "9789624757ffb0db61f3558073a31f66a1941a6cea7f7aa4af76da35c88df7dd",
+            "review_note": "Checked the latest reporting and browser-tag guidance against the two admin links and secured reporting screen. Published documents share reading CSS without changing public head tag registration."
         },
         "http-errors": {
             "source_sha256": "63602cadbe59868b0d25a1b00729a589e75d1b31c6ea3a1b25c1e5a46fd06d50",
@@ -38,39 +38,39 @@
             "review_note": "Compared the admin heading selection and authored page validation with canonical error rendering. Header eligibility failures remain expected owner form feedback, and transport and handler failures retain sanitized status and correlation behavior."
         },
         "interface": {
-            "source_sha256": "1262a8c9e8558408ef1a887f045b8b579841caf01df559acbf0d2cbddb2d3d59",
-            "references_sha256": "a5f0b3f3f70853491f2bf6932da591a311e8298c704a5abb214e74084c7dd4b8",
-            "review_note": "Checked the released reading column and responsive document rules with the owner picker and preview. Long authored headings wrap, and the optional header keeps its full image within the same column as the title and Markdown."
+            "source_sha256": "04086ba16f36c41801ab52e38c972e71f72ca7f3823cdea576fb201618a0ef62",
+            "references_sha256": "729151b085c7e3d56d44f72717ee75cbccfeb389258919805a0be757e4e3b2dc",
+            "review_note": "Compared the analytics destination, responsive owner navigation and authored document layout against Design. The owner picker and public page preserve the confirmed reading column and optional image."
         },
         "mail": {
-            "source_sha256": "ad37670c884849d8d45db4a66b868a062a9ac91415897e32424f6b361e90c529",
+            "source_sha256": "cf53ad09364ca09e808c9a465e24eb33d11754a62ce95c6d0f81ef2d2d101cff",
             "references_sha256": "d4dbc02c5a391de33b25b183a057d6f6c84d8cabacd508b79e5ac2b389875f41",
-            "review_note": "Reviewed the AdminController additions against mail and audit contracts. Page preview shows unsaved content and the header upload uses the existing owner media endpoint and its audit; mail queue and recipient selection continue through their existing controllers."
+            "review_note": "Compared the reconciled owner controller routes with existing mail dispatch documentation. Authored headers and analytics operate outside the established mail queue and delivery paths."
         },
         "mcp-clients": {
-            "source_sha256": "38828d52259fbd6b6555d790e463ff775e79be85872a5d5b5aea78e599fba3ac",
-            "references_sha256": "4b78788e4d1216bbecb12b3e575767be766afc9e917c80879f3d4d91f2833c27",
-            "review_note": "Reviewed the revised Settings help alongside MCP client setup guidance. The change is confined to public Header menu guidance."
+            "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
+            "references_sha256": "4274d502f7d2500a1a88e8dbb5d2626a6930d3b01197a0698083f41c03981144",
+            "review_note": "Reviewed the merged Integrations page references against the MCP client guide and approved route inventory. Display-group changes are owner navigation and preserve the client capability and config instructions."
         },
         "media": {
             "source_sha256": "edc32a5a9f73cf7f2954eac135a2eaed1394089034bac24ea835af48c4d9600e",
-            "references_sha256": "c746cd47dd5256ab8d85e0abfc75bf1d199b06662523c0ac1a5875837c17d459",
-            "review_note": "Reviewed the owner UI guidance and authored-page picker alongside existing Media Library edit, confirm and quarantine behavior. A page attachment and metadata removal coordinate through the same upload row lock."
+            "references_sha256": "a2db070f8970b9549f912577bf0603781cbab7f0ce25bcf46bc2246cc152eea5",
+            "review_note": "Checked the combined admin skill against guarded Media Library deletion and the authored header attach lock. The public renderer reads only the selected owned image URL."
         },
         "operator-help": {
-            "source_sha256": "441b4f5dafc505415990b2f6a5aac82bfb4297305b1d44feb30b3b4d8cf04236",
-            "references_sha256": "6c7baafc181bf728f5ceec98304a33c3ba90090dd2b7057e1de4d12d89755206",
-            "review_note": "Matched the header picker, unsaved preview and draft recovery instructions to the Pages form, and checked the merged public account and ordering help against its existing controls."
+            "source_sha256": "2bcf75da6b809a58750677556545fac4e05606761fda4f99f5861039e709c0ae",
+            "references_sha256": "eac498d861f24877bfaf4a708ac47a5bacb1c2bd09384206c2fe3584caba2d3f",
+            "review_note": "Checked the merged Owner Operations, Settings and Pages guides against their navigation. Analytics remains owner-scoped, and the Pages guide shows the actual header picker and preview."
         },
         "public-mcp": {
-            "source_sha256": "d9f31c99f6a3ed60e514698bb1d62d0bbf611a33ed1588e7c0f1dc8023cf2cc5",
+            "source_sha256": "51674601e9e1a9fb49a92f87564c1189a0d4c25ad41c76f8b5f1ce1f154bb0f4",
             "references_sha256": "49f145b54368e95240f2bfe5b347b3b18ac1b2b09931a252aaf9f69d8ffc5d31",
-            "review_note": "Checked the project route declaration change against the fixed public MCP registry and discovery documentation. The MediaService associations apply only to the existing owner page editor and save route."
+            "review_note": "Reviewed ProjectMapService declarations for the owner analytics and authored page routes. The public MCP dispatcher and published scope retain their allowlisted contracts."
         },
         "remote-commerce": {
-            "source_sha256": "4ab6d4fce4dd0448d6fc5c1f0915a9d16b8a8f04ef953bb677432710a96f7a5c",
-            "references_sha256": "f115ac1465acdbf42b5d1c371cdc5c6c011e3c0aeb76f0f317bbd09619caf116",
-            "review_note": "Reviewed the Checkout guide and keyboard review and edit-cart controls from main. The authenticated upload lock applies to authored-page settings and the Media Library."
+            "source_sha256": "4eb65e92d0fffab91ea37804c69190d405daaf24c084338d3d624c3691da0de3",
+            "references_sha256": "53fcc73a6890d25e8e5129b8e252f569e1aad52fd1548ca6e719bea9cc6d5450",
+            "review_note": "Matched the reconciled Design and Checkout guidance to the released cart and checkout controls. Analytics navigation and authored header locking use their existing separate contracts."
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",
@@ -78,9 +78,9 @@
             "review_note": "Compared the MediaService additions with the Merchant Feed and product image inspection contracts. Header choices are filtered only for the owner authored editor, and catalogue image eligibility and feed URLs retain their existing resolution."
         },
         "workflow": {
-            "source_sha256": "5d8feb0c7d071c44f715a20200ab01789d1633ee0c68a5838537209ec8d51d48",
+            "source_sha256": "647d8ada3e34f9485772a238b3e50b5928dfd50bd2186cb6cb773283530bd9b5",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Reviewed the merged storefront test guidance, preserved the browser and database acceptance gates, and regenerated the project indexes from the reconciled source."
+            "review_note": "Reviewed the latest worktree credential scope and shared developer workflow along with regenerated route and service indexes. Existing browser, database and compatibility checks stay active."
         }
     }
 }

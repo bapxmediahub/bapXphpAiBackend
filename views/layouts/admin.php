@@ -3,6 +3,7 @@ $__settingsService = new \App\Services\SettingsService();
 $__modules = $__settingsService->modules();
 $siteProfile ??= \App\Services\SiteProfileService::current();
 $__adminBrand = $siteProfile->name();
+$ownerAgentName = $siteProfile->ownerAgentName();
 $__adminAppName = $siteProfile->hasReferenceName() ? 'SPS Admin' : $__adminBrand . ' Admin';
 $__settings = $__settingsService->public();
 $adminPath = rtrim((string) parse_url($_SERVER['REQUEST_URI'] ?? '/admin', PHP_URL_PATH), '/');
@@ -104,14 +105,14 @@ $navIcon = static function (string $name): string {
             </a>
             <?php $agentNavPath = $adminPath; ?>
             <details class="admin-agent-nav" <?= $sectionOpen('agent|support-tickets') ?>>
-                <summary class="admin-nav-top admin-nav-agent"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 11.5a8 8 0 0 1-8 8H6l-3 2V11.5a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8Z"/><path d="M8 10h8M8 14h5"/></svg>Enterprise Agent<svg class="admin-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg></summary>
+                <summary class="admin-nav-top admin-nav-agent"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 11.5a8 8 0 0 1-8 8H6l-3 2V11.5a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8Z"/><path d="M8 10h8M8 14h5"/></svg><?= e($ownerAgentName) ?><svg class="admin-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg></summary>
                 <div class="admin-nav-group">
                     <a href="/admin/agent" <?= $agentNavPath === '/admin/agent' ? 'class="active" aria-current="page"' : '' ?>><?= $navIcon('chat') ?>Chat</a>
                     <a href="/admin/agent/monitoring" <?= $agentNavPath === '/admin/agent/monitoring' ? 'class="active" aria-current="page"' : '' ?>><?= $navIcon('pulse') ?>Agent Monitoring</a>
                     <a href="/admin/support-tickets" <?= $agentNavPath === '/admin/support-tickets' ? 'class="active" aria-current="page"' : '' ?>><?= $navIcon('ticket') ?>AI Support Tickets</a>
                 </div>
             </details>
-            <details class="admin-sidebar-group" <?= $sectionOpen('appointments') ?>>
+            <details class="admin-sidebar-group" <?= $sectionOpen('appointments|consultation-analytics') ?>>
                 <summary class="admin-nav-toggle">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 000 20 14.5 14.5 0 000-20"/><path d="M2 12h20"/></svg>
                     Services
@@ -119,6 +120,7 @@ $navIcon = static function (string $name): string {
                 </summary>
                 <div class="admin-submenu">
                     <a href="/admin/appointments" <?= $navState('/admin/appointments') ?>><?= $navIcon('calendar') ?>Sessions</a>
+                    <a href="/admin/consultation-analytics" <?= $navState('/admin/consultation-analytics') ?>><?= $navIcon('line') ?>Session analytics</a>
                 </div>
             </details>
             <a href="/admin/pages" <?= $navState('/admin/pages', 'admin-nav-top') ?>><?= $navIcon('page') ?>Pages</a>
@@ -128,13 +130,15 @@ $navIcon = static function (string $name): string {
                 Blog
             </a>
             <?php endif; ?>
-            <details class="admin-sidebar-group" <?= $sectionOpen('google-merchant|orders|shipping|contact-submissions|products|categories|collections|coupons') ?>>
+            <details class="admin-sidebar-group" <?= $sectionOpen('google-merchant|orders|tax-report|shipping|contact-submissions|products|categories|collections|coupons') ?>>
                 <summary class="admin-nav-toggle">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
                     Commerce
                     <svg class="admin-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg>
                 </summary>
                 <div class="admin-submenu">
+                    <a href="/admin/#dashboard-commerce-title" data-dashboard-anchor><?= $navIcon('bars') ?>Commerce overview</a>
+                    <a href="/admin/tax-report" <?= $navState('/admin/tax-report') ?>><?= $navIcon('receipt') ?>Commerce Reports</a>
                     <a data-google-channel-nav href="/admin/google-merchant" <?= $navState('/admin/google-merchant') ?>><?= $navIcon('channel') ?>Google &amp; YouTube</a>
                     <a href="/admin/orders" <?= $navState('/admin/orders') ?>><?= $navIcon('bag') ?>Orders</a>
                     <a href="/admin/shipping" <?= $navState('/admin/shipping') ?>><?= $navIcon('truck') ?>Shipping</a>
@@ -152,13 +156,15 @@ $navIcon = static function (string $name): string {
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><circle cx="9" cy="7" r="4"/><path d="M2 21v-3a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v3m1-18a4 4 0 0 1 0 8m5 10v-3a4 4 0 0 0-3-4"/></svg>
                 Users
             </a>
-            <details class="admin-sidebar-group" <?= $sectionOpen('tax-report|consultation-analytics') ?>>
-                <summary class="admin-nav-toggle"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 3v18h18M8 16v-3m5 3V9m5 7V5"/></svg>Analytics<svg class="admin-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg></summary>
+            <details class="admin-sidebar-group" <?= $sectionOpen('google-reporting|google-pagespeed') ?>>
+                <summary class="admin-nav-toggle">
+                    <?= $navIcon('globe') ?> Site analytics
+                    <svg class="admin-nav-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false"><polyline points="6 9 12 15 18 9"/></svg>
+                </summary>
                 <div class="admin-submenu">
-                    <a href="/admin/#dashboard-commerce-title"><?= $navIcon('bars') ?>Commerce overview</a>
-                    <a href="/admin/tax-report" <?= $navState('/admin/tax-report') ?>><?= $navIcon('receipt') ?>Commerce Reports</a>
-                    <a href="/admin/consultation-analytics" <?= $navState('/admin/consultation-analytics') ?>><?= $navIcon('line') ?>Session analytics</a>
-                    <a href="/admin/#web-analytics"><?= $navIcon('globe') ?>Web analytics</a>
+                    <a href="/admin/#web-analytics" data-dashboard-anchor><?= $navIcon('bars') ?>Traffic &amp; search</a>
+                    <a href="/admin/google-reporting" <?= $navState('/admin/google-reporting') ?>><?= $navIcon('settings') ?>Google reporting</a>
+                    <a href="/admin/google-pagespeed" <?= $navState('/admin/google-pagespeed') ?>><?= $navIcon('pulse') ?>PageSpeed Insights</a>
                 </div>
             </details>
             <details class="admin-sidebar-group" <?= $sectionOpen('email-templates|email-inbox|email-outbox') ?>>
@@ -240,8 +246,9 @@ $navIcon = static function (string $name): string {
                 'system-health'=>'System Health','docs'=>'Help & Docs','google-merchant'=>'Google & YouTube','products'=>'Products','categories'=>'Categories','coupons'=>'Coupons',
                 'orders'=>'Orders','shipping'=>'Shipping','tax-report'=>'Reports','astrologers'=>'Astrologers',
                 'appointments'=>'Sessions',
-                'consultation-analytics'=>'Analytics','temples'=>'Temples',
-                'settings'=>'Site Settings','integrations'=>'Integrations','agent'=>'Enterprise Agent','monitoring'=>'Agent Monitoring',
+                'consultation-analytics'=>'Session analytics','temples'=>'Temples',
+                'google-reporting'=>'Google reporting','google-pagespeed'=>'PageSpeed Insights',
+                'settings'=>'Site Settings','integrations'=>'Integrations','agent'=>$ownerAgentName,'monitoring'=>'Agent Monitoring',
                 'backups'=>'Backups','audit-log'=>'Audit Log',
                 'contact-submissions'=>'Contacts','support-tickets'=>'AI Support Tickets',
                 'email-templates'=>'Email Templates','email-inbox'=>'Email Inbox','email-outbox'=>'Email Outbox',
@@ -334,6 +341,28 @@ if (toggle && sidebar && closeSidebar && sidebarBackdrop && adminMain) {
         else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
     });
     window.addEventListener('resize', () => { if (window.innerWidth > 768 && sidebar.classList.contains('open')) setAdminSidebar(false, false); }, {passive:true});
+}
+if (sidebar && /^\/admin\/?$/.test(window.location.pathname)) {
+    const dashboardLink = sidebar.querySelector('a[href="/admin/"]');
+    const anchorLinks = Array.from(sidebar.querySelectorAll('[data-dashboard-anchor]'));
+    function highlightDashboardLocation() {
+        const current = anchorLinks.find(link => link.hash === window.location.hash);
+        for (const link of anchorLinks) {
+            const selected = link === current;
+            link.classList.toggle('active', selected);
+            if (selected) link.setAttribute('aria-current', 'location');
+            else link.removeAttribute('aria-current');
+        }
+        dashboardLink.classList.toggle('active', !current);
+        if (current) {
+            dashboardLink.removeAttribute('aria-current');
+            current.closest('details').open = true;
+        } else {
+            dashboardLink.setAttribute('aria-current', 'page');
+        }
+    }
+    highlightDashboardLocation();
+    window.addEventListener('hashchange', highlightDashboardLocation);
 }
 document.querySelectorAll('.admin-body .table-wrap').forEach(wrap => {
     const table = wrap.querySelector(':scope > table');

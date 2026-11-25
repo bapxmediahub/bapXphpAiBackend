@@ -64,6 +64,12 @@ final class AdminController extends BaseController {
         );
         $productRows = StoreStatsService::topProducts($allOrders, $from, $to);
         $orderStatusCounts = StoreStatsService::orderStatusCounts($allOrders, $from, $to);
+        $storefrontActivity = null;
+        try {
+            $storefrontActivity = \App\Services\SiteTelemetryService::counts((new AuditLogService())->all());
+        } catch (\Throwable) {
+            // A failed audit read must be shown as unavailable rather than zero events.
+        }
         // Public consultation booking has been retired, but historical requests remain
         // an owner responsibility. Keep them visible from the admin dashboard rather
         // than making their recovery depend on a public-site module flag.
@@ -98,7 +104,7 @@ final class AdminController extends BaseController {
             'pendingOrderValue' => StoreStatsService::pendingOrderValue($allOrders, $from, $to),
             'bookingCount' => count($appointments),
             'appointments' => array_slice($appointments, 0, 5),
-        ] + compact('period', 'from', 'to', 'reportRows', 'productRows', 'orderStatusCounts', 'seoInsights', 'commerceInsights', 'userSupportInsights', 'googleConnected', 'googleReports', 'googleStatus', 'googleError'));
+        ] + compact('period', 'from', 'to', 'reportRows', 'productRows', 'orderStatusCounts', 'seoInsights', 'commerceInsights', 'userSupportInsights', 'storefrontActivity', 'googleConnected', 'googleReports', 'googleStatus', 'googleError'));
     }
     public function products(): void{
         $draft = $_SESSION['product_form_draft'] ?? null;
@@ -575,10 +581,8 @@ final class AdminController extends BaseController {
             // Keep the monitoring page available when the audit store is unavailable.
         }
         $agentConversations = [];
-        $commerceTelemetry = [];
         try {
             $agentConversations = (new \App\Services\AgentConversationService())->recent(40);
-            $commerceTelemetry = \App\Services\SiteTelemetryService::counts((new AuditLogService())->all());
         } catch (\Throwable $e) {
             error_log('Agent session insights unavailable: '.$e::class);
         }
@@ -591,7 +595,7 @@ final class AdminController extends BaseController {
             $agentGoldenSuite = null;
         }
         $this->render('admin/agent-monitoring',
-            compact('agentMonitoring','agentConversations','commerceTelemetry','supportFeedbackSummary','agentGoldenSuite','answerReviewSummary')
+            compact('agentMonitoring','agentConversations','supportFeedbackSummary','agentGoldenSuite','answerReviewSummary')
             + ['pageTitle' => 'Agent Monitoring']);
     }
 
@@ -702,7 +706,7 @@ final class AdminController extends BaseController {
         // Everything the owner may write @ against, so the chat can autocomplete rather
         // than making them remember slugs and filenames.
         $attachables = (new \App\Services\AgentAttachmentService())->catalogue();
-        $this->render('admin/agent',['pageTitle'=>'Enterprise Agent','modelConfig'=>$modelConfig,'attachables'=>$attachables,
+        $this->render('admin/agent',['pageTitle'=>$this->siteProfile()->ownerAgentName(),'modelConfig'=>$modelConfig,'attachables'=>$attachables,
             'chatScope'=>$chatScope,'agentCapabilities'=>\App\Services\EnterpriseToolRegistry::capabilities($user),
             'agentCapabilityLimits'=>\App\Services\EnterpriseToolRegistry::capabilityLimits()]);
     }
