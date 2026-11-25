@@ -94,6 +94,15 @@ content out of output. A compatibility report is not authority to migrate a
 production database or fabricate query/backup parity. Preserve older running
 sites until a separate approved cutover is verified.
 
+## Authored-page headers
+
+Keep the optional uploaded image URL and page-specific alt text in the same
+revisioned `pg:<slug>` row as the Markdown. Validate a local raster URL and its
+Media Library ownership on the database host. Header attachment and upload
+metadata removal use a shared upload row lock. Keep the existing publication
+predicate, and verify the legacy no-image path, invalid ownership, stale save,
+and removal after clearing in the isolated database and owner preview.
+
 ## Authored article integrity
 
 All article writes must use BlogService's expected-content revision and atomic
