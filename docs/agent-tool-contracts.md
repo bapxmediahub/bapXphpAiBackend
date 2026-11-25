@@ -12,7 +12,8 @@ Regenerate with `php cli/agent-contracts.php` or `./bapXphp update`; validate wi
 No provider calls, credentials or business-data queries are made during generation. No conversation SQL table is introduced.
 
 Discovery is not authorization. Every invocation still passes its PHP execution policy. These registries expose only named reads; ticket creation and owner-approved draft saves remain distinct controller/service actions.
-The historical `customer_ticket_lookup` activity label is not an invocable support capability. Both model surfaces use the bounded AiClient tool loop through RuntimeAgentToolRegistry. The model adapter filters declarations by the authenticated actor and adds a private read_runtime_skill activation operation, never a public MCP or arbitrary file capability. The file manifest below lists all available role documents; individual model prompts initially load only the constitution and shared runtime contract, then activate relevant skills.
+The historical `customer_ticket_lookup` activity label is not an invocable support capability.
+Both model surfaces use the bounded AiClient tool loop through RuntimeAgentToolRegistry. The model adapter filters declarations by actor and the relevant public module settings. The same eligible capability set selects private runtime skills for activation by identifier. The file manifest below lists the role documents. Model prompts start with the constitution and shared runtime contract, then activate relevant skills.
 
 ## Support
 
@@ -22,18 +23,18 @@ Source: `app/Services/SupportToolRegistry.php`; instruction version 2.
 
 Private runtime Markdown is not duplicated into developer documentation.
 
-- `.bapX/supportagent.md` — SHA-256 `fae2895879f617ed2aefde742d4d55e2ece190ee1645011173d1a5805eee883d`
+- `.bapX/supportagent.md` — SHA-256 `d37e5bca9c3e578aaaae541bc28b5ae9dce8f1f8d2839f80b9fbfdc60b364c95`
 - `.bapX/bapXcl/skill.md` — SHA-256 `bef6836de280f3118cd9e438bcac6babffc1bea6f3c1d85f5fc962c8a01043e9`
 - `.bapX/bapXcl/support/catalog.md` — SHA-256 `0b85f5605a1eee35dcb09a147d8905059508151be9d46465d226a9b0816cc9a6`
-- `.bapX/bapXcl/support/policy-and-tickets.md` — SHA-256 `ed732c56f5da36ac3524940e5170aab9a348c8a68babe7f9d4a55b464abf9138`
+- `.bapX/bapXcl/support/policy-and-tickets.md` — SHA-256 `b9d71f0d0b65ce21867868305256604522ba0361f37ec36cbe3939ee9d609f21`
 
-Bundle SHA-256: `2ad5de312547f533d9c9abab9df4ab9a9c0e083086c133c29ea3b1e3e48482b5`.
+Bundle SHA-256: `4304f481fbe49a8dcb8c6a225a798ca83af83b61375049cdfb57f243bbdd077f`.
 
 ### `public_catalog`
 
 Read published products using a customer question.
 
-**Access:** Guest or authenticated customer; published/public data only.
+**Access:** Guest or authenticated customer, limited to approved public data. Requires the public Shop module.
 
 ```json
 {
@@ -55,7 +56,7 @@ Read published products using a customer question.
 
 Read the public shipping, returns, or payment policy.
 
-**Access:** Guest or authenticated customer; published/public data only.
+**Access:** Guest or authenticated customer, limited to approved public data.
 
 ```json
 {
@@ -84,7 +85,7 @@ Read the public shipping, returns, or payment policy.
 
 Read the published business phone numbers, email, opening hours and contact form link. No customer or owner records.
 
-**Access:** Guest or authenticated customer; published/public data only.
+**Access:** Guest or authenticated customer, limited to approved public data.
 
 ```json
 {
@@ -98,7 +99,7 @@ Read the published business phone numbers, email, opening hours and contact form
 
 List the existing public enquiry offerings and contact form destinations. These are enquiries, not booking or payment actions.
 
-**Access:** Guest or authenticated customer; published/public data only.
+**Access:** Guest or authenticated customer, limited to approved public data.
 
 ```json
 {
@@ -127,7 +128,7 @@ List the existing public enquiry offerings and contact form destinations. These 
 
 Read only the authenticated customer support-ticket metadata.
 
-**Access:** Authenticated customer; identity comes from PHP, never tool arguments.
+**Access:** Authenticated customer. PHP supplies the account identity.
 
 ```json
 {
@@ -172,7 +173,7 @@ Read only the authenticated customer support-ticket metadata.
 
 Count all currently published products and their configured public category memberships. Use for overall catalogue counts and category overview, not a named product or private order.
 
-**Access:** Guest or authenticated customer; published/public data only.
+**Access:** Guest or authenticated customer, limited to approved public data. Requires the public Shop module.
 
 ```json
 {
@@ -185,7 +186,7 @@ Count all currently published products and their configured public category memb
 
 Get up to four currently visible storefront best sellers by recorded paid, non-cancelled, non-refunded orders, all time only. No sales amounts, private orders or date filters.
 
-**Access:** Guest or authenticated customer; published/public data only.
+**Access:** Guest or authenticated customer, limited to approved public data. Requires the public Shop module.
 
 ```json
 {
@@ -198,7 +199,7 @@ Get up to four currently visible storefront best sellers by recorded paid, non-c
 
 Search published blog and customer help articles by keyword. Returns real titles and paths; never private documents or article bodies.
 
-**Access:** Guest or authenticated customer; published/public data only.
+**Access:** Guest or authenticated customer, limited to approved public data. Requires the public Blog module.
 
 ```json
 {
@@ -220,7 +221,7 @@ Search published blog and customer help articles by keyword. Returns real titles
 
 Read exact currently published products by raw slug; use for comparisons, follow-ups and current specifications.
 
-**Access:** Guest or authenticated customer; published/public data only.
+**Access:** Guest or authenticated customer, limited to approved public data. Requires the public Shop module.
 
 ```json
 {
@@ -246,7 +247,7 @@ Read exact currently published products by raw slug; use for comparisons, follow
 
 Count matching orders and read up to five recent orders belonging only to the signed-in customer; optional exact order reference. Never accepts an email or user ID.
 
-**Access:** Guest or authenticated customer; published/public data only.
+**Access:** Authenticated customer. PHP supplies the account identity.
 
 ```json
 {
@@ -265,7 +266,7 @@ Count matching orders and read up to five recent orders belonging only to the si
 
 Read this browser session cart item names, product slugs and quantities. No cart mutation.
 
-**Access:** Guest or authenticated customer; published/public data only.
+**Access:** Guest or authenticated customer, limited to the current browser-session cart. Requires the public Shop module.
 
 ```json
 {
@@ -279,7 +280,7 @@ Read this browser session cart item names, product slugs and quantities. No cart
 
 Offer the existing customer-reviewed contact form when a human enquiry is useful. Does not submit, email, create tickets or reserve appointments.
 
-**Access:** Guest or authenticated customer; published/public data only.
+**Access:** Guest or authenticated customer, limited to approved public data.
 
 ```json
 {
@@ -293,7 +294,7 @@ Offer the existing customer-reviewed contact form when a human enquiry is useful
 
 Read a bounded text excerpt from an exact currently published blog/help article slug. Use after article discovery to answer content questions. No private files.
 
-**Access:** Guest or authenticated customer; published/public data only.
+**Access:** Guest or authenticated customer, limited to approved public data. Requires the public Blog module.
 
 ```json
 {
@@ -319,13 +320,13 @@ Source: `app/Services/EnterpriseToolRegistry.php`; instruction version 2.
 
 Private runtime Markdown is not duplicated into developer documentation.
 
-- `.bapX/enterpriseagent.md` — SHA-256 `8f13b9e45793e3e1a1172b6d7729208020f2046cf0d9ab10e789fe786f4a30e6`
+- `.bapX/enterpriseagent.md` — SHA-256 `6bb0c3a1b53892c4922511d0ed2cfb40df0ef0cd3213666d6c56692d4b095b0b`
 - `.bapX/bapXcl/skill.md` — SHA-256 `bef6836de280f3118cd9e438bcac6babffc1bea6f3c1d85f5fc962c8a01043e9`
 - `.bapX/bapXcl/support/catalog.md` — SHA-256 `0b85f5605a1eee35dcb09a147d8905059508151be9d46465d226a9b0816cc9a6`
-- `.bapX/bapXcl/support/policy-and-tickets.md` — SHA-256 `ed732c56f5da36ac3524940e5170aab9a348c8a68babe7f9d4a55b464abf9138`
-- `.bapX/bapXcl/enterprise/reporting.md` — SHA-256 `432827fa7c6fa1d5bc7a57d6a3c77bd4f29832d35fa3dd07df6a09ab55f7f942`
+- `.bapX/bapXcl/support/policy-and-tickets.md` — SHA-256 `b9d71f0d0b65ce21867868305256604522ba0361f37ec36cbe3939ee9d609f21`
+- `.bapX/bapXcl/enterprise/reporting.md` — SHA-256 `bd4fef0250c9adbbbddb421d3cbacf7290fdc0aa274bcb789adf0f46ae67e80c`
 
-Bundle SHA-256: `b44e10d59981bfe9388b25b35bda986cddde0e80c8ae66c19d5ca952ccc518a6`.
+Bundle SHA-256: `d43cc89c2f1e67efb78ffa73b381538703065cf20529ea5d5fdc1d4884161e35`.
 
 ### `find_order`
 
@@ -533,7 +534,7 @@ Count recorded users, products or appointments. Returns a total without record d
 
 Search published blog and customer help articles by keyword. Returns real titles and paths; never private documents or article bodies.
 
-**Access:** Authenticated admin, enforced server-side.
+**Access:** Authenticated admin, enforced server-side. Requires the public Blog module.
 
 ```json
 {
@@ -687,7 +688,7 @@ Count all recorded orders (not just paid orders) within explicit inclusive dates
 
 Read a bounded text excerpt from an exact currently published blog/help article slug. Use after article discovery to answer content questions. No private files.
 
-**Access:** Authenticated admin, enforced server-side.
+**Access:** Authenticated admin, enforced server-side. Requires the public Blog module.
 
 ```json
 {

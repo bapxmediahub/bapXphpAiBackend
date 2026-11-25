@@ -21,15 +21,32 @@ final class RuntimeAgentToolRegistry
     private const MAX_INITIAL = 3;
 
     public function __construct(private string $surface,private ?array $actor,private AgentToolRegistry|SupportToolRegistry $business,string $question='') {
-        $this->catalog=AgentInstructionService::skillCatalog($surface,$actor);
         if(($surface==='support')!==($business instanceof SupportToolRegistry))
             throw new \InvalidArgumentException('Registry does not match agent surface.');
-        $this->bundle=AgentInstructionService::modelBundle($surface,$actor);
         $policy=$surface==='admin'?AgentCapabilityPolicy::ENTERPRISE:AgentCapabilityPolicy::SUPPORT;
+        $modules = null;
         foreach($business->declarations() as $tool) {
-            if(AgentCapabilityPolicy::allows($policy,$tool['name'],$actor))$this->available[$tool['name']]=$tool;
+            $name = $tool['name'];
+            if (!AgentCapabilityPolicy::allows($policy, $name, $actor)) continue;
+            $module = AgentCapabilityPolicy::requiredModule($policy, $name);
+            if ($module !== null) {
+                $modules ??= $this->discoverableModules();
+                if (!($modules[$module] ?? false)) continue;
+            }
+            $this->available[$name] = $tool;
         }
+        $this->bundle = AgentInstructionService::modelBundle($surface, $actor, array_keys($this->available));
+        $this->catalog = $this->bundle['skills'];
         foreach($this->rank(mb_substr($question,0,256),self::MAX_INITIAL) as $name)$this->enable($name);
+    }
+
+    private function discoverableModules(): array {
+        try {
+            return (new SettingsService())->modules(requireReadable: true);
+        } catch (\RuntimeException | \JsonException) {
+            // Unavailable settings cannot establish that a public module is enabled.
+            return [];
+        }
     }
 
     public function instructionPrompt(): string {
@@ -45,8 +62,10 @@ final class RuntimeAgentToolRegistry
 
     public function declarations(): array {
         $tools=array_values(array_intersect_key($this->available,$this->active));
-        $tools[]=['name'=>'read_runtime_skill','description'=>'Load detailed operating instructions for an available runtime skill by its catalogue identifier. No business data lookup and no file path.',
-            'parameters'=>['type'=>'object','properties'=>['skill'=>['type'=>'string','enum'=>array_keys($this->catalog)]],'required'=>['skill']]];
+        if ($this->catalog !== []) {
+            $tools[]=['name'=>'read_runtime_skill','description'=>'Load detailed operating instructions for an available runtime skill by its catalogue identifier. No business data lookup and no file path.',
+                'parameters'=>['type'=>'object','properties'=>['skill'=>['type'=>'string','enum'=>array_keys($this->catalog)]],'required'=>['skill']]];
+        }
         $tools[]=['name'=>'tool_search','description'=>'Discover relevant authorized business capabilities by a short query or exact tool identifier. Returns metadata and enables matches from the next model round, not business records. Do not call a newly discovered function in the same batch.',
             'parameters'=>['type'=>'object','properties'=>['query'=>['type'=>'string','minLength'=>1,'maxLength'=>160],'limit'=>['type'=>'integer','minimum'=>1,'maximum'=>4]],'required'=>['query'],'additionalProperties'=>false]];
         return $tools;
@@ -100,7 +119,7 @@ final class RuntimeAgentToolRegistry
     }
 
     private function activate(string $id): array {
-        $skill=$this->loadedSkills[$id]??=AgentInstructionService::loadSkill($this->surface,$id,$this->actor);
+        $skill=$this->loadedSkills[$id]??=AgentInstructionService::loadSkill($this->surface,$id,$this->actor,array_keys($this->available));
         $manifest=$this->bundle['manifest'];
         if(!in_array($skill['file']['path'],array_column($manifest['files'],'path'),true)) {
             $manifest['files'][]=$skill['file'];

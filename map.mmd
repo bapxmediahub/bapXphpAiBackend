@@ -1552,6 +1552,7 @@ flowchart LR
   service_agentevaluationservice -. static reference .-> service_auditlogservice
   service_agentevaluationservice -. static reference .-> service_gstregisterservice
   service_agentevaluationservice -. static reference .-> service_supportbotservice
+  service_agentinstructionservice -. static reference .-> service_agentcapabilitypolicy
   service_agentinstructionservice -. static reference .-> service_agenttraceservice
   service_agenttoolregistry -. source new .-> service_adminhelpservice
   service_agenttoolregistry -. source new .-> service_agentcontextservice
@@ -1708,6 +1709,7 @@ flowchart LR
   service_remotecheckoutstateservice -. static reference .-> service_remotecheckoutservice
   service_resourceservice -. source new .-> service_databaseservice
   service_reviewservice -. source new .-> service_databaseservice
+  service_runtimeagenttoolregistry -. source new .-> service_settingsservice
   service_runtimeagenttoolregistry -. static reference .-> service_agentcapabilitypolicy
   service_runtimeagenttoolregistry -. static reference .-> service_agentinstructionservice
   service_runtimeagenttoolregistry -. static reference .-> service_agenttraceservice

@@ -27,6 +27,16 @@ final class AgentCapabilityPolicy {
         };
     }
 
+    /** Existing publication gates for model-facing capability discovery. */
+    public static function requiredModule(string $agent, string $tool): ?string {
+        return match ($tool) {
+            'search_articles', 'read_published_article' => 'blog',
+            'public_catalog', 'public_catalogue_summary', 'public_best_sellers',
+            'public_product_details', 'own_cart' => $agent === self::SUPPORT ? 'shop' : null,
+            default => null,
+        };
+    }
+
     public static function allows(string $agent, string $tool, ?array $actor): bool {
         if (!in_array($tool, self::tools($agent), true)) return false;
         if ($agent === self::ENTERPRISE) {
