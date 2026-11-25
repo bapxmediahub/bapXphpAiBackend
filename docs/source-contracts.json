@@ -28,9 +28,9 @@
             "review_note": "Checked architecture and private JSON storage against controller replay. Only accepted model responses use native presentation on replay and no replay refreshes business data or changes access scope."
         },
         "google-tags": {
-            "source_sha256": "9940de721e00de56749244aa9e3780c2caf18cae207af3ceb60746114126453e",
+            "source_sha256": "683b99f0a3158682ae753aef309c0a7339cdc4005f2e640b4e5c94d5f05fac49",
             "references_sha256": "f97f8bd08a0edd6ee125c583e1dbadbc000f3c422b469875bb4f718abf3d8191",
-            "review_note": "Reviewed unchanged public layout head rendering beside the Integrations and frontend guidance."
+            "review_note": "Reviewed unchanged public layout head rendering against the documented Google tag integration."
         },
         "http-errors": {
             "source_sha256": "2e2fee3211f50641844c05f86381f277f9c6c10b7fb60fb750c52937b0868e12",
@@ -38,9 +38,9 @@
             "review_note": "Reviewed the new hosting instructions against existing request-failure guidance. A transport receipt remains distinct from a rendering response, and the worker preserves the canonical queue before reporting an outcome."
         },
         "interface": {
-            "source_sha256": "cc1a2dae4a5346c60cdaadf9c4d392c809e7d939b41b2f13e1f5af5acdd2aa4a",
+            "source_sha256": "108179ff3bf10f1a1a2bdd30b8dd48b373954c74e642ee59761a6b3b5a7475eb",
             "references_sha256": "f278b12b1588f010fd7a0f51c357d7554396cc6fb7f53588c1ec198efda09c60",
-            "review_note": "Reviewed footer landmarks and link groups, native menu and skip links, and Support focus against the visual contract and browser interaction."
+            "review_note": "Verified focus and visibility when reopening a scrolled Support enquiry at 375px, alongside the menu, footer and shared accessibility guidance."
         },
         "mail": {
             "source_sha256": "6895291447775bb17e9bef6c3d38d388ed65b3f5985b4c79bc71a9b4fa222c16",
@@ -58,19 +58,19 @@
             "review_note": "Compared active-chat restoration and attachment changes with the media operator instructions, and confirmed upload and in-memory draft attachment regressions pass."
         },
         "operator-help": {
-            "source_sha256": "d2a591bad2e12eaabb5f2a96c12081f5bc8412beef54c1ce4989679d66e84feb",
+            "source_sha256": "d1aa24644958e5cf4ca1936a66a084002a8cf6ee65c97b8b5beb03a2eb3ac898",
             "references_sha256": "7a684be61b80d3002adcfb6a344e0c4bf547d9c8082bee3fa151bd61b1dc9d98",
-            "review_note": "Checked the rendered public Help links, separate Support guide, Blog module gating, and private operator navigation."
+            "review_note": "Reviewed public Help links, Blog module gating and the focused Support enquiry pane alongside the operator help references."
         },
         "public-mcp": {
             "source_sha256": "234155f55b0f66f669f6422a85acc30a6a59ebf216d8f682d7a212cd01ee7358",
             "references_sha256": "d1e0824e500f825020b2cccfaad7fd435a8fefbe73d61e1b5f05fd54fed0b829",
-            "review_note": "Checked the layout against native A2UI and MCP documentation. Panel controls retain the existing schema, origin, and tool registration."
+            "review_note": "Checked the rendered Support enquiry controls against the current public MCP and A2UI documentation. Focus scrolling keeps the existing tool and submission contracts."
         },
         "remote-commerce": {
-            "source_sha256": "213bd50c3cb2a08b70b0b6b620e7118129c1a4c19e3d8821be478cd0c0300f63",
+            "source_sha256": "0a504ca49d9995ea386d62a2783ae399dd7f8bf0eb0c10f5fffe1c5412a7b264",
             "references_sha256": "233a298972f70b9eaa75c089da038a8d4e589686e2118f81235a5f32088ce1d5",
-            "review_note": "Checked active-pane focus, cart toggle and composer visibility, and the existing checkout and configuration boundaries."
+            "review_note": "Reviewed both existing Support panes and verified nested heading focus on reopen. Checkout and commerce contracts remain as documented."
         },
         "sales-channels": {
             "source_sha256": "36385e3d18e26f524d0efdd12d26cd8386e368fb5d27441460c688ffdff28b92",
@@ -80,7 +80,7 @@
         "workflow": {
             "source_sha256": "0f5ec4723ce72247773717eae57bc723e10147e4a59b70a1ea4f491c4353ad08",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Regenerated all source indexes and checked the normal issue, browser, and CI workflow after replacing shared navigation markup."
+            "review_note": "Regenerated source indexes after the layout focus fix and checked the established review and browser verification steps."
         }
     }
 }

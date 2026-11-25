@@ -686,7 +686,7 @@ async function supportOpenEnquiry(){
     if(supportPanel.dataset.commerceOpen==='true'&&commerceBack)commerceBack.click();
     supportPanel.dataset.enquiryOpen='true';supportEnquiry.hidden=false;
     supportToggle(true);
-    supportEnquiry.querySelector('h2')?.focus({preventScroll:true});
+    supportEnquiry.querySelector('h2')?.focus();
     if(supportEnquiryContainer.querySelector('form.contact-form'))return;
     supportEnquiryLoading=true;
     supportEnquiryStatus.textContent='Loading the existing contact form…';
@@ -773,7 +773,7 @@ function supportToggle(open){
     supportPanel.hidden=!open;
     supportFab.setAttribute('aria-expanded',String(open));
     var activePane=supportPanel.querySelector('#support-commerce:not([hidden]) h2,#support-enquiry:not([hidden]) h2');
-    (open ? activePane ?? supportTitle : supportFab)?.focus({preventScroll:true});
+    (open ? activePane ?? supportTitle : supportFab)?.focus({preventScroll:!open||!activePane});
 }
 function supportSaveLog(){
     try{
