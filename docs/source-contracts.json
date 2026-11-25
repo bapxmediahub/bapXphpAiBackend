@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "19d470c8a1c0783592b19a821f58a4133999c976df2576b4db5335314706f82b",
-            "references_sha256": "aae35a322bb12f8bfb578f05020bf2715ba7860491ce5e0ef3c7a308275507d2",
-            "review_note": "Reviewed the strict JSON list shape and confirmed the direct OpenAI GPT-6 Luna tool-calling reasoning setting against the documented endpoint. The loopback fixture tests both agent controllers and the numeric object rejection."
+            "source_sha256": "f12b24e4feac798f15606827d05005703e3d4491fd0b0d9c152500940d707d0e",
+            "references_sha256": "08b82bcb3b80fd899b7157991a7b4e2812c2260bce4f1bb9725eb576b191c309",
+            "review_note": "Cross-checked bounded ready-model waiting and exact provider hold timing against runtime and monitoring. Reviewed the merged OpenAI response shape and model-specific Luna setting, including tool continuation lock and unchanged diagnostics bypass."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
