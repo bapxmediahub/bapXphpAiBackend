@@ -13,6 +13,9 @@ Main files: `AuthController.php`, `AuthService.php`, `EnvService.php`, `PublicCo
 ## Login
 
 - Single unified login page (`/login`) serving admin and customer roles.
+- The configured owner's successful login saves the session and returns the
+  normal admin redirect before attempting its security notice on supported
+  LiteSpeed and PHP-FPM runtimes. The existing queue tracks that single attempt.
 - Role-based redirect after authentication:
   - **admin** → `/admin`
   - **customer password sign-in** → `/account/dashboard`

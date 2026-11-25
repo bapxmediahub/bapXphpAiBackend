@@ -8,9 +8,9 @@
             "review_note": "Rechecked native model tool declarations and the owner navigation after the provider changes. Campaign booking receipt storage and gateway mutations remain beyond the existing read-only PHP agent capability boundary."
         },
         "auth": {
-            "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
-            "references_sha256": "fe469674ecc70d3badf9666cfc89e67c3bf7e86dd3faedecb8e4a324e4bbc218",
-            "review_note": "Checked the booking ownership hash against login and logout behavior. A different browser or actor cannot reopen a paid booking."
+            "source_sha256": "c34a5b34bc904f36cda184c26113f91e2cf36afa2b506217d1f74e22e9e0cefd",
+            "references_sha256": "2cb52b89b8bf920f6c67f3f62fd1b0fdd49f51e14153256cc5242c1b3a7e5dfe",
+            "review_note": "Reviewed valid and invalid owner sign-in, flash and regenerated cookie ordering, protected campaign controls and existing customer flow. The owner notice uses the same authenticated request and one durable attempt."
         },
         "commerce": {
             "source_sha256": "df52ec9c222d2700c066e207da621ef7a2dd252103def8ea01937080c9457912",
@@ -43,9 +43,9 @@
             "review_note": "Reviewed the independent amount toggle, disabled preview, keyboard booking review, and private pending and captured cards against Design and the browser fixtures."
         },
         "mail": {
-            "source_sha256": "2ee930f138803363cf3cbd3daa72ed36eee58bc5491c06b2b42617b090bf8144",
-            "references_sha256": "c89eb0f0b4e0b63d4ce3d8fc165c8cc24212c6c47eb7691b58048aaa16931ec8",
-            "review_note": "Reviewed authored page and webhook writes against the transactional mail entry points. Existing enquiries and shop receipt mail keep their current paths."
+            "source_sha256": "50f211eb00addc6fe811c0dfb270f1be9d2d28b2fd0a8e66d321ae83b2d28aec",
+            "references_sha256": "d217956f786884378b33f745ea461dd4971274c7c1390f3dbff29b765fe0517c",
+            "review_note": "Reviewed the owner session release and supported SAPI response completion alongside existing notice queue behavior. Campaign enquiries still create only Contacts and Inbox rows."
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
@@ -58,9 +58,9 @@
             "review_note": "Checked retained campaign file descriptors and protected streaming against Media Library behavior. Booking authorization is scoped to the frozen private manifest."
         },
         "operator-help": {
-            "source_sha256": "3b65b7000c9036e17804c0cf31a8d2cd396b2e4644d32795aa4426b6e894f155",
+            "source_sha256": "36e957c1077052d8d116f185fcaf97e7f403949d96d69d787221d7e6752e816f",
             "references_sha256": "d7972865c18db0e7cab36b4fdf0cf22cf388c8fbde7bd5ae088de971afd212fe",
-            "review_note": "Reviewed owner Pages, preview, form and Inbox copy against the campaign payment flow. Booking enablement and amount help stay separate from enquiry and download controls."
+            "review_note": "Reviewed the reconciled Pages and Email help against authorized owner login and campaign preparation. Booking previews and settings stay behind the existing role and session."
         },
         "public-mcp": {
             "source_sha256": "6817679be2290cbbea52d8a059df0770d1deb686132d09f9d57d0fbda5b62185",
