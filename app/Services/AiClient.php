@@ -43,6 +43,8 @@ final class AiClient
     private int $cycle = 1;
     private int $modelAttempt = 1;
     private array $activeConnection = [];
+    // Health identity needs the selected credential. Keep it out of transfer diagnostics.
+    private array $activeHealthConnection = [];
 
     /** Bounded operational category; never includes provider messages or credentials. */
     public function failureCategory(): ?string { return $this->failureCategory; }
@@ -343,7 +345,7 @@ final class AiClient
 
     private function route(string|AgentModelTurn $prompt,int $maxTokens,float $temperature,?string $override,
         AgentToolRegistry|RuntimeAgentToolRegistry|null $tools,int $rounds,?array $selectedPlan=null,bool $diagnostic=false): string {
-        $this->failureCategory=null;$this->transferTimings=[];$this->toolCalls=0;$this->toolExchangeStarted=false;$this->activeConnection=[];
+        $this->failureCategory=null;$this->transferTimings=[];$this->toolCalls=0;$this->toolExchangeStarted=false;$this->activeConnection=[];$this->activeHealthConnection=[];
         $this->cycle=1;$this->modelAttempt=1;$this->inferenceRound=1;$this->quotaKind=null;$this->retryAfterMs=null;
         $plan=$selectedPlan??$this->secrets->getProviderPlan();
         // A deliberate diagnostic model probe must not silently switch model or provider.
@@ -392,6 +394,7 @@ final class AiClient
                     $this->failureCategory='request_deadline';return $this->failureMessage(0,false);
                 }
                 $this->activeConnection=['provider'=>$config['provider'],'endpoint'=>$config['endpoint']];
+                $this->activeHealthConnection = $this->activeConnection + ['apiKey' => $config['apiKey']];
                 $before=count($this->transferTimings);
                 $this->inferenceRound=1;
                 $answer=$generate($config);
@@ -899,7 +902,7 @@ final class AiClient
         $diagnosticFields+=self::responseMetadata($status,$body);
         $usage=AgentTraceService::usageFromResponse($body);
         $diagnosticFields['usage']=$usage;
-        $this->health?->record($this->activeConnection,$model,$status,$this->transportError,$this->retryAfterMs);
+        $this->health?->record($this->activeHealthConnection,$model,$status,$this->transportError,$this->retryAfterMs);
         $this->transferTimings[] = [
             'model' => $model,
             'cycle'=>$this->cycle,'attempt_in_model'=>$this->modelAttempt,

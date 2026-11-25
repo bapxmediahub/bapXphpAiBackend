@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "7727d5e4a8f32cd197a079fbf7ef662ae510e9c24fd4cc21ecd84802f70f228b",
-            "references_sha256": "174a5489597b865a31a302ce317abf54ca0629c2079a3c362515681a44d9d387",
-            "review_note": "Reviewed the shared provider loop, private attempt records, and administrator field labels against the runtime and operator guidance. An observed authentication rejection removes the remaining models of the same connection while independent fallbacks and raw evidence boundaries stay enforced."
+            "source_sha256": "8614a16597fe886f0a9071e35389a1f4d44fb21d76936f105a9aedc75eb59ab5",
+            "references_sha256": "d51595f05627735f8ed66eb913f79df665bfd370c281a11839ba394c566b03fa",
+            "review_note": "Reviewed AiClient health-only credential state and versioned HMAC hold selection against agent observability/runtime guides and backend PHP skill. Documented independent credential rotation and legacy-file isolation. Existing retry policy, locked continuation, audit redaction and runtime tool permissions remain accurate."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",

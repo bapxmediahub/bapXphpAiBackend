@@ -228,14 +228,21 @@ Each attempt in Recent runs displays the observed HTTP status, cURL error and el
 
 HTTP 5xx establishes an upstream error response. HTTP 429 directs the operator to provider quota and rate limits. HTTP 401 is an observed credential rejection for its recorded connection. The remaining models on that connection are skipped for the turn, so they contribute no attempts. HTTP 403 directs the owner to connection permissions. A successful transfer can still produce an unusable answer. Each run keeps its own outcome, independently of its attempt counts.
 
-The deployment-local health file stores only hashed model/connection identities,
-bounded expiry timestamps and a provider-hold flag. Ordinary transient server
+The deployment-local health file, `storage/logs/ai-provider-health-v2.json`, stores
+credential-scoped HMAC model/connection identities, bounded expiry timestamps and
+a provider-hold flag in a version-2 envelope. The configured API key is the HMAC
+key and stays in process memory. Key material and health identities are excluded
+from attempt diagnostics, audit events and client responses. Replacing a configured
+key starts an independent health identity. An in-flight response using the previous
+key can only update its own entry. Ordinary transient server
 failures and timeouts are recorded but do not skip the primary in the next turn.
 Quota or a positive explicit provider delay may temporarily exclude a model.
 Positive delays set the cross-turn hold and ordinary transient observations
 cannot prolong it. Explicit diagnostics can contact the chosen model. Successful transfers clear their
-entry. Legacy integer cooldowns are read as transient observations, not
-provider-mandated holds. The synchronous fallback loop tries each eligible model up
+entry for the credential used by that transfer. Unversioned legacy holds are ignored
+because their originating credential cannot be determined. The old default file
+remains untouched, and workers using the former format cannot replace the versioned
+file. The first observation at a custom legacy path writes the version-2 envelope. The synchronous fallback loop tries each eligible model up
 to three times, then the next in order; a second cycle starts from the first
 eligible model if necessary and time remains. Each observed transfer records
 provider identity, cycle number and attempt within that model's inference
