@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-use App\Services\{AgentContextService, SupportBotService};
+use App\Services\{AgentContextService, PublicA2uiService, PublicKnowledgeService, SupportBotService};
 
 if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 putenv('BAPX_TEST_MODE=1');
@@ -20,12 +20,22 @@ $unrelated = ['name'=>'Other Sacred Ring', 'slug'=>'other-sacred-ring', 'price'=
 $products = [$unrelated, $pendant, $ring];
 $question = 'Compare the Sri Varahi Amman Ring and the Varahi Amman Pendant.';
 $selection = AgentContextService::catalogueSelection($products, $question);
-$expect($selection['status'] === 'matched' && $selection['reason'] === 'exact_comparison_aliases', 'Named comparison must resolve before the provider runs.');
+$expect($selection['status'] === 'matched' && $selection['reason'] === 'exact_comparison_aliases', 'A named lookup resolves exact comparison operands.');
 $expect($selection['products'] === [$ring, $pendant], 'Only named products in mention order may be compared.');
-$reply = SupportBotService::catalogComparisonReply($question, $selection['products']);
-$expect(is_string($reply) && str_contains($reply, '₹899.00') && str_contains($reply, '₹999.00'), 'Named comparison must have an immediate factual answer.');
-$expect(str_contains($reply, 'Panchaloha') && str_contains($reply, 'Package: 1 pendant'), 'Answer must use the listed specifications.');
-$expect(!str_contains($reply, $unrelated['name']) && !str_contains($reply, 'can’t compare'), 'Verified comparison cannot fall back to unrelated choices or a false inability.');
+$project = static fn(array $product): array => [
+    'name'=>$product['name'],'path'=>PublicKnowledgeService::productPath($product['slug']),
+    'priceInr'=>$product['price'],'available'=>true,
+    'specifications'=>array_map(static fn(string $label,string $value):array=>['label'=>$label,'value'=>$value],
+        array_keys($product['specifications']),array_values($product['specifications'])),
+];
+$presenter = new PublicA2uiService();
+$cards = $presenter->fromResult('products',['products'=>array_map($project,$selection['products'])],2,'compare',2);
+$items = $cards['messages'][0]['createSurface']['dataModel']['items'];
+$expect(array_column($items,'priceInr') === [899.0,999.0], 'The public comparison displays the exact typed prices.');
+$expect($items[0]['specifications'][0] === ['label'=>'Material','value'=>'Panchaloha']
+    && $items[1]['specifications'][1] === ['label'=>'Package','value'=>'1 pendant'], 'Comparison preserves the listed specifications.');
+$expect(array_column($items,'title') === [$ring['name'],$pendant['name']], 'Verified comparison cannot substitute unrelated choices.');
+$reply = 'Compare /product/varahi-amman-ring and /product/varahi-amman-pendant.';
 $expect(SupportBotService::shownProductSlugs($reply, $selection['products']) === [$ring['slug'], $pendant['slug']], 'Answer links must establish the exact card and follow-up identities.');
 $expect(AgentContextService::namedComparisonProducts($products, 'Varahi Amman Pendant versus varahi-amman-ring') === [$pendant, $ring], 'Names and canonical slug aliases share mention ordering.');
 
@@ -79,6 +89,8 @@ $expect($generic['products'] === [$pendant, $mala] && $generic['reason'] === 'co
 $missingPrice = $ring;
 $missingPrice['price'] = null;
 $missingPrice['specifications'] = [];
-$reply = SupportBotService::catalogComparisonReply($question, [$missingPrice, $pendant]);
-$expect(!str_contains((string)$reply, '₹899') && !str_contains((string)$reply, 'Panchaloha'), 'Missing comparison facts must not be invented.');
+$partial = $presenter->fromResult('products',['products'=>array_map($project,[$missingPrice,$pendant])],2,'compare',2);
+$partialModel = $partial['messages'][0]['createSurface']['dataModel'];
+$expect($partialModel['presentation'] === 'product_detail' && array_column($partialModel['items'],'title') === [$pendant['name']],
+    'Missing price cannot be presented as a comparison fact or silently replaced.');
 echo "PASS catalogue named comparison: {$checks} checks\n";

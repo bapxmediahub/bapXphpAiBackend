@@ -14,8 +14,6 @@ final class PublicA2uiService
     public const CATALOG = 'https://a2ui.org/specification/v1_0/catalogs/basic/catalog.json';
     private const MAX_ITEMS = 4;
     private const LAYOUTS = ['auto','grid','list','detail','compare'];
-    private const PRODUCT_WORDS = '/\b(products?|shop|catalog(?:ue)?|buy|price|rings?|rudraksha|pendant|gemstone|stock)\b/i';
-    private const ARTICLE_WORDS = '/\b(blogs?|articles?|guides?|pooja|puja|ritual|worship)\b/i';
 
     public function __construct(private ?PublicKnowledgeService $knowledge = null) {}
 
@@ -333,31 +331,6 @@ final class PublicA2uiService
         return array_slice($items,0,$limit);
     }
 
-    /** Human phrasing is reduced to a bounded search, never replaced by an unrelated sample. */
-    public static function questionQuery(string $question, bool $serviceSearch=false): string
-    {
-        $query=mb_strtolower(trim($question));
-        $catalogueWords=$serviceSearch?'':'|products?|items?|blogs?|articles?|guides?';
-        $query=preg_replace('/\b(?:please|can|could|would|you|your|me|us|tell|show|find|list|give|what|which|where|how|are|is|do|does|have|has|the|a|an|any|some|all|about|available|availability|current|price|prices|cost|buy|purchase|sell|offer|offers|provide|provides|carry|services?|there|and|of|for|on|with|help|more|need|want|kinds?|types?|options?'.$catalogueWords.')\b/iu',' ',$query)??'';
-        if($serviceSearch)$query=preg_replace('/\b(product|order|temple)s\b/u','$1',$query)??$query;
-        $query=preg_replace('/\brings\b/u','ring',$query)??$query;
-        $query=preg_replace('/\bpendants\b/u','pendant',$query)??$query;
-        $query=trim((string)preg_replace('/[^\p{L}\p{M}\p{N}]+/u',' ',$query));
-        return mb_substr((string)preg_replace('/\s+/u',' ',$query),0,120);
-    }
-
-    /** Personal contact changes and past purchases are not public business enquiries. */
-    private static function personalContactOrServiceQuestion(string $question): bool
-    {
-        return preg_match('/\b(?:my|our|his|her|their|customer(?:[\'’]s)?|recipient(?:[\'’]s)?)\s+(?:(?:account|profile|order|registered|saved|billing|shipping|personal)\s+){0,3}(?:e-?mail|phone|mobile|telephone|contact|address)\b/iu',$question)===1
-            || preg_match('/\b(?:change|update|edit|correct|replace|remove|delete|verify|reset)\b[^?!.]{0,100}\b(?:e-?mail|phone|mobile|telephone|contact|address)\b/iu',$question)===1
-            || preg_match('/\b(?:e-?mail|phone|mobile|telephone|contact)\b[^?!.]{0,60}\b(?:on|in|for|from|associated with)\s+(?:my|our|the customer(?:[\'’]s)?)\s+(?:account|profile|order)\b/iu',$question)===1
-            || preg_match('/\b(?:e-?mail|phone|mobile|services?)\b[^?!.]{0,40}\b(?:did|have|had|do)\s+(?:i|we)\s+(?:use|used|give|provide|register|save|order|ordered|book|booked|buy|purchase|purchased)\b/iu',$question)===1
-            || preg_match('/\b(?:my|our|his|her|their)\s+(?:(?:ordered|booked|purchased|current)\s+)?services?\b/iu',$question)===1
-            || preg_match('/\b(?:email|call|phone|contact)\s+(?:me|us|him|her|them)\b/iu',$question)===1
-            || preg_match('/(?:என்|எனது|என்னுடைய)\s+(?:மின்னஞ்சல்|தொலைபேசி|மொபைல்|தொடர்பு|சேவை)/u',$question)===1;
-    }
-
     /** Native chat presentation follows actual model-selected evidence, not question words. */
     public function forAgentEvidence(array $knowledge,array $tools,string $answer): ?array {
         $slugs=array_slice(array_values(array_unique(array_filter((array)($knowledge['public_product_slugs']??[]),'is_string'))),0,3);
@@ -399,61 +372,4 @@ final class PublicA2uiService
         }catch(\Throwable){return null;}
         return null;
     }
-
-    /** Only public references for the actual question or products shown in its answer. */
-    public function forQuestion(string $question, array $knowledge = [], string $answer = ''): ?array
-    {
-        if(self::personalContactOrServiceQuestion($question))return null;
-        $aggregate=SupportBotService::aggregateToolForQuestion($question);
-        if($aggregate==='public_catalogue_summary'||($aggregate==='public_best_sellers'&&empty($knowledge['public_product_slugs'])))return null;
-        // This hint is set by the owner controller only after checking completed public-tool evidence.
-        $view=in_array($knowledge['public_business_view']??null,['contact','services'],true)
-            ?$knowledge['public_business_view']:null;
-        if($view===null) {
-            if(preg_match('/\b(contact|e-?mail|phone|mobile|telephone|opening hours|call you)\b|தொடர்பு/iu',$question))$view='contact';
-            elseif(preg_match('/\bservices?\b|சேவை/iu',$question))$view='services';
-            elseif(preg_match('/\b(blogs?|articles?|guides?)\b|வலைப்பதிவு/iu',$question))$view='articles';
-            elseif(preg_match(self::PRODUCT_WORDS,$question)||!empty($knowledge['public_product_slugs']))$view='products';
-            elseif(preg_match(self::ARTICLE_WORDS,$question))$view='articles';
-        }
-        if($view===null&&preg_match('~/product/[A-Za-z0-9%_.-]{1,2039}(?![A-Za-z0-9%_.-])~',$answer))$view='products';
-        if($view===null&&preg_match('~/blog/[a-z0-9-]{1,120}~',$answer))$view='articles';
-        if($view===null)return null;
-        try {
-            $slugs=array_slice(array_values(array_unique(array_filter((array)($knowledge['public_product_slugs']??[]),'is_string'))),0,3);
-            $comparison=$view==='products'&&AgentContextService::isProductComparison($question);
-            if($comparison) {
-                // The same canonical name resolver supplies native Support's
-                // facts before generation and the public card selection here.
-                $slugs=($this->knowledge??new PublicKnowledgeService())->comparisonSlugs($question);
-            }
-            if($view==='products' && $slugs!==[]) {
-                // Exact published selections enable detail/comparison without an
-                // all-token "A versus B" search or unrelated catalogue samples.
-                $slugs=array_values(array_filter($slugs,static fn(string $slug):bool=>self::safePublicPath('/product/'.rawurlencode($slug))));
-                if($slugs===[])return null;
-                $layout=count($slugs)>=2&&$comparison?'compare':'auto';
-                return $this->present('products','',max(1,count($slugs)),$layout,$slugs);
-            }
-            if($view==='products' && preg_match_all('~(/product/[A-Za-z0-9%_.-]{1,2039}(?![A-Za-z0-9%_.-]))~',$answer,$matches)) {
-                return $this->forQuestion($question,['public_product_slugs'=>array_map(
-                    static fn(string $path):string=>rawurldecode(substr($path,9)),array_slice(array_unique($matches[1]),0,3))]);
-            }
-            if($view==='articles'&&preg_match_all('~(/blog/[a-z0-9-]{1,120})~',$answer,$matches)) {
-                $items=[];
-                foreach(array_slice(array_unique($matches[1]),0,4) as $path) {
-                    $surface=$this->present('articles',str_replace('-',' ',substr($path,6)),4);
-                    foreach($surface['messages'][0]['createSurface']['dataModel']['items'] as $item) {
-                        if($item['path']===$path)$items[$path]=$item;
-                    }
-                }
-                return self::buildSurface('articles',array_values($items));
-            }
-            return $this->present($view,$view==='contact'?'':self::questionQuery($question,$view==='services'),4);
-        } catch (\Throwable $error) {
-            error_log('A2UI public presentation unavailable ('.get_class($error).')');
-            return null;
-        }
-    }
-
 }

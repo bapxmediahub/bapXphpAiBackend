@@ -37,9 +37,9 @@ The model interprets intent and selects Knowledge RAG, Instruction RAG and Tool
 RAG resources as needed, inspects returned results, and composes the response.
 PHP validates role, arguments, evidence and operations; it must never substitute
 regex-selected answers or deterministic report shortcuts for model decisions.
-Explicit slash commands, user-confirmed forms and replay of an already completed
-turn are separate operations. Unavailable inference must be an explicit error,
-not a successful canned answer. Preserve role-scoped access, budgets and private
+Owner-reviewed draft requests, user-confirmed forms and replay of an already
+completed turn are separate operations. Typed help and capability questions use
+inference. Report unavailable inference as an error. Preserve role-scoped access, budgets and private
 JSON conversations. Regression coverage must exercise both controllers through
 model-selected tool calls, including simple counts and provider failure.
 

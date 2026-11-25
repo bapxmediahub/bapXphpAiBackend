@@ -103,8 +103,13 @@ try {
         try{$knowledge->products(...$arguments);}catch(InvalidArgumentException){$rejected=true;}
         selectedCheck($rejected,'Invalid or ambiguous exact selection was accepted.');
     }
-    selectedCheck($knowledge->comparisonSlugs('Compare the Sri Varahi Amman Ring and the Varahi Amman Pendant.')
-        ===['sri-varahi-amman-ring','varahi-amman-pendant'],'Injected public comparison resolution missed the actual named products.');
+    $comparisonQuery=['question'=>'Compare the Sri Varahi Amman Ring and the Varahi Amman Pendant.'];
+    selectedCheck(($guest->run('tool_search',['query'=>'public_catalog'])['matches'][0]['name']??null)==='public_catalog',
+        'The guest model can select the published catalogue tool.');
+    $comparison=$guest->run('public_catalog',$comparisonQuery);
+    selectedCheck(array_column($comparison['products']??[],'slug')===['sri-varahi-amman-ring','varahi-amman-pendant']
+        &&($comparison['retrieval']['reason']??null)==='exact_comparison_aliases',
+        'The model-selected catalogue tool must resolve only the actual named products in order.');
     $mcp=new PublicMcpService(knowledge:$knowledge,publicUrl:'https://public.example');
     foreach([PublicMcpService::PROTOCOL,PublicMcpService::LEGACY_PROTOCOL] as $version) {
         $params=['name'=>'search_public_products','arguments'=>['slugs'=>$slugs,'limit'=>2]];
@@ -125,9 +130,10 @@ try {
         selectedCheck(($call($params)['body']['result']['isError']??false)===true,'MCP did not report ambiguous selection arguments as a tool error.');
     }
     $settings->setValue(null,['module_shop'=>'0']);
-    selectedCheck($knowledge->products('',0,2,$slugs)['total']===0
-        &&$knowledge->comparisonSlugs('Compare Sri Varahi Amman Ring and Varahi Amman Pendant')===[],'Disabled Shop leaked exact selection or comparison.');
+    selectedCheck($knowledge->products('',0,2,$slugs)['total']===0,'Disabled Shop leaked exact product selection.');
     $guest = new RuntimeAgentToolRegistry('support', null, new SupportToolRegistry(null, store:$store));
+    selectedCheck(($guest->run('tool_search',['query'=>'public_catalog'])['matches']??null)===[]
+        &&isset($guest->run('public_catalog',$comparisonQuery)['error']),'Disabled Shop exposed catalogue comparison to Support.');
     selectedCheck(($guest->run('tool_search',['query'=>'own_cart'])['matches']??null)===[]
         &&isset($guest->run('own_cart',[])['error']), 'Disabled Shop still advertised or returned the guest cart.');
     echo "Exact published selection/order, compact search, scoped guest cart, bounded real details, Unicode, both public MCP profiles and module isolation PASS.\n";

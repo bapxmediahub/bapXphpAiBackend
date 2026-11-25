@@ -746,7 +746,7 @@ supportEnquiry?.addEventListener('submit',async function(event){
 function supportRenderAnswer(answer){
     var block=document.createElement('div');block.className='support-answer';
     var rendered=answer.a2ui&&window.BapxA2ui&&window.BapxA2ui.render(block,answer.a2ui,{scope:'support'});
-    if(!rendered)block.innerHTML='<p><strong>Support:</strong> '+supportReplyHtml(answer.reply||answer.error||'Unable to answer right now.')+'</p>'+(answer.actions?supportActionsHtml(answer.actions):'');
+    if(!rendered)block.innerHTML='<p><strong>Support:</strong> '+supportReplyHtml(answer.reply||answer.error)+'</p>'+(answer.actions?supportActionsHtml(answer.actions):'');
     supportLog.appendChild(block);
 }
 function supportToggle(open){if(!supportPanel||!supportFab)return;supportPanel.hidden=!open;supportFab.setAttribute('aria-expanded',open?'true':'false');}
@@ -819,10 +819,13 @@ if(supportForm){supportForm.addEventListener('submit',async function(e){
         var r=await fetch('/support/ask',{method:'POST',body:data,signal:abort.signal});
         var j=await r.json();
         if(supportSessionChanged)return;
-        failed=!r.ok||!!j.error;
+        var hasReply=typeof j.reply==='string'&&j.reply.trim()!=='';
+        failed=!r.ok||!!j.error||!hasReply;
         if(!failed||typeof j.turn_id==='string')supportPendingRequest=null;
         if(typeof j.conversation_id==='string'&&/^[a-f0-9]{32}$/.test(j.conversation_id))supportConversationId=j.conversation_id;
-        supportRenderAnswer(j);
+        supportRenderAnswer(failed
+            ? {error:j.error||(hasReply?j.reply:'The server returned no answer.'),actions:j.actions}
+            : j);
         if(failed&&['incomplete','pending_or_interrupted'].includes(j.request_status)){
             var recovery=document.createElement('p');
             recovery.textContent='Check whether your last request completed before repeating it. Choose New chat to ask a different question.';

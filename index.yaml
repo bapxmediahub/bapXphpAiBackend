@@ -47,7 +47,7 @@ query_examples:
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
   concepts: 502
-  relationships: 452
+  relationships: 451
   by_type:
     blog: 16
     controller: 18
@@ -7553,9 +7553,6 @@ relationships:
     relation: "collection_reference"
   - from: "service:AgentContextService"
     to: "schema:orders"
-    relation: "collection_reference"
-  - from: "service:AgentContextService"
-    to: "schema:products"
     relation: "collection_reference"
   - from: "service:AgentContextService"
     to: "schema:support_tickets"

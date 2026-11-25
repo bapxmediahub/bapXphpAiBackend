@@ -116,29 +116,67 @@
       "expected_revenue": 0
     },
     {
-      "id": "support_ticket_lookup_read",
-      "type": "ticket_intent",
-      "question": "show my latest support ticket status",
-      "expected_lookup": true
+      "id": "support_ticket_lookup_period_and_status",
+      "type": "ticket_scope",
+      "status": "closed",
+      "period": [
+        "2026-11-01",
+        "2026-11-30"
+      ],
+      "tickets": [
+        {
+          "id": "aaaaaaaaaaaaaaaa",
+          "status": "closed",
+          "created_at": "2026-11-05T10:00:00+05:30",
+          "updated_at": "2026-11-06T10:00:00+05:30",
+          "message": "Private body"
+        },
+        {
+          "id": "bbbbbbbbbbbbbbbb",
+          "status": "open",
+          "created_at": "2026-11-07"
+        },
+        {
+          "id": "cccccccccccccccc",
+          "status": "closed",
+          "created_at": "2026-10-15"
+        }
+      ],
+      "expected_recent": [
+        {
+          "reference": "aaaaaaaaaaaaaaaa",
+          "status": "closed",
+          "created_date": "2026-11-05",
+          "updated_date": "2026-11-06"
+        }
+      ]
     },
     {
-      "id": "support_ticket_creation_not_lookup",
-      "type": "ticket_intent",
-      "question": "please create a support ticket",
-      "expected_lookup": false
+      "id": "support_ticket_creation_unavailable_as_model_tool",
+      "type": "permission",
+      "agent": "support",
+      "tool": "create_ticket",
+      "actor": {
+        "role": "customer",
+        "email": "fixture@example.invalid"
+      },
+      "expected_allowed": false
     },
     {
       "id": "enterprise_same_period_followup",
       "type": "report_context",
-      "question": "And how many were answered in that same period?",
       "previous_report": {
         "tool": "support_enquiries",
         "from": "2026-11-01",
         "to": "2026-11-07",
         "topic": "refund"
       },
-      "expected_from": "2026-11-01",
-      "expected_to": "2026-11-07"
+      "expected_context": {
+        "from": "2026-11-01",
+        "to": "2026-11-07",
+        "tool": "support_enquiries",
+        "topic": "refund"
+      }
     },
     {
       "id": "response_with_secret_fails",
@@ -491,19 +529,23 @@
     },
     {
       "id": "shipping_charge_uses_policy_not_guessed_price",
-      "type": "policy_reply",
-      "question": "What is the shipping charge?",
-      "policies": {
-        "shipping_cost": "Calculated at checkout before payment."
+      "type": "policy_tool",
+      "arguments": {
+        "key": "shipping_cost"
       },
-      "expected": "Shipping cost: Calculated at checkout before payment. See /checkout."
+      "expected": {
+        "value": "Shipping is calculated at checkout."
+      }
     },
     {
       "id": "missing_policy_is_not_invented",
-      "type": "policy_reply",
-      "question": "What is the shipping charge?",
-      "policies": {},
-      "expected": null
+      "type": "policy_tool",
+      "arguments": {
+        "key": "unpublished_policy"
+      },
+      "expected": {
+        "error": "Invalid policy"
+      }
     },
     {
       "id": "existing_spaced_public_slug_preserved",
@@ -532,24 +574,19 @@
       ]
     },
     {
-      "id": "exact_financial_zero_answer",
-      "type": "financial_answer",
-      "question": "revenue in the last 7 days",
-      "days": 7,
+      "id": "exact_financial_zero_evidence",
+      "type": "financial_evidence",
       "range": {
         "from": "2026-11-01",
         "to": "2026-11-07"
       },
       "orders": [],
       "expected_orders": 0,
-      "expected_revenue": 0.0,
-      "expected_answer": "Recorded sales revenue in the last 7 days is ₹0.00 across 0 paid orders after verified refunds."
+      "expected_revenue": 0.0
     },
     {
-      "id": "exact_financial_verified_refund_answer",
-      "type": "financial_answer",
-      "question": "revenue in the last 7 days",
-      "days": 7,
+      "id": "exact_financial_verified_refund_evidence",
+      "type": "financial_evidence",
       "range": {
         "from": "2026-11-01",
         "to": "2026-11-07"
@@ -592,8 +629,7 @@
         }
       ],
       "expected_orders": 1,
-      "expected_revenue": 750.0,
-      "expected_answer": "Recorded sales revenue in the last 7 days is ₹750.00 across 1 paid orders after verified refunds."
+      "expected_revenue": 750.0
     },
     {
       "id": "exact_gst_evidence_issued_period",

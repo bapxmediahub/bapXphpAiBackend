@@ -284,13 +284,6 @@ final class PublicKnowledgeService
         return strlen($path) <= 512 && preg_match('/\\.(?:avif|gif|jpe?g|png|webp)$/iD', $path) ? $path : null;
     }
 
-    /** Share the server's bounded named-comparison resolver, using this injected public catalogue. */
-    public function comparisonSlugs(string $question): array
-    {
-        if(!(new SettingsService())->modules(requireReadable:true)['shop'])return [];
-        return array_column(AgentContextService::namedComparisonProducts($this->catalogue()->visible(),$question),'slug');
-    }
-
     /** Exact selectors are raw slugs, never URLs, path fragments or a second search query. */
     private static function checkProductSelection(array $slugs,string $query,int $offset,int $limit): void
     {

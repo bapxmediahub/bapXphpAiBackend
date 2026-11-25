@@ -375,8 +375,8 @@ final class AgentConversationService
         $messages = [];
         $productSlugs = [];
         foreach (array_reverse($document['turns'] ?? []) as $turn) {
-            // Keep failed attempts in history without using them to ground a follow-up.
-            if (($turn['outcome'] ?? '') === 'error') continue;
+            // Only accepted model replies become prior assistant dialogue.
+            if (($turn['outcome'] ?? '') !== 'model') continue;
             $pair = [
                 'question' => mb_strcut((string)($turn['question'] ?? ''), 0, 800, 'UTF-8'),
                 'answer' => mb_strcut((string)($turn['answer'] ?? ''), 0, 2000, 'UTF-8'),
@@ -404,7 +404,7 @@ final class AgentConversationService
             throw new \RuntimeException('Conversation not accessible to this actor');
         }
         foreach (array_reverse($document['turns'] ?? []) as $turn) {
-            if (($turn['outcome'] ?? '') === 'error') continue;
+            if (($turn['outcome'] ?? '') !== 'model') continue;
             $context = $turn['report_context'] ?? null;
             if (is_array($context) && $context !== []) return $context;
         }

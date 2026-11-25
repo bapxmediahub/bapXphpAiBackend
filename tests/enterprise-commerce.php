@@ -141,7 +141,7 @@ $actor = ['type'=>'admin','id'=>'fixture-report-owner'];
 $context = ['tool'=>'commerce_report','report'=>'customers'] + $dates;
 try {
     $record = $conversations->record('admin', $actor, null, 'Synthetic customer report for the stated dates.',
-        'Synthetic recorded customer groups.', bin2hex(random_bytes(8)), 'local', [$tool], reportContext:$context);
+        'Synthetic recorded customer groups.', bin2hex(random_bytes(8)), 'model', [$tool], reportContext:$context);
     $reopened = $conversations->getForActor($record['conversation_id'], 'admin', $actor);
     $assert(AgentTraceService::safeTool($reopened['turns'][0]['tools'][0])['evidence']['report'] === $saved['evidence']['report'],
         'Actor-owned conversation replay must retain the exact bounded recorded report.');
@@ -162,6 +162,8 @@ try {
         $_SESSION['user'] = $actor;
         $assert(!AgentCapabilityPolicy::allows('enterprise','commerce_report',$actor), 'Only the server-authenticated owner can run the report.');
         $assert(isset((new EnterpriseToolRegistry())->run('commerce_report',['report'=>'customers'])['error']), 'Execution must enforce the owner boundary.');
+        $assert(isset((new EnterpriseToolRegistry())->run('operator_guide',['topic'=>'enterprise-agent'])['error']),
+            'The operator guide also requires owner permission.');
         $assert(EnterpriseToolRegistry::capabilities($actor) === [], 'Capability guidance must not advertise unauthorized tools.');
     }
     $_SESSION['user'] = ['role'=>'admin','id'=>'fixture-owner'];
@@ -176,12 +178,17 @@ try {
     $assert(!isset($success['error']) && $success['total_rows'] === 0, 'Authorized runtime dispatch works with the isolated empty test store.');
     $activities = $enterprise->activity();
     $assert(isset($activities[1]['evidence']['report']), 'Runtime dispatch records the completed report projection.');
-    $guide = $enterprise->guideAnswer('What can you do?');
-    $assert(is_string($guide) && str_contains($guide,'Customer patterns') && str_contains($guide,'live availability and booking are not available'), 'Task guidance states usable capabilities and appointment limits.');
-    $assert($enterprise->guideAnswer('What can you do with sales from 2026-11-01?') === null, 'A business question must not be swallowed by generic capability help.');
-    $followup = new EnterpriseToolRegistry(ownerQuestion:'What about coupons for that same period?',
-        previousReport:['tool'=>'commerce_report','report'=>'products'] + $dates);
-    $assert($followup->followUpContext() === $dates + ['tool'=>'commerce_report','report'=>'products'], 'Follow-up dates come from the validated previous report.');
+    $tasks = EnterpriseToolRegistry::capabilities($_SESSION['user']);
+    $assert(in_array('Customer patterns', array_column($tasks,'title'), true)
+        && str_contains(EnterpriseToolRegistry::capabilityLimits(), 'live availability and booking are not available'),
+        'The task panel states available capabilities and appointment limits.');
+    $guide = $enterprise->run('operator_guide',['topic'=>'enterprise-agent','section'=>'Continue or start fresh']);
+    $assert(($guide['report_url'] ?? null) === '/admin/docs/enterprise-agent'
+        && ($guide['section'] ?? null) === 'Continue or start fresh' && str_contains($guide['instructions'], '**History**'),
+        'The model can retrieve the canonical section as structured guide data.');
+    $followup = new EnterpriseToolRegistry(previousReport:['tool'=>'commerce_report','report'=>'products'] + $dates);
+    $assert($followup->validatedPreviousReport() === $dates + ['tool'=>'commerce_report','report'=>'products'],
+        'The model receives the validated previous report scope for follow-up decisions.');
 } finally {
     if ($previous === null) unset($_SESSION['user']); else $_SESSION['user'] = $previous;
 }

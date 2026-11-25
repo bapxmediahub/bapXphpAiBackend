@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-use App\Services\{AgentCapabilityPolicy, AgentTraceService, BlogService, EnterpriseToolRegistry, PublicKnowledgeService, SettingsService, SupportBotService, SupportToolRegistry};
+use App\Services\{AgentCapabilityPolicy, AgentTraceService, BlogService, EnterpriseToolRegistry, PublicKnowledgeService, SettingsService, SupportToolRegistry};
 
 if (PHP_SAPI !== 'cli') { http_response_code(404); exit; }
 putenv('BAPX_TEST_MODE=1');
@@ -125,10 +125,9 @@ try {
         || str_contains($serialized, 'private@example.invalid')) {
         throw new RuntimeException('Public tool evidence was dropped or retained raw contact/search data.');
     }
-    foreach (['What is my email address?', 'Change my phone number', 'What service did I order?'] as $privateQuestion) {
-        if (SupportBotService::publicBusinessLookup($privateQuestion) !== null) {
-            throw new RuntimeException('Personal question was mistaken for a public contact lookup.');
-        }
+    if (!isset($tools->run('get_public_contact',['email'=>'fixture@example.invalid'])['error'])
+        || !isset($tools->run('list_public_services',['user_id'=>'fixture'])['error'])) {
+        throw new RuntimeException('Public tools must reject arguments that select a private account.');
     }
     $proposal=$tools->run('present_contact_enquiry',[]);
     if(($proposal['submitted']??null)!==false || ($proposal['path']??'')!=='/contact')throw new RuntimeException('Contact form proposal must never submit.');

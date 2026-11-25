@@ -359,7 +359,8 @@ for (const width of [1280,375]) {
                     posts.push({conversation:form.get('conversation_id'),request:form.get('request_id')});
                     sends++;
                     if(sends===1)await firstPending;
-                    if(sends===4)return route.fulfill({status:503,json:{error:'Fixture chat unavailable',request_status:'incomplete',conversation_id:'a'.repeat(32)}});
+                    if(sends===7)return route.fulfill({json:{}});
+                    if(sends===4)return route.fulfill({status:503,json:{error:'Fixture chat unavailable',request_status:'incomplete',conversation_id:'a'.repeat(32),a2ui:fixtures.support}});
                     const surface=structuredClone(sends===2?fixtures.product:fixtures.support);
                     if(sends>2)surface.messages[0].version='unsupported';
                     return route.fulfill({json:{reply:sends===1?'Here is the matching Emerald Ring.\n\nIts published price is ₹1,250.00.':sends===2?'Complete fallback after public-only presentation.':'Complete fallback after unsupported presentation.',
@@ -408,6 +409,8 @@ for (const width of [1280,375]) {
             assert.equal(await page.locator('.bapx-a2ui--answer').count(),1,'Malformed second answer must leave the full fallback');
             await input.fill('Unavailable thread');await send.click();
             await page.getByText('Choose New chat to ask a different question.',{exact:false}).waitFor();
+            await page.getByText('Fixture chat unavailable',{exact:false}).waitFor();
+            assert.equal(await page.locator('.bapx-a2ui--answer').count(),1,'A failed response cannot add an answer card');
             const commerceKey='bapx-support-commerce:v1:'+origin;
             await page.evaluate(key=>sessionStorage.setItem(key,'independent fixture receipt'),commerceKey);
             await newChat.press('Enter');
@@ -433,6 +436,10 @@ for (const width of [1280,375]) {
             await page.getByText('Complete fallback after unsupported presentation.',{exact:false}).waitFor();
             assert.match(posts[5].conversation,/^[a-f0-9]{32}$/);
             assert.notEqual(posts[5].conversation,'a'.repeat(32),'A different session cannot reuse the previous actor chat ID');
+            await input.fill('Empty response');await send.click();
+            await page.getByText('The server returned no answer.',{exact:false}).waitFor();
+            assert.equal(await page.locator('.ai-request-status[data-state=error]').count(),1);
+            assert.equal(await page.locator('.bapx-a2ui--answer').count(),0);
             await page.evaluate(key=>{
                 sessionStorage.setItem('sps-support-chat:active',key);
                 window.dispatchEvent(new PageTransitionEvent('pageshow',{persisted:true}));
@@ -440,7 +447,7 @@ for (const width of [1280,375]) {
             assert.equal(await page.locator('.support-answer').count(),0,'A restored stale page cannot display the old cached transcript');
             await page.getByText('This Support session changed. Refresh the page to continue.',{exact:true}).waitFor();
             assert.equal(await send.isDisabled(),true);
-            assert.equal(sends,6,'A restored stale page cannot send a question automatically');
+            assert.equal(sends,7,'A restored stale page cannot send a question automatically');
             assert.deepEqual(errors,[]);
         } finally {releaseFirst();await browser.close();}
     });

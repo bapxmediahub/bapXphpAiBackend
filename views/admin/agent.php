@@ -301,7 +301,7 @@
     function renderAnswer(container, answer, surface, sources = []) {
         const rendered = surface && window.BapxA2ui && window.BapxA2ui.render(container, surface, {scope:'admin'});
         if (rendered) return;
-        container.innerHTML = renderMarkdown(answer || 'No response.');
+        container.innerHTML = renderMarkdown(answer);
         for (const source of sources) {
             if (typeof source.path !== 'string' || !/^\/admin\/(?:support-tickets|docs\/[a-z0-9-]{1,80}|tax-report\?report=stock|tax-report\?report=(?:sales|tax|products|customers|coupons)&from=\d{4}-\d{2}-\d{2}&to=\d{4}-\d{2}-\d{2})$/.test(source.path)) continue;
             const line = document.createElement('p');
@@ -733,11 +733,13 @@
             });
             const data = await resp.json().catch(() => ({ error: 'The server returned an unreadable response.' }));
             if (isChatId(data.conversation_id)) setActiveChat(data.conversation_id);
-            if (!resp.ok || data.error) {
+            const hasAnswer = typeof data.answer === 'string' && data.answer.trim() !== '';
+            const hasDraft = Array.isArray(data.draft?.fields);
+            if (!resp.ok || data.error || (!hasAnswer && !hasDraft)) {
                 failed = true;
                 thinking.className = 'agent-bubble agent-bubble--error';
-                showRequestError(response, data.error, data.conversation_id, data.turn_id);
-            } else if (data.draft) {
+                showRequestError(response, data.error || 'The server returned no answer.', data.conversation_id, data.turn_id);
+            } else if (hasDraft) {
                 response.appendChild(buildDraftForm(data.draft));
             } else {
                 renderAnswer(response, data.answer, data.a2ui, data.run?.sources || []);
