@@ -140,8 +140,10 @@ The linked operator monitoring guide explains conflicts and review history.
 In Appearance, choose **Header menu**. Select up to six first-party destinations
 in reading order. Published owner-authored pages appear by title. Renaming a page updates its link label. Returning it to draft or deleting it hides the link. A published page created later at the same address uses that menu position. A blank position omits the link, and each page can appear
 once. Save, then follow **View the public header**. Existing installations
-use Shop, Temples, Blog, Search, About SPS and Contact until their first save.
+use Shop, Temples, Blog, About SPS and Contact until their first save.
 Shop and Blog follow their site module settings. Blog retains its category
-dropdown. Header editing leaves the home logo, account actions, footer and
-mobile shortcut bar under their existing controls. Another editor's save
+dropdown. Search is the magnifier beside Cart. Old Search positions are
+skipped when reading saved menus, and the other links keep their order.
+Header editing leaves the home logo, account actions, and footer under their
+existing controls. Another editor's save
 requires a fresh form before further changes.

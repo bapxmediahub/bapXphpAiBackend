@@ -5,12 +5,12 @@ final class SettingsService {
     public const SETTINGS_ID = 'app_settings';
 
     public const HEADER_MENU_ID = 'header_menu';
-    public const DEFAULT_MENU = ['shop', 'temples', 'blog', 'search', 'about', 'contact'];
+    public const HEADER_MENU_LIMIT = 6;
+    public const DEFAULT_MENU = ['shop', 'temples', 'blog', 'about', 'contact'];
     public const MENU_TARGETS = [
         'shop' => ['path'=>'/shop', 'label'=>'Shop', 'module'=>'shop'],
         'temples' => ['path'=>'/temples', 'label'=>'Temples'],
         'blog' => ['path'=>'/blog', 'label'=>'Blog', 'module'=>'blog'],
-        'search' => ['path'=>'/search', 'label'=>'Search'],
         'about' => ['path'=>'/about', 'label'=>'About SPS'],
         'contact' => ['path'=>'/contact', 'label'=>'Contact'],
         'terms' => ['path'=>'/terms', 'label'=>'Terms'],
@@ -65,6 +65,10 @@ final class SettingsService {
     public function headerMenu(bool $requireReadable = false): array {
         $this->load($requireReadable);
         $items = self::$menuRecord['header_menu'] ?? self::DEFAULT_MENU;
+        // Search is a permanent header action. Keep the rest of a saved menu in order.
+        if (is_array($items) && array_is_list($items) && count($items) <= self::HEADER_MENU_LIMIT) {
+            $items = array_values(array_filter($items, static fn($item) => $item !== 'search'));
+        }
         try { self::validateMenuItems($items); }
         catch (\InvalidArgumentException) { $items = self::DEFAULT_MENU; }
         return ['items'=>$items, 'revision'=>(int)(self::$menuRecord['menu_revision'] ?? 0)];
@@ -103,7 +107,7 @@ final class SettingsService {
     }
 
     public static function validateMenuItems(mixed $items): void {
-        if (!is_array($items) || !array_is_list($items) || count($items) > count(self::DEFAULT_MENU)) {
+        if (!is_array($items) || !array_is_list($items) || count($items) > self::HEADER_MENU_LIMIT) {
             throw new \InvalidArgumentException('Choose up to six header links.');
         }
         foreach ($items as $item) {
@@ -119,7 +123,7 @@ final class SettingsService {
         if (!is_string($revision) || !preg_match('/^(?:0|[1-9][0-9]{0,8})$/D', $revision)) {
             throw new \InvalidArgumentException('Reload the menu editor before saving.');
         }
-        if (!is_array($slots) || !array_is_list($slots) || count($slots) !== count(self::DEFAULT_MENU)) {
+        if (!is_array($slots) || !array_is_list($slots) || count($slots) !== self::HEADER_MENU_LIMIT) {
             throw new \InvalidArgumentException('The menu form was incomplete. Reload and try again.');
         }
         $items = array_values(array_filter($slots, static fn($item) => $item !== ''));

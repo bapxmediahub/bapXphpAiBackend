@@ -87,8 +87,10 @@ failure feedback, and mobile computed visibility in the browser.
 
 Render the public header from SettingsService's approved menu selection.
 Keep Shop/Blog module gating and the Blog dropdown consistent with the editor.
-Verify the 375px Menu and Close menu links with JavaScript disabled, including
-keyboard operation and the independent mobile shortcut bar.
+Site-wide Search is a fixed magnifier beside Cart. Keep the top-centered native
+dialog and direct link fallback. Check field focus, keyboard input and dismissal,
+and real results at desktop and 375px. Verify the 375px Menu and Close menu
+links with JavaScript disabled, including keyboard operation.
 
 ## Public browser tools
 

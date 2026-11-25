@@ -86,7 +86,11 @@ test('owner edits the public header through remotedb with native controls and co
         await owner.addCookies([{name:'PHPSESSID',value:session,url:origin}]);
         await editor.goto(url);
         const readSlots = () => editor.locator('select[name="positions[]"]').evaluateAll(inputs=>inputs.map(input=>input.value));
-        assert.deepEqual(await readSlots(), ['shop','temples','blog','search','about','contact']);
+        assert.deepEqual(await readSlots(), ['shop','temples','blog','about','contact','']);
+        assert.equal(await editor.locator('option[value="search"]').count(), 0);
+        direct("$store->upsert('settings',['id'=>'header_menu','menu_revision'=>1,'header_menu'=>['about','search','temples','shop']]);");
+        await editor.reload();
+        assert.deepEqual(await readSlots(), ['about','temples','shop','','','']);
         const stale = await owner.newPage();
         await stale.goto(url);
         publishPage('Festival & opening hours','published');
@@ -99,7 +103,7 @@ test('owner edits the public header through remotedb with native controls and co
         await stale.getByRole('status').filter({hasText:'Another editor saved'}).waitFor();
         const csrf = await editor.locator('[name="_csrf"]').getAttribute('value');
         const revision = await editor.locator('[name="revision"]').getAttribute('value');
-        for (const [token,items] of [['incorrect',links],[csrf,['terms','terms','','','','']],[csrf,['unlisted-page','','','','','']],[csrf,['pg:hidden-page','','','','','']],[csrf,['about']]]) {
+        for (const [token,items] of [['incorrect',links],[csrf,['terms','terms','','','','']],[csrf,['unlisted-page','','','','','']],[csrf,['pg:hidden-page','','','','','']],[csrf,['search','','','','','']],[csrf,['about']]]) {
             const body = new URLSearchParams({_csrf:token,revision});
             for(const item of items) body.append('positions[]',item);
             const response = await owner.request.post(url,{headers:{'content-type':'application/x-www-form-urlencoded'},data:body.toString(),maxRedirects:0});
@@ -139,6 +143,29 @@ test('owner edits the public header through remotedb with native controls and co
         assert.deepEqual(await visibleTargets(visitor),['/terms','/about','/blog','/privacy','/pages/festival-hours','/login']);
         await menu.getByRole('link',{name:'Close menu'}).click();
         assert.equal(await menu.isVisible(),false);
+        await visitor.getByRole('link',{name:'Search',exact:true}).press('Enter');
+        assert.equal(new URL(visitor.url()).pathname, '/search');
+        assert.equal(await visitor.getByRole('searchbox',{name:'Search by name or keyword'}).count(), 1);
+
+        // Enable progressive controls in a normal browser and exercise the real header markup.
+        const enhanced = await browser.newContext({viewport:{width:375,height:812}});
+        await enhanced.route('https://**/*',route=>route.abort());
+        const shopper = await enhanced.newPage();
+        await shopper.goto(origin+'/terms');
+        const trigger = shopper.getByRole('button',{name:'Search',exact:true});
+        await trigger.press('Space');
+        const popup = shopper.getByRole('dialog',{name:'Search the site'});
+        await popup.waitFor();
+        const field = popup.getByRole('searchbox');
+        assert.equal(await field.evaluate(el=>el === document.activeElement), true);
+        await shopper.keyboard.press('Escape');
+        await popup.waitFor({state:'hidden'});
+        assert.equal(await trigger.evaluate(el=>el === document.activeElement), true);
+        await trigger.click();
+        await shopper.mouse.click(8,240);
+        await popup.waitFor({state:'hidden'});
+        await enhanced.close();
+
         await editor.goto(url);
         assert(await editor.locator('select').first().locator('option[value=shop]').innerText().then(t=>t.includes('module off')));
         assert.deepEqual(await readSlots(),links);

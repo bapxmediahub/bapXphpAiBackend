@@ -23,14 +23,14 @@
             "review_note": "Read the account help Markdown and its source view. The article explains the picture placeholder beside the email."
         },
         "foundation": {
-            "source_sha256": "326c3bfa3145d7821f527047c1add90563b8a9d6bb767c99b136e3c821e5cce1",
+            "source_sha256": "dbe49cadbdc8bcc3643720eb7eba701e6720c8bcfe9244b2636288064d04b7a1",
             "references_sha256": "6eba6651fd8e747d8053034a7812f9d41e6dba5a405bc1d1ed669556c8f2474b",
-            "review_note": "Reviewed the isolated MySQL fixture and controller tests. The Outbox uses the existing private read route and hosted records."
+            "review_note": "Reviewed the stored header menu normalization and browser fixture against the shared PHP layout and settings architecture, including revision-safe editing and the existing search route."
         },
         "google-tags": {
-            "source_sha256": "187c8971da4cad73fccba340fb2f7424e60c4cb704bed864594f6c2dd3308c72",
-            "references_sha256": "375789ec969029b886d4f33e4c8f519915e7ebc978e4988dc53e6f45e53011b5",
-            "review_note": "Checked the shared frontend rules against the existing tag rendering contract. The profile observes the load event of an already saved picture."
+            "source_sha256": "83fccd5def068bad7572c4ce85a85a10701597b0920b9ab4190265d73a209ada",
+            "references_sha256": "89a8dc520f29d7b1fa64ded8923e076e79f2b2f8007e0653690ee28f4731681c",
+            "review_note": "Checked the layout and Settings help diff against the Integrations instructions. Google bootstrap and verification continue through the documented head renderer."
         },
         "http-errors": {
             "source_sha256": "2e2fee3211f50641844c05f86381f277f9c6c10b7fb60fb750c52937b0868e12",
@@ -38,9 +38,9 @@
             "review_note": "Reviewed the new hosting instructions against existing request-failure guidance. A transport receipt remains distinct from a rendering response, and the worker preserves the canonical queue before reporting an outcome."
         },
         "interface": {
-            "source_sha256": "9882e5b9d9198a921b2e726c1df69f4f41f81d2c25eb815fda58e748b80d5571",
-            "references_sha256": "ae0cf5fc37f65be8cb51b86b7d41cb1d35ade016c8c04e1eed3bfc1227e35cac",
-            "review_note": "Compared native search, selected filter parameters, wrapping controls and page navigation with the owner UI guide and Design."
+            "source_sha256": "75f72492d93ffae60e2f1cfb637ff3605c941167c4ec92054700938555e147c6",
+            "references_sha256": "8f8edc507ec83bbe9b2836aecbe794b56dfb1daf6d7d210b547b84c2c4dc9b2c",
+            "review_note": "Cross-checked the Search icon, native dialog, direct-link fallback and the six menu slots against Design and both operator guides, including checked desktop and mobile geometry."
         },
         "mail": {
             "source_sha256": "a3951ae338838c3a75fd5e6fdaaca490782e9fc345d900850ef9bf95f3856462",
@@ -49,8 +49,8 @@
         },
         "mcp-clients": {
             "source_sha256": "38828d52259fbd6b6555d790e463ff775e79be85872a5d5b5aea78e599fba3ac",
-            "references_sha256": "d19b8a3fce5a93fac4c742428a288b1d7f06777b4ec6c2c1cff72a5fff2760b9",
-            "review_note": "Reviewed provider transport diff alongside the MCP operator guides. Measurement goes into the existing trace allowlist and does not affect model protocol or client authorization."
+            "references_sha256": "4b78788e4d1216bbecb12b3e575767be766afc9e917c80879f3d4d91f2833c27",
+            "review_note": "Reviewed the revised Settings help alongside MCP client setup guidance. The change is confined to public Header menu guidance."
         },
         "media": {
             "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed the new Outbox verification paragraph in the shared Admin UI skill alongside media controls."
         },
         "operator-help": {
-            "source_sha256": "1b2a1edabfb1eef44d80f89c3adeb855b52e78edce41e5e0d3bb63277abd95a1",
-            "references_sha256": "f050a041557fac9400a70251e570a8bb464274a869529097211c0f627c7295e3",
-            "review_note": "Verified the selected delivery state is retained independently of whole-scope queue-health labels, including native form submission."
+            "source_sha256": "ad547a1aecb53862eb8197112e7dbfc5fb435e1a41516b0ba2b928d14f5fd0de",
+            "references_sha256": "2842000a1f8b81dde2029f42d4c5b37945a18898b21c7bb0843370648ce2c997",
+            "review_note": "Checked the Header menu choices and fixed Search and Cart actions against the revised operator instructions, including the legacy slot display."
         },
         "public-mcp": {
             "source_sha256": "e5d2bb67604d7b9c3588dba3d04e75ad9925c1c686f3a4d13dffd1dc8dd99325",
@@ -68,19 +68,19 @@
             "review_note": "Checked the shared remote documentation against the public MCP checkout projection. Unit options remain private catalogue and invoice metadata."
         },
         "remote-commerce": {
-            "source_sha256": "20def67683e671cd66be902f690208bfe1c5638987528b10e3889b195954274b",
-            "references_sha256": "ea2fecae052e3a307540d0fdd01a24309da36ec7a3ad7f3e5f277be064d967e0",
-            "review_note": "Read the scoped Outbox layout rule alongside checkout documentation. The new controls use the owner mail view."
+            "source_sha256": "434d6c0904c18a909efc9f97fa7e3cb5658e6804b71ee61f630c742fa8deb7bd",
+            "references_sha256": "ec84336912a9e15bc9d74b00d9862cf2b2c7708c73a222e461ecdd98361ffc99",
+            "review_note": "Reviewed the independent header Search form beside Cart, desktop and mobile cart navigation, and the existing tray and chat cart selectors and handlers."
         },
         "sales-channels": {
-            "source_sha256": "6e5ee7b44dd92cc4dadec7a3c02f4bb9da797ba98d4e541e9f956687db236142",
+            "source_sha256": "36385e3d18e26f524d0efdd12d26cd8386e368fb5d27441460c688ffdff28b92",
             "references_sha256": "ed194e15ddaa5ac6ee1118994fceeb94723165cedba02bc92ad745a196a18fd1",
-            "review_note": "Reviewed the optional canonical catalogue fields against the merchant feed projection. Published product, price and inventory fields remain as documented."
+            "review_note": "Reviewed SettingsService module resolution and Merchant feed guidance. Dropping a retired header slot leaves the saved catalog eligibility inputs intact."
         },
         "workflow": {
-            "source_sha256": "7b1a1e88e77286673c7eb21e8abd65282028b51a1db2dc722a1c0b7062687d7e",
+            "source_sha256": "5a4e39f969e23f7ee3d8f690957951d6cca6945b817a77a677ff7efac039045e",
             "references_sha256": "7770887213db03241a85f7bbee17bf25b2c58350058ebc59e25fd76b29ad80df",
-            "review_note": "The Admin UI skill adds native Outbox verification at both breakpoints. Checked the existing CI pagination fixture on supported database families."
+            "review_note": "Checked the changed frontend skill and browser fixture against the existing issue-first workflow and browser verification steps."
         }
     }
 }
