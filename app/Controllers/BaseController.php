@@ -77,7 +77,9 @@ abstract class BaseController {
         $siteProfile = $this->siteProfile($secrets);
         $seo = (new SeoService($secrets, profile: $siteProfile))->page($this->seoKey, $this->seoOverrides);
         $data['seo'] = $seo;
-        $data['pageTitle'] = $seo['title'];
+        $data['pageTitle'] = $this->layout === 'admin'
+            ? ($data['pageTitle'] ?? $this->seoOverrides['title'] ?? 'Admin')
+            : $seo['title'];
         $data['metaDescription'] = $seo['description'];
         $data['metaRobots'] = $seo['robots'];
         extract($data);

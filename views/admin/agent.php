@@ -1,7 +1,7 @@
 <section class="enterprise-chat" aria-labelledby="enterprise-agent-title" data-chat-scope="<?= e($chatScope ?? '') ?>">
     <header class="enterprise-chat__intro">
-        <h1 id="enterprise-agent-title">Enterprise Agent</h1>
-        <p>Ask about business performance, orders, stock status, and customer support.</p>
+        <h2 id="enterprise-agent-title">Ask about your store</h2>
+        <p>Explore business performance, orders, stock status, and customer support.</p>
         <?php if (empty($modelConfig['configured'])): ?>
             <p class="agent-notice">Connect a model in <a href="/admin/integrations">Integrations</a> for questions that need one.</p>
         <?php endif; ?>
@@ -26,7 +26,11 @@
             <a href="/admin/docs/enterprise-agent">Read the Enterprise Agent guide</a>
         </details>
     <?php endif; ?>
-    <div class="enterprise-chat__thread">
+    <noscript>
+        <p class="agent-notice">Enable JavaScript to use live chat and conversation history.</p>
+        <style>#enterprise-agent-workspace { display: none; }</style>
+    </noscript>
+    <div class="enterprise-chat__thread" id="enterprise-agent-workspace">
         <div class="agent-history-actions">
             <button type="button" class="agent-suggestion" id="agent-history-toggle"
                 aria-controls="agent-history-panel" aria-expanded="false">History</button>
@@ -41,16 +45,10 @@
         <button id="agent-resume-retry" type="button" class="agent-suggestion" hidden>Reload saved chat</button>
     <div id="agent-messages" class="agent-messages" role="log" aria-live="polite" aria-label="Conversation"></div>
 
-    <div class="agent-suggestions" id="agent-suggestions">
-        <?php foreach (array_slice(array_values(array_filter(array_column($agentCapabilities ?? [], 'prompt'), 'is_string')), 0, 4) as $__s): ?>
-            <button type="button" class="agent-suggestion" data-q="<?= e($__s) ?>"><?= e($__s) ?></button>
-        <?php endforeach; ?>
-    </div>
-
     <div class="agent-composer-wrap">
         <?php // Typing @ opens this. Without it the owner has to remember exact slugs. ?>
         <div id="agent-mentions" class="agent-mentions" role="listbox" aria-label="Attach a page, article or image"></div>
-        <form id="agent-form" class="agent-composer" onsubmit="return askAgent(event)">
+        <form id="agent-form" class="agent-composer" method="post" action="/admin/agent/ask" onsubmit="return askAgent(event)">
             <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
             <button type="button" class="agent-attach" id="agent-upload-btn" aria-label="Upload an image"
                     title="Upload an image — it is added to the media library">
@@ -58,17 +56,22 @@
             </button>
             <textarea id="agent-input" name="message" rows="1" maxlength="2000" required
                       placeholder="Ask about your store…"
-                      aria-label="Message" aria-controls="agent-mentions" aria-autocomplete="list" aria-haspopup="listbox"></textarea>
+                      aria-label="Message" aria-describedby="agent-hint" aria-controls="agent-mentions" aria-autocomplete="list" aria-haspopup="listbox"></textarea>
             <button type="submit" class="agent-send" id="agent-submit" aria-label="Send">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
         </form>
     </div>
     <p id="agent-attachment-status" role="status"></p>
-    <p class="agent-hint">
-        Enter to send · Shift+Enter for a new line · <code>@terms</code> or <code>@filename</code> to attach ·
-        <code>/create-blog</code> and <code>/add-product</code> to draft
+    <p class="agent-hint" id="agent-hint">
+        <span class="agent-hint__keyboard">Enter to send · Shift+Enter for a new line.</span>
+        Type <code>@</code> to attach a reference or use <code>/create-blog</code> or <code>/add-product</code> to draft.
     </p>
+    <div class="agent-suggestions" id="agent-suggestions">
+        <?php foreach (array_slice(array_values(array_filter(array_column($agentCapabilities ?? [], 'prompt'), 'is_string')), 0, 4) as $__s): ?>
+            <button type="button" class="agent-suggestion" data-q="<?= e($__s) ?>"><?= e($__s) ?></button>
+        <?php endforeach; ?>
+    </div>
     </div>
 </section>
 
@@ -102,7 +105,7 @@
 .agent-capabilities [hidden] { display:none !important; }
 
 .agent-shell { margin-top:var(--space-lg); display:flex; flex-direction:column; }
-.agent-messages { display:flex; flex-direction:column; gap:var(--space-md); min-height:220px; max-height:52vh; overflow-y:auto; padding:var(--space-xs) var(--space-2xs) var(--space-md); scroll-behavior:smooth; }
+.agent-messages { display:flex; flex-direction:column; gap:var(--space-md); min-height:220px; overflow-y:auto; overscroll-behavior-y:contain; padding:var(--space-xs) var(--space-2xs) var(--space-md); }
 .agent-row { display:flex; gap:var(--space-sm); align-items:flex-start; }
 .agent-row--user { flex-direction:row-reverse; }
 .agent-avatar { flex:0 0 auto; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.65rem; font-weight:700; letter-spacing:0.02em; }
@@ -128,8 +131,10 @@
 #agent-resume-status { margin:0 0 var(--space-xs); }
 #agent-resume-status:empty { display:none; }
 #agent-resume-retry { min-height:44px; margin-bottom:var(--space-xs); }
+#agent-attachment-status { margin: .45rem 0 0; font-size: .84rem; }
+#agent-attachment-status:empty { display: none; }
 .agent-history-list { display:flex; flex-direction:column; gap:var(--space-2xs); }
-.agent-history-entry { text-align:left; background:var(--color-white); border:1px solid var(--color-border); border-radius:var(--radius-sm); padding:8px 10px; cursor:pointer; overflow-wrap:anywhere; }
+.agent-history-entry { text-align:left; background:var(--color-white); border:1px solid var(--color-border); border-radius:var(--radius-sm); padding:8px 10px; min-height:44px; cursor:pointer; overflow-wrap:anywhere; }
 .agent-history-entry:hover, .agent-history-entry:focus-visible { border-color:var(--color-gold); }
 .agent-history-entry small { color:var(--color-text-muted); display:block; margin-top:3px; }
 
@@ -139,7 +144,7 @@
 .agent-attach:hover { color:var(--color-maroon); border-color:var(--color-maroon); }
 .agent-mentions { display:none; position:absolute; bottom:calc(100% + 6px); left:0; right:0; max-height:240px; overflow-y:auto; background:var(--color-bg); border:1px solid var(--color-border); border-radius:var(--radius-md); box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:20; }
 .agent-mentions.is-open { display:block; }
-.agent-mention { display:flex; justify-content:space-between; gap:var(--space-sm); width:100%; padding:8px 12px; background:none; border:0; text-align:left; cursor:pointer; font-size:0.84rem; }
+.agent-mention { display:flex; justify-content:space-between; gap:var(--space-sm); width:100%; padding:8px 12px; min-height:44px; align-items:center; background:none; border:0; text-align:left; cursor:pointer; font-size:0.84rem; }
 .agent-mention:hover, .agent-mention[aria-selected="true"] { background:var(--color-bg-alt); }
 .agent-mention__name { font-weight:600; }
 .agent-mention__kind { color:var(--color-text-muted); font-size:0.75rem; }
@@ -161,7 +166,6 @@
     .agent-row--bot { gap:6px; }
     .agent-row--bot .agent-avatar { width:25px;height:25px; }
     .agent-row--bot .agent-bubble { padding:10px; min-width:0; }
-    .agent-messages { max-height:62dvh; }
 }
 
 /* A draft the owner reviews. Nothing here has been saved. */
@@ -188,12 +192,14 @@
 .agent-composer textarea { flex:1; min-width:0; border:0; outline:0; resize:none; font-family:inherit; font-size:0.9rem; line-height:1.5; padding:8px 0; max-height:160px; background:transparent; color:var(--color-ink); }
 .agent-send { flex:0 0 auto; width:44px; height:44px; border-radius:8px; border:1px solid var(--color-gold); background:var(--color-maroon); color:var(--color-gold); display:inline-flex; align-items:center; justify-content:center; cursor:pointer; transition:opacity var(--transition-base); }
 .agent-send:disabled { opacity:0.45; cursor:not-allowed; }
-.agent-hint { margin:var(--space-2xs) 0 0; font-size:0.72rem; color:var(--color-text-muted); text-align:right; }
+.agent-hint { margin:.5rem 0 0; font-size:.8rem; line-height:1.4; color:var(--color-text-muted); }
+.agent-hint__keyboard { display: block; }
+.agent-composer :is(button, textarea):focus-visible { outline: 2px solid var(--color-maroon); outline-offset: 2px; }
 
 @media (max-width: 768px) {
     .agent-bubble { max-width:88%; }
-    .agent-messages { max-height:46vh; }
-    .agent-hint { display:none; }
+    .agent-composer textarea { font-size: 1rem; }
+    .agent-hint__keyboard { display: none; }
 }
 </style>
 <link rel="stylesheet" href="/assets/css/a2ui-public.css?v=<?= filemtime(__DIR__ . '/../../assets/css/a2ui-public.css') ?>">
@@ -699,6 +705,7 @@
         if (!msg || submit.disabled || transcriptRequest !== null || resumeId !== null) return false;
         hideHistory();
 
+        const submittedFromComposer = e.currentTarget?.contains(document.activeElement);
         addRow('user', escapeHtml(msg).replace(/\n/g, '<br>'));
         input.value = ''; autoGrow();
         closeMentions();
@@ -761,7 +768,7 @@
         if (failed && !input.value) { input.value = msg; autoGrow(); }
         uploadBtn.disabled = false;
         input.disabled = false; submit.disabled = false; clear.disabled = false; historyToggle.disabled = false;
-        input.focus();
+        if (submittedFromComposer && document.activeElement === document.body) input.focus({preventScroll: true});
         messages.scrollTop = messages.scrollHeight;
         return false;
     };
