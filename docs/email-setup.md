@@ -133,6 +133,14 @@ receipts, never receipt in the owner's different inbox.
 | Contact enquiry | On-page confirmation only | Existing Admin Contacts and Email Inbox | Automatic contact emails are held; unverified visitors cannot trigger SMTP |
 | Newsletter | Explicitly selected recipients | Existing workflow | Not an automatic broadcast merely because an article has a date or a preview is opened |
 
+Configured-owner sign-in saves the authenticated session and redirect before
+attempting one security notice through the existing durable mail path. LiteSpeed
+and PHP-FPM can finish that response before SMTP runs. Other PHP runtimes
+attempt the same notice before the request ends. An interrupted sending claim
+remains available for review under the existing delivery rules.
+[LiteSpeed LSAPI](https://docs.litespeedtech.com/lsws/extapp/php/changelog/)
+and [PHP-FPM response finalization](https://www.php.net/manual/en/function.fastcgi-finish-request.php).
+
 Refund/cancellation changes do not imply an automatic email or PDF attachment
 unless an implemented, verified trigger supplies one. Existing invoice links
 require the customer to sign in to the matching order. The notification uses
