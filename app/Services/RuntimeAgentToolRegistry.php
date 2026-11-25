@@ -37,7 +37,15 @@ final class RuntimeAgentToolRegistry
         }
         $this->bundle = AgentInstructionService::modelBundle($surface, $actor, array_keys($this->available));
         $this->catalog = $this->bundle['skills'];
-        foreach($this->rank(mb_substr($question,0,256),self::MAX_INITIAL) as $name)$this->enable($name);
+        if ($surface === 'admin' && preg_match('~^\s*/help(?:\s|$)~i', $question) === 1) {
+            // The model chooses the topic and writes the answer. Offer the canonical
+            // guide up front so an explicit help command needs no discovery round.
+            $this->enable('operator_guide');
+        } else {
+            foreach ($this->rank(mb_substr($question, 0, 256), self::MAX_INITIAL) as $name) {
+                $this->enable($name);
+            }
+        }
     }
 
     private function discoverableModules(): array {

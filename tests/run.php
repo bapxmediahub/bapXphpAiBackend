@@ -102,6 +102,23 @@ $tests['support exposed tool contracts match executable capabilities and reject 
     assertTrue(isset($customer->run('own_ticket_status',['period'=>['2026-11-15','2026-11-01']])['error']), 'Reversed dates fail before any data lookup');
 };
 
+$tests['explicit help advertises the owner guide in the first model request only for authorized owners'] = static function (): void {
+    $owner = ['role'=>'admin'];
+    foreach (['/help', "/HELP\tblog-publishing"] as $question) {
+        $registry = new \App\Services\RuntimeAgentToolRegistry('admin', $owner, new \App\Services\EnterpriseToolRegistry(), $question);
+        assertSame(['operator_guide','read_runtime_skill','tool_search'], array_column($registry->declarations(), 'name'),
+            'Explicit help must advertise the owner guide without unrelated initial declarations');
+        assertSame([], $registry->activity(), 'Advertising the guide cannot execute or read it');
+    }
+    $other = new \App\Services\RuntimeAgentToolRegistry('admin', $owner, new \App\Services\EnterpriseToolRegistry(), '/helper blog-publishing');
+    assertTrue(!$other->has('operator_guide'), 'Only the whole command selects the initial guide capability');
+    foreach ([null, ['role'=>'customer','email'=>'fixture@example.invalid']] as $actor) {
+        $registry = new \App\Services\RuntimeAgentToolRegistry('support', $actor, new \App\Services\SupportToolRegistry($actor), '/help blog-publishing');
+        assertTrue(!$registry->has('operator_guide'), 'Support cannot invoke the owner guide');
+        assertSame([], $registry->run('tool_search', ['query'=>'operator_guide'])['matches'], 'Support cannot discover the owner guide');
+    }
+};
+
 $tests['runtime model adapter exposes only role-scoped tools and activates existing instructions on demand'] = static function (): void {
     $support = new \App\Services\RuntimeAgentToolRegistry('support',null,new \App\Services\SupportToolRegistry(null));
     $customerActor = ['role'=>'customer','email'=>'fixture@example.invalid'];

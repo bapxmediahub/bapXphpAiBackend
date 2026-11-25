@@ -110,8 +110,11 @@ execution and presentation. It does not select a canned answer.
    actual path/hash. Never use developer rules as runtime business guidance.
 3. Tool RAG: rank capabilities allowed by the actor and public module settings,
    activate bounded declarations
-   and refresh them each provider round. Validate the actual call again before
-   invoking existing services; return the structured result or explicit failure.
+   and refresh them each provider round. An explicit Enterprise `/help`
+   command advertises the owner-only `operator_guide` in the first round. The
+   model chooses the guide topic and writes the answer using the returned
+   content. Validate each call before invoking the existing service and return
+   its structured result or explicit failure.
 
 Both discovery layers use the same eligible business tools. Disabling Shop
 removes public catalogue and browser-cart capabilities from Support, including
