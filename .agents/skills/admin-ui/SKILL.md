@@ -38,6 +38,13 @@ Keep its save and validation independent of SMTP, credentials, appearance and
 module controls. Test valid and rejected saves and keyboard feedback at 375px
 with JavaScript disabled, using synthetic owner installations.
 
+## Email Outbox
+
+Use the canonical queue view for delivery state where joined evidence is present.
+Keep whole-scope health above the bounded search results. Verify reference search,
+combined filters, blank results and pagination with JavaScript disabled at desktop
+and 375px. Explicit SMTP acceptance and legacy sent have separate labels.
+
 ## Admin Panel Agent
 
 The interface at `/admin/agent` is the Enterprise Agent chat workspace.

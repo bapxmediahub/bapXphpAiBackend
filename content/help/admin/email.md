@@ -1,10 +1,10 @@
 ## Start with queue health
 
-Open Email Outbox. The health summary is based on canonical queue records, while the message list is bounded. Pending, in-progress/interrupted, failed, unknown acceptance and recorded sent messages are distinct. Opening the page never retries the backlog.
+Open **Email → Outbox**. Queue health covers the whole mail scope above the search results. Use **Search messages** for a recipient, subject, queue reference or Message-ID. Choose **Delivery state**, select a page size and apply the filters. **Previous** and **Next** retain those selections. In **Newsletters**, search and reset stay within newsletters.
 
 ## Acceptance is not an inbox receipt
 
-**SMTP accepted / receipt unverified** means the sending server accepted the message, or the record is an older sent entry. It does not prove inbox placement. Inspect the message reference and obtain an actual recipient receipt when diagnosing a missing confirmation. A contact/test message does not establish that a particular order confirmation arrived.
+**SMTP accepted / receipt unverified** shows recorded acceptance by the sending server. **Legacy sent / receipt unverified** labels older sent records without explicit acceptance evidence. Open **References** to compare the queue ID or Message-ID with a receipt in the destination mailbox. A contact/test message does not establish that a particular order confirmation arrived.
 
 ## Handle failures safely
 

@@ -191,7 +191,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1274
+            "line": 1268
         },
         {
             "from": "controller:AdminController",
@@ -199,7 +199,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1519
+            "line": 1513
         },
         {
             "from": "controller:AdminController",
@@ -271,7 +271,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1494
+            "line": 1488
         },
         {
             "from": "controller:AdminController",
@@ -367,7 +367,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1244
+            "line": 1238
         },
         {
             "from": "controller:AdminController",
@@ -447,7 +447,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1545
+            "line": 1539
         },
         {
             "from": "controller:AdminController",
@@ -463,15 +463,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1570
-        },
-        {
-            "from": "controller:AdminController",
-            "to": "service:MailQueueService",
-            "relation": "static_reference",
-            "provenance": "source_token",
-            "source": "app/Controllers/AdminController.php",
-            "line": 1118
+            "line": 1564
         },
         {
             "from": "controller:AdminController",
@@ -487,7 +479,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1131
+            "line": 1125
         },
         {
             "from": "controller:AdminController",
@@ -503,7 +495,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1685
+            "line": 1679
         },
         {
             "from": "controller:AdminController",
@@ -2239,7 +2231,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/MailQueueService.php",
-            "line": 284
+            "line": 320
         },
         {
             "from": "service:MailQueueService",
@@ -2255,7 +2247,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/MailQueueService.php",
-            "line": 304
+            "line": 340
         },
         {
             "from": "service:MailQueueService",
@@ -2271,7 +2263,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/MailQueueService.php",
-            "line": 304
+            "line": 340
         },
         {
             "from": "service:MailQueueService",
@@ -2296,6 +2288,14 @@
             "provenance": "source_token",
             "source": "app/Services/MailStorageService.php",
             "line": 5
+        },
+        {
+            "from": "service:MailStorageService",
+            "to": "service:ResourceService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/MailStorageService.php",
+            "line": 18
         },
         {
             "from": "service:MailTemplateService",

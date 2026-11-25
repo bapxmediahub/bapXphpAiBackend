@@ -1401,7 +1401,6 @@ flowchart LR
   controller_admincontroller -. static reference .-> service_blogdraftservice
   controller_admincontroller -. static reference .-> service_enterprisetoolregistry
   controller_admincontroller -. static reference .-> service_gstregisterservice
-  controller_admincontroller -. static reference .-> service_mailqueueservice
   controller_admincontroller -. static reference .-> service_mailtemplateservice
   controller_admincontroller -. static reference .-> service_mediaservice
   controller_admincontroller -. static reference .-> service_productimportservice
@@ -1630,6 +1629,7 @@ flowchart LR
   service_mailqueueservice -. static reference .-> service_mailtemplateservice
   service_mailqueueservice -. static reference .-> service_siteprofileservice
   service_mailstorageservice -. source new .-> service_databaseservice
+  service_mailstorageservice -. static reference .-> service_resourceservice
   service_mailtemplateservice -. static reference .-> service_mailqueueservice
   service_mailtemplateservice -. static reference .-> service_siteprofileservice
   service_mcpclientservice -. source new .-> service_auditlogservice
