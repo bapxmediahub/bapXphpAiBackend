@@ -13,6 +13,10 @@ description: Use when editing PHP controllers, services, hosted MySQL persistenc
 - `MediaService` writes metadata to hosted MySQL `media_files`. The shipped legacy catalogue is an offline migration input. Use `./bapXphp media:reconcile` to check archived and installation-specific YAML against MySQL. `--apply` requires direct MySQL and preserves existing fields. New uploaded binaries live in `.sps-media` beside the checkout, served by the constrained `/assets/images/media/…` handler in `index.php`; deployments must preserve that sibling directory.
 - Filter customer/support retrieval through `AgentContextService` and `SupportToolRegistry`, with signed-in owner queries through `EnterpriseToolRegistry` / `AgentToolRegistry`. Authorization lives in `AgentCapabilityPolicy`, never in an LLM prompt or browser-selected role.
 - Tool evidence may retain only sanitized arguments (e.g. validated date range, status, collection and result count), never raw customer email, private order ID, lookup coupon arguments, credentials, raw SQL, complete tool results or hidden model reasoning. The private `commerce_report` presentation exception stores only `AgentTraceService::safeCommerceReport` fields: bounded typed rows with product/coupon report labels, anonymous customer bands, aggregate summaries and canonical scope/source. Validate again on replay; never generalize this into raw result storage. Local eval checks are not proof that arbitrary outputs are factual.
+- Native article retrieval uses published Markdown and exact slugs. Keep queries,
+  headings and excerpts out of traces. Record only the published identity,
+  source revision, selected excerpt digest and numeric section location.
+  Keep public HTTP/MCP article discovery on its existing schema.
 - Public consultation booking is retired. `ConsultationService`, `consultation_messages`, and `consultation_signals` are retained legacy code; historical appointments remain owner-accessible. Do not restore public booking, messaging, calls, or WebRTC without an explicit product change.
 - When direct MySQL is unavailable, use the collection-allowlisted `DatabaseService` protocol at lowercase `/remotedb`. Authenticate with the configured database password; `RemoteDbController::requirePassword` now **fails closed** on an empty password (503) and rejects invalid credentials (401). Never send raw SQL from an agent, expose credentials, or route chat files through the DB bridge.
 - Keep payment clients as small `integrations/` wrappers, source secrets through `SecretService` or system environment variables, and verify signatures before mutating orders or wallet balances.
@@ -245,3 +249,18 @@ on a definitive stale or invalid result. Preserve them after an ambiguous
 database acknowledgement so a committed page can still resolve its files.
 Confirm the current published revision and access grant before streaming an
 attachment. Keep names and identifiers out of unauthorized markup.
+
+## Authored campaign booking consistency
+
+Use the database-host campaign booking transaction to read the published page
+revision and freeze the approved integer INR paise, gateway mode, and enabled
+file descriptors. The first durable booking reservation owns provider creation.
+Recover an ambiguous provider response by reference.
+Retry only a verified pre-creation rejection through the owner-bound start POST.
+Under the database lock preserve the snapshot and increment the creation
+attempt before any provider POST. Ignore older provider results. The shared Razorpay
+webhook verifies its mode-specific signature before checking the provider API.
+Apply captured receipts and frozen paid files in one booking transition.
+Verify that signed duplicates, delayed expiration, and wrong amounts cannot
+overwrite a receipt or create a shop order. Use deterministic provider fixtures
+and the disposable MySQL job.

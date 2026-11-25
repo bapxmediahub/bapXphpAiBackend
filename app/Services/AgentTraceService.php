@@ -407,9 +407,23 @@ final class AgentTraceService
             if(!is_array($article)||!is_string($article['path']??null)
                 ||!preg_match('~^/blog/([a-z0-9-]{1,160})$~D',$article['path'],$match))continue;
             $sources[$match[1]]=['id'=>'article:'.$match[1],'last_updated'=>null];
-            if(($digest=self::validDigest($article['content_sha256']??null))!==null)$sources[$match[1]]['content_sha256']=$digest;
+            $sources[$match[1]] += self::safeArticlePassage($article);
         }
         return array_values($sources);
+    }
+
+    /** Allow only public revision hashes and a numeric section locator from a passage. */
+    private static function safeArticlePassage(array $source): array {
+        $evidence = [];
+        foreach (['content_sha256', 'revision_sha256'] as $field) {
+            $digest = self::validDigest($source[$field] ?? null);
+            if ($digest !== null) $evidence[$field] = $digest;
+        }
+        $section = $source['section_index'] ?? null;
+        if (is_int($section) && $section >= 1 && $section <= 1048576) {
+            $evidence['section_index'] = $section;
+        }
+        return $evidence;
     }
 
     public static function safeRetrieval(array $entry): array {
@@ -421,7 +435,7 @@ final class AgentTraceService
             if(!is_string($source['id']??null)||!preg_match($pattern,$source['id']))continue;
             $date=$source['last_updated']??null;
             $row=['id'=>$source['id'],'last_updated'=>is_string($date)&&preg_match('/^\d{4}-\d{2}-\d{2}T/',$date)&&strtotime($date)!==false?$date:null];
-            if($intent==='published_articles'&&($digest=self::validDigest($source['content_sha256']??null))!==null)$row['content_sha256']=$digest;
+            if ($intent === 'published_articles') $row += self::safeArticlePassage($source);
             $sources[]=$row;
         }
         return ['version'=>1,'intent'=>$intent,

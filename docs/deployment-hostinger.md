@@ -96,7 +96,9 @@ actor isolation, trace exports, admin dashboards, and 375px views.
 
 Keep campaign binaries in `.sps-downloads` beside `public_html`. Give the PHP
 worker access to the private directory and keep it outside the document root.
-Backup and restore it alongside the hosted page records. For the full campaign
+Back up and restore it alongside the hosted page and booking records.
+Initialize `campaign_bookings` on the database host with `./bapXphp db init`
+before enabling campaign payments. For the full campaign
 upload allowance, set PHP `upload_max_filesize` to at least `5M`,
 `post_max_size` to at least `6M`, and `max_file_uploads` to at least `21` so PHP passes oversized
 selections to application validation.

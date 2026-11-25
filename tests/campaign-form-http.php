@@ -19,6 +19,7 @@ if (PHP_SAPI === 'cli-server') {
         $record = match ($query) {
             'SELECT * FROM settings WHERE id = ?' => $fixture['pages'][$id] ?? null,
             'SELECT * FROM contact_submissions WHERE id = ?' => $fixture['contacts'][$id] ?? null,
+            'SELECT * FROM campaign_bookings WHERE id = ?' => $fixture['bookings'][$id] ?? null,
             default => null,
         };
         $records = $query === 'SELECT * FROM mail_inbox' ? $fixture['inbox'] : ($record === null ? [] : [$record]);
@@ -54,6 +55,21 @@ if (PHP_SAPI === 'cli-server') {
         file_put_contents($state, json_encode($fixture, JSON_THROW_ON_ERROR), LOCK_EX);
         echo json_encode(['success'=>true, 'outcome'=>$outcome], JSON_THROW_ON_ERROR);
         exit;
+    }
+    if (($input['collection'] ?? null) === 'campaign_bookings') {
+        if ($input['action'] === 'begin_campaign_booking') {
+            $page = $fixture['pages']['pg:'.$input['slug']];
+            $outcome = $input['revision'] === $page['revision'] ? 'unavailable' : 'stale';
+            $fixture['booking_start'] = $input;
+            file_put_contents($state, json_encode($fixture, JSON_THROW_ON_ERROR), LOCK_EX);
+            echo json_encode(['success'=>true, 'result'=>compact('outcome')], JSON_THROW_ON_ERROR);
+            exit;
+        }
+        if ($input['action'] === 'change_campaign_booking' && $input['change'] === null) {
+            $booking = $fixture['bookings'][$input['id']];
+            echo json_encode(['success'=>true, 'result'=>['booking'=>$booking,'claimed'=>false]], JSON_THROW_ON_ERROR);
+            exit;
+        }
     }
     http_response_code(400);
     exit;
@@ -142,7 +158,8 @@ try {
     $browser = curl_init();
     curl_setopt_array($browser, [CURLOPT_COOKIEFILE=>'', CURLOPT_RETURNTRANSFER=>true, CURLOPT_HEADER=>true,
         CURLOPT_HTTPHEADER=>['Host: localhost'], CURLOPT_TIMEOUT=>5]);
-    $request = static function (string $path, ?array $body = null) use ($browser, $site): array {
+    $request = static function (string $path, ?array $body = null, ?CurlHandle $customer = null) use ($browser, $site): array {
+        $browser = $customer ?? $browser;
         curl_setopt($browser, CURLOPT_URL, 'http://'.$site.$path);
         if ($body === null) curl_setopt($browser, CURLOPT_HTTPGET, true);
         else curl_setopt($browser, CURLOPT_POSTFIELDS, http_build_query($body));
@@ -320,6 +337,66 @@ try {
     $write($race);
     $check($adminSave(['slug'=>'rejected-save','download_files[0]'=>$small])[0] === 409
         && count(scandir($private.'/rejected-save')) === 2, 'Definitive rejected save removes new unreferenced bytes');
+    $paidSettings = ['slug'=>'paid-fixture', 'campaign_payment_enabled'=>'1', 'campaign_booking_amount'=>'125.50'];
+    $check($adminSave($paidSettings + ['download_files[0]'=>$small])[0] === 302, 'Owner can publish an independently priced download');
+    $stateData = $read();
+    $published = $stateData['pages']['pg:paid-fixture'];
+    $paidFile = $published['campaign_downloads']['files'][0];
+    $check($published['campaign_payment'] === ['amount_paise'=>12550], 'Owner payment amount is stored in exact paise');
+    $pagePath = '/pages/paid-fixture';
+    $startPath = $pagePath.'/booking';
+    $publicPath = $pagePath.'/downloads/'.$published['revision'].'/'.$paidFile['id'];
+    $customerSession = str_repeat('b', 32);
+    $bookingKey = str_repeat('c', 64);
+    $bookingCsrf = 'synthetic-booking-http-csrf';
+    $session = 'campaign_payment_key|'.serialize($bookingKey).'csrf_token|'.serialize($bookingCsrf);
+    file_put_contents($root.'/sessions/sess_'.$customerSession, $session);
+    $customer = curl_init();
+    curl_setopt_array($customer, [CURLOPT_RETURNTRANSFER=>true, CURLOPT_HEADER=>true,
+        CURLOPT_COOKIE=>'PHPSESSID='.$customerSession, CURLOPT_HTTPHEADER=>['Host: localhost'], CURLOPT_TIMEOUT=>5]);
+    $public = $request($pagePath, null, $customer)[1];
+    $check(str_contains($public, '₹125.50 INR') && !str_contains($public, $paidFile['name']) && $request($publicPath)[0] === 404,
+        'Published paid page shows its price without exposing the free attachment path');
+
+    $buy = ['_csrf'=>$bookingCsrf, 'revision'=>$published['revision'], 'amount_paise'=>1];
+    $check($request($startPath, ['_csrf'=>['forged']] + $buy, $customer)[0] === 419, 'Malformed booking CSRF is rejected');
+    $check($request($startPath, ['revision'=>str_repeat('d',32)] + $buy, $customer)[0] === 409, 'Stale booking cannot create a payment');
+    $check($request($startPath, $buy, $customer)[0] === 503, 'Unavailable signed checkout fails before provider creation');
+    $stateData = $read();
+    $check(!array_key_exists('amount_paise', $stateData['booking_start']), 'Browser amount reached the booking reservation');
+
+    $owner = hash_hmac('sha256', 'guest', $bookingKey);
+    $bookingId = substr(hash_hmac('sha256', 'booking:paid-fixture:'.$published['revision'], $owner), 0, 32);
+    $bookingPath = $startPath.'/'.$bookingId;
+    $paidPath = $bookingPath.'/downloads/'.$paidFile['id'];
+    $booking = ['id'=>$bookingId, 'slug'=>'paid-fixture', 'revision'=>$published['revision'], 'title'=>'Synthetic booking',
+        'owner_hash'=>$owner, 'amount_paise'=>12550, 'currency'=>'INR', 'status'=>'pending', 'mode'=>'test',
+        'payment_expires_at'=>time()+1800, 'provider_url'=>'https://rzp.io/rzp/synthetic',
+        'fulfillment'=>[$paidFile], 'reconcile_after'=>time()+30];
+    $stateData['bookings'][$bookingId] = $booking;
+    $write($stateData);
+    [$status,,$headers] = $request($startPath, $buy, $customer);
+    $check($status === 303 && str_contains($headers, 'Location: '.$bookingPath), 'Repeated booking returns the same private status');
+    [$status,$pending,$headers] = $request($bookingPath, null, $customer);
+    $check($status === 200 && str_contains($pending, 'Check payment status') && !str_contains($pending, $paidFile['name'])
+        && str_contains($headers, "frame-ancestors 'none'") && $request($paidPath, null, $customer)[0] === 404,
+        'Owner pending status stays private and does not grant files');
+
+    $booking['status'] = 'captured';
+    $booking['receipt'] = ['id'=>'book_'.$bookingId];
+    $stateData['bookings'][$bookingId] = $booking;
+    $stateData['pages']['pg:paid-fixture']['status'] = 'draft';
+    $write($stateData);
+    $check($request($pagePath)[0] === 404 && $request($bookingPath)[0] === 404 && $request($paidPath)[0] === 404,
+        'Withdrawing the campaign and switching browser cannot expose a captured booking');
+    [$status,$confirmed] = $request($bookingPath, null, $customer);
+    $check($status === 200 && str_contains($confirmed, 'Payment confirmed') && str_contains($confirmed, $paidPath),
+        'The originating browser can retrieve its frozen captured receipt after withdrawal');
+    [$status,$bytes,$headers] = $request($paidPath, null, $customer);
+    $check($status === 200 && $bytes === 'Notes' && str_contains($headers, 'Content-Disposition: attachment')
+        && str_contains($headers, 'Cache-Control: private, no-store'),
+        'Captured booking streams the frozen bytes as a private attachment');
+    echo "PASS paid booking HTTP routing, exact server paise, replay, independent publication and protected bytes.\n";
     echo "PASS protected download upload bounds, staging and rollback, exact revision, entitlement, cache-safe attachment and private path denial.\n";
     echo "PASS campaign HTTP routing, draft and owner isolation, CSRF, validation, receipt, replay, throttling and withdrawal.\n";
 } finally {

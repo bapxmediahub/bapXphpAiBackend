@@ -182,6 +182,7 @@ final class CampaignDownloadService
 
     public static function canAccess(array $page, array $session, ?int $now = null): bool
     {
+        if (array_key_exists('campaign_payment', $page)) return false;
         $active = self::manifest($page);
         $slug = $page['slug'] ?? null;
         if (!is_string($slug) || !AuthoredPageService::validSlug($slug)
@@ -196,6 +197,7 @@ final class CampaignDownloadService
     /** Called only after a validated enquiry receipt is confirmed. */
     public static function grant(array &$session, array $page, string $revision, ?int $now = null): void
     {
+        if (array_key_exists('campaign_payment', $page)) return;
         $manifest = self::manifest($page);
         $slug = $page['slug'] ?? null;
         if (!is_string($slug) || !AuthoredPageService::validSlug($slug) || ($page['status'] ?? null) !== 'published'

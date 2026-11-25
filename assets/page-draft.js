@@ -6,7 +6,8 @@
     const revision = form.elements.expected_revision.value;
     const requiredFields = ['title', 'slug', 'content'];
     const campaign = form.querySelector('.campaign-form-settings');
-    const campaignControls = Array.from(campaign?.querySelectorAll('input[name], select[name]') ?? []);
+    const payment = form.querySelector('[data-campaign-payment-editor]');
+    const campaignControls = [campaign, payment].flatMap(group => Array.from(group?.querySelectorAll('input[name], select[name]') ?? []));
     const downloadSettings = form.querySelector('.campaign-download-settings');
     const downloadControls = Array.from(downloadSettings?.querySelectorAll('select[name], input[type=checkbox]') ?? []);
     const settingsControls = [...campaignControls, ...downloadControls];

@@ -43,8 +43,11 @@ functions advertised for that inference round. A rejected call records a safe
 `tool_call_rejected` span (no arbitrary function name or raw arguments). The
 model may correct its request on a later round. Duplicate IDs, incomplete
 finish reasons and unfinished final tool calls cannot become accepted answers.
-Article read evidence retains the bounded excerpt SHA-256. Provider continuation
-fields remain in request-local transport memory, never stored in traces or chat.
+Article read evidence retains the published article identifier, exact file
+revision SHA-256, excerpt SHA-256, and numeric section index when a targeted
+passage is selected. The model receives the heading and text in the tool
+result. Neither the query nor the heading or text enters the trace. Provider
+continuation fields stay in request-local transport memory.
 The loopback suite checks both Google and OpenAI-compatible call correlation;
 it is protocol verification, not a model-quality benchmark.
 
