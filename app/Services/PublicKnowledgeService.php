@@ -478,10 +478,18 @@ final class PublicKnowledgeService
 
     private static function articleText(string $html): string {
         // Preserve visible breaks without inserting spaces inside inline formatting.
-        $blockBoundary = '~(?=</?(?:address|blockquote|br|dd|div|dl|dt|figure|figcaption|h[1-6]|hr|li|ol|p|pre|table|tbody|td|tfoot|th|thead|tr|ul)(?:\s|/?>))~i';
-        $withBreaks = preg_replace($blockBoundary, ' ', $html) ?? $html;
-        $text = html_entity_decode(strip_tags($withBreaks), ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        return trim(preg_replace('/\s+/u', ' ', $text) ?? $text);
+        $blockBoundary = '~(?=</?(?:address|blockquote|br|dd|div|dl|dt|figure|figcaption|h[1-6]|hr|li|ol|p|table|tbody|td|tfoot|th|thead|tr|ul)(?:\s|/?>))~i';
+        $blocks = preg_split('~(<pre\b[^>]*>.*?</pre>)~is', $html, -1, PREG_SPLIT_DELIM_CAPTURE) ?: [$html];
+        $parts = [];
+        foreach ($blocks as $index => $block) {
+            $preformatted = $index % 2 === 1;
+            $withBreaks = $preformatted ? $block : (preg_replace($blockBoundary, ' ', $block) ?? $block);
+            $text = html_entity_decode(strip_tags($withBreaks), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            // Code examples can carry meaning in their newlines and indentation.
+            if (!$preformatted) $text = trim(preg_replace('/\s+/u', ' ', $text) ?? $text);
+            if (trim($text) !== '') $parts[] = $text;
+        }
+        return implode("\n", $parts);
     }
 
     private static function articleSearchWords(string $query, bool $includeBody): array {

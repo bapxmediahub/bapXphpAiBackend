@@ -191,6 +191,12 @@ try {
             throw new RuntimeException('Rendered article passage omitted a visible text boundary.');
         }
     }
+    $write('packing-example', 'Packing example', true, '2026-01-01', body:
+        "## Packing notation\n\n```yaml\nparcel:\n  label: paper\n```\n\nKeep labels dry.");
+    $packingExample = $service->readArticleForAgent(['slug'=>'packing-example','query'=>'packing notation'])['articles'][0] ?? [];
+    if (!str_contains($packingExample['text'] ?? '', "parcel:\n  label: paper")) {
+        throw new RuntimeException('Published passage collapsed indentation inside a code example.');
+    }
     $productPath = new ReflectionMethod(PublicKnowledgeService::class, 'productPath');
     foreach (['legacy item.v2'=>'/product/legacy%20item.v2', '珊瑚 pendant'=>'/product/%E7%8F%8A%E7%91%9A%20pendant',
         'தமிழ் pendant'=>'/product/%E0%AE%A4%E0%AE%AE%E0%AE%BF%E0%AE%B4%E0%AF%8D%20pendant',

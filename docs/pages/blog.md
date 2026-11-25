@@ -34,8 +34,8 @@ The canonical published article search lives in `PublicKnowledgeService`, backed
 Both native agents include published article body matches in discovery. The
 published title, path, category and score stay in the result. The exact-slug
 read accepts optional topic keywords and selects a passage of up to 6,000
-characters from the best matching rendered section. The text keeps spaces
-between headings, paragraphs, list items and table cells. A slug-only request
+characters from the best matching rendered section. The text keeps visible
+boundaries between blocks and preserves the indentation of code examples. A slug-only request
 reads the opening. Public HTTP, WebMCP and MCP search still use title and summary
 ranking and keep the existing input and output schema.
 

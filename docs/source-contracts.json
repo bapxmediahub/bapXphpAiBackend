@@ -19,13 +19,13 @@
         },
         "content": {
             "source_sha256": "9ca1ff8cd0fcc4302ca466ff646e1363396bac0780b7b40b2684486f3e87e465",
-            "references_sha256": "cd3596c0a54f1aa2f93072d9ea0785def60830803ff0e7039035056713c88561",
-            "review_note": "Compared published article reads and the blog guide with rendered heading, paragraph, line-break, list and table fixtures. Native passages preserve readable text boundaries and remain scoped to published content and bounded sections. The regression also covers text bordering opening and closing blockquotes and figures, with inline word continuity."
+            "references_sha256": "8025d3f270bf6a8f2baec7e5392bd47e3881fc16b36d742325deb2738e498c52",
+            "review_note": "Verified the blog guide against published Markdown fixtures for inline text, heading/list/table/blockquote/figure boundaries, and literal fenced YAML indentation."
         },
         "foundation": {
-            "source_sha256": "33d87c0de5eba10dc69655c7e80d0ef326e2c536be1103c1f4e6cd4baad2cfe1",
+            "source_sha256": "181363d06412a04481afe4b71e027c6a26bcf5d861d0f41b82f09a984127636a",
             "references_sha256": "19374082935b4847bbb5f384debd59d75beac6e118415585f5434701c8264cf5",
-            "review_note": "Compared published file retrieval and trace projection with the data and deployment guides. The text extractor preserves visible breaks in native article results, and private per-chat JSON retains only the allowlisted article identity, digests and section location. Text normalization now treats both sides of allowed block tags as visible breaks and retains inline word boundaries."
+            "review_note": "Reviewed plain rendered passage text and HTML removal. Preserving code indentation does not alter published-source guards, private chat storage or the allowlisted evidence projection."
         },
         "google-tags": {
             "source_sha256": "a02edc85b6bd4cc5f95748217edaf7ea3fae53a6d67edd0098c99848290122d8",
@@ -63,9 +63,9 @@
             "review_note": "Compared the enterprise-agent guide dependencies and published support guide. Passage evidence adds hashes and a section index to the existing authorized review context. Operator Help remains behind the owner gate."
         },
         "public-mcp": {
-            "source_sha256": "15fa51ed2b0e1e1e52d90d4c5ab3da2a745c77292887df69868e204b766a8beb",
+            "source_sha256": "fc6109fd3cdaa44358f1632cdd47bd8d1d4062ebc6104cb607b3f83fbbc00770",
             "references_sha256": "8999944fc0137b069e1433c7ae750ce3e0cb2a67f7fdd3fcea63173126b96d26",
-            "review_note": "Compared PublicKnowledgeService with the public HTTP and STDIO article adapters. They retain default title and summary ranking and projection. Only native agents invoke body and rendered passage text extraction."
+            "review_note": "Rechecked unchanged public and STDIO projection alongside native article text. Native passages preserve visible block boundaries and preformatted code indentation without changing public queries."
         },
         "remote-commerce": {
             "source_sha256": "d4727219602e3533680fbc91389cb2648ede2b15ef7dfa8ea866f2ed8bcd25c9",
