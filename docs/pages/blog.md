@@ -31,6 +31,14 @@ a frontmatter URL without an actual file check.
 
 The canonical published article search lives in `PublicKnowledgeService`, backed by `BlogService::all(false)` over `content/blog/posts/*.md`. It returns bounded public titles, `/blog/{slug}` links, category, relevance, total and cursor; it never reads an arbitrary path or returns Markdown source to a public client. The Enterprise Agent's `search_articles`, Support's article hints, local MCP `search_public_articles`, and browser WebMCP's read-only `GET /api/knowledge/articles` adapter use this service. The ordinary public `/blog` HTML page remains independently filtered and is not changed to API pagination.
 
+Both native agents include published article body matches in discovery. The
+published title, path, category and score stay in the result. The exact-slug
+read accepts optional topic keywords and selects a passage of up to 6,000
+characters from the best matching rendered section. The text keeps visible
+boundaries between blocks and preserves the indentation of code examples. A slug-only request
+reads the opening. Public HTTP, WebMCP and MCP search still use title and summary
+ranking and keep the existing input and output schema.
+
 Hidden, future-dated, retired-category, module-disabled or symlinked posts must not be returned. Disabling Blog removes the local article MCP tool and prevents public API results; operator Help and private JSON conversation records are not part of the public index. Tests use synthetic Markdown and check pagination/visibility without customer records.
 
 ## Customer help articles

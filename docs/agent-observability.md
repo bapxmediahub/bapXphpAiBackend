@@ -43,8 +43,11 @@ and executes only functions advertised for that round. A rejected call records a
 `tool_call_rejected` span (no arbitrary function name or raw arguments). The
 model may correct its request on a later round. Duplicate IDs, incomplete
 finish reasons and unfinished final tool calls cannot become accepted answers.
-Article read evidence retains the bounded excerpt SHA-256. Provider continuation
-fields remain in request-local transport memory, never stored in traces or chat.
+Article read evidence retains the published article identifier, exact file
+revision SHA-256, excerpt SHA-256, and numeric section index when a targeted
+passage is selected. The model receives the heading and text in the tool
+result. The trace excludes the query, heading and text. Provider continuation
+fields stay in request-local transport memory.
 The loopback suite checks Chat Completions call correlation across configured
 connections. Live text and tool probes verify the selected model and provider
 separately when run with the deployment's saved credentials.

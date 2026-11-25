@@ -57,7 +57,7 @@ if(PHP_SAPI==='cli-server'){
     }
     $names = array_column(array_column($tools, 'function'), 'name');
     $contents = $r['messages'];
-    $owner=in_array($scenario,['owner','capability','owner_followup','slash_capabilities','slash_help','direct_order_total','missing_finish','router_changed_answer'],true);
+    $owner=in_array($scenario,['owner','capability','owner_followup','owner_article','slash_capabilities','slash_help','direct_order_total','missing_finish','router_changed_answer'],true);
     $guest=!$owner&&!in_array($scenario,['customer','ticket'],true);
     $hasHistory = str_starts_with($scenario, 'catalogue_') || $scenario === 'owner_followup';
     $instructionRole = $luna || ($r['model'] ?? '') === 'gpt-5' ? 'developer' : 'system';
@@ -196,7 +196,7 @@ if(PHP_SAPI==='cli-server'){
         'owner_followup'=>['order_count',['from'=>'2024-01-03','to'=>'2024-01-07'],'count','reporting'],
         'customer'=>['own_order_status',[],'count','customer-policy'],
         'ticket'=>['own_ticket_status',[],'count','customer-policy'],
-        'article'=>['read_published_article',['slug'=>'get-support'],'found','customer-policy'],
+        'article','owner_article'=>['read_published_article',['slug'=>'get-support','query'=>'ticket information'],'found','customer-policy'],
         'contact'=>['present_contact_enquiry',[],'submitted','customer-policy'],
         'policy','modern_policy','router_policy','transient_continuation'=>['public_policy',['key'=>'shipping_cost'],'value','customer-policy'],
         default=>null
@@ -290,9 +290,13 @@ if(PHP_SAPI==='cli-server'){
                 'ticket'=>'Your matching ticket count is '.$last['count'].'.',
                 'policy','modern_policy','router_policy','transient_continuation'=>$last['value'],
                 'contact'=>'I can offer a contact form for your review; nothing has been submitted.',
-                'article'=>'See the published support guide at '.$last['articles'][0]['path'].'.',
+                'article','owner_article'=>'See the published support guide at '.$last['articles'][0]['path'].'.',
             };
-            if($scenario==='article'&&empty($last['articles'][0]['text'])){$fail('Missing retrieved body');return;}
+            if ($tool === 'read_published_article' && (($last['articles'][0]['heading'] ?? null) !== 'Check private order or ticket information'
+                || empty($last['articles'][0]['revision_sha256']) || empty($last['articles'][0]['content_sha256']))) {
+                $fail('Missing retrieved passage or published revision');
+                return;
+            }
             $parts=[['text'=>'<final_answer>'.$answer.'</final_answer>']];
         }else{$fail('Unexpected tool exchange');return;}
     }else{$fail('Unknown fixture');return;}
@@ -361,6 +365,7 @@ try{
         ['slash_help','admin','admin','/help blog-publishing','operator_guide'],
         ['outage','support','guest','How many published products do you have?',null],
         ['outage','admin','admin','How many orders in total?',null],
+        ['owner_article','admin','admin','What does our public support guide say about ticket information?','read_published_article'],
     ];
     $cases=array_merge($cases,[
         ['mixed','support','guest','வணக்கம், உதவுங்கள்',['public_catalogue_summary','public_policy']],
@@ -540,7 +545,14 @@ try{
             if(array_column($attempts,$statusKey)!==($scenario==='transient_start'?[503,200]:[200,200,200,503,200]))throw new RuntimeException('Missing observed transient recovery');
             if(count($turn['tools']??[])!==($scenario==='transient_start'?0:1))throw new RuntimeException('Recovery repeated business execution');
         }
-        if($scenario==='article'&&empty($turn['tools'][0]['evidence']['sources'][0]['content_sha256']))throw new RuntimeException('Retrieved document digest missing');
+        if ($tool === 'read_published_article') {
+            $source = $turn['tools'][0]['evidence']['sources'][0] ?? [];
+            if (($source['id'] ?? null) !== 'article:get-support' || empty($source['content_sha256'])
+                || empty($source['revision_sha256']) || !is_int($source['section_index'] ?? null)
+                || isset($source['heading']) || isset($source['text']) || !str_contains($turn['answer'] ?? '', '/blog/get-support')) {
+                throw new RuntimeException('Passage evidence did not retain safe digests and section identity.');
+            }
+        }
         echo "PASS $protocol/$surface/$scenario: $expected, ".count($turn['model_attempts'])." HTTP rounds\n";
     }
 }finally{proc_terminate($process);proc_close($process);foreach(glob($recoveryDir.'/*')?:[] as $file)unlink($file);rmdir($recoveryDir);}

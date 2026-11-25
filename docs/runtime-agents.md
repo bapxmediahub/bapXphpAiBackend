@@ -339,7 +339,11 @@ Either a guest or a signed-in customer may read their current browser-session
 cart while Shop is enabled. Cart access does not establish an account or a
 completed order.
 Enterprise can separately count all dated orders or request paid-sales reports.
-Both roles can search published articles and read an exact public article excerpt.
+Both roles can search published article titles, summaries and bodies, then
+read an exact public slug with optional topic keywords. A targeted lookup
+selects a bounded passage from the article's matching section. A slug-only
+lookup returns the opening. PHP applies the same Blog and publication gates to
+both calls. Retrieved passage text is evidence for the current tool exchange.
 A provider failure is an error; a failed query does not become an empty catalogue
 or invented ranking. A model-selected contact form proposal never submits a form.
 This slice does not add autonomous workers, embeddings, a vector database,

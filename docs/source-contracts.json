@@ -3,29 +3,29 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "460fbd20a91cbb58e773d3b1ed51983e83050f311e6996307f914f081dfa9618",
-            "references_sha256": "04f7edb2138d011e77d077c6c49d54cda2639c071da20d438e66982421f6c252",
-            "review_note": "Verified the hosted Gemma thinking option and the exact free model identifier across each tool continuation on the shared Chat Completions transport."
+            "source_sha256": "a8d41b56cf70c9864ef577536ecaf74cd323152315a911a02ee400ebf394e757",
+            "references_sha256": "3eb29e94c9dd79b7f3dc4d3762193f106558df5e7edd6e2c1397d93217916c4d",
+            "review_note": "Compared the agent guides and loopback fixtures with both controller role scopes, exact-slug article passages, the bounded evidence fields, and Chat Completions call correlation and model continuation."
         },
         "auth": {
             "source_sha256": "c34a5b34bc904f36cda184c26113f91e2cf36afa2b506217d1f74e22e9e0cefd",
-            "references_sha256": "02468e51e754311543db925388862cbffe9fb02cb9aa5a3dbc658dfea2dcf6c9",
-            "review_note": "Checked the browser and actor owner hash, CSRF form validation, and the database retry identity check."
+            "references_sha256": "41e3a8b4e89cfa4973dfc3e206cc95ca04c80e1bbf5f35cf50ec021985c3f2e9",
+            "review_note": "Reviewed guest, customer and owner tool and conversation boundaries with the shared backend guidance. Article reads enforce the public publication and module checks in both authenticated and guest turns."
         },
         "commerce": {
             "source_sha256": "c53c5c291d70428a6219887de1da8c789c7fc0f23afb3b909b75ac55f034306a",
-            "references_sha256": "fca25b2f0eb90e32d76a1000e38ca464ae7e7e0dfe7b067eaa885fff82a60e16",
-            "review_note": "Reviewed provider parsing and existing product checkout and verified-order tests. A typed provider refusal preserves the existing numeric error for shop checkout."
+            "references_sha256": "421bcfc4ff33f095ff53a86a5929968f7274b0d7b754713a0d0a75cbe1ac2aa5",
+            "review_note": "Compared the shared evidence guidance with order and payment contracts and the separate storefront counts. The article path reads published Markdown and retains only the approved source metadata in its trace."
         },
         "content": {
             "source_sha256": "6f6aee47caea344734b1f2662269fbcebf1615d4f4ecabe1a79e2a7818206e24",
-            "references_sha256": "bc4237849522973bf57590ab57c0b411f1d89999bfce542f2e4260ee65788177",
-            "review_note": "Compared published Support guidance with the contact link and validated reference in the widget. Campaign content and payment flows were preserved by the merge."
+            "references_sha256": "d16ec1123e6b1f65535cd1941df51e900b36ddd100960005a07c766f52d72bc4",
+            "review_note": "Compared the published article guide with exact-slug lookup, current publication and module gates, and rendered block and fenced-code whitespace. Campaign download and booking revisions remain governed by their existing guides."
         },
         "foundation": {
-            "source_sha256": "706515d3337ecc1b2a8f16cfa5eaf960737f84bedbab62a6a5115678d44ea8d2",
-            "references_sha256": "44a4e54f393916877f478f74d7ed16b3e35594a37a7ce9a504b0adf24c607486",
-            "review_note": "Reviewed the fixed Google endpoint, trusted credentials, endpoint pinning for custom and OpenRouter, and provider-specific continuation scope."
+            "source_sha256": "1f6614d8a5e1cea1224bf29558c740dbd5e5ab343abb69da87041a9e1a77ad61",
+            "references_sha256": "e394d7890b387bcf8d4864890601c47f3596a8a96b2f97fb118ca84549dd0f74",
+            "review_note": "Compared the storage and architecture guides with published article evidence, private chat traces and the audit reference. The targeted excerpt stays in provider request context while private traces retain source identity, hashes and position."
         },
         "google-tags": {
             "source_sha256": "71d32eb1f8f536427d9c6d90d8afa363cc84dc16b9b485f5ff76796746b05258",
@@ -34,8 +34,8 @@
         },
         "http-errors": {
             "source_sha256": "0f920c297cfc4e216a87be02a35c20827cc254dd6934ba24a1fa9135520a0560",
-            "references_sha256": "36c125f4e885edeafe9d19dbad28c6ffab66a1a08c9078349a2259fe6d1026a9",
-            "review_note": "Reviewed sanitized provider failures and private booking responses against the existing dynamic response guard."
+            "references_sha256": "bb1efdf69eefdabbb242f58bda9aeaba721f2ba0e018a16bb1cb9615159af3a8",
+            "review_note": "Compared article trace redaction with the private response guard, Chat Completions provider failures and labelled Support reference. A failed turn reports a bounded application trace identifier."
         },
         "interface": {
             "source_sha256": "16d1d84ab9413ed744d82606a7721d827acc68a4707854984b37af6ab4f6653e",
@@ -44,8 +44,8 @@
         },
         "mail": {
             "source_sha256": "11a3b674d92d0714846359177499966c2f5ad2b1af5380a972280c64bb79b7b8",
-            "references_sha256": "e638d8ea8f21b6f1d078de81bb24d9d9a743e98e953cdd672bd869b923832acf",
-            "review_note": "Compared the owner login and notice documentation against the existing controller and confirmed the dashboard count remains a read-only operation."
+            "references_sha256": "fff258ed8121b5ab72cd0adf60dcdcd8d1a414afc1e94332c6498de85371b0da",
+            "review_note": "Checked the shared article evidence rule against sign-in notice and queue entry points. Published passage reads use BlogService without triggering mail."
         },
         "mcp-clients": {
             "source_sha256": "d3156f090ffd44f61c1d53c8726bfc94aa1eb8914036f037be289bdba31565ec",
@@ -58,19 +58,19 @@
             "review_note": "Checked retained campaign file descriptors and protected streaming against Media Library behavior. Booking authorization is scoped to the frozen private manifest."
         },
         "operator-help": {
-            "source_sha256": "0b6c6a57218af9cca882e280916c327ff51bbd0ac389dd4091f6b3a462085edd",
+            "source_sha256": "5f18e687d24bd4bd0bd0d4ce583fa5c85118796fc84641545cbfff35da22c41c",
             "references_sha256": "290f76393a7f1ff5ba583e3da9f3ac9d8b3f6580c1cdee7db531e981e2e1d99f",
-            "review_note": "Compared owner guidance and probe result labels with the shared Chat Completions connection and existing agent roles."
+            "review_note": "Compared the enterprise and monitoring guides with topic-targeted article evidence in each PHP agent. The stored source ID, digests and optional section position remain distinct from the labelled Support failure reference."
         },
         "public-mcp": {
-            "source_sha256": "737d1417edeec4f39402eaa1b659409d866db04476bf5f549d065deae57903f8",
-            "references_sha256": "43e89d686d81a31e0d2e95a18c1904f88aab8a9688f54556a1331efe81cab83b",
-            "review_note": "Compared the regenerated route associations with Public MCP and A2UI. The Dashboard read stays on the authenticated database bridge."
+            "source_sha256": "98bb406d5d51bf64265612bd379b5e7970909522482d79649e2f7eaf9ca97835",
+            "references_sha256": "d06c98bd47f7604ad0a0529c3673bc10c92cbb8608c2027af4a5df5d379fcb67",
+            "review_note": "Compared HTTP, WebMCP and MCP article search with the shared retriever. Their schema and title and summary scoring remain intact, while the native agents opt in to body matching and topic passages."
         },
         "remote-commerce": {
             "source_sha256": "1ec73aa2fe94913016cfa026925744b2d6f5c6e9b6133233a8d173df67b00f29",
-            "references_sha256": "0690a75fa3933ee49adb37677a6972a957f6bfc982431a03783492ae4c284993",
-            "review_note": "Reviewed the shared role-scoped controller and commerce tools under the correlated Chat Completions exchange."
+            "references_sha256": "c891045c682af6832d9509bbb49f9324a50b0581ba8da9a0617da2e52be4bad9",
+            "review_note": "Compared published article retrieval and shared transport against the cart, checkout and campaign dispatch contracts. Article lookup reads published Markdown, and the authenticated storefront count remains an independent database read."
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",
@@ -78,9 +78,9 @@
             "review_note": "Compared public search fixture coverage with the product feed and CLI guidance. The fixture verifies published search and module controls using synthetic records."
         },
         "workflow": {
-            "source_sha256": "2fc8e2722d23173b00e64260fe762b58d4795b58b6d2c733fb92e75bcbd3ff80",
+            "source_sha256": "2a572008f9ecd767de53a6906f98cfe70615153218ad195c10704d95dee836a7",
             "references_sha256": "ef79bf65beb22f7ccf6e25d186ce5ee84980449efcdda3b0673982ea3bf29b1b",
-            "review_note": "Verified native local storefront search now matches the GitHub gate. Its failure retains the later independent gates, including documentation checks for the current Chat Completions contract."
+            "review_note": "Compared the generated inventories and CLI development guide against the combined tree. Local storefront search stays in CI, and real Support and Enterprise handlers exercise topic article retrieval over Chat Completions fixtures."
         }
     }
 }

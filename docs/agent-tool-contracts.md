@@ -26,9 +26,9 @@ Private runtime Markdown is not duplicated into developer documentation.
 - `.bapX/supportagent.md` — SHA-256 `d37e5bca9c3e578aaaae541bc28b5ae9dce8f1f8d2839f80b9fbfdc60b364c95`
 - `.bapX/bapXcl/skill.md` — SHA-256 `bef6836de280f3118cd9e438bcac6babffc1bea6f3c1d85f5fc962c8a01043e9`
 - `.bapX/bapXcl/support/catalog.md` — SHA-256 `0b85f5605a1eee35dcb09a147d8905059508151be9d46465d226a9b0816cc9a6`
-- `.bapX/bapXcl/support/policy-and-tickets.md` — SHA-256 `b9d71f0d0b65ce21867868305256604522ba0361f37ec36cbe3939ee9d609f21`
+- `.bapX/bapXcl/support/policy-and-tickets.md` — SHA-256 `6c39c57f7746d31c6c834286e5c5b8dc6072ac77578b184d9b0af877abcb11a7`
 
-Bundle SHA-256: `4304f481fbe49a8dcb8c6a225a798ca83af83b61375049cdfb57f243bbdd077f`.
+Bundle SHA-256: `acd9246564f33ad51d2ff411d848dda4c1388040d14f618f6dd14bbd936f7694`.
 
 ### `public_catalog`
 
@@ -197,7 +197,7 @@ Get up to four currently visible storefront best sellers by recorded paid, non-c
 
 ### `search_articles`
 
-Search published blog and customer help articles by keyword. Returns real titles and paths; never private documents or article bodies.
+Search titles, summaries and text of published blog and customer help articles. Use specific keywords. Returns real titles and paths, never private documents or article text.
 
 **Access:** Guest or authenticated customer, limited to approved public data. Requires the public Blog module.
 
@@ -292,7 +292,7 @@ Offer the existing customer-reviewed contact form when a human enquiry is useful
 
 ### `read_published_article`
 
-Read a bounded text excerpt from an exact currently published blog/help article slug. Use after article discovery to answer content questions. No private files.
+Read a bounded passage from an exact currently published blog or help article slug. Pass the topic keywords in query to find a relevant section beyond the opening. No private files.
 
 **Access:** Guest or authenticated customer, limited to approved public data. Requires the public Blog module.
 
@@ -303,6 +303,10 @@ Read a bounded text excerpt from an exact currently published blog/help article 
         "slug": {
             "type": "string",
             "pattern": "^[a-z0-9-]{1,120}$"
+        },
+        "query": {
+            "type": "string",
+            "maxLength": 120
         }
     },
     "required": [
@@ -323,10 +327,10 @@ Private runtime Markdown is not duplicated into developer documentation.
 - `.bapX/enterpriseagent.md` — SHA-256 `6bb0c3a1b53892c4922511d0ed2cfb40df0ef0cd3213666d6c56692d4b095b0b`
 - `.bapX/bapXcl/skill.md` — SHA-256 `bef6836de280f3118cd9e438bcac6babffc1bea6f3c1d85f5fc962c8a01043e9`
 - `.bapX/bapXcl/support/catalog.md` — SHA-256 `0b85f5605a1eee35dcb09a147d8905059508151be9d46465d226a9b0816cc9a6`
-- `.bapX/bapXcl/support/policy-and-tickets.md` — SHA-256 `b9d71f0d0b65ce21867868305256604522ba0361f37ec36cbe3939ee9d609f21`
+- `.bapX/bapXcl/support/policy-and-tickets.md` — SHA-256 `6c39c57f7746d31c6c834286e5c5b8dc6072ac77578b184d9b0af877abcb11a7`
 - `.bapX/bapXcl/enterprise/reporting.md` — SHA-256 `bd4fef0250c9adbbbddb421d3cbacf7290fdc0aa274bcb789adf0f46ae67e80c`
 
-Bundle SHA-256: `d43cc89c2f1e67efb78ffa73b381538703065cf20529ea5d5fdc1d4884161e35`.
+Bundle SHA-256: `05181055ff3a18d46c38e09460fc372538f1799b7ba3a72f8573ad78e2a53580`.
 
 ### `find_order`
 
@@ -532,7 +536,7 @@ Count recorded users, products or appointments. Returns a total without record d
 
 ### `search_articles`
 
-Search published blog and customer help articles by keyword. Returns real titles and paths; never private documents or article bodies.
+Search titles, summaries and text of published blog and customer help articles. Use specific keywords. Returns real titles and paths, never private documents or article text.
 
 **Access:** Authenticated admin, enforced server-side. Requires the public Blog module.
 
@@ -686,7 +690,7 @@ Count dated order records across all statuses, including unpaid and cancelled, w
 
 ### `read_published_article`
 
-Read a bounded text excerpt from an exact currently published blog/help article slug. Use after article discovery to answer content questions. No private files.
+Read a bounded passage from an exact currently published blog or help article slug. Pass the topic keywords in query to find a relevant section beyond the opening. No private files.
 
 **Access:** Authenticated admin, enforced server-side. Requires the public Blog module.
 
@@ -697,6 +701,10 @@ Read a bounded text excerpt from an exact currently published blog/help article 
         "slug": {
             "type": "string",
             "pattern": "^[a-z0-9-]{1,120}$"
+        },
+        "query": {
+            "type": "string",
+            "maxLength": 120
         }
     },
     "required": [
