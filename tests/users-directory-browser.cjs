@@ -76,6 +76,7 @@ test('Users keeps secondary filters collapsed and preserves them through native 
     const search = page.getByRole('searchbox', {name:'Search accounts'});
     const optionsToggle = page.locator('.users-filter-options > summary');
     const role = page.getByLabel('Role', {exact:true});
+    const reference = page.getByLabel('Order or invoice reference');
     const rows = page.locator('.users-entry');
     for (const width of [1440, 375, 320]) {
         await page.setViewportSize({width,height:760});
@@ -84,6 +85,8 @@ test('Users keeps secondary filters collapsed and preserves them through native 
         assert.equal(await rows.count(), 13);
         assert.ok(await search.isVisible());
         assert.ok(!await role.isVisible());
+        assert.ok(!await reference.isVisible());
+        assert.ok((await page.getByRole('button', {name:'Search',exact:true}).locator('svg[aria-hidden=true]').boundingBox()).width >= 14);
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
         assert.ok((await page.locator('.users-filters').boundingBox()).height < 165);
         assert.ok(await page.locator('.admin-topbar').getByRole('link', {name:'Help & Docs', exact:true}).isVisible());
@@ -119,6 +122,7 @@ test('Users keeps secondary filters collapsed and preserves them through native 
     assert.ok(!await role.isVisible());
     assert.equal(await rows.count(), 10);
     await page.getByRole('link', {name:'Next',exact:true}).press('Enter');
+    assert.ok(await page.getByRole('link', {name:'Previous',exact:true}).locator('svg[aria-hidden=true]').isVisible());
     const params = new URL(page.url()).searchParams;
     assert.equal(params.get('role'), 'customer');
     assert.equal(params.get('per_page'), '10');
@@ -178,6 +182,41 @@ test('Users keeps secondary filters collapsed and preserves them through native 
     await mobile.locator('.users-entry summary').click();
     assert.ok(await mobile.getByRole('link', {name:'OLDER-ORDER'}).isVisible());
     assert.ok(await mobile.getByRole('link', {name:'FIXTURE-INVOICE'}).isVisible());
+
+    await page.goto(url);
+    await optionsToggle.press('Enter');
+    await reference.fill('  older-order  ');
+    await role.selectOption('customer');
+    assert.ok(await page.getByRole('button', {name:'Apply filters'}).locator('svg[aria-hidden=true]').isVisible());
+    await page.getByRole('button', {name:'Apply filters'}).press('Enter');
+    assert.equal(await rows.count(), 1);
+    assert.equal(await rows.first().getAttribute('open'), '');
+    const matched = page.locator('.users-history__match');
+    assert.equal(await matched.count(), 1);
+    assert.ok(await matched.getByRole('link', {name:'OLDER-ORDER'}).isVisible());
+    assert.ok(await matched.getByText('Reference match', {exact:true}).isVisible());
+    assert.ok(await page.getByRole('link', {name:'FIXTURE-INVOICE'}).isVisible());
+    assert.ok(await page.getByRole('link', {name:'Reset filters'}).locator('svg[aria-hidden=true]').isVisible());
+    await page.getByRole('link', {name:'Remove reference filter: older-order'}).press('Enter');
+    assert.equal(new URL(page.url()).searchParams.get('role'), 'customer');
+    assert.ok(!new URL(page.url()).searchParams.has('reference'));
+    assert.equal(await rows.count(), 13);
+
+    await mobile.goto(url);
+    await mobile.locator('.users-filter-options > summary').click();
+    await mobile.getByLabel('Order or invoice reference').fill('fixture-invoice');
+    await mobile.getByRole('button', {name:'Apply filters'}).click();
+    assert.equal(await mobile.locator('.users-entry').count(), 1);
+    assert.ok(await mobile.locator('.users-history__match').getByRole('link', {name:'FIXTURE-INVOICE'}).isVisible());
+    assert.ok(await mobile.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+
+    await page.goto(url + '?reference=FIXTURE-INV');
+    assert.equal(await rows.count(), 0, 'Partial references do not qualify an account');
+    assert.match(await page.locator('.users-empty').innerText(), /Check the full order or invoice reference/);
+    await page.goto(url + '?reference=UNDATED-ORDER&status=delivered');
+    assert.equal(await rows.count(), 0, 'Reference lookup preserves the latest-status filter');
+    await page.goto(url + '?reference=UNDATED-ORDER');
+    assert.ok(await matched.getByRole('link', {name:'UNDATED-ORDER'}).isVisible());
 
     await page.goto(url + '?status=pending');
     assert.equal(await rows.count(), 0, 'Older status does not qualify an account');

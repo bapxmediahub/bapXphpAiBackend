@@ -1,13 +1,14 @@
 <?php
-$filters = ['q' => $query, 'role' => $role, 'activity' => $activity, 'period' => $period, 'status' => $status, 'sort' => $sort, 'per_page' => $pageSize];
+$filters = ['q' => $query, 'reference' => $reference, 'role' => $role, 'activity' => $activity, 'period' => $period, 'status' => $status, 'sort' => $sort, 'per_page' => $pageSize];
 $directoryUrl = static function (array $changes) use ($filters): string {
     $params = array_filter($changes + $filters, static fn($value) => $value !== '');
     return '/admin/users?' . http_build_query($params);
 };
-$advancedCount = count(array_filter([$role !== '', $activity !== '', $period !== '', $status !== '', $sort !== 'name', $pageSize !== 25]));
+$advancedCount = count(array_filter([$reference !== '', $role !== '', $activity !== '', $period !== '', $status !== '', $sort !== 'name', $pageSize !== 25]));
 $activeFilters = $query !== '' || $advancedCount > 0;
 $appliedFilters = [
     'q' => ['Search', $query, ''],
+    'reference' => ['Reference', $reference, ''],
     'role' => ['Role', $roles[$role] ?? '', ''],
     'activity' => ['Order activity', $activityOptions[$activity] ?? '', ''],
     'period' => ['Latest order', $periodOptions[$period] ?? '', ''],
@@ -57,15 +58,19 @@ $segments = [
                     <label for="users-q">Search accounts</label>
                     <input type="search" id="users-q" name="q" value="<?= e($query) ?>" maxlength="150" placeholder="Name or email">
                 </div>
-                <button type="submit" class="btn btn-primary">Search</button>
+                <button type="submit" class="btn btn-primary"><?= $navIcon('search') ?>Search</button>
             </div>
             <details class="users-filter-options">
                 <summary>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M4 7h16M7 12h10m-7 5h4"/></svg>
+                    <?= $navIcon('filter') ?>
                     <span>More filters</span>
                     <?php if ($advancedCount): ?><span class="users-filter-count"><?= $advancedCount ?> active</span><?php endif; ?>
                 </summary>
                 <div class="users-filter-fields">
+                    <div class="users-field users-reference">
+                        <label for="users-reference">Order or invoice reference</label>
+                        <input type="text" id="users-reference" name="reference" value="<?= e($reference) ?>" maxlength="150" placeholder="Enter the full reference">
+                    </div>
                     <div class="users-field">
                         <label for="users-role">Role</label>
                         <select id="users-role" name="role"><option value="">All roles</option>
@@ -114,7 +119,7 @@ $segments = [
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="users-actions"><button type="submit" class="btn btn-primary">Apply filters</button></div>
+                    <div class="users-actions"><button type="submit" class="btn btn-primary"><?= $navIcon('check') ?>Apply filters</button></div>
                 </div>
             </details>
         </form>
@@ -130,7 +135,7 @@ $segments = [
                         </a></li>
                     <?php endforeach; ?>
                 </ul>
-                <a class="users-reset" href="/admin/users">Reset filters</a>
+                <a class="users-reset" href="/admin/users"><?= $navIcon('reset') ?>Reset filters</a>
             </div>
         <?php endif; ?>
 
@@ -145,7 +150,7 @@ $segments = [
             $latest = $user['orders'][0] ?? null;
             $latestDate = $latest['date'] ?? null;
             ?>
-            <details class="users-entry">
+            <details class="users-entry"<?= $reference !== '' && $count === 1 ? ' open' : '' ?>>
                 <summary class="users-row">
                     <span class="users-identity">
                         <span class="users-avatar" aria-hidden="true"><?= e(mb_strtoupper(mb_substr($name, 0, 1))) ?></span>
@@ -183,9 +188,15 @@ $segments = [
                                     <th scope="col" role="columnheader">Invoice</th>
                                 </tr></thead>
                                 <tbody role="rowgroup">
-                                <?php foreach ($user['orders'] as $order): $path = '/admin/orders/' . rawurlencode($order['id']); ?>
-                                    <tr role="row">
-                                        <td role="cell"><small aria-hidden="true">Order</small><a href="<?= e($path) ?>"><?= e($order['id']) ?></a></td>
+                                <?php foreach ($user['orders'] as $position => $order):
+                                    $path = '/admin/orders/' . rawurlencode($order['id']);
+                                    $isReferenceMatch = isset($user['reference_matches'][$position]);
+                                    ?>
+                                    <tr role="row"<?= $isReferenceMatch ? ' class="users-history__match"' : '' ?>>
+                                        <td role="cell">
+                                            <small aria-hidden="true">Order</small><a href="<?= e($path) ?>"><?= e($order['id']) ?></a>
+                                            <?php if ($isReferenceMatch): ?><span class="users-history__match-label">Reference match</span><?php endif; ?>
+                                        </td>
                                         <td role="cell"><small aria-hidden="true">Placed (IST)</small>
                                             <?php if ($order['date']): ?><time datetime="<?= e($order['date']->format(DATE_ATOM)) ?>"><?= e($order['date']->format('d M Y, g:i a')) ?></time>
                                             <?php else: ?>Unavailable<?php endif; ?>
@@ -207,14 +218,15 @@ $segments = [
         <?php if (!$users): ?>
             <div class="users-empty">
                 <strong><?= $activeFilters ? 'No accounts match these filters' : 'No registered accounts yet' ?></strong>
-                <?php if ($activeFilters): ?><p>Try another name or email, or clear the filters above.</p><?php endif; ?>
+                <?php if ($reference !== ''): ?><p>Check the full order or invoice reference and any other filters.</p>
+                <?php elseif ($activeFilters): ?><p>Try another name or email, or clear the filters above.</p><?php endif; ?>
             </div>
         <?php endif; ?>
         <?php if ($pages > 1): ?>
             <nav class="users-pages" aria-label="Users pages">
-                <?php if ($page > 1): ?><a class="btn btn-outline" href="<?= e($directoryUrl(['page' => $page - 1])) ?>">Previous</a><?php endif; ?>
+                <?php if ($page > 1): ?><a class="btn btn-outline" href="<?= e($directoryUrl(['page' => $page - 1])) ?>"><?= $navIcon('previous') ?>Previous</a><?php endif; ?>
                 <span>Page <?= $page ?> of <?= $pages ?></span>
-                <?php if ($page < $pages): ?><a class="btn btn-outline" href="<?= e($directoryUrl(['page' => $page + 1])) ?>">Next</a><?php endif; ?>
+                <?php if ($page < $pages): ?><a class="btn btn-outline" href="<?= e($directoryUrl(['page' => $page + 1])) ?>">Next<?= $navIcon('next') ?></a><?php endif; ?>
             </nav>
         <?php endif; ?>
     </section>

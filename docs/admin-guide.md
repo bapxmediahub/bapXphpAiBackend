@@ -55,7 +55,9 @@ outside these tools.
 The owner-only **Users** workspace shows registered-account segments and
 keeps name/email search visible. **More filters** lets the owner combine
 role, matched order count, and the date or status of the latest dated order.
-The toolbar also supports sorting and page size.
+The toolbar also supports sorting, page size and lookup by full order or
+issued-invoice reference. An exact reference can match an older or undated
+order. If one account matches, its history opens and marks the matched order.
 The applied values and reset remain accessible when the panel is closed.
 Select an applied value to remove it while keeping the other selections.
 Filters carry through pagination. Expand an account for linked order
