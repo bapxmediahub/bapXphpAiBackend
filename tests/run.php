@@ -699,6 +699,9 @@ $tests['admin dashboard resolves all services and renders its actual zero-data p
         // with the existing isolated DB fixture to catch unresolved service names.
         $controller=(new ReflectionClass(\App\Controllers\AdminController::class))->newInstanceWithoutConstructor();
         ob_start();$controller->dashboard();$html=(string)ob_get_clean();
+        assertTrue(str_contains($html,'<h1>Dashboard</h1>'),'Admin heading uses the title supplied by the controller');
+        assertSame(1,preg_match_all('~<h1\b~',$html),'Dashboard has one page heading');
+        assertTrue(str_contains($html,'<h2 id="dashboard-commerce-title"'),'Commerce overview is a section heading');
         assertTrue(str_contains($html,'revenue-chart-title'),'Real dashboard controller reaches its chart template');
         assertTrue(str_contains($html,'No paid orders in this period.'),'Zero-data rendering remains safe through the full controller');
         assertTrue(!str_contains($html,'Fatal error'),'Controller page does not emit a runtime error');
@@ -4508,7 +4511,10 @@ $tests['both chat surfaces share accessible bounded request status'] = function 
         ], json_decode(implode("\n", $lines), true), 'Response, Monitoring and the saved turn report one outcome');
     }
     $admin = file_get_contents(app_path('views/layouts/admin.php'));
-    assertTrue(str_contains($admin, 'min-width: 0;') && str_contains($admin, 'flex-wrap: wrap; gap: var(--space-sm)'), 'Admin grid and mobile header must shrink without horizontal overflow');
+    $adminCss = file_get_contents(app_path('assets/css/admin-refinement.css'));
+    assertTrue(str_contains($admin, '/assets/css/admin-refinement.css'), 'The owner layout loads the responsive shell styles');
+    assertTrue((bool) preg_match('~\.admin-main\s*\{[^}]*min-width:\s*0~', $adminCss), 'The owner content column can shrink');
+    assertTrue((bool) preg_match('~\.admin-topbar\s*\{[^}]*flex-wrap:\s*wrap~', $adminCss), 'Mobile owner actions wrap without horizontal overflow');
 };
 
 $tests['public blog retires astrology category and default SEO without deleting owner records'] = function (): void {

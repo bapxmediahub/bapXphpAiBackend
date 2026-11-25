@@ -8,7 +8,7 @@ Answers use readable sections and relevant cards. When a completed report tool p
 
 ## Choose an owner task
 
-Open **What can I ask?** above the conversation. It lists tasks your authenticated owner session can use. **Use this question** fills the composer so you can add a product name or change the period before sending.
+Open **What can I ask?** above the conversation. It lists tasks your authenticated owner session can use. **Use this question** fills the composer so you can add a product name or change the period before sending. The examples below the composer also fill the message field.
 
 | Task | Example question | What the answer means |
 |---|---|---|

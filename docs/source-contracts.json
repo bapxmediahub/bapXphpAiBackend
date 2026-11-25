@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "5bc528985312485b9732d829b75addacb345765dfc1c767c85e38db4faa2ac99",
+            "source_sha256": "160120446ef0d740a9f76c3a65d2459efbe35fc9d1c263ab61530ea0a9d7f7a0",
             "references_sha256": "f5c7361b8ca9c867682dbafcde10dd099cdd71d35190bc7aaea8d770ba2d53ff",
-            "review_note": "Reviewed initial plan, candidate and per-transfer hold checks against runtime/observability docs and backend skill. Holds stop locally before model-attempt evidence, short waits reread current health, explicit probes bypass the gate, and locked tools never replay. Credentials remain confined to private health state."
+            "review_note": "Reviewed Enterprise chat and Monitoring against scoped first-round tool declarations, recorded request evidence and credential-scoped provider holds. Rechecks before transfer keep local skips outside attempt counts. Diagnostic probes bypass holds, and tool exchanges stay on their original model. The owner UI presents authorized prompts, saved history and bounded evidence."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -23,24 +23,24 @@
             "review_note": "Reviewed the two published customer Help articles against current templates and the BlogService and AdminHelpService handoff. Slugs, publication metadata and article rendering remain aligned with the content docs."
         },
         "foundation": {
-            "source_sha256": "f8fda746e7fc7a3e0b2e0ce59de40b8b9125da1e42d280c827ead7b3abf5521b",
+            "source_sha256": "908874452b8774a7e683b6764cf8d4a973e0b6d09936db89dba6f75646c61c83",
             "references_sha256": "6eba6651fd8e747d8053034a7812f9d41e6dba5a405bc1d1ed669556c8f2474b",
-            "review_note": "Checked architecture and private JSON storage against controller replay. Only accepted model responses use native presentation on replay and no replay refreshes business data or changes access scope."
+            "review_note": "Reviewed admin title and native navigation regression coverage against the rendering and request boundary. The browser checks keyboard expansion, visible destinations and module controls."
         },
         "google-tags": {
-            "source_sha256": "683b99f0a3158682ae753aef309c0a7339cdc4005f2e640b4e5c94d5f05fac49",
+            "source_sha256": "4f6a8463add868b4016e243e90638e9dc22e442dd5964fc6c25f71a578bc6e40",
             "references_sha256": "be818de53252de5004314d47c8f361a9815ccfb096c0b744f214371217ece1e7",
-            "review_note": "Checked the shared head tag calls and the Google integration guidance after adding storefront and shell validation to the frontend skill. The shop and shell changes preserve the existing tag rendering and secret boundaries."
+            "review_note": "Checked deployed public layout and owner integration references. Commerce presentation preserves the current tag and report setup."
         },
         "http-errors": {
-            "source_sha256": "2e2fee3211f50641844c05f86381f277f9c6c10b7fb60fb750c52937b0868e12",
+            "source_sha256": "63602cadbe59868b0d25a1b00729a589e75d1b31c6ea3a1b25c1e5a46fd06d50",
             "references_sha256": "d309fba94f0e9ed81e83cce280b9c5ac3560d4726227d058c866ee0ea4b12cd2",
-            "review_note": "Reviewed the new hosting instructions against existing request-failure guidance. A transport receipt remains distinct from a rendering response, and the worker preserves the canonical queue before reporting an outcome."
+            "review_note": "Compared the layout-specific title assignment with the request-error boundary. Website error status, sanitized error text and public not-found rendering follow their existing handlers."
         },
         "interface": {
-            "source_sha256": "065460b227b181d9bbbe949ca87f916b4933da197c57362a6210b96a5963c3cb",
-            "references_sha256": "9e9fd5692114c51b0b26f5fd2cea536dff11662d6aa2ac80214f21776b1bf1eb",
-            "review_note": "Compared the composed public templates and styles with Design and the frontend skill. Navigation, footer, active Support heading and form controls retain their focus behavior while the gallery and mobile product purchase controls retain their cart-tray clearance."
+            "source_sha256": "0be1f201b9a4b3f44183f7f4e781ed278c9e2b54beba232c43eac18f9a3e822a",
+            "references_sha256": "78a7b02bebedab3ffbaf8bc0004b5429405aabbcb2298a94af9a573dd864197b",
+            "review_note": "Checked mobile purchase focus geometry, home and checkout UI, owner workspace heading and responsive feedback, and retained both design sections."
         },
         "mail": {
             "source_sha256": "6895291447775bb17e9bef6c3d38d388ed65b3f5985b4c79bc71a9b4fa222c16",
@@ -54,13 +54,13 @@
         },
         "media": {
             "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
-            "references_sha256": "e46a00af045b0f554d796d480bc4c7bfe25b8464276587147872d4c29e2701f1",
-            "review_note": "Compared active-chat restoration and attachment changes with the media operator instructions, and confirmed upload and in-memory draft attachment regressions pass."
+            "references_sha256": "34433348ceb97accb0aea9b04f930b1ec0936825154d70c9ae872f155e0d2cbd",
+            "review_note": "Cross-checked the revised owner UI skill with the current media selection, confirmation and metadata flows. The existing media documentation still describes those operations."
         },
         "operator-help": {
-            "source_sha256": "f0ec8f16e245307620f0c0f5ad456ff8eb3a95cda5f38b03590ade73f9ec5517",
-            "references_sha256": "6a17fc3593574bbc57ca90ea7c5897cc8505c0c2e12e9ba952d1f9c80da5c5c1",
-            "review_note": "Cross-checked the published ordering, payment and Support help paths against merged public templates. The product, cart and checkout controls match their guides, and the existing Blog gate and owner guide scope remain in place."
+            "source_sha256": "aeaef93d7ac204b72942df0da9b1cd107daae1789711b49bed73ef2a1f0364af",
+            "references_sha256": "7e82e38381b508bfef30f868d205e79292161e5f4bc33707c505abaa8dc3850d",
+            "review_note": "Combined owner navigation and storefront customer help changes. Reviewed the public links, current task guides and private owner scope against the merged templates."
         },
         "public-mcp": {
             "source_sha256": "234155f55b0f66f669f6422a85acc30a6a59ebf216d8f682d7a212cd01ee7358",
@@ -69,8 +69,8 @@
         },
         "remote-commerce": {
             "source_sha256": "d240d614ae377c8a7195af73b09b5a49e762c87241bf86a1f65ff07985316f2e",
-            "references_sha256": "a475e9c6c410764e1342520843c3a61bbd9812c12a6a47c8be2dcb0a3723fa3e",
-            "review_note": "Reviewed the shared Support commerce and enquiry focus paths alongside the native product and checkout screens. Presentation and focus changes preserve the server-owned quote, verified payment, native order review and provider recovery contracts."
+            "references_sha256": "28cd1914c98dfc77f0e2650f4a3050e41b4df04fc712b86ad3e375d2e9d1a06c",
+            "review_note": "Checked cart and order reviews, gateway recovery and the shared Support/checkout guidance. Existing owner display and permissions do not change commerce persistence."
         },
         "sales-channels": {
             "source_sha256": "36385e3d18e26f524d0efdd12d26cd8386e368fb5d27441460c688ffdff28b92",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed SettingsService module resolution and Merchant feed guidance. Dropping a retired header slot leaves the saved catalog eligibility inputs intact."
         },
         "workflow": {
-            "source_sha256": "978e43ba22ffac6c3300e559c9c98b0cd7bbd0173be70a178671457a6e0df63b",
+            "source_sha256": "e6a75fc90a449158817dc1829ba534050310ac7d1d1b6dce7f137d6343c326b6",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Checked the frontend skill additions against the release workflow for keyboard, mobile and native form checks. Regenerated deterministic maps and verified cross-review scopes after integrating the storefront and shell."
+            "review_note": "Regenerated indexes after merging the deployed owner revision. Preserved the verified standalone browser, mapper and issue evidence procedure."
         }
     }
 }
