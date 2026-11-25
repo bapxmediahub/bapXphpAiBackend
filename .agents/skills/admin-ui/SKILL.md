@@ -113,7 +113,9 @@ Update when an admin route, sidebar group, or CRUD form contract changes. The si
 
 `/admin/agent/monitoring` displays last-24-hour metadata-only
 operational run counts, provider/tool failure timings and a clearly bounded
-recent sample of conversation feedback states. The offline PHP golden test
+recent sample of conversation feedback states. Show positive cURL milestones as
+cumulative elapsed times and keep the generic timeout label when the stage is
+unknown. Test the expanded attempt list at desktop and 375px. The offline PHP golden test
 score with its fixture hash is a regression score, **not** live model accuracy.
 A customer must explicitly vote positive before a chat is recorded as
 `confirmed_resolved`; silence is `awaiting_feedback`.

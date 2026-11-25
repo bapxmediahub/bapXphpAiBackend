@@ -4,7 +4,7 @@ Agent Monitoring separates Support and Enterprise activity. Request errors, prov
 
 ## Diagnose a failed answer
 
-Expand **Recent runs** and read the provider attempts in order. **Transfer timed out** with cURL 28 means that the application reached its transfer timeout. **No HTTP status** means the application recorded no response status. A first-byte timing, when available, tells you when the first response data arrived. Check the host connection and elapsed time before deciding where the delay occurred.
+Expand **Recent runs** and read the provider attempts in order. **Transfer timed out** with cURL 28 means that the application reached its transfer timeout. **No HTTP status** means the application recorded no response status. The milestone times are measured from the start of the attempt. If you see Transfer start but no HTTP status or first byte, no response was observed before the timeout. If First byte appears, response data had begun to arrive. Use the timestamps to guide diagnosis and check upstream status for the same model and time.
 
 **Upstream service error** means an HTTP 5xx response arrived. Check the provider status page for that time. For HTTP 429, check rate limits and quota before retrying. **HTTP success** can still accompany an empty answer or a failed application check. Inspect the run outcome and tool results as well as the transfer result.
 

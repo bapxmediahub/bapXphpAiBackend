@@ -9,6 +9,8 @@ final class AuditLogService {
     public const DIAGNOSTICS = [
         'catalogue_total_unverified' => ['Current catalogue total could not be verified', 'Compare the model response with the same-turn catalogue summary. The proposed total was withheld.'],
         'transfer_timeout' => ['Transfer timed out', 'Check the recorded HTTP status and first-byte timing. A timeout alone cannot identify where the delay occurred.'],
+        'timeout_before_first_byte' => ['Transfer timed out before a response was observed', 'cURL recorded transfer start. Compare elapsed time and provider status for this model.'],
+        'timeout_after_first_byte' => ['Transfer timed out after the first byte', 'Response data began arriving. Compare first-byte time with the total transfer time.'],
         'transport_error' => ['Transport error', 'Use the cURL error number to check DNS, connectivity or TLS on the application host.'],
         'upstream_http' => ['Upstream service error', 'Check the provider status page and the attempt time before making another request.'],
         'rate_limit' => ['Provider rate or quota limit', 'Check provider quota and rate limits before retrying.'],
@@ -34,11 +36,13 @@ final class AuditLogService {
         'rejected_response' => ['Answer rejected by application checks', 'Inspect the recorded checks and source evidence for this turn.'],
     ];
 
-    /** Classify the observed transfer, independently of whether the answer was accepted. */
+    /** Classify a sanitized transfer, independently of whether the answer was accepted. */
     public static function attemptDiagnosis(array $attempt): string {
         $status = (int)($attempt['status'] ?? 0);
         $error = (int)($attempt['curl_error'] ?? 0);
         return match (true) {
+            $error === 28 && ($attempt['first_byte_ms'] ?? 0) > 0 => 'timeout_after_first_byte',
+            $error === 28 && $status === 0 && ($attempt['ready_ms'] ?? 0) > 0 => 'timeout_before_first_byte',
             $error === 28 => 'transfer_timeout',
             $error !== 0 => 'transport_error',
             $status === 0 => 'no_http',

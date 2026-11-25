@@ -845,9 +845,15 @@ final class AiClient
         $body = curl_exec($ch);
         $this->transportError = curl_errno($ch);
         $status = (int)curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        // PHP reports these milestones in seconds and uses zero for unreached stages.
-        // https://www.php.net/manual/en/function.curl-getinfo.php
-        $firstByteMs = 1000 * curl_getinfo($ch, CURLINFO_STARTTRANSFER_TIME);
+        // Cumulative elapsed time since cURL started this transfer.
+        // https://curl.se/libcurl/c/CURLINFO_PRETRANSFER_TIME.html
+        // https://curl.se/libcurl/c/CURLINFO_STARTTRANSFER_TIME.html
+        $milestones = AgentTraceService::attemptTimings([
+            'dns_ms' => 1000 * curl_getinfo($ch, CURLINFO_NAMELOOKUP_TIME),
+            'connect_ms' => 1000 * curl_getinfo($ch, CURLINFO_CONNECT_TIME),
+            'ready_ms' => 1000 * curl_getinfo($ch, CURLINFO_PRETRANSFER_TIME),
+            'first_byte_ms' => 1000 * curl_getinfo($ch, CURLINFO_STARTTRANSFER_TIME),
+        ]);
         // Keep only an allowlisted diagnostic hint, never the provider body/message.
         $hint=self::requestErrorHint($status,$body);
         $diagnosticFields=$hint===null?[]:['request_error_hint'=>$hint];
@@ -869,18 +875,15 @@ final class AiClient
             'cycle'=>$this->cycle,'attempt_in_model'=>$this->modelAttempt,
             'status' => $status,
             'curl_error' => $this->transportError,
-            'dns_ms' => 1000 * curl_getinfo($ch, CURLINFO_NAMELOOKUP_TIME),
-            'connect_ms' => 1000 * curl_getinfo($ch, CURLINFO_CONNECT_TIME),
-            'ready_ms' => 1000 * curl_getinfo($ch, CURLINFO_PRETRANSFER_TIME),
             'timeout_ms' => $timeoutMs,
             'total_ms' => 1000 * curl_getinfo($ch, CURLINFO_TOTAL_TIME),
-        ] + $this->activeConnection + $diagnosticFields + ($firstByteMs > 0 ? ['first_byte_ms' => $firstByteMs] : []);
+        ] + $this->activeConnection + $diagnosticFields + $milestones;
         AgentTraceService::endSpan($span,($body===false||$status<200||$status>=300)?'error':'complete',[
             'http_status'=>$status, 'curl_error'=>$this->transportError, 'timeout_ms'=>$timeoutMs,
             'cycle'=>$this->cycle,'attempt_in_model'=>$this->modelAttempt,'provider'=>$this->activeConnection['provider']??null,
             'request_sha256'=>hash('sha256',$payload),
             'usage'=>$usage,
-        ] + $diagnosticFields + ($firstByteMs > 0 ? ['first_byte_ms' => $firstByteMs] : []));
+        ] + $diagnosticFields + $milestones);
         unset($ch);
         $this->failureCategory = ($body === false || $status !== 200) ? self::classifyFailure($status, $this->transportError) : null;
         return $body;

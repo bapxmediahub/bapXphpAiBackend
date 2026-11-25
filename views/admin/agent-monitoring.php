@@ -99,7 +99,17 @@
                                 <?php if(isset($attempt['retry_after_ms'])): ?> · provider retry delay <?= e(number_format($attempt['retry_after_ms']/1000,3)) ?> s<?php endif; ?>
                                 <?php if(isset($attempt['usage']['total_tokens'])): ?> · <?= (int)$attempt['usage']['total_tokens'] ?> tokens reported<?php endif; ?>
                                 <?php if (isset($attempt['timeout_ms'])): ?> · <?= (int)$attempt['timeout_ms'] ?> ms timeout<?php endif; ?>
-                                <?php if (isset($attempt['first_byte_ms'])): ?> · first byte at <?= e(number_format($attempt['first_byte_ms'], 1)) ?> ms<?php endif; ?>
+                                <?php
+                                $timingLabels = ['dns_ms' => 'DNS resolved', 'connect_ms' => 'Connected', 'ready_ms' => 'Transfer start', 'first_byte_ms' => 'First byte'];
+                                $milestones = array_intersect_key($timingLabels, $attempt);
+                                ?>
+                                <?php if ($milestones): ?>
+                                    <span class="agent-monitor-milestones">
+                                        <?php foreach ($milestones as $key => $label): ?>
+                                            <span><?= e($label) ?> at <?= e(number_format($attempt[$key], 3)) ?> ms</span>
+                                        <?php endforeach; ?>
+                                    </span>
+                                <?php endif; ?>
                             </li>
                         <?php endforeach; ?>
                     </ol>

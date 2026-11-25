@@ -26,6 +26,10 @@
 .admin-sidebar .admin-nav-section-label { padding-inline-start: calc(var(--space-lg) + 16px); }
 .agent-monitor-run { padding: .7rem 0; border-top: 1px solid var(--color-border-light); overflow-wrap: anywhere; }
 .agent-monitor-run summary { cursor: pointer; }
+.agent-monitor-milestones {
+    display: flex; flex-wrap: wrap; gap: .1rem .8rem; margin: .15rem 0 .45rem;
+    color: var(--color-text-muted); font-size: .875em; font-variant-numeric: tabular-nums;
+}
 .enterprise-chat { width: min(100%, 800px); margin: 0 auto; padding: clamp(.5rem, 4vw, 2rem) 0; }
 .enterprise-chat__intro { text-align: center; margin: 0 auto 2rem; max-width: 55ch; }
 .enterprise-chat__intro h1 { margin: 0 0 .5rem; font-size: clamp(1.7rem, 4vw, 2.5rem); }
