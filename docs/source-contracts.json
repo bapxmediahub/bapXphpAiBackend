@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "5bc528985312485b9732d829b75addacb345765dfc1c767c85e38db4faa2ac99",
-            "references_sha256": "f5c7361b8ca9c867682dbafcde10dd099cdd71d35190bc7aaea8d770ba2d53ff",
-            "review_note": "Reviewed initial plan, candidate and per-transfer hold checks against runtime/observability docs and backend skill. Holds stop locally before model-attempt evidence, short waits reread current health, explicit probes bypass the gate, and locked tools never replay. Credentials remain confined to private health state."
+            "source_sha256": "5fd13908de25c300715c296ae935e1e4a97d08f23fd30498f34aa4cd5a2ae257",
+            "references_sha256": "77d5b3b1de6168b6006e85dc26574b0574988ed1fc5f847f3430ac0317ed1c6b",
+            "review_note": "Cross-checked initial ready-model selection and all-held fallback with transfer-time hold checks, bounded waiting, existing locked tool exchanges, and attempt evidence in the runtime and observability guides."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
