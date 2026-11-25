@@ -249,6 +249,23 @@ try {
         $client=new AiClient(health:$health);
         $reply=$routeAll->invoke($client,'Reply connection ok',256,0.0,null,null,0,$plan);
         check(AiClient::isError($reply)&&$client->failureCategory()==='provider_cooldown'&&$client->transferTimings()===[],'All cooled models return honest local outcome without transfers');
+        $rotated = $plan;
+        $rotated[0]['apiKey'] = 'replacement-fixture-key';
+        $rotated[0]['models'] = [SecretService::FALLBACK_MODEL];
+        $rotated[0]['model'] = SecretService::FALLBACK_MODEL;
+        $client = new AiClient(health: new \App\Services\AiProviderHealthService($healthFile));
+        $reply = $routeAll->invoke($client, 'Reply connection ok', 256, 0.0, null, null, 0, $rotated);
+        check($reply === 'connection ok' && count($client->transferTimings()) === 1,
+            'Replacement credential reaches the provider while the old credential is held');
+        check($health->availablePlan($plan) === [], 'Replacement success leaves the old credential holds intact');
+        $healthContents = file_get_contents($healthFile);
+        $entries = json_decode($healthContents, true)['entries'];
+        $diagnostics = json_encode($client->transferTimings());
+        check(!str_contains($diagnostics, 'replacement-fixture-key') && !str_contains($healthContents, 'fixture-key'),
+            'Neither transport diagnostics nor health storage reveal credentials');
+        foreach (array_keys($entries) as $fingerprint) {
+            check(!str_contains($diagnostics, $fingerprint), 'Private health identity never enters attempt diagnostics');
+        }
         $diagnosticPlan=$plan;$diagnosticPlan[0]['models']=[SecretService::FALLBACK_MODEL];$diagnosticPlan[0]['model']=SecretService::FALLBACK_MODEL;
         $reply=$routeAll->invoke($client,'Reply connection ok',256,0.0,null,null,0,$diagnosticPlan,true);
         check($reply==='connection ok'&&count($client->transferTimings())===1,'Explicit diagnostic bypasses cooldown');

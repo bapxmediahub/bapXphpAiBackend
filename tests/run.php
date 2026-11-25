@@ -941,6 +941,52 @@ $tests['provider cooldown is bounded, deployment local, and stores no raw creden
     } finally {foreach(glob($dir.'/*')?:[] as $file)unlink($file);rmdir($dir);}
 };
 
+$tests['provider holds follow configured credentials across rotation and legacy state'] = static function (): void {
+    $directory = sys_get_temp_dir() . '/bapx-health-rotation-' . bin2hex(random_bytes(6));
+    mkdir($directory, 0700);
+    $path = $directory . '/health.json';
+    $now = 1800000000;
+    $oldPlan = [['provider' => 'google', 'endpoint' => 'https://fixture.example.invalid/v1',
+        'apiKey' => 'fixture-old-private-key', 'models' => ['primary'], 'model' => 'primary']];
+    $newPlan = $oldPlan;
+    $newPlan[0]['apiKey'] = 'fixture-new-private-key';
+    try {
+        $oldWorker = new \App\Services\AiProviderHealthService($path);
+        $newWorker = new \App\Services\AiProviderHealthService($path);
+        $oldWorker->record($oldPlan[0], 'primary', 429, 0, 60000, $now);
+        assertSame([], $newWorker->availablePlan($oldPlan, $now, true), 'A fresh worker retains the same credential hold');
+        assertSame($newPlan, $newWorker->availablePlan($newPlan, $now, true), 'A replacement credential starts eligible');
+        $newWorker->record($newPlan[0], 'primary', 429, 0, 60000, $now + 1);
+        assertSame([], $oldWorker->availablePlan($newPlan, $now + 1, true), 'New credential holds survive another worker read');
+        $oldWorker->record($oldPlan[0], 'primary', 200, 0, null, $now + 2);
+        assertSame([], $newWorker->availablePlan($newPlan, $now + 2, true), 'Old-key success cannot clear a replacement-key hold');
+        $newWorker->record($newPlan[0], 'primary', 200, 0, null, $now + 3);
+        $oldWorker->record($oldPlan[0], 'primary', 429, 0, 60000, $now + 4);
+        assertSame($newPlan, $newWorker->availablePlan($newPlan, $now + 4, true), 'Late old-key failure cannot suppress replacement');
+        assertSame([], $newWorker->availablePlan($oldPlan, $now + 4, true), 'Late old-key failure stays scoped to its observed credential');
+        $missingKey = $oldPlan;
+        unset($missingKey[0]['apiKey']);
+        $oldWorker->record($missingKey[0], 'primary', 429, 0, 60000, $now + 5);
+        assertSame($missingKey, $newWorker->availablePlan($missingKey, $now + 5, true), 'Missing credentials cannot create unscoped holds');
+        $stored = file_get_contents($path);
+        assertTrue(!str_contains($stored, 'fixture-old-private-key') && !str_contains($stored, 'fixture-new-private-key')
+            && !str_contains($stored, 'fixture.example.invalid'), 'Health files contain no raw connection or credential');
+
+        $legacyKey = hash('sha256', "google\0https://fixture.example.invalid/v1\0primary");
+        foreach ([$now + 600, ['until' => $now + 600, 'provider_hold' => true]] as $legacy) {
+            file_put_contents($path, json_encode([$legacyKey => $legacy]));
+            assertSame($newPlan, $newWorker->availablePlan($newPlan, $now, true), 'Unscoped legacy holds cannot suppress a credential');
+        }
+        $newWorker->record($newPlan[0], 'primary', 429, 0, 60000, $now);
+        $migrated = json_decode(file_get_contents($path), true);
+        assertSame(2, $migrated['version'], 'The first new observation replaces legacy data with the scoped format');
+        assertSame(1, count($migrated['entries']), 'Unscoped legacy entries are discarded during replacement');
+    } finally {
+        foreach (glob($directory . '/*') ?: [] as $file) unlink($file);
+        rmdir($directory);
+    }
+};
+
 $tests['Google structured quota recovery respects provider delays and redacts project metadata'] = static function (): void {
     $client=\App\Services\AiClient::class;
     $body=json_encode(['error'=>['message'=>'private-project-detail','details'=>[

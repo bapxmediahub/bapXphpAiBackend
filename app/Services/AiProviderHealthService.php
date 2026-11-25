@@ -10,13 +10,25 @@ final class AiProviderHealthService
 {
     private const MAX_COOLDOWN = 86400;
     private const MAX_ENTRIES = 64;
+    private const FORMAT_VERSION = 2;
 
     public function __construct(private ?string $path = null) {
-        $this->path ??= storage_path('logs/ai-provider-health.json');
+        $this->path ??= storage_path('logs/ai-provider-health-v2.json');
     }
 
-    private static function key(array $connection,string $model): string {
-        return hash('sha256',(string)($connection['provider']??'')."\0".(string)($connection['endpoint']??'')."\0".$model);
+    /** The configured credential scopes holds without being persisted or returned. */
+    private static function key(array $connection, string $model): ?string {
+        $credential = $connection['apiKey'] ?? null;
+        $provider = $connection['provider'] ?? null;
+        $endpoint = $connection['endpoint'] ?? null;
+        if (!is_string($credential) || trim($credential) === ''
+            || !is_string($provider) || $provider === ''
+            || !is_string($endpoint) || $endpoint === '' || $model === '') {
+            return null;
+        }
+        $identity = json_encode([self::FORMAT_VERSION, $provider, $endpoint, $model]);
+        if (!is_string($identity)) return null;
+        return hash_hmac('sha256', $identity, $credential);
     }
 
     /** Respect observed transient failures and the provider's explicit delay. */
@@ -42,12 +54,13 @@ final class AiProviderHealthService
         $raw=@file_get_contents($this->path,false,null,0,16385);
         if(!is_string($raw)||strlen($raw)>16384)return [];
         $data=json_decode($raw,true);
-        if(!is_array($data))return [];
+        // Unscoped legacy entries cannot identify which credential observed a hold.
+        if (!is_array($data) || ($data['version'] ?? null) !== self::FORMAT_VERSION
+            || !is_array($data['entries'] ?? null)) return [];
         $out=[];
-        foreach($data as $key=>$record) {
-            // Older deployments stored integer expiries for all transient errors.
-            // Such observations are not provider-mandated holds.
-            $until=is_int($record)?$record:($record['until']??null);
+        foreach($data['entries'] as $key=>$record) {
+            if (!is_array($record)) continue;
+            $until=$record['until']??null;
             // An exact 24-hour delay may round up to the next epoch second.
             if(is_string($key)&&preg_match('/^[a-f0-9]{64}$/D',$key)&&is_int($until)
                 &&$until>$now&&$until<=$now+self::MAX_COOLDOWN+1)$out[$key]=[
@@ -62,7 +75,10 @@ final class AiProviderHealthService
         if($providerHoldsOnly)$cooldowns=array_filter($cooldowns,static fn(array $r):bool=>$r['provider_hold']);
         $out=[];
         foreach($plan as $connection) {
-            $models=array_values(array_filter($connection['models'],static fn(string $model):bool=>!isset($cooldowns[self::key($connection,$model)])));
+            $models = array_values(array_filter($connection['models'], static function (string $model) use ($connection, $cooldowns): bool {
+                $key = self::key($connection, $model);
+                return $key === null || !isset($cooldowns[$key]);
+            }));
             if($models===[])continue;
             $connection['models']=$models;
             $connection['model']=$models[0];
@@ -73,7 +89,8 @@ final class AiProviderHealthService
 
     /** No storage error may prevent an otherwise eligible provider request. */
     public function record(array $connection, string $model, int $status, int $curlError, ?int $retryAfterMs = null, ?float $now = null): void {
-        if (empty($connection['provider']) || empty($connection['endpoint']) || $model === '') return;
+        $key = self::key($connection, $model);
+        if ($key === null) return;
         $delayMs = self::cooldownMs($status, $curlError, $retryAfterMs);
         $success = $status === 200 && $curlError === 0;
         if ($delayMs === 0 && !$success) return;
@@ -88,7 +105,6 @@ final class AiProviderHealthService
         try {
             if(!flock($lock,LOCK_EX|LOCK_NB))return;
             $data = $this->read((int)$now);
-            $key = self::key($connection, $model);
             if ($success) {
                 unset($data[$key]);
             } else {
@@ -103,7 +119,7 @@ final class AiProviderHealthService
             }
             uasort($data,static fn(array $a,array $b):int=>$b['until']<=>$a['until']);
             $data=array_slice($data,0,self::MAX_ENTRIES,true);
-            $json=json_encode((object)$data);
+            $json=json_encode(['version' => self::FORMAT_VERSION, 'entries' => (object)$data]);
             if(!is_string($json))return;
             $tmp=@tempnam($dir,'.ai-health-');
             if($tmp===false)return;
