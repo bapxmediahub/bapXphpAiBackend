@@ -88,6 +88,10 @@ final class SecretService {
             if (array_key_exists($flag,$values) && !in_array($values[$flag],['0','1'],true))
                 throw new \InvalidArgumentException('Choose a valid provider on/off setting.');
         }
+        if (array_key_exists('ai_compatible_token_field', $values)
+            && !in_array($values['ai_compatible_token_field'], ['auto', 'max_completion_tokens', 'max_tokens'], true)) {
+            throw new \InvalidArgumentException('Choose a valid Chat Completions token limit field.');
+        }
         foreach (['ai_google_models','ai_openrouter_models'] as $field) {
             if (!array_key_exists($field,$values)) continue;
             if (!is_string($values[$field])) throw new \InvalidArgumentException('Enter valid model IDs.');
@@ -266,6 +270,7 @@ final class SecretService {
         $validModels = count($models) >= 1 && count($models) <= 5
             && count(array_filter($models, self::validModelId(...))) === count($models);
         $apiKey = trim((string)($settings['ai_compatible_key'] ?? ''));
+        $tokenField = $settings['ai_compatible_token_field'] ?? 'auto';
         $configured = $validEndpoint && $validModels && $apiKey !== '' && !preg_match('/[\r\n]/', $apiKey);
         return [
             'provider' => 'openai_compatible',
@@ -273,6 +278,7 @@ final class SecretService {
             'apiKey' => $configured ? $apiKey : '',
             'models' => $validModels ? $models : [],
             'model' => $validModels ? $models[0] : '',
+            'tokenField' => in_array($tokenField, ['max_completion_tokens', 'max_tokens'], true) ? $tokenField : null,
             'configured' => $configured,
         ];
     }

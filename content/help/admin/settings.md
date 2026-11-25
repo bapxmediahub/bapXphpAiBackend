@@ -24,6 +24,15 @@ Use the screen's explicit save action, then test the affected feature with appro
 
 If a change fails, record the safe error and exact section for the developer team rather than repeatedly submitting or bypassing checks. These guides do not expose deployment files, private agent instructions or an unrestricted database tool.
 
+## Configure Chat Completions for both agents
+
+Under **Integrations → AI Providers and Models**, enable the custom
+OpenAI-compatible connection and enter its HTTPS base URL, key and model IDs.
+Select the token limit field supported by the endpoint or leave it on
+**Automatic**. To use only this connection for Support and Enterprise, select it
+as preferred and disable the Google and OpenRouter connections. Save the AI
+settings, then run **Text** and **Tools** diagnostics for the exact model.
+
 ## Check System Health before hosting changes
 
 Open **System Health** in Settings to see the actual web PHP version, identified database engine/version and required extensions. The native platform target is stable PHP 8.3 or newer and MySQL 8.4 or newer. A higher MariaDB number does not make it MySQL 8.4.
