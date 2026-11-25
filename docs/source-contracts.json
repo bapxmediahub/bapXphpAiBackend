@@ -28,9 +28,9 @@
             "review_note": "Checked architecture and private JSON storage against controller replay. Only accepted model responses use native presentation on replay and no replay refreshes business data or changes access scope."
         },
         "google-tags": {
-            "source_sha256": "55d5b46aafaf292fdd19001910dc1072be3ebb1f1cea31a7dbfc3948db3b178f",
-            "references_sha256": "a5171af3cdcf8af29a7c52cfa8474f1de99fbf673bc6730457ec13073b641027",
-            "review_note": "Reviewed the frontend skill diff against its Google tag and reporting boundary. The added storefront verification covers product, category, cart and checkout controls and preserves public tag rendering and secret handling."
+            "source_sha256": "683b99f0a3158682ae753aef309c0a7339cdc4005f2e640b4e5c94d5f05fac49",
+            "references_sha256": "be818de53252de5004314d47c8f361a9815ccfb096c0b744f214371217ece1e7",
+            "review_note": "Checked the shared head tag calls and the Google integration guidance after adding storefront and shell validation to the frontend skill. The shop and shell changes preserve the existing tag rendering and secret boundaries."
         },
         "http-errors": {
             "source_sha256": "2e2fee3211f50641844c05f86381f277f9c6c10b7fb60fb750c52937b0868e12",
@@ -38,9 +38,9 @@
             "review_note": "Reviewed the new hosting instructions against existing request-failure guidance. A transport receipt remains distinct from a rendering response, and the worker preserves the canonical queue before reporting an outcome."
         },
         "interface": {
-            "source_sha256": "d36bb5b9b00dfc20cf0cee78d19b8d3a027e41a2b583ff4ccd4dc103122de902",
-            "references_sha256": "29a92461878169a410770e4990fe60f79bf1f8f125829a6844ae87c470c7322b",
-            "review_note": "Compared mobile product geometry and two-decimal pricing with Design. The gallery remains uncropped and short-viewport keyboard focus has native scrolling clearance above an active cart tray."
+            "source_sha256": "065460b227b181d9bbbe949ca87f916b4933da197c57362a6210b96a5963c3cb",
+            "references_sha256": "9e9fd5692114c51b0b26f5fd2cea536dff11662d6aa2ac80214f21776b1bf1eb",
+            "review_note": "Compared the composed public templates and styles with Design and the frontend skill. Navigation, footer, active Support heading and form controls retain their focus behavior while the gallery and mobile product purchase controls retain their cart-tray clearance."
         },
         "mail": {
             "source_sha256": "6895291447775bb17e9bef6c3d38d388ed65b3f5985b4c79bc71a9b4fa222c16",
@@ -58,19 +58,19 @@
             "review_note": "Compared active-chat restoration and attachment changes with the media operator instructions, and confirmed upload and in-memory draft attachment regressions pass."
         },
         "operator-help": {
-            "source_sha256": "b04db6795d71798e5ec76c610f16dc189b03395e016ec18ce7ae4d82bd94928e",
+            "source_sha256": "f0ec8f16e245307620f0c0f5ad456ff8eb3a95cda5f38b03590ade73f9ec5517",
             "references_sha256": "6a17fc3593574bbc57ca90ea7c5897cc8505c0c2e12e9ba952d1f9c80da5c5c1",
-            "review_note": "Reviewed the merged owner and customer guide dependencies. The Enterprise order-count declaration advertises its existing role-scoped all-time choice. The unchanged public Help links describe the visible product stock, quantity, price and purchase actions, cart unit price and checkout review controls."
+            "review_note": "Cross-checked the published ordering, payment and Support help paths against merged public templates. The product, cart and checkout controls match their guides, and the existing Blog gate and owner guide scope remain in place."
         },
         "public-mcp": {
-            "source_sha256": "06a7b8ef4b99e3c70cbae0dbf6ee2b7c97029aabb851906dc8e2e50d9f81c253",
-            "references_sha256": "e78d7cca0b62659190fdfe23f3ed927f456533f97faaa8297cc08ae004008b33",
-            "review_note": "Checked removal of the question-to-A2UI heuristic alongside public MCP and A2UI details. Public and chat presenters consume typed authorized source evidence and selected published products."
+            "source_sha256": "234155f55b0f66f669f6422a85acc30a6a59ebf216d8f682d7a212cd01ee7358",
+            "references_sha256": "d1e0824e500f825020b2cccfaad7fd435a8fefbe73d61e1b5f05fd54fed0b829",
+            "review_note": "Checked the rendered Support enquiry controls against the current public MCP and A2UI documentation. Focus scrolling keeps the existing tool and submission contracts."
         },
         "remote-commerce": {
-            "source_sha256": "942adc2ce9af96bb1155e1bf07827ea7e97386ac313c66f00827eaf717728515",
-            "references_sha256": "186a7da1ab84078afe36527c9a7a0236dea078d5d44f111e22b1cd684d5f920c",
-            "review_note": "Reviewed the product-detail layout and two-decimal price convention in Design. The checkout summaries, gateway callback and remote commerce contract remain governed by their existing resolved amounts."
+            "source_sha256": "d240d614ae377c8a7195af73b09b5a49e762c87241bf86a1f65ff07985316f2e",
+            "references_sha256": "a475e9c6c410764e1342520843c3a61bbd9812c12a6a47c8be2dcb0a3723fa3e",
+            "review_note": "Reviewed the shared Support commerce and enquiry focus paths alongside the native product and checkout screens. Presentation and focus changes preserve the server-owned quote, verified payment, native order review and provider recovery contracts."
         },
         "sales-channels": {
             "source_sha256": "36385e3d18e26f524d0efdd12d26cd8386e368fb5d27441460c688ffdff28b92",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed SettingsService module resolution and Merchant feed guidance. Dropping a retired header slot leaves the saved catalog eligibility inputs intact."
         },
         "workflow": {
-            "source_sha256": "9ddef368ef230773cc76294f26e4cf682bfeec8405f3d0991389a842fa7d0d09",
+            "source_sha256": "978e43ba22ffac6c3300e559c9c98b0cd7bbd0173be70a178671457a6e0df63b",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Compared the updated frontend skill with the source review and regeneration workflow. The new assertions describe existing native form routes and keyboard behavior without adding a tracker or changing release gates."
+            "review_note": "Checked the frontend skill additions against the release workflow for keyboard, mobile and native form checks. Regenerated deterministic maps and verified cross-review scopes after integrating the storefront and shell."
         }
     }
 }

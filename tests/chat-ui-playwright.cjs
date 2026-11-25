@@ -61,7 +61,16 @@ for(const width of [375,1280])test('Existing Support panel compact composer and 
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   try{
     await route(page,support.html.replace('<head>','<head><meta charset="utf-8">'));await page.goto(origin,{waitUntil:'load'});
-    await page.getByRole('button',{name:'Support',exact:true}).click();
+    const launcher=page.getByRole('button',{name:'Support',exact:true});
+    await launcher.press('Enter');
+    assert.equal(await page.locator('#support-title').evaluate(el=>el===document.activeElement),true);
+    const close=page.getByRole('button',{name:'Close support'});
+    const target=await close.boundingBox();
+    assert.ok(target.width>=44 && target.height>=44,'Support dismissal must have a usable touch target');
+    await close.press('Escape');
+    assert.equal(await page.locator('#support-panel').isVisible(),false);
+    assert.equal(await launcher.evaluate(el=>el===document.activeElement),true);
+    await launcher.click();
     const rendered=await page.evaluate(surface=>{
       const target=document.createElement('section');
       document.getElementById('support-log').appendChild(target);
