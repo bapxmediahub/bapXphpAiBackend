@@ -56,6 +56,11 @@ business tools per turn. The `tool_search` meta-tool can enable up to four
 matching declarations per search, with eight active business tools total; an
 unknown exact identifier never activates a substitute. Both provider loops
 refresh declarations each round while retaining correlated tool-call history.
+The initial declarations cover common wording for the published shop total,
+delivery charges, and total orders. Support can use the public catalogue or
+shipping policy directly. Enterprise can request `order_count` with `all_time`
+to count dated orders across all statuses. A model-selected direct call returns
+the matching task guidance with its result in the same tool exchange.
 Discovery returns metadata, not records. The full role-filtered tool metadata
 catalogue is visible to the model; lexical seeding only prioritizes declarations.
 A fresh free-form turn has no server-selected business lookup or answer bypass.
