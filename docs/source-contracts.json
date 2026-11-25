@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "3c6e1cb910ca0d8ad6ca0e30e7c295bb08df0df79ff147624fc80603a23a8525",
-            "references_sha256": "2c8654ee43fa416f7cbc932e0d148d5069fe1a534be92a8f84a8512d3870098d",
-            "review_note": "Retained the reviewed provider role and tool-call behavior and compared the added storage skill against the agent instructions. Download access stays with the PHP route."
+            "source_sha256": "bde2bde8a9de8bf32dc819c741e87a13e30ec696f95f2049814fee7028c63a73",
+            "references_sha256": "bcdcc214a330193a60997d89de5d77b4e09754b26e1483c3679684a1dd9a3b22",
+            "review_note": "Cross-checked ready-first provider selection, bounded cooldown and native tool routing against the updated runtime and observability docs. Protected files remain scoped to PHP."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -29,8 +29,8 @@
         },
         "google-tags": {
             "source_sha256": "366fdab983979cc3a1fec22fb6da4afb61072d6fd24cd0ba2271d67a0c063019",
-            "references_sha256": "cf0782590bfba110469d8e40d1b532e09a1a8b261cf41f59f00b312c7e528cd7",
-            "review_note": "Reviewed the merged analytics defaults and reporting guidance with the new frontend download pattern. Downloads continue to use ordinary native links."
+            "references_sha256": "4f45021d1a3d34906fd47b1d74a23b9efde06284298f50fa6b7edc2975e15239",
+            "review_note": "Compared the updated integration and provider examples with the Google reporting and analytics contracts, and cross-reviewed native download links against the frontend skill."
         },
         "http-errors": {
             "source_sha256": "0f920c297cfc4e216a87be02a35c20827cc254dd6934ba24a1fa9135520a0560",
@@ -49,8 +49,8 @@
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
-            "references_sha256": "4274d502f7d2500a1a88e8dbb5d2626a6930d3b01197a0698083f41c03981144",
-            "review_note": "Reviewed the merged Integrations page references against the MCP client guide and approved route inventory. Display-group changes are owner navigation and preserve the client capability and config instructions."
+            "references_sha256": "73c4e7ed550ac139d52f0e560ab34a74738e8f4aa2ae6fc87c9e635c9dcd4d43",
+            "review_note": "Checked the merged Integrations guide against the local MCP client controller and form. The owner issues and revokes a paid-sales grant, and the trusted STDIO client receives it through its process environment."
         },
         "media": {
             "source_sha256": "edc32a5a9f73cf7f2954eac135a2eaed1394089034bac24ea835af48c4d9600e",

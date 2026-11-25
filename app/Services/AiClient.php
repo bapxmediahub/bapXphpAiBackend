@@ -357,12 +357,10 @@ final class AiClient
             if($plan){$plan[0]['models']=[$override];$plan[0]['model']=$override;}
         }
         if(!$plan){$this->failureCategory='not_configured';return 'No AI API key or enabled model is configured. Check Admin → Integrations.';}
-        if(!$diagnostic&&$override===null&&$this->health!==null){
-            $plan=$this->health->availablePlan($plan,null,true);
-            if(!$plan){
-                $this->failureCategory='provider_cooldown';
-                return $this->failureMessage(0, false);
-            }
+        if (!$this->bypassProviderHolds && $this->health !== null) {
+            // Prefer ready models. If all are held, let the existing bounded
+            // gate decide whether a short hold can expire during this turn.
+            $plan = $this->health->availablePlan($plan, null, true) ?: $plan;
         }
         if(!function_exists('curl_init')){$this->failureCategory='transport';return 'AI request failed: cURL is not available on this server.';}
         $deadline=hrtime(true)+self::GENERATION_TIMEOUT_NS;
@@ -530,6 +528,12 @@ final class AiClient
                 $advertised=array_map(static fn(array $declaration):string=>$declaration['function']['name'],$declarations);
                 $payload = ['model' => $model, 'messages' => $messages];
                 $payload[$tokenField] = $maxTokens;
+                // Luna tool calling on Chat Completions requires reasoning_effort=none.
+                // https://developers.openai.com/api/docs/models/gpt-6-luna
+                if ($officialOpenAi && $tools !== null
+                    && preg_match('/^gpt-6-luna(?:-\d{4}-\d{2}-\d{2})?$/D', $model) === 1) {
+                    $payload['reasoning_effort'] = 'none';
+                }
                 if ($declarations !== []) {
                     $payload['tools'] = $declarations;
                     $payload['tool_choice'] = $round < $maxRounds ? 'auto' : 'none';
@@ -543,15 +547,25 @@ final class AiClient
                     if ($hasModelAlternate && $this->waitForFailover($status, $deadline, $index)) break;
                     return $this->failureMessage($status, $body);
                 }
-                $choice=json_decode($body,true)['choices'][0]??[];
-                $message=$choice['message']??[];
-                $calls=$message['tool_calls']??[];
+                $choices = json_decode($body)->choices ?? null;
+                $choice = is_array($choices) ? ($choices[0] ?? null) : null;
+                $message = $choice->message ?? null;
+                $wireCalls = $message->tool_calls ?? [];
                 // Only a completed assistant turn can produce an answer or dispatch tools.
-                $expectedFinish = $calls === [] ? 'stop' : 'tool_calls';
-                if (!is_array($choice) || !is_array($message) || ($message['role'] ?? null) !== 'assistant'
-                    || !is_array($calls) || !array_is_list($calls) || ($choice['finish_reason'] ?? null) !== $expectedFinish) {
+                $expectedFinish = $wireCalls === [] ? 'stop' : 'tool_calls';
+                if (!($message instanceof \stdClass) || ($message->role ?? null) !== 'assistant'
+                    || !is_array($wireCalls) || ($choice->finish_reason ?? null) !== $expectedFinish) {
                     return $this->incompleteResponse();
                 }
+                $calls = array_map(static fn(mixed $call): array => [
+                    'id' => $call->id ?? null,
+                    'type' => $call->type ?? null,
+                    'function' => [
+                        'name' => $call->function->name ?? null,
+                        'arguments' => $call->function->arguments ?? null,
+                    ],
+                ], $wireCalls);
+                $message = get_object_vars($message);
                 if($calls!==[]&&($tools===null||$round===$maxRounds))return $this->incompleteResponse();
                 if ($calls === []) {
                     $refusal = $message['refusal'] ?? null;
