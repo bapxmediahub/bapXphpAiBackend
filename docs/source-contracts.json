@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "bde2bde8a9de8bf32dc819c741e87a13e30ec696f95f2049814fee7028c63a73",
+            "source_sha256": "bcce800df0740538faa391ff1ee86947fb220ddbf7a43ba3b9df991f770fa809",
             "references_sha256": "7877fc3fefee280d90bd141197a06fdaeccf234a4c6cef9a67a2050535dce3ce",
-            "review_note": "Matched evaluated HTTP 503, opaque trace ID validation, safe public replies, and saved-turn replay to the Support controller and observability guide."
+            "review_note": "Compared Support failure references and replay with the evaluated HTTP 503 contract, and checked Integrations 401 and 403 guidance against the selected provider and observed status."
         },
         "auth": {
             "source_sha256": "c34a5b34bc904f36cda184c26113f91e2cf36afa2b506217d1f74e22e9e0cefd",
@@ -28,9 +28,9 @@
             "review_note": "Reviewed the one streamed audit SELECT, strict authenticated response and PDO cleanup alongside campaign booking persistence and protected storage."
         },
         "google-tags": {
-            "source_sha256": "67136427c2eed206447c590b386451e42387c976b0c791fa9ebec1201e99019c",
-            "references_sha256": "eca25b197670bf6950d110a0185a806b1cf6c5a6ecbb51a522b8d31c9cb55fa7",
-            "review_note": "Compared the documented storefront helper behavior after the shared layout and frontend skill added a Support transcript detail."
+            "source_sha256": "31cc53b5ce4ddd826a3c5a3d5b2fdd7c623005fc74a63f4d2598eeb8f345ea9e",
+            "references_sha256": "4a313261f50607bef910628e450d1ce4482bdca623ba5d77c09b4c85dc5a3f50",
+            "review_note": "Reviewed the shared layout and Integrations docs with the Support reference and safe AI diagnostic result. Google tag and reporting fields keep their existing configuration."
         },
         "http-errors": {
             "source_sha256": "0f920c297cfc4e216a87be02a35c20827cc254dd6934ba24a1fa9135520a0560",
@@ -38,9 +38,9 @@
             "review_note": "Reviewed sanitized provider failures and private booking responses against the existing dynamic response guard."
         },
         "interface": {
-            "source_sha256": "e52ac59e831bb2ff0ef4551aa30a9ac29f0781debd88601d68eb64692ce08005",
+            "source_sha256": "16d1d84ab9413ed744d82606a7721d827acc68a4707854984b37af6ab4f6653e",
             "references_sha256": "faf87e5a40e578bf97ed14d1f78efeec4269acf2fa897a74d9ef8e19351e4527",
-            "review_note": "Compared the live-region announcement, keyboard recovery, Contact Us flow, and viewport behavior with shared layout and design guidance."
+            "review_note": "Compared the Support error reference, keyboard recovery, and owner diagnostic card with the shared layout and both desktop and narrow viewport fixtures."
         },
         "mail": {
             "source_sha256": "11a3b674d92d0714846359177499966c2f5ad2b1af5380a972280c64bb79b7b8",
@@ -49,8 +49,8 @@
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
-            "references_sha256": "73c4e7ed550ac139d52f0e560ab34a74738e8f4aa2ae6fc87c9e635c9dcd4d43",
-            "review_note": "Checked the merged Integrations guide against the local MCP client controller and form. The owner issues and revokes a paid-sales grant, and the trusted STDIO client receives it through its process environment."
+            "references_sha256": "c652f239fa00ea207372277d2ba9782891dc88a65244b3bd69d855cef90276fc",
+            "review_note": "Checked the Integrations connection test guidance alongside the separate local reporting client grant flow and its configuration."
         },
         "media": {
             "source_sha256": "edc32a5a9f73cf7f2954eac135a2eaed1394089034bac24ea835af48c4d9600e",
@@ -58,9 +58,9 @@
             "review_note": "Checked retained campaign file descriptors and protected streaming against Media Library behavior. Booking authorization is scoped to the frozen private manifest."
         },
         "operator-help": {
-            "source_sha256": "fe808bb349df40d316920f8c04ef3cf1d1556e876b17420b8b8290d620213a3c",
+            "source_sha256": "bad40e8687f42b9c69dcb8d4fd16d0f8717492b879ba9bc2cf14618b5d140538",
             "references_sha256": "290f76393a7f1ff5ba583e3da9f3ac9d8b3f6580c1cdee7db531e981e2e1d99f",
-            "review_note": "Compared the published Support contact guide with the accessible opaque reference, clean error reply, and reload behavior."
+            "review_note": "Checked the public Support reference and contact instructions alongside the owner API key and access guidance shown by the read-only connection test."
         },
         "public-mcp": {
             "source_sha256": "737d1417edeec4f39402eaa1b659409d866db04476bf5f549d065deae57903f8",
