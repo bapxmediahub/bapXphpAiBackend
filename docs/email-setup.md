@@ -213,11 +213,13 @@ A misspelled domain returns `NXDOMAIN` and no configuration will make it work.
 
 ## Queue health and testing
 
-Admin → Email Outbox reconciles its status against the canonical queue, shows
-pending/due, sending/interrupted, accepted, failed, needs-review and unknown
-counts, and limits the visible message table to 100 rows. It does not process
-or resend anything merely by opening the page. Canonical queue rows remain
-authoritative when their secondary outbox projection is unavailable.
+Admin → Email Outbox combines recipient, subject and reference search with a
+canonical delivery-state filter. The selected page contains 10, 25 or 50
+outbox records. The queue summary covers the entire selected mail scope and
+reads aggregate delivery counts plus pending routing fields. Held contacts and
+expired samples remain distinct. The Mail Queue remains authoritative if an
+outbox projection is missing. Recorded SMTP acceptance and legacy sent are
+shown separately, with inbox receipt unverified in both cases.
 
 Run `php tests/smtp-protocol.php` for loopback-only SMTP scenarios: accepted,
 accepted then closed before QUIT, explicit DATA rejection, and missing DATA

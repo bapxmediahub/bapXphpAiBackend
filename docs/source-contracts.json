@@ -23,9 +23,9 @@
             "review_note": "Read the account help Markdown and its source view. The article explains the picture placeholder beside the email."
         },
         "foundation": {
-            "source_sha256": "48d61c6654d04580b279d46cafd418d53fb34f43105ad96a276a8072883dd364",
+            "source_sha256": "326c3bfa3145d7821f527047c1add90563b8a9d6bb767c99b136e3c821e5cce1",
             "references_sha256": "6eba6651fd8e747d8053034a7812f9d41e6dba5a405bc1d1ed669556c8f2474b",
-            "review_note": "Checked existing private trace and audit storage boundaries. Only numeric allowlisted observations are added to the two existing stores."
+            "review_note": "Reviewed the isolated MySQL fixture and controller tests. The Outbox uses the existing private read route and hosted records."
         },
         "google-tags": {
             "source_sha256": "187c8971da4cad73fccba340fb2f7424e60c4cb704bed864594f6c2dd3308c72",
@@ -38,14 +38,14 @@
             "review_note": "Reviewed the new hosting instructions against existing request-failure guidance. A transport receipt remains distinct from a rendering response, and the worker preserves the canonical queue before reporting an outcome."
         },
         "interface": {
-            "source_sha256": "b7aec02a54650d5fd49d58e5e598b61d6a9f2479e06b2b2f56624ed0751abb38",
-            "references_sha256": "07e5bb03094f47cc2736846551c93170f66226fc652239a204862e5dcfa50646",
-            "review_note": "Checked responsive milestone labels, the timeout result and the existing Monitoring details disclosure against Design and the Admin UI skill."
+            "source_sha256": "9882e5b9d9198a921b2e726c1df69f4f41f81d2c25eb815fda58e748b80d5571",
+            "references_sha256": "ae0cf5fc37f65be8cb51b86b7d41cb1d35ade016c8c04e1eed3bfc1227e35cac",
+            "review_note": "Compared native search, selected filter parameters, wrapping controls and page navigation with the owner UI guide and Design."
         },
         "mail": {
-            "source_sha256": "302f0faf2a0313a87273606cc8c15bcd816d4c1df8780ea6da482ee60b8d3cd3",
-            "references_sha256": "e67f0fbc67954b174b852d9fc84ad03d27a8d6b4923528018c622f0097e1a262",
-            "review_note": "The AdminController delta is isolated to the Users GET action. Compared with the existing mail dependency and guide; queue and delivery behavior does not change."
+            "source_sha256": "a3951ae338838c3a75fd5e6fdaaca490782e9fc345d900850ef9bf95f3856462",
+            "references_sha256": "903e7da848c1e0472ce9a1823b94afc21004e564d12041ee0456918176a6cc72",
+            "review_note": "Validated the single-table queue-health query against the hosted counts. Pending routing and existing expiry, held-contact and due predicates remain shared with the worker."
         },
         "mcp-clients": {
             "source_sha256": "38828d52259fbd6b6555d790e463ff775e79be85872a5d5b5aea78e599fba3ac",
@@ -54,13 +54,13 @@
         },
         "media": {
             "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
-            "references_sha256": "5a70bf9c76ac5e1b2168e586700c2df8cbf038197486da7030d17b27124a6200",
-            "review_note": "Read the Admin UI skill change with the media guide. This addition concerns the Monitoring attempt list only."
+            "references_sha256": "5bc8f1234d96ba28fc159eba092cea8d75d72750db3e3c8340b8d7b7331618ac",
+            "review_note": "Reviewed the new Outbox verification paragraph in the shared Admin UI skill alongside media controls."
         },
         "operator-help": {
-            "source_sha256": "7e0c85d5dcfb4a2e871f6420c09499c1322fbb6d9a9bd56209f2b373ffae417c",
-            "references_sha256": "c3ef78820bd002599520bbced0aa399ba7d4e606853ea51a66fc2b4461e0ceec",
-            "review_note": "Matched Monitoring help to the owner attempt list and its measured transfer-start and first-byte evidence."
+            "source_sha256": "1b2a1edabfb1eef44d80f89c3adeb855b52e78edce41e5e0d3bb63277abd95a1",
+            "references_sha256": "f050a041557fac9400a70251e570a8bb464274a869529097211c0f627c7295e3",
+            "review_note": "Verified the selected delivery state is retained independently of whole-scope queue-health labels, including native form submission."
         },
         "public-mcp": {
             "source_sha256": "e5d2bb67604d7b9c3588dba3d04e75ad9925c1c686f3a4d13dffd1dc8dd99325",
@@ -69,8 +69,8 @@
         },
         "remote-commerce": {
             "source_sha256": "20def67683e671cd66be902f690208bfe1c5638987528b10e3889b195954274b",
-            "references_sha256": "f0a1f0eb9b2272aabc55afdd54d9a8239defa648529a6d4112836421d733a582",
-            "review_note": "Checked Design changes against checkout and remote commerce guidance. The new wrapping measurement row is limited to Agent Monitoring."
+            "references_sha256": "ea2fecae052e3a307540d0fdd01a24309da36ec7a3ad7f3e5f277be064d967e0",
+            "review_note": "Read the scoped Outbox layout rule alongside checkout documentation. The new controls use the owner mail view."
         },
         "sales-channels": {
             "source_sha256": "6e5ee7b44dd92cc4dadec7a3c02f4bb9da797ba98d4e541e9f956687db236142",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed the optional canonical catalogue fields against the merchant feed projection. Published product, price and inventory fields remain as documented."
         },
         "workflow": {
-            "source_sha256": "758f549daa4ba7d7b549f13fa687d493d779b3e24b42c549942d81165518f02c",
+            "source_sha256": "7b1a1e88e77286673c7eb21e8abd65282028b51a1db2dc722a1c0b7062687d7e",
             "references_sha256": "7770887213db03241a85f7bbee17bf25b2c58350058ebc59e25fd76b29ad80df",
-            "review_note": "Reviewed the new Chrome breakpoint guidance and PHP fixture assertions within the existing verification workflow."
+            "review_note": "The Admin UI skill adds native Outbox verification at both breakpoints. Checked the existing CI pagination fixture on supported database families."
         }
     }
 }

@@ -36,6 +36,28 @@ test('owner schedules one synthetic sample per confirmation in the actual Email 
         const respond = data => response.end(JSON.stringify({success:true, ...data}));
         if (typeof input.query === 'string') {
             const table = /\bFROM (\w+)/i.exec(input.query)?.[1];
+            // The owner summary reads grouped completed states and narrow pending evidence.
+            if (table === 'mail_queue' && input.query.includes(' AS routing') && input.query.includes('GROUP BY')) {
+                const pending = [...queue.values()].filter(row => row.status === 'pending');
+                const routing = pending.map(({type,subject,available_at,created_at,meta}) => ({
+                    status:'pending', total:1, routing:JSON.stringify({status:'pending',type,subject,available_at,created_at,meta})
+                }));
+                const completed = new Map();
+                for (const {status} of queue.values()) {
+                    if (status !== 'pending') completed.set(status, (completed.get(status) ?? 0) + 1);
+                }
+                return respond({data:routing.concat([...completed].map(([status,total]) => ({status,total,routing:null})))});
+            }
+            if (table === 'mail_outbox' && input.query.includes('LEFT JOIN mail_queue')) {
+                const rows = [...outbox.values()].map(row => {
+                    const canonical = queue.get(row.queue_id);
+                    return {id:row.id,_data:JSON.stringify(row),status:canonical?.status ?? row.status,
+                        delivery_state:canonical?.delivery_state ?? null,message_id:canonical?.message_id ?? null,
+                        error_code:canonical?.error_code ?? null};
+                }).filter(row => !input.params?.length || row.status === input.params[0]);
+                if (input.query.startsWith('SELECT COUNT(')) return respond({data:[{total:rows.length}]});
+                return respond({data:rows.slice(0,25)});
+            }
             const records = ({settings:[profile], mail_queue:[...queue.values()], mail_outbox:[...outbox.values()]})[table] ?? [];
             const matching = input.params?.length ? records.filter(row => row.id === input.params[0]) : records;
             return respond({data:matching.map(row => ({id:row.id, _data:JSON.stringify(row)}))});
@@ -143,6 +165,13 @@ test('owner schedules one synthetic sample per confirmation in the actual Email 
         assert.ok(await editor.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
         await result.getByRole('link', {name:'outbox evidence'}).click();
         await editor.getByText('The sample-only worker has ' + queue.size + ' pending test samples.', {exact:false}).waitFor();
+        assert.equal(await editor.locator('[data-mail-delivery-state="pending"]').count(), queue.size);
+        const filter = editor.getByLabel('Delivery state');
+        assert.equal(await filter.inputValue(), '');
+        await filter.selectOption('pending');
+        await editor.getByRole('button', {name:'Apply filters'}).press('Enter');
+        assert.equal(await filter.inputValue(), 'pending');
+        assert.equal(await editor.locator('[data-mail-delivery-state="pending"]').count(), queue.size);
 
         if (width === 375) {
             await context.request.post(postUrl, {form:payload, maxRedirects:0});

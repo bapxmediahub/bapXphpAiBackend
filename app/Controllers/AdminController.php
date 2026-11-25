@@ -1108,21 +1108,15 @@ final class AdminController extends BaseController {
 
     public function emailInbox(): void{$this->render('admin/mailbox',['pageTitle'=>'Email Inbox','title'=>'Email Inbox','box'=>'inbox','items'=>(new MailStorageService())->inbox()]);}
     public function emailOutbox(): void {
+        header('Cache-Control: private, no-store');
+        header('Referrer-Policy: same-origin');
         $newsletter = ($_GET['type'] ?? '') === 'newsletter';
-        $items = (new MailStorageService())->outbox();
-        if ($newsletter) {
-            $items = array_values(array_filter($items, static fn(array $item): bool => ($item['source'] ?? '') === 'blog_newsletter'));
-        }
-        $queueRows=(new MailQueueService())->all();
-        if($newsletter)$queueRows=array_values(array_filter($queueRows,static fn(array $row):bool=>($row['type']??'')==='blog_newsletter'));
-        $mailHealth=MailQueueService::health($queueRows);
-        $queueById=array_column($queueRows,null,'id');
-        foreach($items as &$item){$canonical=$queueById[(string)($item['queue_id']??'')]??null;
-            if(is_array($canonical))$item=array_merge($item,array_intersect_key($canonical,array_flip(['status','delivery_state','inbox_receipt','message_id','last_error','error_code'])));}
-        unset($item);
-        $totalOutbox=count($items);$items=array_slice($items,0,100);
+        $page = (new MailStorageService())->outboxPage($_GET, $newsletter);
+        $mailHealth = (new MailQueueService())->outboxHealth($newsletter);
         $title = $newsletter ? 'Newsletters' : 'Email Outbox';
-        $this->render('admin/mailbox', compact('mailHealth','totalOutbox')+['pageTitle' => $title, 'title' => $title, 'box' => 'outbox', 'items' => $items, 'newsletter' => $newsletter]);
+        $this->render('admin/mailbox', $page + [
+            'pageTitle' => $title, 'title' => $title, 'box' => 'outbox', 'newsletter' => $newsletter, 'mailHealth' => $mailHealth,
+        ]);
     }
     public function media(): void{
         $media = new MediaService();

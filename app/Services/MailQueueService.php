@@ -253,6 +253,44 @@ final class MailQueueService {
             'scheduled_samples'=>$scheduled,'inactive_samples'=>$expired];
     }
 
+    /** Count completed states in MySQL and pass only pending routing evidence to the existing health rules. */
+    public function outboxHealth(bool $newsletter, ?int $now = null): array {
+        $status = "CAST(JSON_UNQUOTE(JSON_EXTRACT(_data, '$.status')) AS BINARY)";
+        $scope = $newsletter ? " WHERE JSON_UNQUOTE(JSON_EXTRACT(_data, '$.type')) = 'blog_newsletter'" : '';
+        // One group per pending ID and one group per other status. MySQL temporary
+        // tables can only be referenced once per query.
+        // https://dev.mysql.com/doc/refman/8.4/en/temporary-table-problems.html
+        $rows = $this->store->query("SELECT $status AS status, COUNT(*) AS total,
+            MAX(CASE WHEN $status = 'pending' THEN CAST(JSON_OBJECT(
+                'status', 'pending', 'type', JSON_EXTRACT(_data, '$.type'),
+                'subject', JSON_EXTRACT(_data, '$.subject'), 'available_at', JSON_EXTRACT(_data, '$.available_at'),
+                'created_at', JSON_EXTRACT(_data, '$.created_at'), 'meta', JSON_OBJECT(
+                    'contact_id', JSON_EXTRACT(_data, '$.meta.contact_id'),
+                    'contact_kind', JSON_EXTRACT(_data, '$.meta.contact_kind'),
+                    'synthetic_sample', JSON_EXTRACT(_data, '$.meta.synthetic_sample'),
+                    'template', JSON_EXTRACT(_data, '$.meta.template')
+                )
+            ) AS CHAR) END) AS routing
+            FROM mail_queue$scope GROUP BY $status, CASE WHEN $status = 'pending' THEN id END");
+        $pending = [];
+        $completed = [];
+        foreach ($rows as $row) {
+            if ($row['status'] === 'pending') {
+                $pending[] = json_decode($row['routing'], true, flags: JSON_THROW_ON_ERROR);
+            } else {
+                $completed[] = $row;
+            }
+        }
+        $health = self::health($pending, $now);
+        foreach ($completed as $row) {
+            $state = (string)$row['status'];
+            if (!isset($health['states'][$state])) $state = 'unknown';
+            $health['states'][$state] += (int)$row['total'];
+            $health['total'] += (int)$row['total'];
+        }
+        return $health;
+    }
+
     public function all(): array {
         return $this->store->read('mail_queue');
     }

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-use App\Services\{DatabaseService, MediaService, ResourceService};
+use App\Services\{DatabaseService, MailQueueService, MailStorageService, MediaService, ResourceService};
 
 require dirname(__DIR__).'/app/bootstrap.php';
 
@@ -117,6 +117,59 @@ echo "PASS media metadata persistence, stale edits, search and field isolation.\
 $invalid = ResourceService::listOptions(['page' => [], 'q' => [], 'per_page' => '-1', 'sort' => []]);
 check($invalid === ['search' => '', 'pageSize' => 25, 'page' => 1, 'sort' => 'newest'], 'Invalid input falls back to defaults');
 echo "PASS 501-row order, appointment and media lists, search, sort and page bounds.\n";
+
+// The Outbox reads delivery evidence from the canonical queue by exact reference.
+foreach (['mail_queue','mail_outbox'] as $table) {
+    $pdo->exec("CREATE TEMPORARY TABLE $table (id VARCHAR(64) PRIMARY KEY, _data JSON NOT NULL)");
+}
+$insertQueue = $pdo->prepare('INSERT INTO mail_queue VALUES (?, ?)');
+$insertOutbox = $pdo->prepare('INSERT INTO mail_outbox VALUES (?, ?)');
+$now = strtotime('2026-11-25T08:00:00+05:30');
+$queueRecords = [
+    ['id'=>'older', 'type'=>'password_reset', 'status'=>'sent', 'delivery_state'=>'accepted_by_smtp',
+        'message_id'=>'<fixture-old@example.test>', 'error_code'=>null],
+    ['id'=>'held', 'type'=>'admin_notification', 'status'=>'pending', 'meta'=>['contact_kind'=>'appointment'], 'available_at'=>gmdate('c',$now-123)],
+    ['id'=>'due', 'type'=>'product_review_request', 'status'=>'pending', 'available_at'=>gmdate('c',$now-200)],
+    ['id'=>'due-sample', 'type'=>'scheduled_template_test', 'status'=>'pending', 'meta'=>['synthetic_sample'=>true,'template'=>'welcome'],
+        'created_at'=>gmdate('c',$now-400), 'available_at'=>gmdate('c',$now-280)],
+    ['id'=>'expired-sample', 'type'=>'scheduled_template_test', 'status'=>'pending', 'meta'=>['synthetic_sample'=>true,'template'=>'welcome'],
+        'created_at'=>gmdate('c',$now-1900), 'available_at'=>gmdate('c',$now-1780)],
+    ['id'=>'newsletter', 'type'=>'blog_newsletter', 'status'=>'pending', 'available_at'=>gmdate('c',$now+200)],
+    ['id'=>'orphan', 'type'=>'legacy', 'status'=>'older_success'],
+    ['id'=>'missing-state', 'type'=>'legacy'],
+    ['id'=>'interrupted', 'type'=>'account', 'status'=>'sending'],
+];
+foreach ($queueRecords as $record) $insertQueue->execute([$record['id'],json_encode($record,JSON_THROW_ON_ERROR)]);
+$older = ['id'=>'out_older', 'queue_id'=>'older', 'to_email'=>'test@example.test', 'subject'=>$needle,
+    'body'=>'Unsearchable fixture body', 'status'=>'failed', 'error_code'=>'smtp_temporary', 'created_at'=>'2020-01-01T00:00:00Z'];
+$insertOutbox->execute([$older['id'],json_encode($older,JSON_THROW_ON_ERROR)]);
+for ($i=1; $i<=130; $i++) {
+    $id = sprintf('out_fixture-%03d',$i);
+    $record = ['id'=>$id, 'status'=>$i<=5?'sent':'failed', 'subject'=>'Later subject',
+        'source'=>$i<=5?'blog_newsletter':'password_reset', 'created_at'=>gmdate('c',$now+$i)];
+    $insertOutbox->execute([$id,json_encode($record,JSON_THROW_ON_ERROR)]);
+}
+$mail = new MailStorageService($store);
+$page = $mail->outboxPage(['page'=>'2','per_page'=>'10','state'=>'failed'],false);
+check($page['paging']['count'] === 125 && $page['paging']['page'] === 2 && count($page['items']) === 10, 'Filter canonical state before paging');
+check($page['items'][0]['id'] === 'out_fixture-120', 'Page uses stable newest-first order');
+foreach (['find_100%', 'test@example.test', 'older', 'fixture-old@example.test'] as $search) {
+    $olderPage = $mail->outboxPage(['q'=>$search,'state'=>'sent','page'=>'50'],false);
+    check($olderPage['paging']['count'] === 1 && $olderPage['paging']['page'] === 1, 'Global search finds older canonical acceptance and clamps page');
+    $match = $olderPage['items'][0];
+    check($match['id'] === 'out_older' && $match['delivery_state'] === 'accepted_by_smtp' && $match['error_code'] === null,
+        'Canonical acceptance and explicitly cleared error replace the stale projection');
+}
+check($mail->outboxPage(['q'=>'Unsearchable fixture body'],false)['items'] === [], 'Search excludes message contents');
+check($mail->outboxPage(['q'=>$needle,'state'=>'failed'],false)['items'] === [], 'Stale projected failure is excluded');
+$news = $mail->outboxPage(['state'=>'sent','per_page'=>'200'],true);
+check($news['paging']['count'] === 5 && $news['paging']['pageSize'] === 25, 'Newsletter scope and bounded page size');
+check($news['items'][0]['delivery_state'] === null, 'Legacy sent does not invent acceptance');
+$queue = new MailQueueService($store);
+check($queue->outboxHealth(false,$now) === MailQueueService::health($queueRecords,$now),
+    'Aggregate queue health preserves due, held, legacy and active/expired sample states');
+check($queue->outboxHealth(true,$now) === MailQueueService::health([$queueRecords[5]],$now), 'Newsletter queue health remains scoped');
+echo "PASS paged Outbox search, canonical delivery evidence and reduced queue-health reads.\n";
 
 // A temporary settings table keeps publication and compare-and-swap fixtures
 // isolated from all site settings and from parallel test connections.
