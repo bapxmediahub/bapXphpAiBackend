@@ -3,54 +3,54 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "be4f539aad8155de1f1bf79a8f62235178cf989967067d9f0a389fe9f21a2855",
-            "references_sha256": "83f6f759f937c3b3d71b38628781bb1e36f615f931cc1e08a945799cb6d4aea0",
-            "review_note": "Reviewed the published article body search and passage selectors, exact slug and Blog module checks, and trace allowlist for excerpt and revision hashes and numeric section index."
+            "source_sha256": "54b603b1b909a47d3667170d25022c39bc0bd3f1b3819c08e509753cb4917e5a",
+            "references_sha256": "f1e01cac8aeacc2781a40d87cd83f0e1a2a71ed6e39f89c1de527c431cfd7b95",
+            "review_note": "Checked published-slug passage selection, Markdown whitespace, allowed trace fields and both controller declarations. Compared the merged Support reference and owner probe guidance with the status and redacted evidence in their controllers."
         },
         "auth": {
             "source_sha256": "c34a5b34bc904f36cda184c26113f91e2cf36afa2b506217d1f74e22e9e0cefd",
             "references_sha256": "41e3a8b4e89cfa4973dfc3e206cc95ca04c80e1bbf5f35cf50ec021985c3f2e9",
-            "review_note": "Checked published article module gates and booking session ownership against authenticated controller boundaries and backend skill guidance."
+            "review_note": "Checked the shared backend skill rule against signed-in owner, customer and guest routes. Article reads apply public publication gates while role-specific conversation and diagnostic access remain enforced by PHP."
         },
         "commerce": {
             "source_sha256": "c53c5c291d70428a6219887de1da8c789c7fc0f23afb3b909b75ac55f034306a",
             "references_sha256": "421bcfc4ff33f095ff53a86a5929968f7274b0d7b754713a0d0a75cbe1ac2aa5",
-            "review_note": "Verified campaign booking capture and independent shop order handling against the backend skill and confirmed that article passage routing changes neither boundary."
+            "review_note": "Compared the public article evidence rule with product price, order, and payment references. Published passage reads operate on Markdown, and campaign receipts and storefront aggregates retain their documented storage contracts."
         },
         "content": {
-            "source_sha256": "0cf3fdbab8334c87c055ab44c9d531774c37c03a6a52dc5d0ca7db013969f1a7",
-            "references_sha256": "5c5617c1fa58e9ea64dfdac3d464a30fe2b7c64b816ff2f13487140054e80c8b",
-            "review_note": "Checked the combined authored-campaign publication and exact article passage guides against their distinct PHP page and published blog sources."
+            "source_sha256": "6f6aee47caea344734b1f2662269fbcebf1615d4f4ecabe1a79e2a7818206e24",
+            "references_sha256": "d16ec1123e6b1f65535cd1941df51e900b36ddd100960005a07c766f52d72bc4",
+            "review_note": "Reviewed exact-slug retrieval and current publication gates, rendered block and fenced-code whitespace, and the public Support failure-reference guidance. Campaign downloads and bookings retain their documented separate revisions and grants."
         },
         "foundation": {
-            "source_sha256": "32bf3fea5ff990aac09fcf3dcd7d4a506f1fbd3066e9cd06cae51f84151965a3",
-            "references_sha256": "10526d45bf18808c6f376466236ea95a9b9194646d7a0b913dacaaf59578cb1f",
-            "review_note": "Cross-reviewed the schema and deployment instructions for campaign payments and the bounded article source identifiers and content. The hosted booking and private trace records keep their separate stores."
+            "source_sha256": "8f6d9f62830418fb2b432d5f84da49a97c2ff51fdc0a36cc3c7e215e68bb3722",
+            "references_sha256": "e394d7890b387bcf8d4864890601c47f3596a8a96b2f97fb118ca84549dd0f74",
+            "review_note": "Compared safe article evidence and the Support reference with the private trace and storage guides. Article evidence saves only the approved identity, revision digest, excerpt digest and section position."
         },
         "google-tags": {
-            "source_sha256": "366fdab983979cc3a1fec22fb6da4afb61072d6fd24cd0ba2271d67a0c063019",
-            "references_sha256": "655070d558837a1d942929e6860428b9d822cb9b89e2d0d95344fdfe5d88b87d",
-            "review_note": "Rechecked the current Site analytics, Google reporting and integration routes inherited from the merged base. Campaign booking changes add no tag or reporting behavior."
+            "source_sha256": "31cc53b5ce4ddd826a3c5a3d5b2fdd7c623005fc74a63f4d2598eeb8f345ea9e",
+            "references_sha256": "4a313261f50607bef910628e450d1ce4482bdca623ba5d77c09b4c85dc5a3f50",
+            "review_note": "Reviewed the shared layout and Integrations docs with the Support reference and safe AI diagnostic result. Google tag and reporting fields keep their existing configuration."
         },
         "http-errors": {
             "source_sha256": "0f920c297cfc4e216a87be02a35c20827cc254dd6934ba24a1fa9135520a0560",
             "references_sha256": "bb1efdf69eefdabbb242f58bda9aeaba721f2ba0e018a16bb1cb9615159af3a8",
-            "review_note": "Reviewed booking failure handling and article result errors against the existing private response and no-partial-output boundaries."
+            "review_note": "Compared the published passage evidence rule with the dynamic response guard and user-visible Support failure reference. The reference contains the application trace ID, while provider details and excerpt text stay private."
         },
         "interface": {
-            "source_sha256": "82b14d7ac04642c59d3078ae1c355cee4aa65d582a36ae6dff4fec93456f3f36",
-            "references_sha256": "404619f91aeea891998b9c1cb6ef921514f8dd59adb0ae4f24a58e03fdcade70",
-            "review_note": "Reviewed the independent amount toggle, disabled preview, keyboard booking review, and private pending and captured cards against Design and the browser fixtures."
+            "source_sha256": "16d1d84ab9413ed744d82606a7721d827acc68a4707854984b37af6ab4f6653e",
+            "references_sha256": "faf87e5a40e578bf97ed14d1f78efeec4269acf2fa897a74d9ef8e19351e4527",
+            "review_note": "Compared the Support error reference, keyboard recovery, and owner diagnostic card with the shared layout and both desktop and narrow viewport fixtures."
         },
         "mail": {
-            "source_sha256": "50f211eb00addc6fe811c0dfb270f1be9d2d28b2fd0a8e66d321ae83b2d28aec",
+            "source_sha256": "11a3b674d92d0714846359177499966c2f5ad2b1af5380a972280c64bb79b7b8",
             "references_sha256": "fff258ed8121b5ab72cd0adf60dcdcd8d1a414afc1e94332c6498de85371b0da",
-            "review_note": "Checked the published article gates and booking records against existing mail flow guidance. Article discovery and payment setup do not enqueue publication or payment messages."
+            "review_note": "Compared the backend skill addition with the configured-owner notice and mail queue boundaries. Native article reads and the Support failure reference have no mail side effects."
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
-            "references_sha256": "ac1bc03220b226d653c8a317355e57292d38c7d8f2320162ad1405d16a3a7bb8",
-            "review_note": "Reviewed local CLI and remote client guidance. Adding the isolated public search fixture to the CI command keeps existing client setup and capability contracts intact."
+            "references_sha256": "08f8b77746b0a94f8769df7fca6b79a7eed50fe2981575d35024d8f7b55f4a44",
+            "review_note": "Reviewed the CLI guide change against the existing admin MCP client workflow. The added release gate invokes only the synthetic public storefront search fixture."
         },
         "media": {
             "source_sha256": "edc32a5a9f73cf7f2954eac135a2eaed1394089034bac24ea835af48c4d9600e",
@@ -58,29 +58,29 @@
             "review_note": "Checked retained campaign file descriptors and protected streaming against Media Library behavior. Booking authorization is scoped to the frozen private manifest."
         },
         "operator-help": {
-            "source_sha256": "809a9715f83d4305aa209d264ebe03fffeff1b8497b9d6f1555db85e30ae7d30",
-            "references_sha256": "d7972865c18db0e7cab36b4fdf0cf22cf388c8fbde7bd5ae088de971afd212fe",
-            "review_note": "Reviewed the private booking help dependencies and public article gateways together. The PHP agent source remains limited to published customer articles."
+            "source_sha256": "0c734dc21856cf803da100ef28d4ce9b3976d9ce56aee37285a0f9f4a155c6d6",
+            "references_sha256": "290f76393a7f1ff5ba583e3da9f3ac9d8b3f6580c1cdee7db531e981e2e1d99f",
+            "review_note": "Compared the Agent Monitoring and blog-publishing guides against published passage visibility, safe source identifiers and the labelled Support failure reference."
         },
         "public-mcp": {
-            "source_sha256": "eefb05e4a3d5c53a5201c3a44e5159423612a4d1d3ff49c92572dd520693eec5",
+            "source_sha256": "98bb406d5d51bf64265612bd379b5e7970909522482d79649e2f7eaf9ca97835",
             "references_sha256": "d06c98bd47f7604ad0a0529c3673bc10c92cbb8608c2027af4a5df5d379fcb67",
-            "review_note": "Confirmed the published knowledge adapter retains its bounded metadata response while agent-only reads return article passages through their fixed tool declaration."
+            "review_note": "Compared the shared article retriever with HTTP, WebMCP and MCP projections. Public calls keep title and summary ranking and metadata fields, while native agent discovery adds published body matching."
         },
         "remote-commerce": {
-            "source_sha256": "16cdd579f0b1b79b1bdc841eefa697e7cb43663f2ef73407245dcfb268c26e77",
-            "references_sha256": "d9dc45bfd7e9d83ecc307e6bcb7f3b43eb6c825940a8b2f6fcf8dc5add63448d",
-            "review_note": "Checked that link creation and verified captured payments retain their existing routes, provider references and booking state recovery after combining the backend guidance."
+            "source_sha256": "d9f1cadce366732ff62a1bc27cf619f0070f6eb1e5d432bc3015cee9673beed7",
+            "references_sha256": "c891045c682af6832d9509bbb49f9324a50b0581ba8da9a0617da2e52be4bad9",
+            "review_note": "Checked native article reads alongside the authenticated aggregate, protected campaign booking and cart operations. Article evidence is scoped to published Markdown and does not enter the database write paths."
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",
             "references_sha256": "584b563cb628dce2573081ef1aaf46071bd9815c6bc37e1c4bc18b295a9daa39",
-            "review_note": "Compared the CLI skill change with the Google sales-channel test and API requirements. The extra fixture covers local storefront search parity and calls no vendor service."
+            "review_note": "Compared the new storefront search check with the local CLI and product feed guidance. The search fixture checks public catalogue visibility without changing feed or analytics behavior."
         },
         "workflow": {
-            "source_sha256": "65e407f0a27b0d157cdef3ef1998c9bdb6cd96a736e980ed80f317ce0fc26290",
+            "source_sha256": "909d31a6bdec969cd723627ceb6cc47b4525f808e3ccdb06e6c32993277eae0b",
             "references_sha256": "c11003880ee0b940715945afbc145188e466086d8e2a3e4aeace1e9dbe10780b",
-            "review_note": "Reviewed the reconciled backend skill and existing CI and generated inventory documentation. Both deposits of source changes keep their original tracked tests."
+            "review_note": "Compared the regenerated inventories and verification guide with the article, campaign and storefront tests. The CLI includes its storefront search gate and reports failures while finishing independent checks."
         }
     }
 }

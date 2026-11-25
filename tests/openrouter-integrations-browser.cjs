@@ -14,20 +14,24 @@ const longGoogleModel='model'+('x'.repeat(190));
 const longCompatibleUrl='https://ai.example.test/'+('x'.repeat(170))+'/v1';
 const googleModels=['gemma-4-31b-it','gemma-4-26b-a4b-it',longGoogleModel].join('\n');
 const updatedGoogleModels=googleModels+'\ncustom-google-model';
-const render=enabled=>execFileSync(process.env.PHP_BINARY||'php',['-r',[
+const render=(enabled,showProbe)=>execFileSync(process.env.PHP_BINARY||'php',['-r',[
     "putenv('BAPX_TEST_MODE=1'); require 'app/bootstrap.php';",
     "$csrf='fixture-only'; $comparisonModels=[['target'=>'google|shared-model','provider'=>'google','model'=>'shared-model'],['target'=>'openai_compatible|shared-model','provider'=>'openai_compatible','model'=>'shared-model']];",
     "$secrets=['ai_provider'=>'google','ai_api_key'=>'fixture-google-key',",
     "'ai_google_models'=>"+JSON.stringify(googleModels)+",'ai_compatible_url'=>"+JSON.stringify(longCompatibleUrl)+",",
     "'ai_openrouter_enabled'=>'"+(enabled?'1':'0')+"','ai_openrouter_key'=>'"+fakeKey+"'];",
+    showProbe ? "$attempt=['status'=>401,'curl_error'=>0,'provider'=>'openai_compatible','model'=>'shared-model',"
+        + "'endpoint'=>'https://private-probe-fixture.invalid/v1'];"
+        + "$format=new ReflectionMethod(\\App\\Services\\AiClient::class,'probeFailureMessage');"
+        + "$_SESSION['ai_test_result']=$attempt+['ok'=>false,'message'=>$format->invoke(null,'authentication',$attempt),'timings'=>[$attempt]];" : '',
     "$fixture=new class extends \\App\\Controllers\\BaseController { public function show($secrets,$csrf,$comparisonModels){ include 'views/admin/integrations.php'; } };",
     "$fixture->show($secrets,$csrf,$comparisonModels);"
 ].join(' ')],{cwd:root,encoding:'utf8',maxBuffer:2*1024*1024});
-const renderPage=enabled=>'<!doctype html><html lang="en"><head>'
+const renderPage=(enabled,showProbe=false)=>'<!doctype html><html lang="en"><head>'
     +'<meta name="viewport" content="width=device-width,initial-scale=1">'
     +'<link rel="stylesheet" href="/assets/css/band.css">'
     +'<link rel="stylesheet" href="/assets/css/admin-refinement.css">'
-    +'</head><body><main class="admin-body">'+render(enabled)+'</main></body></html>';
+    +'</head><body><main class="admin-body">'+render(enabled,showProbe)+'</main></body></html>';
 
 async function submitAndWaitForLoad(page, submit) {
     // Repeated fixture saves return a new document at the same URL. Wait for its stylesheet loads.
@@ -83,7 +87,7 @@ for(const width of [1280,375]) test('owner OpenRouter toggle and masked save at 
             if(url.pathname==='/admin/integrations/test-ai'){
                 const params=new URLSearchParams(req.postData());
                 probes.push({target:params.get('probe'),mode:params.get('probe_mode'),csrf:params.get('_csrf')});
-                return route.fulfill({status:200,contentType:'text/html',body:renderPage(false)});
+                return route.fulfill({status:200,contentType:'text/html',body:renderPage(false,true)});
             }
             if(url.pathname==='/admin/integrations/save'){
                 const params=new URLSearchParams(req.postData());
@@ -152,6 +156,9 @@ for(const width of [1280,375]) test('owner OpenRouter toggle and masked save at 
         await page.getByLabel('Diagnostic',{exact:true}).selectOption('tools');
         await submitAndWaitForLoad(page, () => page.getByRole('button',{name:'Test AI Connection'}).click());
         assert.deepEqual(probes,[{target:'openai_compatible|shared-model',mode:'tools',csrf:'fixture-only'}]);
+        const diagnostic = page.locator('.admin-card').filter({has:page.getByRole('heading',{name:'Test the AI connection'})});
+        assert.ok(await diagnostic.getByText(/Check the Compatible API Key/).isVisible());
+        assert.doesNotMatch(await diagnostic.innerText(),/Google API Key|private-probe-fixture/);
         assert.deepEqual(errors,[]);
     }finally{await context.close();await browser.close();}
 });

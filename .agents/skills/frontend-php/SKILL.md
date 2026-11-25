@@ -74,6 +74,12 @@ Check the same-session A2UI transcript and conversation ID after reopening
 Support. Verify that an actor or session change gets a fresh transcript and
 New chat resets the conversation independently of the checkout receipt.
 
+Display a Support reference inside the live log for an evaluated HTTP 503
+failure. Read `X-Agent-Trace` or fall back to `run.trace_id` when the header is
+absent. Require exactly 16 lowercase hexadecimal characters. In the Support
+checkout browser fixture, verify keyboard contact navigation and composer
+recovery at desktop and 375px, including reload and invalid metadata.
+
 ## Shared scroll/motion
 
 For animations read `.agents/skills/site-motion/SKILL.md` and `docs/site-motion.md`.

@@ -36,4 +36,6 @@ A new question can need further help even after an earlier answer was useful. An
 
 Use the [contact page](/contact) for help from the team. Include the relevant product link, order or payment reference, the page you used, what you expected and the safe error message you saw. For account tasks, consult the [account guide](/blog/manage-account).
 
+If the chat shows a **Support reference** after an error, share it with the team so they can find the request.
+
 Never send your password, bank PIN, one-time authentication code, full card details or another customer's private information. If payment confirmation is delayed, [check the order guidance](/blog/payments-and-orders) before trying to pay again. Response and delivery times must be confirmed by the team; a submitted message is not proof that someone has already read it.

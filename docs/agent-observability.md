@@ -59,6 +59,13 @@ validates every call and returns scoped facts. Own-order and ticket lookups
 require the authenticated customer identity. A model-selected contact form
 proposal does not submit a form or automatically create a ticket.
 
+A saved Support turn that ends in an evaluated error returns HTTP 503 with the
+application trace ID in `X-Agent-Trace` and `run.trace_id`. The conversation shows
+the labelled Support reference alongside the error when the value is exactly 16
+lowercase hexadecimal characters. The browser uses the response-body value when
+the header is absent. A customer can share the reference to help the team find
+the corresponding audit run.
+
 **Enterprise:** verify admin/CSRF, load owned dialogue and validated previous
 report metadata, then invoke the same model loop with owner-only capabilities.
 The model decides which reports or documents to use and synthesizes the
