@@ -28,9 +28,9 @@
             "review_note": "Reviewed the stored header menu normalization and browser fixture against the shared PHP layout and settings architecture, including revision-safe editing and the existing search route."
         },
         "google-tags": {
-            "source_sha256": "83fccd5def068bad7572c4ce85a85a10701597b0920b9ab4190265d73a209ada",
-            "references_sha256": "89a8dc520f29d7b1fa64ded8923e076e79f2b2f8007e0653690ee28f4731681c",
-            "review_note": "Checked the layout and Settings help diff against the Integrations instructions. Google bootstrap and verification continue through the documented head renderer."
+            "source_sha256": "1df6faf47d1e2701ed9d9b02f6df22b7d4a3ffc48a10497fe344b79de7a75f21",
+            "references_sha256": "c7394b5af25daabb62844498c4e83bb9a88e3dfbb6c15c5f1bf07741e6546719",
+            "review_note": "Cross-checked public layout changes and the frontend skill against Google head and operator instructions. The keyboard fix executes only in the modal form."
         },
         "http-errors": {
             "source_sha256": "2e2fee3211f50641844c05f86381f277f9c6c10b7fb60fb750c52937b0868e12",
@@ -38,9 +38,9 @@
             "review_note": "Reviewed the new hosting instructions against existing request-failure guidance. A transport receipt remains distinct from a rendering response, and the worker preserves the canonical queue before reporting an outcome."
         },
         "interface": {
-            "source_sha256": "75f72492d93ffae60e2f1cfb637ff3605c941167c4ec92054700938555e147c6",
-            "references_sha256": "8f8edc507ec83bbe9b2836aecbe794b56dfb1daf6d7d210b547b84c2c4dc9b2c",
-            "review_note": "Cross-checked the Search icon, native dialog, direct-link fallback and the six menu slots against Design and both operator guides, including checked desktop and mobile geometry."
+            "source_sha256": "e45c241b3424146449c88225b98e14b3fb3c37c8bff5ddcb2720b56c122eabb1",
+            "references_sha256": "e4bdda540cea659baaf3baadc1170486f4eda356343beb7b8267bc6912d8370d",
+            "review_note": "Compared the fixed popup and query preservation behavior against Design, the frontend skill and the real browser checks at three sizes."
         },
         "mail": {
             "source_sha256": "a3951ae338838c3a75fd5e6fdaaca490782e9fc345d900850ef9bf95f3856462",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed the new Outbox verification paragraph in the shared Admin UI skill alongside media controls."
         },
         "operator-help": {
-            "source_sha256": "ad547a1aecb53862eb8197112e7dbfc5fb435e1a41516b0ba2b928d14f5fd0de",
+            "source_sha256": "f5e9db6c68df3a5fe4ffeba0e81640c687c113f7e03f97db66b0febb071dee00",
             "references_sha256": "2842000a1f8b81dde2029f42d4c5b37945a18898b21c7bb0843370648ce2c997",
-            "review_note": "Checked the Header menu choices and fixed Search and Cart actions against the revised operator instructions, including the legacy slot display."
+            "review_note": "Verified the owner Header menu still describes a fixed Search icon and editable link positions while the dialog owns keyboard dismissal."
         },
         "public-mcp": {
             "source_sha256": "e5d2bb67604d7b9c3588dba3d04e75ad9925c1c686f3a4d13dffd1dc8dd99325",
@@ -68,9 +68,9 @@
             "review_note": "Checked the shared remote documentation against the public MCP checkout projection. Unit options remain private catalogue and invoice metadata."
         },
         "remote-commerce": {
-            "source_sha256": "434d6c0904c18a909efc9f97fa7e3cb5658e6804b71ee61f630c742fa8deb7bd",
-            "references_sha256": "ec84336912a9e15bc9d74b00d9862cf2b2c7708c73a222e461ecdd98361ffc99",
-            "review_note": "Reviewed the independent header Search form beside Cart, desktop and mobile cart navigation, and the existing tray and chat cart selectors and handlers."
+            "source_sha256": "afc1b3a2cf25981492c69d666e10a0ca56fdcc3a6c7fb284a624f64f8a57f6f9",
+            "references_sha256": "464010285c847c9e358552ae8ac592459fb1c3f5848c49733e66fce0b2e519aa",
+            "review_note": "Checked that Escape handling is bound only to the public search input. Browser checks cover Cart and Menu after closing the popup."
         },
         "sales-channels": {
             "source_sha256": "36385e3d18e26f524d0efdd12d26cd8386e368fb5d27441460c688ffdff28b92",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed SettingsService module resolution and Merchant feed guidance. Dropping a retired header slot leaves the saved catalog eligibility inputs intact."
         },
         "workflow": {
-            "source_sha256": "5a4e39f969e23f7ee3d8f690957951d6cca6945b817a77a677ff7efac039045e",
+            "source_sha256": "780c5496da8ae2bdcb793e57ae5abcfcaa23a7cd7dbea44037b46a184545cfcd",
             "references_sha256": "7770887213db03241a85f7bbee17bf25b2c58350058ebc59e25fd76b29ad80df",
-            "review_note": "Checked the changed frontend skill and browser fixture against the existing issue-first workflow and browser verification steps."
+            "review_note": "Reviewed the updated frontend skill and existing browser fixture against the issue-first live verification procedure, including the typed-query regression."
         }
     }
 }
