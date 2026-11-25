@@ -2571,6 +2571,81 @@ $tests['authored header uses only bounded library paths and escaped page-specifi
     }
 };
 
+$tests['campaign revisions preserve legacy pages and validate configured enquiries'] = static function (): void {
+    $service = \App\Services\CampaignLeadService::class;
+    $pages = \App\Services\AuthoredPageService::class;
+    $page = ['slug'=>'campaign', 'title'=>'Campaign', 'content'=>'Campaign details', 'status'=>'published'];
+    assertSame(null, $service::pageDefinition($pages::record($page)), 'Legacy pages have no enquiry form');
+    assertSame(null, $service::fromEditor(null, []), 'Unchecked form setting disables the form');
+    assertSame([], $service::pageDefinition($pages::record($page + ['campaign_form'=>[]])), 'Name and email are sufficient to enable a form');
+    $fields = $service::fromEditor('1', [
+        'detail_3'=>['type'=>'tel', 'label'=>' Phone '],
+        'detail_2'=>['type'=>'textarea', 'label'=>'Your question <here>', 'required'=>'1'],
+        'detail_1'=>['type'=>''],
+    ]);
+    $record = $pages::record($page + ['campaign_form'=>$fields]);
+    assertSame(['name','email','detail_2','detail_3'], array_column($service::publicFields($record['campaign_form']), 'id'),
+        'Fixed slots remain stable when another slot is unused');
+    assertSame(null, $service::pageDefinition(['campaign_form'=>[$fields[0],$fields[0]]]), 'Duplicate persisted fields fail closed');
+    foreach ([
+        ['any_name'=>['type'=>'text', 'label'=>'Question']],
+        ['detail_2'=>['type'=>'email', 'label'=>'Alternative address']],
+        ['detail_2'=>['type'=>'textarea', 'label'=>str_repeat('x', 73)]],
+        ['detail_2'=>['type'=>'text', 'label'=>"Line\nBreak"]],
+        ['detail_2'=>['type'=>'text', 'label'=>'Question', 'required'=>true]],
+    ] as $invalid) {
+        try {
+            $service::fromEditor('1', $invalid);
+            assertTrue(false, 'Invalid field must be rejected');
+        } catch (InvalidArgumentException) {
+            assertTrue(true, 'Editor rejects a malformed field');
+        }
+    }
+    $answers = ['name'=>' Visitor ', 'email'=>'visitor@example.invalid', 'detail_2'=>"Question\nwith context",
+        'detail_3'=>'+91 98765 43210'];
+    $accepted = $service::validate($fields, $answers);
+    assertSame([], $accepted['errors'], 'Text and international phone are accepted');
+    $record = $service::contactRecord('lead_'.str_repeat('a', 24), $page['slug'], $record['revision'], $fields, $accepted['values']);
+    assertSame('Visitor', $record['name'], 'Stored enquiry keeps the ordinary contact name');
+    assertSame('visitor@example.invalid', $record['email'], 'Stored enquiry keeps the ordinary contact email');
+    assertSame('+91 98765 43210', $record['phone'], 'Contact phone comes from a validated phone field');
+    assertTrue(str_contains($record['message'], "Your question <here>\nQuestion\nwith context"), 'Only configured labels and answers reach the owner');
+    assertSame('campaign', $record['campaign_slug'], 'The stored contact has a bounded campaign source');
+    assertTrue($pages::validRevision($record['campaign_revision']), 'The source records an exact publication revision');
+    $invalid = $service::validate($fields, ['name'=>['nested'], 'email'=>'wrong', 'detail_3'=>'123', 'role'=>'owner']);
+    assertSame(['form','name','email','detail_2','detail_3'], array_keys($invalid['errors']),
+        'Reject extra, nested, invalid and missing answers together');
+    assertSame(['detail_2'], array_keys($service::validate($fields, array_replace($answers, ['detail_2'=>str_repeat('問', 1001)]))['errors']),
+        'Server limits count Unicode characters');
+};
+
+$tests['campaign submission receipts bind session, page, revision and expiry'] = static function (): void {
+    $service = \App\Services\CampaignLeadService::class;
+    $slug = 'campaign';
+    $revision = str_repeat('a', 32);
+    $otherRevision = str_repeat('b', 32);
+    $key = str_repeat('c', 64);
+    $now = 1800000000;
+    $token = $service::issueToken($slug, $revision, $key, $now);
+    $id = $service::submissionId($slug, $revision, $token, $key, $now);
+    assertTrue(is_string($id) && preg_match('/^lead_[a-f0-9]{24}$/D', $id) === 1, 'The published form yields a bounded contact key');
+    assertSame($id, $service::submissionId($slug, $revision, $token, $key, $now + 1800), 'Retries retain one receipt identity');
+    assertTrue($id !== $service::submissionId($slug, $revision, $service::issueToken($slug, $revision, $key, $now), $key, $now),
+        'A newly opened form is an independent enquiry');
+    foreach ([
+        ['other-page',$revision,$token,$key,$now],
+        [$slug,$otherRevision,$token,$key,$now],
+        [$slug,$revision,$token,'another-session',$now],
+        [$slug,$revision,$token,'',$now],
+        [$slug,$revision,$token.'0',$key,$now],
+        [$slug,$revision,[$token],$key,$now],
+        [$slug,$revision,$token,$key,$now - 1],
+        [$slug,$revision,$token,$key,$now + 1801],
+    ] as $input) {
+        assertSame(null, $service::submissionId(...$input), 'Invalid, cross-session or expired receipts are rejected');
+    }
+};
+
 $tests['blog enhancement candidates preserve manual images and distinguish provider failures'] = static function (): void {
     $service = \App\Services\BlogDraftService::class;
     assertSame('A revised title', $service::reviewableEnhancement('title', 'Original', ' "A revised title" '), 'Clean provider headline');

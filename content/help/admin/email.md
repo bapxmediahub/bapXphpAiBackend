@@ -12,6 +12,10 @@ An unknown or interrupted attempt needs investigation before any resend: the pro
 
 Email Inbox shows stored incoming evidence. Automatic visitor contact confirmations and owner enquiry notifications are paused; review admitted enquiries in Contacts or Email Inbox. The held pending count is a subset of pending mail and is excluded from automatic delivery. Do not replay historical contact messages. Newsletters are a separate selection of outbox records, not authorization to send a campaign. Customer confirmation and owner notification are separate messages; verify the intended recipients for both.
 
+In **Email → Inbox**, an enquiry from a published page shows **Campaign**
+with the page address beneath the subject. Expand it for the exact page
+revision. Open **Read enquiry** to see the visitor's answers.
+
 ## Preview templates without sending
 
 Open **Email → Templates** to choose an actual account, order, payment-attention,
