@@ -34,6 +34,13 @@ description: Use when editing public, account, shop, consultant, temple, cart, c
 
 Verify in a browser at desktop **and** 375px mobile — `Design.md` is canonical for responsive behaviour. Check computed styles, not just the screenshot: an author rule such as `display:flex` silently overrides `[hidden]`, which breaks JS filters without any visible error. Then `./bapXphp test`.
 
+Check the product's labelled quantity, both native purchase submits, the
+unavailable state, and the gallery at each width. Compare stock gating against
+the cart controller. Check the category card link, shop empty-search recovery,
+cart unit and line amounts, and the checkout review jump and return to the cart
+with keyboard and pointer. Empty homepage product sections retain a visible
+shop link and skip the empty carousel controls.
+
 ## Keeping this skill current
 
 Update this skill and `Design.md` together when a reusable UI pattern changes.

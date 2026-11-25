@@ -1,14 +1,10 @@
 <div class="admin-card">
     <h2 style="font-size:1.1rem; margin:0 0 var(--space-md);"><?= e($title) ?></h2>
     <?php if (isset($paging)) require __DIR__.'/list-controls.php'; ?>
-    <?php if(($collection ?? '') === 'support_tickets'): ?>
-    <style>
-    .ticket-row{cursor:default}.ticket-row:hover{background:var(--color-bg-alt)}.ticket-reply-form{display:none;background:var(--color-bg-alt);padding:var(--space-md);border-radius:var(--radius-md);margin-top:var(--space-xs)}.ticket-reply-form.open{display:block}.ticket-reply-form textarea{width:100%;min-height:80px;padding:var(--space-sm);border:1px solid var(--color-border);border-radius:var(--radius-sm);font-family:inherit;font-size:0.85rem;resize:vertical}.ticket-context{font-size:0.75rem;color:var(--color-text-muted);margin-top:var(--space-xs);padding:var(--space-xs);background:var(--color-bg);border-radius:var(--radius-sm)}.ticket-reply{background:var(--color-bg);padding:var(--space-sm);border-radius:var(--radius-sm);margin-top:var(--space-xs);border-left:3px solid var(--color-gold)}
-    </style>
-    <?php endif; ?>
-    <div class="table-wrap"<?= isset($paging) ? ' data-no-table-search' : '' ?>>
-        <table>
-            <thead><tr><th>ID</th><th>Status</th><th>Details</th><th>Created</th></tr></thead>
+    <?php $tickets = ($collection ?? '') === 'support_tickets'; ?>
+    <div class="table-wrap admin-records<?= $tickets ? ' admin-records--tickets' : '' ?>"<?= isset($paging) ? ' data-no-table-search' : '' ?>>
+        <table<?= $tickets ? ' role="table"' : '' ?>>
+            <thead><tr><th scope="col">ID</th><th scope="col">Status</th><th scope="col">Details</th><th scope="col">Created</th></tr></thead>
             <tbody>
             <?php if(empty($items)): ?>
                 <tr><td colspan="4" style="text-align:center; color:var(--color-text-muted); padding:var(--space-2xl);"><?= !empty($paging['search']) ? 'No matching records.' : 'No '.e(strtolower($title)).' records yet.' ?></td></tr>
@@ -20,46 +16,62 @@
                     // Orders, above real orders, with no date and no customer.
                     if (count(array_filter($item, fn($v, $k) => $k !== 'id' && $v !== '' && $v !== null, ARRAY_FILTER_USE_BOTH)) === 0) continue;
                     ?>
-                    <tr class="<?= (($collection ?? '') === 'support_tickets') ? 'ticket-row' : (($collection ?? '') === 'orders' ? 'admin-order-row' : '') ?>">
-                        <td><code style="font-size:0.8rem; background:var(--color-bg-alt); padding:0.2rem 0.5rem; border-radius:var(--radius-sm);"><?= e(substr((string)($item['id'] ?? $item['slug'] ?? $item['code'] ?? 'record'), 0, 16)) ?></code></td>
-                        <td>
-                            <?php if(($collection ?? '') === 'support_tickets'): ?>
-                                <span style="display:inline-block; padding:0.1rem 0.5rem; border-radius:var(--radius-pill); font-size:0.72rem; font-weight:600; <?= ($item['status'] ?? 'open') === 'open' ? 'background:#fef3c7;color:#92400e' : (($item['status'] ?? '') === 'answered' ? 'background:#dbeafe;color:#1e40af' : 'background:#e5e7eb;color:#374151') ?>"><?= e(ucfirst($item['status'] ?? 'open')) ?></span>
+                    <tr class="<?= $tickets ? 'ticket-row' : (($collection ?? '') === 'orders' ? 'admin-order-row' : '') ?>"<?= $tickets ? ' role="row"' : '' ?>>
+                        <td<?= $tickets ? ' role="cell"' : '' ?>><code class="admin-records__ref"><?= e(substr((string)($item['id'] ?? $item['slug'] ?? $item['code'] ?? 'record'), 0, 16)) ?></code></td>
+                        <td<?= $tickets ? ' role="cell"' : '' ?>>
+                            <?php if ($tickets): ?>
+                                <?php $ticketTone = match ($item['status'] ?? 'open') { 'open' => 'warning', 'answered' => 'info', default => 'default' }; ?>
+                                <span class="badge badge--<?= $ticketTone ?>"><?= e(ucfirst($item['status'] ?? 'open')) ?></span>
                             <?php else: ?>
                                 <?= e(ucfirst(str_replace('_', ' ', (string)($item['status'] ?? 'active')))) ?>
                             <?php endif; ?>
                         </td>
-                        <td>
-                            <?php if(($collection ?? '') === 'support_tickets'): ?>
-                                <strong><?= e($item['customer_email'] ?? 'Guest') ?></strong>
-                                <button type="button" class="btn btn-sm btn-ghost" aria-expanded="false" onclick="event.stopPropagation();toggleTicket(this.closest('tr'));this.setAttribute('aria-expanded',this.closest('tr').querySelector('.ticket-reply-form').classList.contains('open')?'true':'false')">Manage ticket</button>
-                                <small style="display:block"><?= e((string)($item['priority']??'normal')) ?> priority · <?= e((string)($item['work_state']??'active')) ?><?php if(!empty($item['assigned_admin_id'])): ?> · Assigned<?php endif; ?></small>
+                        <td<?= $tickets ? ' role="cell"' : '' ?>>
+                            <?php if ($tickets): ?>
+                                <strong class="ticket-identity"><?= e($item['customer_email'] ?? 'Guest') ?></strong>
+                                <small class="ticket-state"><?= e(ucfirst((string)($item['priority'] ?? 'normal'))) ?> priority · <?= e(ucfirst(str_replace('_', ' ', (string)($item['work_state'] ?? 'active')))) ?><?php if (!empty($item['assigned_admin_id'])): ?> · Assigned<?php endif; ?></small>
                                 <?php if(preg_match('/^[a-f0-9]{32}$/D',(string)($item['conversation_id']??''))): ?>
-                                    <a href="/admin/agent/conversation/<?= e($item['conversation_id']) ?>" onclick="event.stopPropagation()">Authorized conversation evidence</a>
+                                    <a class="ticket-evidence" href="/admin/agent/conversation/<?= e($item['conversation_id']) ?>">Authorized conversation evidence</a>
                                 <?php endif; ?>
-                                <span style="color:var(--color-text-muted); display:block; margin-top:0.2rem;"><?= e(mb_substr((string)($item['message'] ?? ''), 0, 120)) ?></span>
+                                <span class="ticket-message"><?= e(mb_substr((string)($item['message'] ?? ''), 0, 120)) ?></span>
                                 <?php if (!empty($item['context'])): ?>
-                                <div class="ticket-context"><?= e($item['context']) ?></div>
+                                <div class="ticket-context"><strong>Context</strong> <?= e($item['context']) ?></div>
                                 <?php endif; ?>
                                 <?php if (!empty($item['reply'])): ?>
-                                <div class="ticket-reply"><strong>Reply:</strong> <?= e(mb_substr((string)$item['reply'], 0, 200)) ?></div>
+                                <div class="ticket-reply"><strong>Saved reply</strong> <?= e(mb_substr((string)$item['reply'], 0, 200)) ?></div>
                                 <?php endif; ?>
-                                <div class="ticket-reply-form" data-ticket-id="<?= e($item['id'] ?? '') ?>">
-                                    <form method="POST" action="/admin/support-tickets/save">
+                                <details class="ticket-management">
+                                    <summary>Manage ticket</summary>
+                                    <form class="admin-form ticket-reply-form" method="POST" action="/admin/support-tickets/save">
                                         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
                                         <input type="hidden" name="id" value="<?= e($item['id'] ?? '') ?>">
                                         <input type="hidden" name="version" value="<?= (int)($item['version']??0) ?>">
-                                        <label>Priority <select name="priority"><?php foreach(['low','normal','high','urgent'] as $p): ?><option value="<?= e($p) ?>" <?= ($item['priority']??'normal')===$p?'selected':'' ?>><?= e(ucfirst($p)) ?></option><?php endforeach; ?></select></label>
-                                        <label>Waiting on <select name="waiting_on"><option value="customer">Customer</option><option value="team">Team</option></select></label>
+                                        <div class="admin-form__row">
+                                            <label>Priority
+                                                <select name="priority">
+                                                <?php foreach (['low', 'normal', 'high', 'urgent'] as $priority): ?>
+                                                    <option value="<?= e($priority) ?>" <?= ($item['priority'] ?? 'normal') === $priority ? 'selected' : '' ?>><?= e(ucfirst($priority)) ?></option>
+                                                <?php endforeach; ?>
+                                                </select>
+                                            </label>
+                                            <label>Waiting on
+                                                <select name="waiting_on">
+                                                    <option value="customer">Customer</option>
+                                                    <option value="team">Team</option>
+                                                </select>
+                                            </label>
+                                        </div>
                                         <label>Snooze until (UTC) <input name="snoozed_until" type="datetime-local"></label>
-                                        <textarea name="reply" placeholder="Write your reply…"><?= e($item['reply'] ?? '') ?></textarea>
-                                        <div style="display:flex; flex-wrap:wrap; gap:var(--space-sm); margin-top:var(--space-sm);">
+                                        <label>Reply
+                                            <textarea name="reply" rows="3"><?= e($item['reply'] ?? '') ?></textarea>
+                                        </label>
+                                        <div class="ticket-management__actions">
                                             <button class="btn btn-primary btn-sm" type="submit" name="action" value="reply">Save reply</button>
                                             <?php foreach(['assign'=>'Claim ticket','release'=>'Release','wait'=>'Mark waiting','snooze'=>'Snooze','close'=>'Close','reopen'=>'Reopen'] as $action=>$label): ?><button class="btn btn-sm btn-ghost" type="submit" name="action" value="<?= e($action) ?>"><?= e($label) ?></button><?php endforeach; ?>
-                                            <button class="btn btn-sm btn-ghost" type="button" onclick="event.stopPropagation();this.closest('.ticket-reply-form').classList.remove('open')">Cancel</button>
+                                            <button class="btn btn-sm btn-ghost" type="button" data-ticket-cancel hidden>Cancel</button>
                                         </div>
                                     </form>
-                                </div>
+                                </details>
                             <?php elseif(($collection ?? '') === 'appointments'): ?>
                                 <strong><?= e($item['customer_email'] ?? 'Customer') ?></strong>
                                 <span style="display:block;color:var(--color-text-muted);"><?= e(trim(($item['preferred_date'] ?? '') . ' ' . ($item['preferred_time'] ?? ''))) ?></span>
@@ -73,7 +85,7 @@
                                 <?= e($item['name'] ?? $item['email'] ?? $item['message'] ?? $item['event'] ?? 'Record') ?>
                             <?php endif; ?>
                         </td>
-                        <td><?= e(substr((string)($item['created_at'] ?? ''), 0, 10)) ?></td>
+                        <td<?= $tickets ? ' role="cell" class="ticket-date"' : '' ?>><?= e(substr((string)($item['created_at'] ?? ''), 0, 10)) ?></td>
                     </tr>
                 <?php endforeach; ?>
             <?php endif; ?>
@@ -81,11 +93,16 @@
         </table>
     </div>
 </div>
-<?php if(($collection ?? '') === 'support_tickets'): ?>
+<?php if ($tickets): ?>
 <script>
-function toggleTicket(row){
-    var form = row.querySelector('.ticket-reply-form');
-    if(form) form.classList.toggle('open');
-}
+document.querySelectorAll('[data-ticket-cancel]').forEach(button => {
+    const disclosure = button.closest('details');
+    const summary = disclosure.querySelector('summary');
+    button.hidden = false;
+    button.addEventListener('click', () => {
+        disclosure.open = false;
+        summary.focus();
+    });
+});
 </script>
 <?php endif; ?>

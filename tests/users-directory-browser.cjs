@@ -115,6 +115,12 @@ test('Users keeps secondary filters collapsed and preserves them through native 
         assert.ok(await role.isVisible());
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
     }
+    await page.getByRole('link', {name:'Menu', exact:true}).press('Enter');
+    const fallbackNavigation = page.getByRole('navigation', {name:'Owner workspace'});
+    assert.ok(await fallbackNavigation.isVisible(), 'Owner menu works without JavaScript');
+    await page.getByRole('link', {name:'Close navigation', exact:true}).press('Enter');
+    assert.ok(!await fallbackNavigation.isVisible(), 'Closing the native owner menu returns to content');
+
     await role.selectOption('customer');
     await page.getByLabel('Per page').selectOption('10');
     await page.getByRole('button', {name:'Apply filters'}).press('Enter');
@@ -148,8 +154,11 @@ test('Users keeps secondary filters collapsed and preserves them through native 
     const sidebar = mobile.locator('#admin-sidebar');
     assert.equal(await sidebar.getByRole('link', {name:'Users', exact:true}).getAttribute('aria-current'), 'page');
     for (const menu of await sidebar.locator('.admin-nav-toggle').all()) {
+        assert.equal(await menu.evaluate(summary => summary.closest('details').open), false);
         await menu.press('Space');
-        assert.equal(await menu.getAttribute('aria-expanded'), 'true');
+        assert.equal(await menu.evaluate(summary => summary.closest('details').open), true);
+        const links = menu.locator('xpath=following-sibling::*').getByRole('link');
+        assert.ok(await links.first().isVisible(), 'Opening the native group exposes its destinations');
     }
     await sidebar.locator('.admin-agent-nav summary').press('Space');
     assert.ok(await sidebar.getByRole('link', {name:'Products', exact:true}).isVisible());
@@ -241,7 +250,7 @@ test('Users keeps secondary filters collapsed and preserves them through native 
     fixtures.settings = [{id:'app_settings', module_shop:'0', module_blog:'0'}];
     await mobile.goto(url);
     await navigation.press('Enter');
-    await sidebar.getByRole('button', {name:'Commerce'}).press('Space');
+    await sidebar.getByText('Commerce', {exact:true}).press('Space');
     assert.ok(await sidebar.getByRole('link', {name:'Orders', exact:true}).isVisible());
     assert.equal(await sidebar.locator('a[href="/admin/products"],a[href="/admin/blog"]').count(), 0);
 });

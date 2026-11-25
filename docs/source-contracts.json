@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "5bc528985312485b9732d829b75addacb345765dfc1c767c85e38db4faa2ac99",
+            "source_sha256": "160120446ef0d740a9f76c3a65d2459efbe35fc9d1c263ab61530ea0a9d7f7a0",
             "references_sha256": "f5c7361b8ca9c867682dbafcde10dd099cdd71d35190bc7aaea8d770ba2d53ff",
-            "review_note": "Reviewed initial plan, candidate and per-transfer hold checks against runtime/observability docs and backend skill. Holds stop locally before model-attempt evidence, short waits reread current health, explicit probes bypass the gate, and locked tools never replay. Credentials remain confined to private health state."
+            "review_note": "Reviewed Enterprise chat and Monitoring against scoped first-round tool declarations, recorded request evidence and credential-scoped provider holds. Rechecks before transfer keep local skips outside attempt counts. Diagnostic probes bypass holds, and tool exchanges stay on their original model. The owner UI presents authorized prompts, saved history and bounded evidence."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -18,29 +18,29 @@
             "review_note": "Compared canonical optional fields, verified payment snapshots, historical flags, HSN groups and CSV review aggregation with the GST commerce guide."
         },
         "content": {
-            "source_sha256": "302703999044e0a40666c76dbd2de2c1d6e2bbdb54f3bd0ebab396d6cd1720b2",
+            "source_sha256": "9ca1ff8cd0fcc4302ca466ff646e1363396bac0780b7b40b2684486f3e87e465",
             "references_sha256": "d283e57698fc4ae10cba725749a1723c0f5bea1825f89812b2bf7a15fb2daa20",
-            "review_note": "Compared the BlogController, public article and authored-page templates with the content docs and documented help navigation, Shop gating and typed site search groups."
+            "review_note": "Reviewed published Markdown guides, search navigation and module filters against the merged catalogue and account source."
         },
         "foundation": {
-            "source_sha256": "f8fda746e7fc7a3e0b2e0ce59de40b8b9125da1e42d280c827ead7b3abf5521b",
+            "source_sha256": "908874452b8774a7e683b6764cf8d4a973e0b6d09936db89dba6f75646c61c83",
             "references_sha256": "6eba6651fd8e747d8053034a7812f9d41e6dba5a405bc1d1ed669556c8f2474b",
-            "review_note": "Checked architecture and private JSON storage against controller replay. Only accepted model responses use native presentation on replay and no replay refreshes business data or changes access scope."
+            "review_note": "Reviewed admin title and native navigation regression coverage against the rendering and request boundary. The browser checks keyboard expansion, visible destinations and module controls."
         },
         "google-tags": {
-            "source_sha256": "683b99f0a3158682ae753aef309c0a7339cdc4005f2e640b4e5c94d5f05fac49",
-            "references_sha256": "5915d48a37215c8a344d37c271e63ca66dbb21f3bafe3a3a6ba93a42a41ff9d3",
-            "review_note": "Compared the current layout head with the documented Google integration. Customer forms and public reading layouts retain the existing Google configuration and consent behavior."
+            "source_sha256": "4f6a8463add868b4016e243e90638e9dc22e442dd5964fc6c25f71a578bc6e40",
+            "references_sha256": "5b221c86c8ea31a5e66710e5b2aa2cfb3bee4d921f0b1356c1b3967c29508d3c",
+            "review_note": "Reviewed public head registration and private Google reporting setup after the owner and customer navigation merge."
         },
         "http-errors": {
-            "source_sha256": "2e2fee3211f50641844c05f86381f277f9c6c10b7fb60fb750c52937b0868e12",
+            "source_sha256": "63602cadbe59868b0d25a1b00729a589e75d1b31c6ea3a1b25c1e5a46fd06d50",
             "references_sha256": "d309fba94f0e9ed81e83cce280b9c5ac3560d4726227d058c866ee0ea4b12cd2",
-            "review_note": "Reviewed the new hosting instructions against existing request-failure guidance. A transport receipt remains distinct from a rendering response, and the worker preserves the canonical queue before reporting an outcome."
+            "review_note": "Compared the layout-specific title assignment with the request-error boundary. Website error status, sanitized error text and public not-found rendering follow their existing handlers."
         },
         "interface": {
-            "source_sha256": "b90553f96231a25e489274359cbef2ebc6d67afbd17abd7f8f0fed46163834e9",
-            "references_sha256": "9537986a93d47115a99a7c28d41f6e67e89a9ed5fe5053e11a3b840a12b79bdd",
-            "review_note": "Preserved the deployed footer guidance and new document reading guidance. Verified the named pagination landmark, exact destinations, current account forms, and responsive customer template contracts."
+            "source_sha256": "46c0da2ee4fa85f54130e1b7b41dcfc0e0d1af79f9134530cc79bc09829326c7",
+            "references_sha256": "a91a95841dc182236befb1ff651bb22b318c92a7e4e5fd8adac315a9e16cbb9f",
+            "review_note": "Verified the customer-specific forms, named pagination, address focus, reading layouts and their composition with the deployed owner and storefront controls."
         },
         "mail": {
             "source_sha256": "6895291447775bb17e9bef6c3d38d388ed65b3f5985b4c79bc71a9b4fa222c16",
@@ -54,13 +54,13 @@
         },
         "media": {
             "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
-            "references_sha256": "e46a00af045b0f554d796d480bc4c7bfe25b8464276587147872d4c29e2701f1",
-            "review_note": "Compared active-chat restoration and attachment changes with the media operator instructions, and confirmed upload and in-memory draft attachment regressions pass."
+            "references_sha256": "34433348ceb97accb0aea9b04f930b1ec0936825154d70c9ae872f155e0d2cbd",
+            "review_note": "Cross-checked the revised owner UI skill with the current media selection, confirmation and metadata flows. The existing media documentation still describes those operations."
         },
         "operator-help": {
-            "source_sha256": "1a39ffaa3686527b675a74072f6ee5103584ced7b98b1241f833c1564d153359",
-            "references_sha256": "30a0eb61344f0c02630c45cd7f3d082c6d64ce2cb8ed9a619c07615b4c159a9c",
-            "review_note": "Checked the public help article routes, sign-in and account affordances, and their shared footer guide visibility against current Help content and source."
+            "source_sha256": "d95087bc461a998ae4f20fc11bfbf8a8adbb7124d3b949ae4e6442244e0a23de",
+            "references_sha256": "8993a3d96b2f0930673298bce0d268fc582bab2fb7fdf35e16f08abb9ac7c3f9",
+            "review_note": "Validated merged owner help, customer account guidance, contact, footer and public ordering guides against the current merged templates."
         },
         "public-mcp": {
             "source_sha256": "234155f55b0f66f669f6422a85acc30a6a59ebf216d8f682d7a212cd01ee7358",
@@ -68,9 +68,9 @@
             "review_note": "Checked the rendered Support enquiry controls against the current public MCP and A2UI documentation. Focus scrolling keeps the existing tool and submission contracts."
         },
         "remote-commerce": {
-            "source_sha256": "0a504ca49d9995ea386d62a2783ae399dd7f8bf0eb0c10f5fffe1c5412a7b264",
-            "references_sha256": "9ad7c82ae5308c4527c0ddbbd863282163e4601abefabc5c07d5fa863b809ff5",
-            "review_note": "Reviewed the merged shared frontend guidance, checkout UI and customer help steps. Payment, delivery and Support contracts stay consistent with the public docs."
+            "source_sha256": "d240d614ae377c8a7195af73b09b5a49e762c87241bf86a1f65ff07985316f2e",
+            "references_sha256": "3855f1bbcafb7e5178cc56306a1909c6b074172af1cc6669040a9cec5c6944fc",
+            "review_note": "Checked the deployed shop and checkout review, customer account actions and Support checkout guidance against the merged markup and task help."
         },
         "sales-channels": {
             "source_sha256": "36385e3d18e26f524d0efdd12d26cd8386e368fb5d27441460c688ffdff28b92",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed SettingsService module resolution and Merchant feed guidance. Dropping a retired header slot leaves the saved catalog eligibility inputs intact."
         },
         "workflow": {
-            "source_sha256": "3a737d56ca60600323831b2677a42e5e7233e79f35128b926c6b5989685fbff8",
+            "source_sha256": "614b98e11a3869f127c0a1fbbefa123c1a705d2cc39b0e529335b98035a990db",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Regenerated indexed references and verified the same public route, module and search pagination acceptance on the merged source."
+            "review_note": "Regenerated runtime and documentation indexes and verified the quick standalone search fixture and established browser release workflow on the combined sources."
         }
     }
 }
