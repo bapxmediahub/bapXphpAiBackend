@@ -1,6 +1,6 @@
 ## Pick up a case
 
-Open AI Support Tickets and choose **Manage ticket**. Read the customer's question, saved context and any authorized conversation evidence. Use **Claim ticket** so the team knows who is handling it. Select the appropriate priority and who the case is waiting on.
+Open AI Support Tickets and choose **Manage ticket**. Read the customer's question, saved context and any authorized conversation evidence. Use **Claim ticket** so the team knows who is handling it. Select the appropriate priority and who the case is waiting on. Choose **Cancel** to collapse the editor and return to **Manage ticket**.
 
 ## Reply and manage waiting
 

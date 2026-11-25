@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "5bc528985312485b9732d829b75addacb345765dfc1c767c85e38db4faa2ac99",
+            "source_sha256": "160120446ef0d740a9f76c3a65d2459efbe35fc9d1c263ab61530ea0a9d7f7a0",
             "references_sha256": "f5c7361b8ca9c867682dbafcde10dd099cdd71d35190bc7aaea8d770ba2d53ff",
-            "review_note": "Reviewed initial plan, candidate and per-transfer hold checks against runtime/observability docs and backend skill. Holds stop locally before model-attempt evidence, short waits reread current health, explicit probes bypass the gate, and locked tools never replay. Credentials remain confined to private health state."
+            "review_note": "Reviewed Enterprise chat and Monitoring against scoped first-round tool declarations, recorded request evidence and credential-scoped provider holds. Rechecks before transfer keep local skips outside attempt counts. Diagnostic probes bypass holds, and tool exchanges stay on their original model. The owner UI presents authorized prompts, saved history and bounded evidence."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -23,24 +23,24 @@
             "review_note": "Read the account help Markdown and its source view. The article explains the picture placeholder beside the email."
         },
         "foundation": {
-            "source_sha256": "f8fda746e7fc7a3e0b2e0ce59de40b8b9125da1e42d280c827ead7b3abf5521b",
+            "source_sha256": "908874452b8774a7e683b6764cf8d4a973e0b6d09936db89dba6f75646c61c83",
             "references_sha256": "6eba6651fd8e747d8053034a7812f9d41e6dba5a405bc1d1ed669556c8f2474b",
-            "review_note": "Checked architecture and private JSON storage against controller replay. Only accepted model responses use native presentation on replay and no replay refreshes business data or changes access scope."
+            "review_note": "Reviewed admin title and native navigation regression coverage against the rendering and request boundary. The browser checks keyboard expansion, visible destinations and module controls."
         },
         "google-tags": {
-            "source_sha256": "683b99f0a3158682ae753aef309c0a7339cdc4005f2e640b4e5c94d5f05fac49",
+            "source_sha256": "4f6a8463add868b4016e243e90638e9dc22e442dd5964fc6c25f71a578bc6e40",
             "references_sha256": "f97f8bd08a0edd6ee125c583e1dbadbc000f3c422b469875bb4f718abf3d8191",
-            "review_note": "Reviewed unchanged public layout head rendering against the documented Google tag integration."
+            "review_note": "Reviewed preserved public head tag rendering with the integration guide and the owner dashboard heading change. Google reporting connection states, tag setup and permitted data links match the current templates."
         },
         "http-errors": {
-            "source_sha256": "2e2fee3211f50641844c05f86381f277f9c6c10b7fb60fb750c52937b0868e12",
+            "source_sha256": "63602cadbe59868b0d25a1b00729a589e75d1b31c6ea3a1b25c1e5a46fd06d50",
             "references_sha256": "d309fba94f0e9ed81e83cce280b9c5ac3560d4726227d058c866ee0ea4b12cd2",
-            "review_note": "Reviewed the new hosting instructions against existing request-failure guidance. A transport receipt remains distinct from a rendering response, and the worker preserves the canonical queue before reporting an outcome."
+            "review_note": "Compared the layout-specific title assignment with the request-error boundary. Website error status, sanitized error text and public not-found rendering follow their existing handlers."
         },
         "interface": {
-            "source_sha256": "108179ff3bf10f1a1a2bdd30b8dd48b373954c74e642ee59761a6b3b5a7475eb",
-            "references_sha256": "f278b12b1588f010fd7a0f51c357d7554396cc6fb7f53588c1ec198efda09c60",
-            "review_note": "Verified focus and visibility when reopening a scrolled Support enquiry at 375px, alongside the menu, footer and shared accessibility guidance."
+            "source_sha256": "2cdf88a4a615183557660d35ab02a4c9877f511e98b29fa66f20b0487f4cfcf6",
+            "references_sha256": "fd790f419da6d11919d064db732c90fd8d945756999e4e1f3326b705e618b081",
+            "review_note": "Matched both layouts to the reconciled Design guidance. The owner drawer, table and ticket controls retain their responsive behavior, and public menu, footer and Support focus follow the merged interface guidance."
         },
         "mail": {
             "source_sha256": "6895291447775bb17e9bef6c3d38d388ed65b3f5985b4c79bc71a9b4fa222c16",
@@ -54,13 +54,13 @@
         },
         "media": {
             "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
-            "references_sha256": "e46a00af045b0f554d796d480bc4c7bfe25b8464276587147872d4c29e2701f1",
-            "review_note": "Compared active-chat restoration and attachment changes with the media operator instructions, and confirmed upload and in-memory draft attachment regressions pass."
+            "references_sha256": "34433348ceb97accb0aea9b04f930b1ec0936825154d70c9ae872f155e0d2cbd",
+            "review_note": "Cross-checked the revised owner UI skill with the current media selection, confirmation and metadata flows. The existing media documentation still describes those operations."
         },
         "operator-help": {
-            "source_sha256": "d4df8c61faae0b85fc48b8629ffc1519f43656271defcb0e9dfdbe9b568b691f",
-            "references_sha256": "7a684be61b80d3002adcfb6a344e0c4bf547d9c8082bee3fa151bd61b1dc9d98",
-            "review_note": "Cross-checked merged Enterprise declaration and scoped operator-guide behavior with the operator references. Verified that the public Support guide stays in the Blog gate and the public enquiry restores visible pane focus."
+            "source_sha256": "b509a9c0404b90c247b4551ab69d740b2af5997cb0ee1f0cbccacd7a666dd0b8",
+            "references_sha256": "00126a5c3c862ff46efed68f3dafb9c26532dc8acd3c418d7079c3862859c100",
+            "review_note": "Compared owner navigation, ticket controls and scoped Enterprise prompts with the operator guides. Checked the public Blog-gated Support guide and the preserved enquiry pane focus path."
         },
         "public-mcp": {
             "source_sha256": "234155f55b0f66f669f6422a85acc30a6a59ebf216d8f682d7a212cd01ee7358",
@@ -69,8 +69,8 @@
         },
         "remote-commerce": {
             "source_sha256": "0a504ca49d9995ea386d62a2783ae399dd7f8bf0eb0c10f5fffe1c5412a7b264",
-            "references_sha256": "233a298972f70b9eaa75c089da038a8d4e589686e2118f81235a5f32088ce1d5",
-            "review_note": "Reviewed both existing Support panes and verified nested heading focus on reopen. Checkout and commerce contracts remain as documented."
+            "references_sha256": "e266e4f053a69063bbd61cfc06758b4e95d4424ff59cebcab1e355c4363130af",
+            "review_note": "Compared public Support checkout and enquiry panes with the revised Design, native checkout and A2UI contracts. Reopening focuses the active pane and checkout retains its cart, payment and recovery boundaries."
         },
         "sales-channels": {
             "source_sha256": "36385e3d18e26f524d0efdd12d26cd8386e368fb5d27441460c688ffdff28b92",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed SettingsService module resolution and Merchant feed guidance. Dropping a retired header slot leaves the saved catalog eligibility inputs intact."
         },
         "workflow": {
-            "source_sha256": "0f5ec4723ce72247773717eae57bc723e10147e4a59b70a1ea4f491c4353ad08",
+            "source_sha256": "843a3be0d854e776a4359a283b5f3fe890ba1892b354f5dfde4654bc1836927c",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Regenerated source indexes after the layout focus fix and checked the established review and browser verification steps."
+            "review_note": "Cross-reviewed the owner and public UI skills with their browser verification and documentation review guidance and regenerated the project indexes from both released source changes."
         }
     }
 }
