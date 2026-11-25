@@ -78,9 +78,9 @@
             "review_note": "Reviewed SettingsService module resolution and Merchant feed guidance. Dropping a retired header slot leaves the saved catalog eligibility inputs intact."
         },
         "workflow": {
-            "source_sha256": "e6a75fc90a449158817dc1829ba534050310ac7d1d1b6dce7f137d6343c326b6",
+            "source_sha256": "3151ddc37e15401a327eb61efab64b8d48099406e2ca022132345299d54f0178",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Regenerated indexes after merging the deployed owner revision. Preserved the verified standalone browser, mapper and issue evidence procedure."
+            "review_note": "Reviewed the live browser release workflow and developer skills against the scoped owner-authorized conversation fallback. Kept the ignored test credential file as the first source and documented private input and reporting boundaries."
         }
     }
 }
