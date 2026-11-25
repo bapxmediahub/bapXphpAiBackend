@@ -784,7 +784,7 @@ final class AdminController extends BaseController {
                 'run' => $this->agentRunMeta($traceId, $outcome, $startedAt, $tools, $attempts),
             ] + ($outcome === 'error' ? [] : (new \App\Services\AgentAnswerPresentationService())->responseData(
                 $answer,'admin',$tools->sourceLinks(),
-                $this->agentPublicReferences($message,$answer,$tools->activity()),$tools->activity())) + $record, $outcome === 'error' ? 502 : 200);
+                $this->agentPublicReferences($answer,$tools->activity()),$tools->activity())) + $record, $outcome === 'error' ? 502 : 200);
         } catch (\Throwable $e) {
             (new AuditLogService())->agentRun('admin', 'error', $startedAt, 'internal_error', traceId: $traceId);
             error_log('Owner agent request failed (' . get_class($e) . ')');
@@ -793,7 +793,7 @@ final class AdminController extends BaseController {
     }
 
     /** Owner aggregates must never trigger a public catalogue lookup. */
-    private function agentPublicReferences(string $message,string $answer,array $activity): ?array
+    private function agentPublicReferences(string $answer,array $activity): ?array
     {
         // Only actual completed published reads can create public reference cards.
         // Private reports stay in the owner presentation. No question-intent fallback.

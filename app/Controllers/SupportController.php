@@ -38,11 +38,12 @@ final class SupportController extends BaseController {
             $conversationId = $prepared['conversation_id'];
             if (is_array($prepared['replay'])) {
                 $turn=$prepared['replay'];
+                $modelAnswer=($turn['outcome']??'')==='model';
                 $this->jsonResponse(['reply'=>$turn['answer'],'ticket_id'=>$turn['ticket_id']??null,
                     'conversation_id'=>$conversationId,'turn_id'=>$turn['turn_id'],
                     'evaluation'=>$turn['evaluation'],'replayed'=>true,'run'=>['trace_id'=>$traceId]]
-                    + (new \App\Services\AgentAnswerPresentationService())->responseData((string)$turn['answer'],'support')
-                    + (($turn['outcome']??'')==='model'&&self::hasContactProposal((array)($turn['tools']??[])) ? ['ui'=>['kind'=>'contact_enquiry','subject'=>'general']] : []),
+                    + ($modelAnswer ? (new \App\Services\AgentAnswerPresentationService())->responseData((string)$turn['answer'],'support') : [])
+                    + ($modelAnswer&&self::hasContactProposal((array)($turn['tools']??[])) ? ['ui'=>['kind'=>'contact_enquiry','subject'=>'general']] : []),
                     ($turn['outcome']??'')==='error'?503:200);
             }
             \App\Services\AgentTraceService::begin($traceId,
@@ -58,9 +59,13 @@ final class SupportController extends BaseController {
                 null, (array)($answer['run']['attempts'] ?? []), (array)($answer['run']['retrieval'] ?? []), (array)($answer['knowledge']??[])
             );
             $failed=($answer['run']['outcome']??'')==='error';
-            $references=$failed?null:(new \App\Services\PublicA2uiService())->forAgentEvidence((array)($answer['knowledge']??[]),(array)($answer['run']['tools']??[]),(string)($answer['reply']??''));
-            $presentation = (new \App\Services\AgentAnswerPresentationService())->responseData(
-                (string)($answer['reply']??''),'support',(array)($answer['actions']??[]),$references);
+            $presentation = [];
+            if (!$failed) {
+                $references = (new \App\Services\PublicA2uiService())->forAgentEvidence(
+                    (array)($answer['knowledge']??[]),(array)($answer['run']['tools']??[]),(string)($answer['reply']??''));
+                $presentation = (new \App\Services\AgentAnswerPresentationService())->responseData(
+                    (string)($answer['reply']??''),'support',(array)($answer['actions']??[]),$references);
+            }
             $this->jsonResponse($answer + $presentation + $record,$failed?503:200);
         } catch (\LogicException $e) {
             if(!empty($user['email']) && is_string($conversationId) && preg_match('/^[a-f0-9]{32}$/D',$conversationId)) {

@@ -823,7 +823,9 @@ if(supportForm){supportForm.addEventListener('submit',async function(e){
         failed=!r.ok||!!j.error||!hasReply;
         if(!failed||typeof j.turn_id==='string')supportPendingRequest=null;
         if(typeof j.conversation_id==='string'&&/^[a-f0-9]{32}$/.test(j.conversation_id))supportConversationId=j.conversation_id;
-        supportRenderAnswer(hasReply||j.error?j:{error:'The server returned no answer.'});
+        supportRenderAnswer(failed
+            ? {error:j.error||(hasReply?j.reply:'The server returned no answer.'),actions:j.actions}
+            : j);
         if(failed&&['incomplete','pending_or_interrupted'].includes(j.request_status)){
             var recovery=document.createElement('p');
             recovery.textContent='Check whether your last request completed before repeating it. Choose New chat to ask a different question.';

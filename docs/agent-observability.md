@@ -61,8 +61,8 @@ report metadata, then invoke the same model loop with owner-only capabilities.
 The model decides which reports or documents to use and synthesizes the
 answer. Typed help and capability questions use that loop. The separate
 draft controls prepare owner-reviewed forms. Provider outages are recorded
-and shown as explicit errors. The browser also reports an error when a response
-contains neither an answer nor a draft.
+and shown as explicit errors without an answer card. The browser also reports
+an error when a response contains neither an answer nor a draft.
 Both surfaces save the produced turn and observed evidence in their private
 JSON conversation. New Chat clears the active ID; History reopens only the
 actor's previous chats.

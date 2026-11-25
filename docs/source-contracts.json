@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "60066014b65d686f8fa203d984a13cac2390cafa7ff68d1b26d86a717a398d91",
-            "references_sha256": "b0dc1af45e5d5dd80e0408d032b5d166fa6ae5a5da3ae6203d06c2ca857b51b7",
-            "review_note": "Matched the documented auto-recovery and draft boundary to both browser handlers and tested empty HTTP 200 exchanges in Chromium. Visible error status remains separate from genuine answers and owner draft forms."
+            "source_sha256": "117d9662318ed72567129d18e3c8db663f98561f0eef012b518336a781b458b5",
+            "references_sha256": "241fc499b339d4ef99861aac7d5fa6e2e111ba3646f0338a36879d4d20c6378c",
+            "review_note": "Cross-checked PHP acceptance and saved turns with the documented browser error state. Failed model responses no longer contain A2UI or proposed forms and existing successful answer formatting remains scoped."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -23,14 +23,14 @@
             "review_note": "Read the account help Markdown and its source view. The article explains the picture placeholder beside the email."
         },
         "foundation": {
-            "source_sha256": "34f7d56a79bb37c25496092a5de21d3d15ab78000eb33a9c5b0302eca64694bb",
+            "source_sha256": "f8fda746e7fc7a3e0b2e0ce59de40b8b9125da1e42d280c827ead7b3abf5521b",
             "references_sha256": "6eba6651fd8e747d8053034a7812f9d41e6dba5a405bc1d1ed669556c8f2474b",
-            "review_note": "Verified native PHP application boundaries after pruning unused answer and broad context paths. Owner and Support keep authority in named typed tools and the same private conversation files."
+            "review_note": "Checked architecture and private JSON storage against controller replay. Only accepted model responses use native presentation on replay and no replay refreshes business data or changes access scope."
         },
         "google-tags": {
-            "source_sha256": "152dd461a5222c692147758087c7bbf2384cce48dea9d735f1974c5ebf7d0aaf",
+            "source_sha256": "55d5b46aafaf292fdd19001910dc1072be3ebb1f1cea31a7dbfc3948db3b178f",
             "references_sha256": "327d47f02e4a8ad21085d0a1d09c4cc515fb2da60c56659fecfccebb0d4a40ef",
-            "review_note": "Checked the public layout diff against the Google tagging boundary and Integrations guide. The changed chat reply handling leaves head markup, tag IDs, and consent configuration intact."
+            "review_note": "Compared the public layout submission handler against the Google rendering boundary and Integrations guide. The response change is outside tag markup, IDs, and consent."
         },
         "http-errors": {
             "source_sha256": "2e2fee3211f50641844c05f86381f277f9c6c10b7fb60fb750c52937b0868e12",
@@ -38,14 +38,14 @@
             "review_note": "Reviewed the new hosting instructions against existing request-failure guidance. A transport receipt remains distinct from a rendering response, and the worker preserves the canonical queue before reporting an outcome."
         },
         "interface": {
-            "source_sha256": "66c456cc57f8a6e9048ab4100adc0f61f30ae91d0e6ec1656dd55744564598e1",
+            "source_sha256": "60713aa23c3b3e211cbc890c5080ecf76ddc0574c3cdf696df33e1cee9ae822e",
             "references_sha256": "99cc04fc48e47c2686cc6efa23f470e7acc6d654dcc91336499ab570364cced6",
-            "review_note": "Checked the shared Design request status contract and both UI skill recovery rules against the existing status component. Empty replies use the adjacent error state, with Enterprise input preserved and no fabricated answer."
+            "review_note": "Compared the shared Design waiting and error pattern with both templates and browser tests. Empty answers and failed payloads use explicit status feedback without rendering an answer card."
         },
         "mail": {
-            "source_sha256": "48ce3e94a6e75539434618c1eeb421e48ca391957baa42c6a5c8a0671416e7fc",
+            "source_sha256": "6895291447775bb17e9bef6c3d38d388ed65b3f5985b4c79bc71a9b4fa222c16",
             "references_sha256": "903e7da848c1e0472ce9a1823b94afc21004e564d12041ee0456918176a6cc72",
-            "review_note": "Reviewed the owner controller diff against mail setup and transport documentation. Changed methods manage Agent inference and existing integration diagnostics."
+            "review_note": "Reviewed Support controller failure and replay handling against email configuration and ticket boundaries. Verified outbound mail and persisted receipt handling remain separate from chat presentation."
         },
         "mcp-clients": {
             "source_sha256": "38828d52259fbd6b6555d790e463ff775e79be85872a5d5b5aea78e599fba3ac",
@@ -58,9 +58,9 @@
             "review_note": "Compared active-chat restoration and attachment changes with the media operator instructions, and confirmed upload and in-memory draft attachment regressions pass."
         },
         "operator-help": {
-            "source_sha256": "31681f8c207f56fa7bcfe082cbb15c5fc81f39e48103e2b96f30a2dcf3be76ca",
+            "source_sha256": "5a968215691404dfa7549b7fbc7128fbf895d81da5e0f1c4dbceb4847ce1d671",
             "references_sha256": "0b6f98d469ec75bea6b386149fd46a6899cf15402fa354a3e92b2af9d05ebb40",
-            "review_note": "Reviewed the owner guide and its separate Help and Docs controls against the Enterprise conversation renderer. Empty answer envelopes display a request error and preserve the owner question for manual recovery."
+            "review_note": "Reviewed the Enterprise guide, direct Help and Docs links and history recovery against the chat renderer. Verified unavailable responses remain failed and leave the question available for manual recovery."
         },
         "public-mcp": {
             "source_sha256": "06a7b8ef4b99e3c70cbae0dbf6ee2b7c97029aabb851906dc8e2e50d9f81c253",
@@ -68,9 +68,9 @@
             "review_note": "Checked removal of the question-to-A2UI heuristic alongside public MCP and A2UI details. Public and chat presenters consume typed authorized source evidence and selected published products."
         },
         "remote-commerce": {
-            "source_sha256": "dc6dbc4aca4150d6964d5e065e7b09eaa75fa6319434af30c5c85a7c7531a99c",
+            "source_sha256": "fe653f18d2ff851f92e4ad7bbf4a9df97ea29f828837aeae00c8aece1b3ecec0",
             "references_sha256": "135d6012b4cf58ce8c5942ea0f98245fd8e8e8c38175ea0c839e8a258777d287",
-            "review_note": "Reviewed native Support checkout and WebMCP recovery against the public layout diff. The chat response validation leaves the canonical purchase and verification controls intact and records no assistant success for an empty reply."
+            "review_note": "Reviewed native Support checkout and WebMCP action registration against the public layout. Scoped verified purchase receipts and recovery remain available independently of failed chat answers."
         },
         "sales-channels": {
             "source_sha256": "36385e3d18e26f524d0efdd12d26cd8386e368fb5d27441460c688ffdff28b92",

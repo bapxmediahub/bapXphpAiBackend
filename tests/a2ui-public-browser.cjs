@@ -360,7 +360,7 @@ for (const width of [1280,375]) {
                     sends++;
                     if(sends===1)await firstPending;
                     if(sends===7)return route.fulfill({json:{}});
-                    if(sends===4)return route.fulfill({status:503,json:{error:'Fixture chat unavailable',request_status:'incomplete',conversation_id:'a'.repeat(32)}});
+                    if(sends===4)return route.fulfill({status:503,json:{error:'Fixture chat unavailable',request_status:'incomplete',conversation_id:'a'.repeat(32),a2ui:fixtures.support}});
                     const surface=structuredClone(sends===2?fixtures.product:fixtures.support);
                     if(sends>2)surface.messages[0].version='unsupported';
                     return route.fulfill({json:{reply:sends===1?'Here is the matching Emerald Ring.\n\nIts published price is ₹1,250.00.':sends===2?'Complete fallback after public-only presentation.':'Complete fallback after unsupported presentation.',
@@ -409,6 +409,8 @@ for (const width of [1280,375]) {
             assert.equal(await page.locator('.bapx-a2ui--answer').count(),1,'Malformed second answer must leave the full fallback');
             await input.fill('Unavailable thread');await send.click();
             await page.getByText('Choose New chat to ask a different question.',{exact:false}).waitFor();
+            await page.getByText('Fixture chat unavailable',{exact:false}).waitFor();
+            assert.equal(await page.locator('.bapx-a2ui--answer').count(),1,'A failed response cannot add an answer card');
             const commerceKey='bapx-support-commerce:v1:'+origin;
             await page.evaluate(key=>sessionStorage.setItem(key,'independent fixture receipt'),commerceKey);
             await newChat.press('Enter');

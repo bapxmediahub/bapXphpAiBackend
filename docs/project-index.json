@@ -1335,7 +1335,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/SupportController.php",
-            "line": 44
+            "line": 45
         },
         {
             "from": "controller:SupportController",
@@ -1351,7 +1351,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/SupportController.php",
-            "line": 76
+            "line": 81
         },
         {
             "from": "controller:SupportController",
@@ -1367,7 +1367,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/SupportController.php",
-            "line": 61
+            "line": 64
         },
         {
             "from": "controller:SupportController",
@@ -1383,7 +1383,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/SupportController.php",
-            "line": 52
+            "line": 53
         },
         {
             "from": "controller:SupportController",
@@ -1391,7 +1391,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/SupportController.php",
-            "line": 68
+            "line": 73
         },
         {
             "from": "controller:SupportController",
@@ -1415,7 +1415,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/SupportController.php",
-            "line": 48
+            "line": 49
         },
         {
             "from": "controller:SupportController",
@@ -1423,7 +1423,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/SupportController.php",
-            "line": 49
+            "line": 50
         },
         {
             "from": "integration:PageSpeedInsightsClient",

@@ -295,6 +295,8 @@ try{
                 || ($turn['answer'] ?? '') !== ($response[$surface === 'admin' ? 'answer' : 'reply'] ?? null)) {
                 throw new RuntimeException('Saved answer or native A2UI scope differed from the controller response');
             }
+        } elseif (isset($response['a2ui']) || isset($response['ui'])) {
+            throw new RuntimeException('A failed model run must not return an answer surface or action proposal');
         }
         $attempts = $turn['model_attempts'];
         $measured = $attempts[0];
