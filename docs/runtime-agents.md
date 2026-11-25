@@ -104,11 +104,24 @@ execution and presentation. It does not select a canned answer.
    scope. General authorized MD/JSON excerpts and flexible schema-aware queries
    remain separate work.
 2. Instruction RAG: load the role constitution and shared contract; discover
-   fixed skill metadata and activate an allowed document by ID. Record its
+   fixed skills associated with the current request's eligible tool names and
+   activate an allowed document by ID. Record its
    actual path/hash. Never use developer rules as runtime business guidance.
-3. Tool RAG: rank authorized capability metadata, activate bounded declarations
+3. Tool RAG: rank capabilities allowed by the actor and public module settings,
+   activate bounded declarations
    and refresh them each provider round. Validate the actual call again before
    invoking existing services; return the structured result or explicit failure.
+
+Both discovery layers use the same eligible business tools. Disabling Shop
+removes public catalogue and browser-cart capabilities from Support, including
+the standalone catalogue skill. Disabling Blog removes published article
+capabilities from both agents. Contact and enquiry guidance remain available.
+If the public module settings are unreadable, capabilities that depend on
+them are withheld for the request. Owner product status and reporting use the
+owner reporting skill and remain available to the owner independently of
+storefront visibility. Skill discovery follows the limited callable subset
+pattern from [OpenAI's function calling guide](https://developers.openai.com/api/docs/guides/function-calling)
+using the application's local PHP registry.
 
 The public WebMCP and HTTP MCP surfaces retain separate authorization. A shared
 authorized .bapX projection is the target, not an existing permission to read
@@ -256,7 +269,10 @@ whole-shop claims in the proposed reply. The application withholds missing
 or conflicting claims and links to the Shop when it is available. This check covers common
 English and Tamil sentence forms. It does not parse unrestricted prose,
 numbers written as words, or arbitrary category counts.
-Support can retrieve its own customer-scoped orders, tickets and session cart.
+Support retrieves orders and tickets only for the signed-in customer's account.
+Either a guest or a signed-in customer may read their current browser-session
+cart while Shop is enabled. Cart access does not establish an account or a
+completed order.
 Enterprise can separately count all dated orders or request paid-sales reports.
 Both roles can search published articles and read an exact public article excerpt.
 A provider failure is an error; a failed query does not become an empty catalogue

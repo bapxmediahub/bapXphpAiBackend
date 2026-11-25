@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "d5f0851b1ab4062dfabf3a31ca0d7772768240651806691248863da9fdd8ab4b",
-            "references_sha256": "e4737035a37729b2b774948284777addb1cc79354c31b2f22fdc84b8728c783e",
-            "review_note": "Verified successful context selection, preserved failed traces, actor authorization, pending status and historical report scope against the updated observability documentation and loopback provider fixtures."
+            "source_sha256": "efd81b8ed553cfd8bed8961ad55fad733947aea0849e922aaabe95008e5bfadc",
+            "references_sha256": "7eb749b59d5d257461962f646a7d8269dd50b095a573b1115a31af6f9a8dc70b",
+            "review_note": "Verified the shared actor and module filter for model-facing discovery, typed reauthorization and skill activation against runtime docs, generated contracts and the guest/cart, customer/account and owner/report tests."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -58,9 +58,9 @@
             "review_note": "Compared active-chat restoration and attachment changes with the media operator instructions, and confirmed upload and in-memory draft attachment regressions pass."
         },
         "operator-help": {
-            "source_sha256": "d67cf2d69bda2f6d1a09aa55007726a45bc9825406241787727b818fe9253492",
+            "source_sha256": "b65f4deada1aa36674410b42907eee3ef5c2fd6507a15d906dbbe0e1e957f2b6",
             "references_sha256": "eade3ce9f5666b9678b0c7d16fbdda7f423bde6dc7118ff83bf0416d23c3beca",
-            "review_note": "Verified Enterprise History and Reload saved chat against the operator guide and the authorized original controller response, including pending and unavailable states."
+            "review_note": "Checked the owner guide against both authenticated history and the owner-only runtime capability catalogue. Published Shop and Blog reads require their own current module while business reporting retains its existing permission gate."
         },
         "public-mcp": {
             "source_sha256": "e5d2bb67604d7b9c3588dba3d04e75ad9925c1c686f3a4d13dffd1dc8dd99325",
@@ -79,8 +79,8 @@
         },
         "workflow": {
             "source_sha256": "01a5f99199d0a95b3ad299e7ae7ba239591d348eb2b60910cd77f415194ef6c5",
-            "references_sha256": "7770887213db03241a85f7bbee17bf25b2c58350058ebc59e25fd76b29ad80df",
-            "review_note": "Read the updated frontend and admin skills and checked their session isolation and desktop/mobile regressions against the existing GitHub release workflow."
+            "references_sha256": "feda7d681f8b49297b3b3cef312506106c8d17a73af6311ed2176ed8af52774f",
+            "review_note": "Compared the generated agent capability reference and map changes with the issue-first release workflow. Role discovery continues through the two native PHP registries and their existing model provider adapters."
         }
     }
 }

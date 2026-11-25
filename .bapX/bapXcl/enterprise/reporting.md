@@ -12,7 +12,7 @@ commerce_report accepts report=products|stock|customers|coupons and an integer l
 
 Products rank by units and group by recorded product name. order_lines counts matching item rows, not distinct orders. gross is recorded line value; net allocates recorded order refunds proportionally. Neither amount is profit or a verified line-item returns total.
 
-Stock shows current stock_status and effective prices. active and in_stock contribute to the in-stock status count. Hidden products can appear in this internal report; product_status is the separate visibility lookup. No on-hand units, purchase costs or restock forecast are recorded.
+Stock shows current stock_status and effective prices. active and in_stock contribute to the in-stock status count. Hidden products can appear in this internal report. The owner product_status lookup returns whether the product is hidden from Shop and is available even when the public Shop is disabled. Keep those internal facts inside the owner answer. No on-hand units, purchase costs or restock forecast are recorded.
 
 Customers returns anonymous order-frequency bands. customers counts distinct recorded valid email keys; repeat_customers means more than one paid order inside the selected period, not lifetime repeat rate or unique people. unidentified_orders counts paid orders without a valid customer key. Overall money and paid_orders include those orders; frequency bands exclude them.
 

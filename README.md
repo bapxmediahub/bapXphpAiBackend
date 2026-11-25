@@ -280,8 +280,8 @@ flowchart TB
 | RAG layer | Implemented in this revision | Remaining boundary |
 |---|---|---|
 | Knowledge | `AgentContextService`, `PublicKnowledgeService`, `BlogService`, scoped tool results and owned JSON history | General authorized MD/JSON excerpt search and flexible schema-aware queries are not yet implemented |
-| Instruction | `AgentInstructionService` and `RuntimeAgentToolRegistry` load the role constitution and shared contract, then activate fixed skills on demand or with related tools | No arbitrary paths or developer prompts; authorized external MCP instruction projection remains incomplete |
-| Tool | `RuntimeAgentToolRegistry` ranks authorized metadata lexically, exposes `tool_search` and refreshes declarations in both provider loops | No unrestricted SQL or new permissions; actual provider availability and task resolution require live evidence |
+| Instruction | `AgentInstructionService` loads the role constitution and shared contract. The current eligible tools select the fixed skills available on demand or with related tools. | Authorized external MCP instruction projection remains incomplete |
+| Tool | `RuntimeAgentToolRegistry` filters by actor and the public Shop and Blog gates, ranks the remaining metadata, and refreshes declarations in both provider loops. | Actual provider availability and task resolution need live evidence |
 
 The two meta-tools, `read_runtime_skill` and `tool_search`, are model-adapter
 operations, not public MCP tools. Business execution continues through the

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-use App\Services\{DatabaseService,ProductService,PublicKnowledgeService,PublicMcpService,SettingsService};
+use App\Services\{DatabaseService,ProductService,PublicKnowledgeService,PublicMcpService,RuntimeAgentToolRegistry,SettingsService,SupportToolRegistry};
 if(PHP_SAPI!=='cli'){http_response_code(404);exit;}
 putenv('BAPX_TEST_MODE=1');
 require dirname(__DIR__).'/app/bootstrap.php';
@@ -17,6 +17,7 @@ $cache=new ReflectionProperty(DatabaseService::class,'remoteQueryCache');
 $settings=new ReflectionProperty(SettingsService::class,'cache');
 $oldCache=$cache->getValue();$oldSettings=$settings->getValue();
 $oldUrl=$_SERVER['APP_URL']??null;
+$oldSession=$_SESSION??[];
 $fixtureUrl='http://127.0.0.1:1/public-selection-fixture';
 $config->setValue($store,['remote_url'=>$fixtureUrl]);
 $remote->setValue($store,true);
@@ -72,6 +73,20 @@ try {
     $missing=$knowledge->products('',0,3,['private-ring','does-not-exist','varahi-amman-pendant']);
     selectedCheck(array_column($missing['products'],'path')===['/product/varahi-amman-pendant']
         &&$missing['total']===1,'Missing/hidden selections were disclosed or substituted.');
+    $_SESSION['cart'] = [
+        ['slug'=>'sri-varahi-amman-ring','qty'=>2],
+        ['slug'=>'private-ring','qty'=>1],
+    ];
+    $guest = new RuntimeAgentToolRegistry('support', null, new SupportToolRegistry(null, store:$store));
+    $cart = $guest->run('tool_search', ['query'=>'own_cart']);
+    selectedCheck(($cart['matches'][0]['name']??null)==='own_cart','Guest current-session cart unavailable to the model.');
+    $cart = $guest->run('own_cart', []);
+    selectedCheck(($cart['count']??0)===1 && ($cart['path']??null)==='/cart' && ($cart['subtotal']??null)===1000.0
+        && ($cart['items'][0]??null)===['slug'=>'sri-varahi-amman-ring','name'=>'Sri Varahi Amman Ring',
+            'qty'=>2,'unit_price'=>500.0,'line_total'=>1000.0],
+        'Guest cart did not preserve the current session line, resolved visibility, price and quantity.');
+    selectedCheck(($guest->run('tool_search',['query'=>'own_order_status'])['matches']??null)===[]
+        &&isset($guest->run('own_ticket_status',[])['error']),'Guest cart access broadened access to private account facts.');
     $tamil=$knowledge->products('',0,1,['தமிழ் pendant'])['products'][0];
     selectedCheck($tamil['path']==='/product/'.rawurlencode('தமிழ் pendant')
         &&$tamil['imagePaths']===['/assets/images/'.rawurlencode('தமிழ்').'.webp']
@@ -112,9 +127,13 @@ try {
     $settings->setValue(null,['module_shop'=>'0']);
     selectedCheck($knowledge->products('',0,2,$slugs)['total']===0
         &&$knowledge->comparisonSlugs('Compare Sri Varahi Amman Ring and Varahi Amman Pendant')===[],'Disabled Shop leaked exact selection or comparison.');
-    echo "Exact published selection/order, compact search, bounded real details, Unicode, both public MCP profiles and module isolation PASS.\n";
+    $guest = new RuntimeAgentToolRegistry('support', null, new SupportToolRegistry(null, store:$store));
+    selectedCheck(($guest->run('tool_search',['query'=>'own_cart'])['matches']??null)===[]
+        &&isset($guest->run('own_cart',[])['error']), 'Disabled Shop still advertised or returned the guest cart.');
+    echo "Exact published selection/order, compact search, scoped guest cart, bounded real details, Unicode, both public MCP profiles and module isolation PASS.\n";
 } finally {
     $cache->setValue(null,$oldCache);$settings->setValue(null,$oldSettings);
     if($oldUrl===null)unset($_SERVER['APP_URL']);else $_SERVER['APP_URL']=$oldUrl;
+    $_SESSION=$oldSession;
     putenv('BAPX_TEST_MODE=1');
 }
