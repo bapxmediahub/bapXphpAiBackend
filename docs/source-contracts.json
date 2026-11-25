@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "bcce800df0740538faa391ff1ee86947fb220ddbf7a43ba3b9df991f770fa809",
-            "references_sha256": "7877fc3fefee280d90bd141197a06fdaeccf234a4c6cef9a67a2050535dce3ce",
-            "review_note": "Compared Support failure references and replay with the evaluated HTTP 503 contract, and checked Integrations 401 and 403 guidance against the selected provider and observed status."
+            "source_sha256": "460fbd20a91cbb58e773d3b1ed51983e83050f311e6996307f914f081dfa9618",
+            "references_sha256": "04f7edb2138d011e77d077c6c49d54cda2639c071da20d438e66982421f6c252",
+            "review_note": "Verified the hosted Gemma thinking option and the exact free model identifier across each tool continuation on the shared Chat Completions transport."
         },
         "auth": {
             "source_sha256": "c34a5b34bc904f36cda184c26113f91e2cf36afa2b506217d1f74e22e9e0cefd",
@@ -23,14 +23,14 @@
             "review_note": "Compared published Support guidance with the contact link and validated reference in the widget. Campaign content and payment flows were preserved by the merge."
         },
         "foundation": {
-            "source_sha256": "bc9602b5740065d44e0df045268297befe83f5b9c42a2330686d71e4100f2709",
+            "source_sha256": "706515d3337ecc1b2a8f16cfa5eaf960737f84bedbab62a6a5115678d44ea8d2",
             "references_sha256": "44a4e54f393916877f478f74d7ed16b3e35594a37a7ce9a504b0adf24c607486",
-            "review_note": "Reviewed the one streamed audit SELECT, strict authenticated response and PDO cleanup alongside campaign booking persistence and protected storage."
+            "review_note": "Reviewed the fixed Google endpoint, trusted credentials, endpoint pinning for custom and OpenRouter, and provider-specific continuation scope."
         },
         "google-tags": {
-            "source_sha256": "31cc53b5ce4ddd826a3c5a3d5b2fdd7c623005fc74a63f4d2598eeb8f345ea9e",
-            "references_sha256": "4a313261f50607bef910628e450d1ce4482bdca623ba5d77c09b4c85dc5a3f50",
-            "review_note": "Reviewed the shared layout and Integrations docs with the Support reference and safe AI diagnostic result. Google tag and reporting fields keep their existing configuration."
+            "source_sha256": "71d32eb1f8f536427d9c6d90d8afa363cc84dc16b9b485f5ff76796746b05258",
+            "references_sha256": "1828010ee298ab71f3bcae4daae1236d05698cecf403de72c331735febbbfc79",
+            "review_note": "Compared Google inference configuration and provider diagnostics with the independent tags, reporting, and authentication settings."
         },
         "http-errors": {
             "source_sha256": "0f920c297cfc4e216a87be02a35c20827cc254dd6934ba24a1fa9135520a0560",
@@ -48,9 +48,9 @@
             "review_note": "Compared the owner login and notice documentation against the existing controller and confirmed the dashboard count remains a read-only operation."
         },
         "mcp-clients": {
-            "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
-            "references_sha256": "c652f239fa00ea207372277d2ba9782891dc88a65244b3bd69d855cef90276fc",
-            "review_note": "Checked the Integrations connection test guidance alongside the separate local reporting client grant flow and its configuration."
+            "source_sha256": "d3156f090ffd44f61c1d53c8726bfc94aa1eb8914036f037be289bdba31565ec",
+            "references_sha256": "9954a9d4ea3c024e6054e60e6c0fc4a6a4eea346721fd46092a08898f8e83bf2",
+            "review_note": "Reviewed the shared Integrations page, customer configuration and preserved public MCP permissions in the combined tree."
         },
         "media": {
             "source_sha256": "edc32a5a9f73cf7f2954eac135a2eaed1394089034bac24ea835af48c4d9600e",
@@ -58,9 +58,9 @@
             "review_note": "Checked retained campaign file descriptors and protected streaming against Media Library behavior. Booking authorization is scoped to the frozen private manifest."
         },
         "operator-help": {
-            "source_sha256": "bad40e8687f42b9c69dcb8d4fd16d0f8717492b879ba9bc2cf14618b5d140538",
+            "source_sha256": "0b6c6a57218af9cca882e280916c327ff51bbd0ac389dd4091f6b3a462085edd",
             "references_sha256": "290f76393a7f1ff5ba583e3da9f3ac9d8b3f6580c1cdee7db531e981e2e1d99f",
-            "review_note": "Checked the public Support reference and contact instructions alongside the owner API key and access guidance shown by the read-only connection test."
+            "review_note": "Compared owner guidance and probe result labels with the shared Chat Completions connection and existing agent roles."
         },
         "public-mcp": {
             "source_sha256": "737d1417edeec4f39402eaa1b659409d866db04476bf5f549d065deae57903f8",
@@ -68,9 +68,9 @@
             "review_note": "Compared the regenerated route associations with Public MCP and A2UI. The Dashboard read stays on the authenticated database bridge."
         },
         "remote-commerce": {
-            "source_sha256": "d9f1cadce366732ff62a1bc27cf619f0070f6eb1e5d432bc3015cee9673beed7",
+            "source_sha256": "1ec73aa2fe94913016cfa026925744b2d6f5c6e9b6133233a8d173df67b00f29",
             "references_sha256": "0690a75fa3933ee49adb37677a6972a957f6bfc982431a03783492ae4c284993",
-            "review_note": "Reviewed the shared checkout layout and existing recovery paths after the Support transcript added an opaque failure reference."
+            "review_note": "Reviewed the shared role-scoped controller and commerce tools under the correlated Chat Completions exchange."
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",
@@ -78,9 +78,9 @@
             "review_note": "Compared the MediaService additions with the Merchant Feed and product image inspection contracts. Header choices are filtered only for the owner authored editor, and catalogue image eligibility and feed URLs retain their existing resolution."
         },
         "workflow": {
-            "source_sha256": "c306c4c6f58db94c66973cc7d34658a8a747f6118f50a9299a495671bcec4545",
-            "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Reviewed the browser fixture with the repository release gate. It intercepts synthetic failures and never submits any production agent request."
+            "source_sha256": "12028d70a6d059503bb1429b49811fcf6e19e416071463e52538ad4a426e4251",
+            "references_sha256": "47049bc48d0aaa4f4989c3125e1170c171086262a90fa5b001e81fef239ba817",
+            "review_note": "Compared hosted and local PHP release checks with both controller suites, actual loopback and the generated guide index."
         }
     }
 }
