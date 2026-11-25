@@ -5,7 +5,9 @@
     const key = prefix + (form.elements.original_slug.value || ':new');
     const revision = form.elements.expected_revision.value;
     const requiredFields = ['title', 'slug', 'content'];
-    const fields = [...requiredFields, 'header_image_url', 'header_image_alt'];
+    const campaign = form.querySelector('.campaign-form-settings');
+    const campaignControls = Array.from(campaign?.querySelectorAll('input[name], select[name]') ?? []);
+    const fields = [...requiredFields, 'header_image_url', 'header_image_alt', ...campaignControls.map(control => control.name)];
     const recovery = document.getElementById('page-draft-recovery');
     const message = document.getElementById('page-draft-message');
     const status = document.getElementById('page-draft-status');
@@ -13,11 +15,19 @@
     const download = document.getElementById('page-draft-download');
     const discard = document.getElementById('page-draft-discard');
     const edit = document.getElementById('page-draft-fields');
-    const values = () => Object.fromEntries(fields.map(name => [name, form.elements[name].value]));
+    const value = control => control.type === 'checkbox' ? (control.checked ? control.value : '') : control.value;
+    const values = () => Object.fromEntries(fields.map(name => [name, value(form.elements[name])]));
+    function validCampaignValue(control, saved) {
+        if (saved === undefined) return true;
+        if (control.type === 'checkbox') return saved === '' || saved === control.value;
+        if (control.options) return Array.from(control.options).some(option => option.value === saved);
+        return saved.length <= control.maxLength;
+    }
     const valid = item => item && typeof item.revision === 'string'
         && typeof item.token === 'string' && /^[a-f0-9]{32}$/.test(item.token)
         && requiredFields.every(name => typeof item.values?.[name] === 'string')
-        && fields.every(name => item.values[name] === undefined || typeof item.values[name] === 'string');
+        && fields.every(name => item.values[name] === undefined || typeof item.values[name] === 'string')
+        && campaignControls.every(control => validCampaignValue(control, item.values[control.name]));
     let token = '', candidate = null, timer, dirty = false, submitting = false;
     const read = () => JSON.parse(localStorage.getItem(key));
     const unavailable = () => {status.textContent = 'Browser draft storage is unavailable. Save or copy your work.';};
@@ -33,7 +43,8 @@
             const current = values();
             if (new TextEncoder().encode(current.content).length > 65536
                 || current.title.length > 320 || current.slug.length > 32
-                || current.header_image_url.length > 512 || current.header_image_alt.length > 510) {
+                || current.header_image_url.length > 512 || current.header_image_alt.length > 510
+                || !campaignControls.every(control => validCampaignValue(control, current[control.name]))) {
                 status.textContent = 'Draft exceeds the page limits. Copy your work before leaving.';
                 return;
             }
@@ -65,7 +76,7 @@
             // A preview/validation response already shows the submitted text;
             // do not hide it or silently discard a distinct concurrent draft.
             if (current && form.dataset.submitted === '1'
-                && fields.every(name => stored.values[name] === undefined || stored.values[name] === form.elements[name].value)) {
+                && fields.every(name => stored.values[name] === undefined || stored.values[name] === value(form.elements[name]))) {
                 token = stored.token;
             } else {
                 candidate = stored;
@@ -87,9 +98,11 @@
             && !Array.from(header.options).some(option => option.value === storedHeader);
         for (const name of fields) {
             if (name.startsWith('header_image_') && missingHeader) continue;
-            if (!form.elements[name].readOnly && candidate.values[name] !== undefined) {
-                form.elements[name].value = candidate.values[name];
-            }
+            const control = form.elements[name];
+            const saved = candidate.values[name];
+            if (control.readOnly || saved === undefined) continue;
+            if (control.type === 'checkbox') control.checked = saved === control.value;
+            else control.value = saved;
         }
         form.dispatchEvent(new Event('page-draft-restored'));
         token = candidate.token;
@@ -98,9 +111,24 @@
             ? 'Text restored. The draft header image is unavailable. Review your selection before saving.'
             : 'Browser draft restored. Review visibility and use Save page when ready.';
     });
+    function campaignNotes(saved) {
+        if (!campaign || saved.campaign_enabled === undefined) return '';
+        const lines = [saved.campaign_enabled ? 'Enabled. Name and email are required.' : 'Disabled.'];
+        for (const field of campaign.querySelectorAll('.campaign-form-settings__field')) {
+            const type = field.querySelector('select');
+            const label = saved[field.querySelector('input[type=text]').name];
+            const required = saved[field.querySelector('input[type=checkbox]').name];
+            if (!saved[type.name] && !label && !required) continue;
+            const typeLabel = Array.from(type.options).find(option => option.value === saved[type.name])?.textContent;
+            const slot = field.querySelector('legend').textContent.trim();
+            lines.push(`- ${slot} — ${label || '(no label)'} (${typeLabel || 'Unused'}, ${required ? 'required' : 'optional'})`);
+        }
+        return '\n\n## Enquiry form settings\n\n' + lines.join('\n') + '\n';
+    }
     download.addEventListener('click', () => {
         if (!candidate) return;
-        const blob = new Blob(['# ', candidate.values.title, '\n\n', candidate.values.content], {type:'text/markdown;charset=utf-8'});
+        const {title, content} = candidate.values;
+        const blob = new Blob(['# ', title, '\n\n', content, campaignNotes(candidate.values)], {type:'text/markdown;charset=utf-8'});
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url; link.download = 'page-draft.md'; link.click();
