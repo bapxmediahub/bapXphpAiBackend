@@ -3,6 +3,7 @@ namespace App\Controllers;
 
 use App\Services\DatabaseService;
 use App\Services\SecretService;
+use App\Services\SiteTelemetryService;
 
 final class RemoteDbController {
     private DatabaseService $store;
@@ -181,6 +182,21 @@ final class RemoteDbController {
                 $updated = $store->patchUser((string)($input['id'] ?? ''), $input['fields'] ?? [],
                     $input['credential'] ?? null, $input['expected'] ?? null);
                 echo json_encode(['success' => true, 'updated' => $updated]);
+                return;
+            }
+            if ($collection === 'audit_events' && $action === 'count_storefront_activity') {
+                $since = $input['since'] ?? null;
+                $expected = SiteTelemetryService::recentCutoff();
+                // Keep the caller's exact cutoff and allow up to a minute for transit and clock skew.
+                if (!is_int($since) || $since < $expected - 60 || $since > $expected + 60) {
+                    throw new \InvalidArgumentException('A recent 30-day storefront cutoff is required.');
+                }
+                try {
+                    echo json_encode(['success' => true, 'result' => $store->storefrontActivitySince($since)], JSON_THROW_ON_ERROR);
+                } catch (\Throwable) {
+                    http_response_code(503);
+                    echo json_encode(['error' => 'Storefront activity is unavailable.']);
+                }
                 return;
             }
             if ($collection === 'addresses' && $action === 'list_customer_addresses') {

@@ -18,14 +18,14 @@
             "review_note": "Reviewed provider parsing and existing product checkout and verified-order tests. A typed provider refusal preserves the existing numeric error for shop checkout."
         },
         "content": {
-            "source_sha256": "0cf3fdbab8334c87c055ab44c9d531774c37c03a6a52dc5d0ca7db013969f1a7",
-            "references_sha256": "1697d82dbf2d3fa5156c212ac256e71e4613b5598d29ef36bb1b7eda1f4aa576",
-            "review_note": "Compared the current campaign guide with exact revision checks, repaired-credentials submission, immutable fulfillment and ambiguous-response recovery."
+            "source_sha256": "89e2c9c40b2e436ba267806cde1720adf7ea63ec487d007a280f56f2056f84f4",
+            "references_sha256": "bc4237849522973bf57590ab57c0b411f1d89999bfce542f2e4260ee65788177",
+            "review_note": "Reviewed campaign booking routes, campaign asset entitlements and their storage guidance alongside the distinct audit projection used by the dashboard."
         },
         "foundation": {
-            "source_sha256": "94e60b2546b62d78d92a1ed3de92c9819d672075440da536f4c95842c3d04dea",
-            "references_sha256": "aca185b739c7bb3b343ced0c9c8118bd40babe9b0d64cecf0a6419c6ce61cd08",
-            "review_note": "Cross-checked the declared booking status and creation generation with its DB-host lock, legacy rows and provider result checks."
+            "source_sha256": "bc9602b5740065d44e0df045268297befe83f5b9c42a2330686d71e4100f2709",
+            "references_sha256": "44a4e54f393916877f478f74d7ed16b3e35594a37a7ce9a504b0adf24c607486",
+            "review_note": "Reviewed the one streamed audit SELECT, strict authenticated response and PDO cleanup alongside campaign booking persistence and protected storage."
         },
         "google-tags": {
             "source_sha256": "366fdab983979cc3a1fec22fb6da4afb61072d6fd24cd0ba2271d67a0c063019",
@@ -39,13 +39,13 @@
         },
         "interface": {
             "source_sha256": "82b14d7ac04642c59d3078ae1c355cee4aa65d582a36ae6dff4fec93456f3f36",
-            "references_sha256": "404619f91aeea891998b9c1cb6ef921514f8dd59adb0ae4f24a58e03fdcade70",
-            "review_note": "Reviewed the independent amount toggle, disabled preview, keyboard booking review, and private pending and captured cards against Design and the browser fixtures."
+            "references_sha256": "8a7bcf8667f4811a5ee194d0c42afeaef5a17bb1571f4f0ae570aa2cccfa256c",
+            "review_note": "Compared the Dashboard count states, authored checkout controls and normal owner redirect against the administrator guide and Design."
         },
         "mail": {
-            "source_sha256": "50f211eb00addc6fe811c0dfb270f1be9d2d28b2fd0a8e66d321ae83b2d28aec",
+            "source_sha256": "11a3b674d92d0714846359177499966c2f5ad2b1af5380a972280c64bb79b7b8",
             "references_sha256": "e638d8ea8f21b6f1d078de81bb24d9d9a743e98e953cdd672bd869b923832acf",
-            "review_note": "Checked the shared skill update against payment and enquiry mail event entry points. Retrying booking setup does not write a receipt or queue mail."
+            "review_note": "Compared the owner login and notice documentation against the existing controller and confirmed the dashboard count remains a read-only operation."
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
@@ -58,19 +58,19 @@
             "review_note": "Checked retained campaign file descriptors and protected streaming against Media Library behavior. Booking authorization is scoped to the frozen private manifest."
         },
         "operator-help": {
-            "source_sha256": "55249ee4eeb474786251d6e7886137db3628e04ddd85d03ee2f02688bcd56c22",
+            "source_sha256": "812aedcf633861570ea8da4092d9be1803ae5b09ac9647b9707524982aeef17b",
             "references_sha256": "d7972865c18db0e7cab36b4fdf0cf22cf388c8fbde7bd5ae088de971afd212fe",
-            "review_note": "Checked the Pages and booking handoff against the new owner-bound form retry and the existing publish and preview behavior."
+            "review_note": "Reviewed the Dashboard count states and owner Pages documentation against their distinct dashboard and campaign booking routes."
         },
         "public-mcp": {
-            "source_sha256": "6817679be2290cbbea52d8a059df0770d1deb686132d09f9d57d0fbda5b62185",
+            "source_sha256": "737d1417edeec4f39402eaa1b659409d866db04476bf5f549d065deae57903f8",
             "references_sha256": "43e89d686d81a31e0d2e95a18c1904f88aab8a9688f54556a1331efe81cab83b",
-            "review_note": "Checked the generated gateway links and existing public MCP checkout boundary. The campaign retry stays on the campaign form POST."
+            "review_note": "Compared the regenerated route associations with Public MCP and A2UI. The Dashboard read stays on the authenticated database bridge."
         },
         "remote-commerce": {
-            "source_sha256": "16cdd579f0b1b79b1bdc841eefa697e7cb43663f2ef73407245dcfb268c26e77",
+            "source_sha256": "f541df859922b44d079b56a4b87b10efb2ab6bf29a02931c0960d7113b282331",
             "references_sha256": "acdbab8bdbef2062372a3ebbf9026ce81ea5e60355e45c35c744aa25e108dee5",
-            "review_note": "Cross-checked the shared Razorpay creation parser, known rejected responses, duplicate reference recovery, and SQL-backed booking retry claim."
+            "review_note": "Verified the read-only storefront bridge coexists with the existing checkout reconciler and campaign booking writes. The workflow retains tests for each path."
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",
@@ -78,9 +78,9 @@
             "review_note": "Compared the MediaService additions with the Merchant Feed and product image inspection contracts. Header choices are filtered only for the owner authored editor, and catalogue image eligibility and feed URLs retain their existing resolution."
         },
         "workflow": {
-            "source_sha256": "557d811d12496019f64ed17c4955829aee9c3c62a5d5d3ee62301bc9c06aa6e7",
+            "source_sha256": "186f7ac2a22956ea562a8ea49c29156570bd9b83eba35c34e54c67b3c7d65527",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Reviewed the new provider exception in generated inventory and the restored booking fixture with the disposable MySQL concurrency path."
+            "review_note": "Reviewed regenerated maps and combined MySQL and MariaDB workflows. Both storefront analytics and campaign booking tests run on the isolated database families."
         }
     }
 }
