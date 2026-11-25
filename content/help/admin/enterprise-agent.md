@@ -1,6 +1,6 @@
 ## Ask a focused question
 
-Open Enterprise Agent → Chat. Name the business fact and time period you need, such as paid sales for a specific date range or support-ticket counts. The agent uses named read-only tools and current permitted records. An unavailable query is different from a valid zero result.
+Open Enterprise Agent → Chat. On Sri Panchami Spiritual the menu displays **Enterprise Agent Vinod**. Name the business fact and time period you need, such as paid sales for a specific date range or support-ticket counts. The agent uses named read-only tools and current permitted records. An unavailable query is different from a valid zero result.
 
 Open **Help & Docs** for the owner guides. To get help in chat, ask about a specific task, such as how to prepare an unpublished blog post. Enterprise can read the matching guide and link to it from its answer. Use `/help blog-publishing` to ask directly about the blog-publishing guide.
 

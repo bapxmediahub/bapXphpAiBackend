@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "c7ef1f278efa4c7fb65c4be3d8dc8bcf88d2cbe918078520ba0e6833789655b1",
-            "references_sha256": "8536d6b95e1e4319c8ca0ba8d886c5b353790547936dbebbff69428ce04d84ed",
-            "review_note": "Reviewed both native registries, published-data gates, and passage evidence allowlists on the merged tree. Both agents share optional topic selection and sanitized digests, and the Chat Completions tool correlation and refusal handling remain intact. Rechecked the Luna-aware HTTP path and both role fixtures on this merge. Verified the merged short-hold readiness path, including original-model continuation and the existing correlation/reference behavior."
+            "source_sha256": "be4f539aad8155de1f1bf79a8f62235178cf989967067d9f0a389fe9f21a2855",
+            "references_sha256": "0210112642544621ef75b181b817605cd761d73eb381eda8ad48742af8d4169d",
+            "review_note": "Reviewed both native registries, published-data gates, and passage evidence allowlists on the merged tree. Both agents share optional topic selection and sanitized digests, and the Chat Completions tool correlation and refusal handling remain intact. Rechecked the Luna-aware HTTP path and both role fixtures on this merge. Verified the merged short-hold readiness path, including original-model continuation and the existing correlation/reference behavior. Cross-checked the latest Monitoring split and the unchanged separation of publication evidence from storefront analytics."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -23,14 +23,14 @@
             "review_note": "Verified the blog guide against published Markdown fixtures for inline text, heading/list/table/blockquote/figure boundaries, and literal fenced YAML indentation."
         },
         "foundation": {
-            "source_sha256": "bd8455dc0ce3ab55d393c964729d38f34ce612746766a424e1680b754a8acce3",
+            "source_sha256": "6557abc1b23ec822e222b2b56862caba5e43bf55de91deec69d2f3b2192e6d75",
             "references_sha256": "19374082935b4847bbb5f384debd59d75beac6e118415585f5434701c8264cf5",
             "review_note": "Reviewed plain rendered passage text and HTML removal. Preserving code indentation does not alter published-source guards, private chat storage or the allowlisted evidence projection. Published Markdown recovery now preserves leading YAML indentation and trailing scalar line breaks through the complete read path."
         },
         "google-tags": {
-            "source_sha256": "a02edc85b6bd4cc5f95748217edaf7ea3fae53a6d67edd0098c99848290122d8",
-            "references_sha256": "d4b4260ffa9152b4e1ce2693cab26a998376cf85e6265c906727a56d7148e3c7",
-            "review_note": "Checked the shared Integrations reference. The Luna example applies exclusively to Chat Completions and the Google tags and OAuth guidance remains accurate."
+            "source_sha256": "4834fd90479519dba801e19dbd3c1e434d62cf7cb6a4915eed9905f1c21bb8b5",
+            "references_sha256": "ac5f69a9cfd73428a1702be69cd944a1ee4f8ed3211c040ed755356134044065",
+            "review_note": "Checked the dashboard and Site analytics links against the Google reporting and PageSpeed guides. The views expose the existing connection, data window and unavailable states, and the Luna example applies to the separate AI connection."
         },
         "http-errors": {
             "source_sha256": "63602cadbe59868b0d25a1b00729a589e75d1b31c6ea3a1b25c1e5a46fd06d50",
@@ -38,38 +38,38 @@
             "review_note": "Compared the backend skill addition with the existing request failure boundary. Article lookup reports unavailable or no matching published content through its tool result while the request failure handler keeps its existing responsibility."
         },
         "interface": {
-            "source_sha256": "27c32323b787b7174be1178612751c8a93a9e2506d43efaf7b9f53a86e084218",
-            "references_sha256": "a91a95841dc182236befb1ff651bb22b318c92a7e4e5fd8adac315a9e16cbb9f",
-            "review_note": "Verified the labeled token-field selector in the existing AI settings form at 1280px and 375px and checked that its selection is present in the scoped save payload."
+            "source_sha256": "738e38a60e1cf8946e57026804877aec36c9effa52f9f190db1702b5f8a695a0",
+            "references_sha256": "53cc2ed21de9291d5d1d5288ff06d8e236f6f342f6d155e3b695151676d4e235",
+            "review_note": "Reconciled dashboard, owner navigation and integration views against Design and recent UI contracts. The named workspace stays deployment-profile based, and no heading or permission is duplicated."
         },
         "mail": {
-            "source_sha256": "6895291447775bb17e9bef6c3d38d388ed65b3f5985b4c79bc71a9b4fa222c16",
+            "source_sha256": "20e83e649ed008a9061724716681cff8a4c7888b7e5520459aed8843abdc5cda",
             "references_sha256": "508cdfbeb24b568024d263df54048e3303796b6fc098eceec0ef6d46fbc0cb4f",
             "review_note": "Compared the backend skill addition with mail and support boundaries. Published article retrieval uses BlogService and records public source evidence without entering the mail queue or SMTP flow."
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
-            "references_sha256": "0b4814b02f21a481f4cb06d148700595ebfa01586ed4388f52bdf093226b61d9",
-            "review_note": "Checked that the endpoint example and supported model guidance change only the existing AI connection documentation. The local reporting client setup remains accurate."
+            "references_sha256": "73c4e7ed550ac139d52f0e560ab34a74738e8f4aa2ae6fc87c9e635c9dcd4d43",
+            "review_note": "Checked the merged Integrations guide against the local MCP client controller and form. The owner issues and revokes a paid-sales grant, and the trusted STDIO client receives it through its process environment."
         },
         "media": {
             "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
-            "references_sha256": "34433348ceb97accb0aea9b04f930b1ec0936825154d70c9ae872f155e0d2cbd",
-            "review_note": "Cross-checked the revised owner UI skill with the current media selection, confirmation and metadata flows. The existing media documentation still describes those operations."
+            "references_sha256": "743e6fad151e2f5729436c3d42b7a23bbd7b1ccde63ec7b26823c4e0cb505c95",
+            "review_note": "Reviewed the owner skill changes against media selection, deletion and metadata guidance. The new analytics section describes navigation and owner counts, and the media controls follow their documented path."
         },
         "operator-help": {
-            "source_sha256": "18fb3a62a25e11202c0027017c60107a1a862a8188395d99ab8bb30f3a1cb1ba",
-            "references_sha256": "c4f92ef1a785d3800380a6878286c4fec17e3c8f7e377d248b5f4f00bbc419c0",
+            "source_sha256": "f7c1dfef353e38e38c134b04d5a66e7fc2467e289a80ce731d39e64dcf4d8cba",
+            "references_sha256": "9c949b4806f5ffa9c5ff122c863e4b2af50516fff6d0ea5e6201d543c147b4a3",
             "review_note": "Compared the enterprise-agent guide dependencies and published support guide. Passage evidence adds hashes and a section index to the existing authorized review context. Operator Help remains behind the owner gate."
         },
         "public-mcp": {
-            "source_sha256": "c3b26cd7dc5ff89fac092067797cba546211b21472cf4dc0911fd364cc719d36",
+            "source_sha256": "58b92b3e1acc83348d8d043c6d596741e8374fc9181781b7ca0db8c51b05be00",
             "references_sha256": "8999944fc0137b069e1433c7ae750ce3e0cb2a67f7fdd3fcea63173126b96d26",
             "review_note": "Rechecked unchanged public and STDIO projection alongside native article text. Native passages preserve visible block boundaries and preformatted code indentation without changing public queries. Bounded keyword excerpts preserve literal whitespace at either edge of preformatted Markdown code."
         },
         "remote-commerce": {
             "source_sha256": "d4727219602e3533680fbc91389cb2648ede2b15ef7dfa8ea866f2ed8bcd25c9",
-            "references_sha256": "aa06fd0d20459bff7a98fe83718599ca59f887b7c08de88cf491ef78da26e629",
+            "references_sha256": "ba4857f694abff6bbd77c1df2571709d16ffc448fb269adb7bbc67c6e0b41ccd",
             "review_note": "Cross-checked the shared backend skill and the retrieved article projection. Article digests are confined to article tools and traces, and the branch adds no cart, payment, or checkout calls."
         },
         "sales-channels": {
@@ -78,7 +78,7 @@
             "review_note": "Reviewed SettingsService module resolution and Merchant feed guidance. Dropping a retired header slot leaves the saved catalog eligibility inputs intact."
         },
         "workflow": {
-            "source_sha256": "fe0a7d4ba9c23656307b25e465476c677b6dacbfd4d16c40248748dffdef0ca4",
+            "source_sha256": "a33818b4131d6760c49c95dfc0c0d96addb96428ebf20bbf69577daadea5fc1d",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
             "review_note": "Reviewed the PHP backend skill and test changes against documented release steps. The merged guide retains private test credential handling and the distinction between local regression checks and deployed agent acceptance."
         }
