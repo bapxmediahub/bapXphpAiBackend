@@ -40,12 +40,15 @@ The editor keeps the ten most recent changes. Restoring also saves the version y
 
 ## Publish a standalone page
 
-Open **Pages** in the sidebar. Give the page a title and a short address, write
-its Markdown, and use **Preview** to inspect the unsaved draft. Select
+Open **Pages** in the sidebar. Give the page a title and a short address, then
+write its Markdown. In **Header image**, choose an uploaded image or use
+**Upload to Media Library** to add one. Describe informative images in
+**Alternative text**. For a text-only page, choose **No header image**.
+Use **Preview** to inspect the unsaved title, image and Markdown. Select
 **Published** and **Save page** when it is ready. Use **Open published page**
 to check it. Select **Draft** and save to withdraw the page from its address,
 search, and the sitemap. The address stays fixed across edits. If another
 editor saved first, copy your text before reopening the current version.
-Unsaved page title, address and Markdown are saved in this browser when storage is available. Reopen the same page as the same owner to restore or discard the draft. If the saved page changed, download the browser copy instead; review visibility before using Save page. Autosave does not publish or send content to the server.
+Unsaved page title, address, Markdown and header choice are saved in this browser when storage is available. Reopen the same page as the same owner to restore or discard the draft. If the saved page changed, download the browser copy instead; review visibility before using Save page. Autosave does not publish or send content to the server.
 To remove the page and its text permanently, open **Delete page**, tick the
 confirmation and choose **Delete this page**.
