@@ -20,7 +20,7 @@ if(PHP_SAPI==='cli-server'){
     $compatible=isset($r['messages']);
     $names=$compatible?array_column(array_column($r['tools']??[],'function'),'name'):array_column($r['tools'][0]['functionDeclarations']??[],'name');
     $contents=$compatible?$r['messages']:$r['contents'];
-    $owner=in_array($scenario,['owner','capability','owner_followup','slash_capabilities','slash_help'],true);
+    $owner=in_array($scenario,['owner','capability','owner_followup','slash_capabilities','slash_help','direct_order_total'],true);
     $guest=!$owner&&!in_array($scenario,['customer','ticket'],true);
     $hasHistory = str_starts_with($scenario, 'catalogue_') || $scenario === 'owner_followup';
     $assistantRole = $compatible ? 'assistant' : 'model';
@@ -123,6 +123,14 @@ if(PHP_SAPI==='cli-server'){
     $last=$responses===[]?[]:reset($responses);
     if((!$owner&&in_array('order_count',$names,true))||($guest&&array_intersect(['own_order_status','own_ticket_status'],$names))){$fail('Role leak');return;}
     $call=static fn(string $name,array $args,string $id):array=>['functionCall'=>['name'=>$name,'args'=>(object)$args,'id'=>$id]];
+    $directChoice=match($scenario){
+        'direct_shop_total'=>['public_catalogue_summary',[],'catalogue',['total'=>0]],
+        'direct_delivery_charge'=>['public_policy',['key'=>'shipping_cost'],'customer-policy',
+            ['value'=>'Shipping is calculated at checkout.']],
+        'direct_order_total'=>['order_count',['period'=>'all_time'],'reporting',
+            ['from'=>'0001-01-01','count'=>0,'undated_excluded'=>0]],
+        default=>null,
+    };
     $choice=match($scenario){
         'aggregate','catalogue_wrong','catalogue_current','catalogue_fallback','catalogue_locked'=>['public_catalogue_summary',[], 'total','catalogue'],
         'owner'=>['order_count',['period'=>'all_time'],'count','reporting'],
@@ -172,6 +180,23 @@ if(PHP_SAPI==='cli-server'){
             $parts = [['text'=>'<final_answer>The owner guide describes how to save an unpublished draft. See /admin/docs/blog-publishing.</final_answer>']];
         } else {
             $fail('Explicit owner help must use its initially advertised guide and finish in two model rounds');
+            return;
+        }
+    } elseif ($directChoice !== null) {
+        [$tool,$args,$skill,$expectedFacts] = $directChoice;
+        if ($n === 1 && in_array($tool, $names, true)) {
+            $parts = [$call($tool, $args, 'business')];
+        } elseif ($n === 3 && array_keys($responses) === ['business'] && !isset($last['error'])
+            && array_intersect_key($last, $expectedFacts) === $expectedFacts
+            && in_array($skill, array_column($last['runtime_guidance'] ?? [], 'skill'), true)) {
+            $answer = match ($scenario) {
+                'direct_shop_total' => 'The catalogue contains '.$last['total'].' published products.',
+                'direct_delivery_charge' => $last['value'],
+                'direct_order_total' => 'There are '.$last['count'].' dated order records across all statuses.',
+            };
+            $parts = [['text'=>'<final_answer>'.$answer.'</final_answer>']];
+        } else {
+            $fail('Initially advertised business lookup did not return its scoped facts and guidance in one call');
             return;
         }
     }elseif($choice!==null){
@@ -235,6 +260,9 @@ try{
         ['contact','support','guest','Please book me an appointment.','present_contact_enquiry'],
         ['article','support','guest','Read your support article.','read_published_article'],
         ['owner','admin','admin','How many orders in total?','order_count'],
+        ['direct_shop_total','support','guest','How many items are in the shop?','public_catalogue_summary'],
+        ['direct_delivery_charge','support','guest','What is the delivery charge?','public_policy'],
+        ['direct_order_total','admin','admin','How many orders in total?','order_count'],
         ['capability','admin','admin','What kinds of store tasks can you help me with?',null],
         ['slash_capabilities','admin','admin','/capabilities',null],
         ['slash_help','admin','admin','/help blog-publishing','operator_guide'],
@@ -293,7 +321,8 @@ try{
         }
         $expected=in_array($scenario,['outage','duplicate','truncated','unfinished','quota','long_retry','schema_error','catalogue_stale','catalogue_wrong','catalogue_locked'],true)?'error':'model';
         $rounds=match($scenario){'mixed'=>3,'denied'=>2,'unfinished','transient_continuation','catalogue_fallback'=>5,
-            'transient_start','slash_help'=>2,'outage'=>6,default=>$tool!==null?4:1};
+            'transient_start','slash_help','direct_shop_total','direct_delivery_charge','direct_order_total'=>2,
+            'outage'=>6,default=>$tool!==null?4:1};
         if($exit!==0||($turn['outcome']??null)!==$expected||count($turn['model_attempts']??[])!==$rounds||($turn['turn_id']??null)!==($response['turn_id']??null)){
             throw new RuntimeException("$scenario/$surface: unexpected model lifecycle: ".substr($raw,0,2500)." STDERR: ".substr($err,0,1000));
         }
@@ -319,6 +348,9 @@ try{
             }
         }
         foreach((array)$tool as $selected)if(!in_array($selected,array_column($turn['tools']??[],'name'),true))throw new RuntimeException("Missing selected tool: $selected");
+        if (str_starts_with($scenario, 'direct_') && (($result['status'] ?? 0) !== 200 || count($turn['tools'] ?? []) !== 1)) {
+            throw new RuntimeException('Direct lookup must deliver its model answer after one recorded tool execution');
+        }
         if(!empty($response['ticket_id']))throw new RuntimeException('Unapproved ticket creation');
         if (str_starts_with($scenario, 'catalogue_') || $scenario === 'owner_followup') {
             if (($result['history_preserved'] ?? false) !== true) throw new RuntimeException('Existing conversation history was rewritten or lost');

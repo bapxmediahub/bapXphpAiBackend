@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "b75b02aeb1d03d91da0de1a23668db1d7348440c21cdded7501f2e7dc1fc7dfa",
-            "references_sha256": "1787b64eb38150f6ec3fd5d9415a6b6615cdb913e02f75f2356604b31fb7d6c2",
-            "review_note": "Compared role and module declaration filtering, bounded tool discovery, and agent scope docs with the first-round owner help route. Both provider fixtures require exactly one authorized guide lookup and two round trips."
+            "source_sha256": "5bc528985312485b9732d829b75addacb345765dfc1c767c85e38db4faa2ac99",
+            "references_sha256": "f5c7361b8ca9c867682dbafcde10dd099cdd71d35190bc7aaea8d770ba2d53ff",
+            "review_note": "Reviewed initial plan, candidate and per-transfer hold checks against runtime/observability docs and backend skill. Holds stop locally before model-attempt evidence, short waits reread current health, explicit probes bypass the gate, and locked tools never replay. Credentials remain confined to private health state."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -58,9 +58,9 @@
             "review_note": "Compared active-chat restoration and attachment changes with the media operator instructions, and confirmed upload and in-memory draft attachment regressions pass."
         },
         "operator-help": {
-            "source_sha256": "d1aa24644958e5cf4ca1936a66a084002a8cf6ee65c97b8b5beb03a2eb3ac898",
+            "source_sha256": "d4df8c61faae0b85fc48b8629ffc1519f43656271defcb0e9dfdbe9b568b691f",
             "references_sha256": "7a684be61b80d3002adcfb6a344e0c4bf547d9c8082bee3fa151bd61b1dc9d98",
-            "review_note": "Reviewed public Help links, Blog module gating and the focused Support enquiry pane alongside the operator help references."
+            "review_note": "Cross-checked merged Enterprise declaration and scoped operator-guide behavior with the operator references. Verified that the public Support guide stays in the Blog gate and the public enquiry restores visible pane focus."
         },
         "public-mcp": {
             "source_sha256": "234155f55b0f66f669f6422a85acc30a6a59ebf216d8f682d7a212cd01ee7358",

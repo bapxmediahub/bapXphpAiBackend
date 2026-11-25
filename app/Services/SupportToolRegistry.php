@@ -26,7 +26,7 @@ final class SupportToolRegistry {
         return [
             ['name'=>'public_catalog', 'description'=>'Read published products using a customer question.',
              'parameters'=>['type'=>'object','properties'=>['question'=>['type'=>'string','minLength'=>1,'maxLength'=>256]],'required'=>['question']]],
-            ['name'=>'public_policy', 'description'=>'Read the public shipping, returns, or payment policy.',
+            ['name'=>'public_policy', 'description'=>'Read the public shipping, returns, or payment policy. Use shipping_cost for delivery charges and shipping cost.',
              'parameters'=>self::policyInputSchema(true)],
             ['name'=>'get_public_contact', 'description'=>'Read the published business phone numbers, email, opening hours and contact form link. No customer or owner records.',
              'parameters'=>PublicKnowledgeService::contactInputSchema()],
@@ -38,7 +38,7 @@ final class SupportToolRegistry {
                 'status'=>['type'=>['string','null'],'enum'=>['open','answered','closed',null]],
                 'period'=>['type'=>['array','null'],'items'=>['type'=>'string','format'=>'date'],'minItems'=>2,'maxItems'=>2]
              ]]],
-            ['name'=>'public_catalogue_summary','description'=>'Count all currently published products and their configured public category memberships. Use for overall catalogue counts and category overview, not a named product or private order.',
+            ['name'=>'public_catalogue_summary','description'=>'Count currently published products and their configured public category memberships. Use for the total items in the shop, published catalogue size, and category overview.',
              'parameters'=>['type'=>'object','properties'=>(object)[]]],
             ['name'=>'public_best_sellers','description'=>'Get up to four currently visible storefront best sellers by recorded paid, non-cancelled, non-refunded orders, all time only. No sales amounts, private orders or date filters.',
              'parameters'=>['type'=>'object','properties'=>(object)[]]],
