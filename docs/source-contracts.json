@@ -49,8 +49,8 @@
         },
         "mcp-clients": {
             "source_sha256": "d3156f090ffd44f61c1d53c8726bfc94aa1eb8914036f037be289bdba31565ec",
-            "references_sha256": "9954a9d4ea3c024e6054e60e6c0fc4a6a4eea346721fd46092a08898f8e83bf2",
-            "review_note": "Reviewed the shared Integrations page, customer configuration and preserved public MCP permissions in the combined tree."
+            "references_sha256": "56bc8bcc3e33bdc079b94654bc5370d13c7e8b4766b80d91eb4fea3bf77f6659",
+            "review_note": "Reviewed the CLI skill change against MCP client guidance. Local CI runs the public storefront search fixture without changing MCP client administration."
         },
         "media": {
             "source_sha256": "edc32a5a9f73cf7f2954eac135a2eaed1394089034bac24ea835af48c4d9600e",
@@ -74,13 +74,13 @@
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",
-            "references_sha256": "ed194e15ddaa5ac6ee1118994fceeb94723165cedba02bc92ad745a196a18fd1",
-            "review_note": "Compared the MediaService additions with the Merchant Feed and product image inspection contracts. Header choices are filtered only for the owner authored editor, and catalogue image eligibility and feed URLs retain their existing resolution."
+            "references_sha256": "584b563cb628dce2573081ef1aaf46071bd9815c6bc37e1c4bc18b295a9daa39",
+            "review_note": "Compared public search fixture coverage with the product feed and CLI guidance. The fixture verifies published search and module controls using synthetic records."
         },
         "workflow": {
-            "source_sha256": "12028d70a6d059503bb1429b49811fcf6e19e416071463e52538ad4a426e4251",
-            "references_sha256": "47049bc48d0aaa4f4989c3125e1170c171086262a90fa5b001e81fef239ba817",
-            "review_note": "Compared hosted and local PHP release checks with both controller suites, actual loopback and the generated guide index."
+            "source_sha256": "2fc8e2722d23173b00e64260fe762b58d4795b58b6d2c733fb92e75bcbd3ff80",
+            "references_sha256": "ef79bf65beb22f7ccf6e25d186ce5ee84980449efcdda3b0673982ea3bf29b1b",
+            "review_note": "Verified native local storefront search now matches the GitHub gate. Its failure retains the later independent gates, including documentation checks for the current Chat Completions contract."
         }
     }
 }

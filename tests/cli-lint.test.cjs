@@ -62,7 +62,8 @@ async function project(t) {
     // Only non-lint CI stages are fixture stand-ins. They are valid PHP executed
     // by the same real interpreter; generators produce their expected artifacts.
     for (const [file, marker] of Object.entries({
-        'tests/run.php': 'test', 'cli/agent-contracts.php': 'contracts',
+        'tests/run.php': 'test', 'tests/storefront-search.php': 'storefront-search',
+        'cli/agent-contracts.php': 'contracts',
         'cli/docs-check.php': 'docs', 'cli/validate-project-map.php': 'map',
         'cli/validate-docs-map.php': 'docs-map', 'cli/smoke-local.php': 'smoke',
     })) await write(file, '<?php\necho "FIXTURE:' + marker + '-ok\\n";\n');
@@ -143,11 +144,26 @@ test('ci fails only for lint when every unrelated fixture stage succeeds', {time
     assertFailure(failure, [first, second]);
     assert.match(failure.output, /LINT FAILED/);
     assert.match(failure.output, /SOME CHECKS FAILED/);
-    for (const stage of ['test', 'contracts', 'docs', 'map', 'docs-map', 'smoke']) {
+    for (const stage of ['test', 'storefront-search', 'contracts', 'docs', 'map', 'docs-map', 'smoke']) {
         assert.ok(failure.output.includes('FIXTURE:' + stage + '-ok'), 'CI did not finish the successful ' + stage + ' fixture');
     }
     for (const message of ['Project index is current', 'Knowledge index is current', 'Code map is current']) {
         assert.ok(failure.output.includes(message), 'An unrelated generated-artifact fixture did not pass');
     }
-    assert.doesNotMatch(failure.output, /TESTS FAILED|DOCUMENTATION STALE|REVIEW REQUIRED|MAP VALIDATION FAILED|SMOKE FAILED|INDEX STALE|CODE MAP STALE/);
+    assert.doesNotMatch(failure.output, /TESTS FAILED|STOREFRONT SEARCH FAILED|DOCUMENTATION STALE|REVIEW REQUIRED|MAP VALIDATION FAILED|SMOKE FAILED|INDEX STALE|CODE MAP STALE/);
+});
+
+test('ci reports storefront search failure and completes independent gates', {timeout: 60000}, async t => {
+    const fixture = await project(t);
+    await fixture.write('tests/storefront-search.php',
+        '<?php\necho "FIXTURE:storefront-search-error\\n";\nexit(17);\n');
+    const failure = await fixture.run(['ci']);
+    assert.notEqual(failure.status, 0, failure.output);
+    assert.match(failure.output, /FIXTURE:storefront-search-error/);
+    assert.match(failure.output, /STOREFRONT SEARCH FAILED/);
+    assert.match(failure.output, /SOME CHECKS FAILED/);
+    assert.match(failure.output, /PHP syntax check complete/);
+    assert.match(failure.output, /FIXTURE:test-ok/);
+    assert.match(failure.output, /FIXTURE:smoke-ok/);
+    assert.doesNotMatch(failure.output, /LINT FAILED|TESTS FAILED|SMOKE FAILED|ALL CHECKS PASSED/);
 });
