@@ -3287,7 +3287,7 @@ $tests['support assistant widget uses browser session memory and google model se
     foreach (['support-fab', 'support-panel', '/support/ask', 'products, delivery, orders, or support tickets', 'sessionStorage', 'data-support-key'] as $needle) {
         assertTrue(str_contains($layout, $needle), "Support widget should include {$needle}");
     }
-    foreach (['Server actor metadata and owned history', 'browser_session'] as $needle) {
+    foreach (['new AgentModelTurn', 'browser_session'] as $needle) {
         assertTrue(str_contains($service, $needle), "Support bot service should include {$needle}");
     }
     // This test used to require the service to name gemma-4-31b-it and read its own

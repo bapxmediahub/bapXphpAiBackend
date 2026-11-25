@@ -46,8 +46,8 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 501
-  relationships: 450
+  concepts: 502
+  relationships: 452
   by_type:
     blog: 16
     controller: 18
@@ -57,7 +57,7 @@ summary:
     route: 182
     runtime_instruction: 6
     schema: 24
-    service: 87
+    service: 88
     skill: 12
 concepts:
   - id: "blog:benefits-of-rudraksha"
@@ -4003,6 +4003,7 @@ concepts:
       - "AgentToolRegistry"
       - "EnterpriseToolRegistry"
       - "AgentConversationService"
+      - "AgentModelTurn"
       - "AgentTraceService"
       - "AgentEvaluationService"
       - "AgentTranscriptSanitizer"
@@ -5223,6 +5224,7 @@ concepts:
       - "AgentInstructionService"
       - "RuntimeAgentToolRegistry"
       - "AgentConversationService"
+      - "AgentModelTurn"
       - "AgentTraceService"
       - "AgentEvaluationService"
       - "AuditLogService"
@@ -5648,6 +5650,14 @@ concepts:
     title: "AgentInstructionService"
     description: "Service: AgentInstructionService"
     resource: "app/Services/AgentInstructionService.php"
+    tags:
+      - "code"
+      - "service"
+  - id: "service:AgentModelTurn"
+    type: "service"
+    title: "AgentModelTurn"
+    description: "Service: AgentModelTurn"
+    resource: "app/Services/AgentModelTurn.php"
     tags:
       - "code"
       - "service"
@@ -6393,6 +6403,9 @@ relationships:
     to: "service:AgentInstructionService"
     relation: "declared_service"
   - from: "controller:AdminController"
+    to: "service:AgentModelTurn"
+    relation: "declared_service"
+  - from: "controller:AdminController"
     to: "service:AgentToolRegistry"
     relation: "declared_service"
   - from: "controller:AdminController"
@@ -6751,6 +6764,9 @@ relationships:
     relation: "declared_service"
   - from: "controller:SupportController"
     to: "service:AgentInstructionService"
+    relation: "declared_service"
+  - from: "controller:SupportController"
+    to: "service:AgentModelTurn"
     relation: "declared_service"
   - from: "controller:SupportController"
     to: "service:AgentTraceService"

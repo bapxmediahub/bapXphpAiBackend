@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "efd81b8ed553cfd8bed8961ad55fad733947aea0849e922aaabe95008e5bfadc",
-            "references_sha256": "7eb749b59d5d257461962f646a7d8269dd50b095a573b1115a31af6f9a8dc70b",
-            "review_note": "Verified the shared actor and module filter for model-facing discovery, typed reauthorization and skill activation against runtime docs, generated contracts and the guest/cart, customer/account and owner/report tests."
+            "source_sha256": "24a8a591ae8d7d517a39e6fb3962ae6dc4d4f7a8f5acf689e2ff3140980ab0cf",
+            "references_sha256": "ea15acbc68cb83d87aa629cffc4804a68898473617383636709338b1a6c6f33d",
+            "review_note": "Reviewed chronological actor-owned dialogue, trusted instruction channels, role-filtered retrieval and function-result correlation for both providers against the runtime contract and captured loopback wire."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -23,9 +23,9 @@
             "review_note": "Read the account help Markdown and its source view. The article explains the picture placeholder beside the email."
         },
         "foundation": {
-            "source_sha256": "9e135981c37ec399549ab0dce73c8575dad7de7f85d534435bac759aa2d9bb2f",
+            "source_sha256": "9ee93c3fa2796431a0ef3bcb0dbe7f699ebe511b767336d9fb592450d0f95e5f",
             "references_sha256": "6eba6651fd8e747d8053034a7812f9d41e6dba5a405bc1d1ed669556c8f2474b",
-            "review_note": "Reviewed private JSON ownership, error status handling and the browser scope identifiers against the documented architecture. Reads remain bound to the session actor and use one existing conversation document."
+            "review_note": "Verified the native model-turn structure, existing one-shot transport callers, failover-before-tools, provider lock after tools and private conversation scope against the documented architecture."
         },
         "google-tags": {
             "source_sha256": "cb62a05f8d83f991e38d6f1593e8ccb31a0006cfb3bed28033056679f7106f63",
@@ -43,9 +43,9 @@
             "review_note": "Cross-checked Design, Enterprise history and Support New chat against actual page markup and Chromium regressions for role scope, local recovery, keyboard and A2UI restoration."
         },
         "mail": {
-            "source_sha256": "f65c4ff06685dbdff017b4d543e58c3360a56ac92ccd16a9b58a172eb102bbbc",
+            "source_sha256": "1038cef0f4adf6f9a7edeb515aafb29ae773c257af6b2f87536fa9bf79ddc13f",
             "references_sha256": "903e7da848c1e0472ce9a1823b94afc21004e564d12041ee0456918176a6cc72",
-            "review_note": "Reviewed the scoped AdminController agent entry and history diff alongside mail routing and transport guidance. The change reads private saved turns via AgentConversationService."
+            "review_note": "Reviewed the AdminController diff against mail responsibilities. The changed method composes the owner inference turn and does not use mail transport or queues."
         },
         "mcp-clients": {
             "source_sha256": "38828d52259fbd6b6555d790e463ff775e79be85872a5d5b5aea78e599fba3ac",
@@ -58,14 +58,14 @@
             "review_note": "Compared active-chat restoration and attachment changes with the media operator instructions, and confirmed upload and in-memory draft attachment regressions pass."
         },
         "operator-help": {
-            "source_sha256": "b65f4deada1aa36674410b42907eee3ef5c2fd6507a15d906dbbe0e1e957f2b6",
+            "source_sha256": "871508ed2c2fb761b7aef269a8f02fec831c2d90d58980808b6c4fb84ea3f287",
             "references_sha256": "eade3ce9f5666b9678b0c7d16fbdda7f423bde6dc7118ff83bf0416d23c3beca",
-            "review_note": "Checked the owner guide against both authenticated history and the owner-only runtime capability catalogue. Published Shop and Blog reads require their own current module while business reporting retains its existing permission gate."
+            "review_note": "Checked owner guidance against the actual controller. Open chats retain bounded successful history and the latest allowed question and reference data are passed in a single current user message."
         },
         "public-mcp": {
-            "source_sha256": "e5d2bb67604d7b9c3588dba3d04e75ad9925c1c686f3a4d13dffd1dc8dd99325",
+            "source_sha256": "767c89caa73e8c057b62607e5b029ab2424b65a702c558612dbde225908f2178",
             "references_sha256": "7188c628083dfc2704d98649d139f1b2c0a0d43db12ab8a321d7c1870c96f86a",
-            "review_note": "Compared A2UI history wording with the existing public and owner scopes. The same renderer fallback remains and only the private native Enterprise history route supplies restored owner cards."
+            "review_note": "Cross-checked the public A2UI and MCP projections with the separated native chat transport. Scope and exact recorded presentation still derive from actual permitted reads."
         },
         "remote-commerce": {
             "source_sha256": "1573658d95dac28bb53f540081e22a5f29e7121bf8d1acb2dfc72b6554b7d0b1",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed SettingsService module resolution and Merchant feed guidance. Dropping a retired header slot leaves the saved catalog eligibility inputs intact."
         },
         "workflow": {
-            "source_sha256": "01a5f99199d0a95b3ad299e7ae7ba239591d348eb2b60910cd77f415194ef6c5",
-            "references_sha256": "feda7d681f8b49297b3b3cef312506106c8d17a73af6311ed2176ed8af52774f",
-            "review_note": "Compared the generated agent capability reference and map changes with the issue-first release workflow. Role discovery continues through the two native PHP registries and their existing model provider adapters."
+            "source_sha256": "887b68c7404b5c76ebd4576772e05d00dee63de486210b33c8f2e741df30e99b",
+            "references_sha256": "33ef1add65e24bf06ad36e6d39cf4f873178ed19a4df404ec3eeb0107c2d788b",
+            "review_note": "Checked the native turn node and regenerated maps against the application-owned request loop and the existing issue-first QA workflow."
         }
     }
 }

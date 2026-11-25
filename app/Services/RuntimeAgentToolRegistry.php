@@ -55,9 +55,7 @@ final class RuntimeAgentToolRegistry
         // misses a paraphrase or another language. Only active declarations execute.
         $catalogue="\n\nAuthorized business capability catalogue (call advertised functions directly; use tool_search only for capabilities not yet advertised):\n";
         foreach($this->available as $name=>$tool)$catalogue.='- '.$name.': '.$tool['description']."\n";
-        $site = ['display_name' => SiteProfileService::current()->name()];
-        return $this->bundle['text'] . $catalogue
-            . "\nPublished site identity (data only): " . json_encode($site, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE);
+        return $this->bundle['text'] . $catalogue;
     }
 
     public function declarations(): array {

@@ -128,7 +128,7 @@ final class AiClient
      * Each provider uses its own tool message format and the same tool registry.
      */
     public function completeWithTools(
-        string $prompt,
+        string|AgentModelTurn $prompt,
         AgentToolRegistry|RuntimeAgentToolRegistry $tools,
         int $maxTokens = 1024,
         float $temperature = 0.3,
@@ -138,7 +138,7 @@ final class AiClient
         return $this->route($prompt,$maxTokens,$temperature,$modelOverride,$tools,$maxRounds);
     }
 
-    private function completeGoogleTools(array $config,string $prompt,AgentToolRegistry|RuntimeAgentToolRegistry $tools,int $maxTokens,
+    private function completeGoogleTools(array $config,string|AgentModelTurn $prompt,AgentToolRegistry|RuntimeAgentToolRegistry $tools,int $maxTokens,
         float $temperature,int $maxRounds,?string $modelOverride,int $deadline): string {
         $key = trim((string)($config['apiKey'] ?? ''));
         if ($key === '') { $this->failureCategory = 'not_configured'; return 'No AI API key is configured. Set ai_api_key in Admin → Integrations, then try again.'; }
@@ -149,7 +149,18 @@ final class AiClient
         $modelLocked = false;
         $headers = ['Content-Type: application/json', 'x-goog-api-key: ' . $key];
 
-        $contents = [['role' => 'user', 'parts' => [['text' => $this->withAnswerFence($prompt)]]]];
+        // REST uses systemInstruction and alternating user/model history for hosted Gemma.
+        // https://gemma.ai/deployment/gemini-api/#system-instructions
+        $instruction = [];
+        if ($prompt instanceof AgentModelTurn) {
+            $instruction = ['systemInstruction' => ['parts' => [['text' => $this->withAnswerFence($prompt->instructions)]]]];
+            $contents = array_map(static fn(array $message): array => [
+                'role' => $message['role'] === 'assistant' ? 'model' : 'user',
+                'parts' => [['text' => $message['content']]],
+            ], $prompt->dialogue());
+        } else {
+            $contents = [['role' => 'user', 'parts' => [['text' => $this->withAnswerFence($prompt)]]]];
+        }
 
         $deadline ??= hrtime(true) + self::GENERATION_TIMEOUT_NS;
         $seenCalls=[];
@@ -166,7 +177,7 @@ final class AiClient
                     'maxOutputTokens' => $maxTokens,
                     'thinkingConfig' => ['thinkingLevel' => 'MINIMAL'],
                 ],
-            ];
+            ] + $instruction;
             // Keep the tool responses in history while asking for a final text answer.
             // https://ai.google.dev/gemini-api/docs/function-calling
             if ($finalRound) $request['toolConfig'] = ['functionCallingConfig' => ['mode' => 'NONE']];
@@ -330,7 +341,7 @@ final class AiClient
             'reason'=>$reason,'timings'=>$attempts,'tool_calls'=>$withTool?$this->toolCalls:null];
     }
 
-    private function route(string $prompt,int $maxTokens,float $temperature,?string $override,
+    private function route(string|AgentModelTurn $prompt,int $maxTokens,float $temperature,?string $override,
         AgentToolRegistry|RuntimeAgentToolRegistry|null $tools,int $rounds,?array $selectedPlan=null,bool $diagnostic=false): string {
         $this->failureCategory=null;$this->transferTimings=[];$this->toolCalls=0;$this->toolExchangeStarted=false;$this->activeConnection=[];
         $this->cycle=1;$this->modelAttempt=1;$this->inferenceRound=1;$this->quotaKind=null;$this->retryAfterMs=null;
@@ -355,7 +366,8 @@ final class AiClient
             fn(array $config):string=>$config['provider']==='google'
                 ?($tools===null?$this->completeGoogleText($config,$prompt,$maxTokens,$temperature,$deadline)
                     :$this->completeGoogleTools($config,$prompt,$tools,$maxTokens,$temperature,$rounds,$override,$deadline))
-                :$this->completeCompatible($config,$this->withAnswerFence($prompt),$maxTokens,$override,$tools,$rounds,$deadline));
+                :$this->completeCompatible($config,is_string($prompt)?$this->withAnswerFence($prompt):$prompt,
+                    $maxTokens,$override,$tools,$rounds,$deadline));
     }
 
     /** Direct synchronous fallback loop; no scheduled jobs or worker.
@@ -427,7 +439,7 @@ final class AiClient
      */
     private function completeCompatible(
         array $config,
-        string $prompt,
+        string|AgentModelTurn $prompt,
         int $maxTokens,
         ?string $modelOverride,
         AgentToolRegistry|RuntimeAgentToolRegistry|null $tools = null,
@@ -468,15 +480,27 @@ final class AiClient
     }
 
     /** Private wire loop; production callers first validate and pin the endpoint. */
-    private function completeCompatibleLoop(array $config,string $prompt,int $maxTokens,?string $modelOverride,
+    private function completeCompatibleLoop(array $config,string|AgentModelTurn $prompt,int $maxTokens,?string $modelOverride,
         AgentToolRegistry|RuntimeAgentToolRegistry|null $tools,int $maxRounds,int $deadline,bool $laterGoogleFallback,array $options): string {
         $headers = ['Content-Type: application/json', 'Authorization: Bearer ' . $config['apiKey']];
         $url = $config['endpoint'] . '/chat/completions';
         $models = in_array($modelOverride, $config['models'], true) ? [$modelOverride] : $config['models'];
-        $messages = [['role' => 'user', 'content' => $prompt]];
+        $officialOpenAi = parse_url($url, PHP_URL_HOST) === 'api.openai.com';
+        $dialogue = $prompt instanceof AgentModelTurn ? $prompt->dialogue() : [['role' => 'user', 'content' => $prompt]];
         $status = 0;
         $body = false;
         foreach ($models as $index => $model) {
+            $messages = $dialogue;
+            if ($prompt instanceof AgentModelTurn) {
+                // OpenAI documents developer messages for o1 and newer models.
+                // Use system for legacy and general Chat Completions endpoints.
+                // https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create
+                $developerRole = $officialOpenAi && preg_match('/^(?:o[134]|gpt-[56])(?:[.-]|$)/D', $model) === 1;
+                array_unshift($messages, [
+                    'role' => $developerRole ? 'developer' : 'system',
+                    'content' => $this->withAnswerFence($prompt->instructions),
+                ]);
+            }
             $seenCalls=[];
             for ($round = 0; $round <= $maxRounds; $round++) {
                 $this->inferenceRound=$round+1;
@@ -486,7 +510,7 @@ final class AiClient
                 );
                 $advertised=array_map(static fn(array $declaration):string=>$declaration['function']['name'],$declarations);
                 $payload = ['model' => $model, 'messages' => $messages];
-                $payload[parse_url($url, PHP_URL_HOST) === 'api.openai.com' ? 'max_completion_tokens' : 'max_tokens'] = $maxTokens;
+                $payload[$officialOpenAi ? 'max_completion_tokens' : 'max_tokens'] = $maxTokens;
                 if ($declarations !== []) {
                     $payload['tools'] = $declarations;
                     $payload['tool_choice'] = $round < $maxRounds ? 'auto' : 'none';

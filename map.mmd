@@ -14,10 +14,10 @@ flowchart LR
     legend_limits["No execution, autoload or dynamic reachability proof; gaps are inspection candidates"]:::arch
   end
 
-  subgraph ARCH["Architecture Overview — 183 routes, 18 controllers, 87 services, 75 views, 0 data files, 30 tools"]
+  subgraph ARCH["Architecture Overview — 183 routes, 18 controllers, 88 services, 75 views, 0 data files, 30 tools"]
     arch_routes["> Routes: 183 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 18"]:::arch
-    arch_svc["> Services: 87"]:::arch
+    arch_svc["> Services: 88"]:::arch
     arch_views["> Views: 75"]:::arch
     arch_data["> Collections: 24 schema | 0 files"]:::arch
     arch_tools["> Tools: 30"]:::arch
@@ -265,6 +265,7 @@ flowchart LR
     service_agentdraftservice["AgentDraftService"]:::code
     service_agentevaluationservice["AgentEvaluationService"]:::code
     service_agentinstructionservice["AgentInstructionService"]:::code
+    service_agentmodelturn["AgentModelTurn"]:::code
     service_agenttoolregistry["AgentToolRegistry"]:::code
     service_agenttraceservice["AgentTraceService"]:::code
     service_agenttranscriptsanitizer["AgentTranscriptSanitizer"]:::code
@@ -1008,6 +1009,7 @@ flowchart LR
   controller_admincontroller -. declared service .-> service_agenttoolregistry
   controller_admincontroller -. declared service .-> service_enterprisetoolregistry
   controller_admincontroller -. declared service .-> service_agentconversationservice
+  controller_admincontroller -. declared service .-> service_agentmodelturn
   controller_admincontroller -. declared service .-> service_agenttraceservice
   controller_admincontroller -. declared service .-> service_agentevaluationservice
   controller_admincontroller -. declared service .-> service_agenttranscriptsanitizer
@@ -1247,6 +1249,7 @@ flowchart LR
   controller_supportcontroller -. declared service .-> service_agentinstructionservice
   controller_supportcontroller -. declared service .-> service_runtimeagenttoolregistry
   controller_supportcontroller -. declared service .-> service_agentconversationservice
+  controller_supportcontroller -. declared service .-> service_agentmodelturn
   controller_supportcontroller -. declared service .-> service_agenttraceservice
   controller_supportcontroller -. declared service .-> service_agentevaluationservice
   controller_supportcontroller -. declared service .-> service_auditlogservice
@@ -1362,6 +1365,7 @@ flowchart LR
   controller_admincontroller -. source new .-> service_agentattachmentservice
   controller_admincontroller -. source new .-> service_agentconversationservice
   controller_admincontroller -. source new .-> service_agentdraftservice
+  controller_admincontroller -. source new .-> service_agentmodelturn
   controller_admincontroller -. source new .-> service_aiclient
   controller_admincontroller -. source new .-> service_aireplycleaner
   controller_admincontroller -. source new .-> service_auditlogservice
@@ -1714,7 +1718,6 @@ flowchart LR
   service_runtimeagenttoolregistry -. static reference .-> service_agentinstructionservice
   service_runtimeagenttoolregistry -. static reference .-> service_agenttraceservice
   service_runtimeagenttoolregistry -. static reference .-> service_publicknowledgeservice
-  service_runtimeagenttoolregistry -. static reference .-> service_siteprofileservice
   service_runtimehealthservice -. source new .-> service_databaseservice
   service_secretservice -. source new .-> service_databaseservice
   service_secretservice -. static reference .-> service_mcpclientservice
@@ -1733,6 +1736,7 @@ flowchart LR
   service_smtpmailer -. source new .-> service_smtpdeliveryuncertainexception
   service_storestatsservice -. static reference .-> service_orderservice
   service_supportbotservice -. source new .-> service_agentcontextservice
+  service_supportbotservice -. source new .-> service_agentmodelturn
   service_supportbotservice -. source new .-> service_aiclient
   service_supportbotservice -. source new .-> service_aireplycleaner
   service_supportbotservice -. source new .-> service_auditlogservice
@@ -1745,6 +1749,7 @@ flowchart LR
   service_supportbotservice -. static reference .-> service_agentevaluationservice
   service_supportbotservice -. static reference .-> service_aiclient
   service_supportbotservice -. static reference .-> service_orderservice
+  service_supportbotservice -. static reference .-> service_siteprofileservice
   service_supportticketservice -. source new .-> service_auditlogservice
   service_supportticketservice -. source new .-> service_databaseservice
   service_supportticketservice -. static reference .-> service_agenttranscriptsanitizer

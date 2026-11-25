@@ -316,6 +316,8 @@ flowchart TB
 
 Support checks its rate limit and requires CSRF for signed-in requests; the admin controller requires the admin role and POST CSRF. Both controllers persist the actor-owned pending request **before** provider/tool work. `AgentTraceService` checkpoints actual retrieval, provider and tool spans into that same conversation JSON. The controller then records the sanitized answer/evaluation. `AuditLogService` separately writes operational metadata to MySQL `audit_events`; a failed audit does not undo successful business work.
 
+The native provider request carries application instructions in their own channel. Bounded actor-owned history is sent as chronological user and assistant/model turns, followed by the current question and scoped reference data. See [native provider contracts](docs/runtime-agents.md#provider-neutral-model-decisions-and-tool-execution).
+
 Support's public/policy/catalogue answers can finish locally; its model branch
 now uses the shared role-filtered tool loop. A signed-in escalation may create
 a support ticket, so the complete Support flow is not read-only. Enterprise
