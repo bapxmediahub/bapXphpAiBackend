@@ -853,6 +853,108 @@ final class DatabaseService {
         }
     }
 
+    /** Freeze the exact approved booking and file versions while the owner page is locked. */
+    public function beginCampaignBooking(string $id, string $slug, string $revision, string $owner, ?string $mode): array {
+        if (!CampaignPaymentService::validId($id) || !AuthoredPageService::validSlug($slug)
+            || !AuthoredPageService::validRevision($revision) || !preg_match('/^[a-f0-9]{64}$/D', $owner)
+            || !in_array($mode, [null, 'test', 'live'], true)) {
+            throw new \InvalidArgumentException('Invalid booking identity.');
+        }
+        if ($this->isTestMode()) throw new \LogicException('Bookings require an isolated database.');
+        if ($this->isRemote()) {
+            return $this->remoteMutation('begin_campaign_booking', 'campaign_bookings', compact('id', 'slug', 'revision', 'owner', 'mode'))['result'];
+        }
+
+        $pdo = $this->db();
+        $pdo->beginTransaction();
+        try {
+            // Always take the page lock first, including for duplicate starts.
+            $rows = $this->query('SELECT _data FROM settings WHERE id = ? FOR UPDATE', ['pg:'.$slug]);
+            $page = $rows === [] ? [] : json_decode($rows[0]['_data'], true, flags: JSON_THROW_ON_ERROR);
+            $existing = $this->lockCampaignBooking($id);
+            if ($existing !== null) {
+                if (!hash_equals($existing['owner_hash'], $owner) || $existing['slug'] !== $slug || $existing['revision'] !== $revision) {
+                    throw new \DomainException('Invalid booking identity.');
+                }
+                if ($existing['status'] !== 'retryable' || isset($existing['provider_link_id'])) {
+                    $pdo->commit();
+                    return ['outcome'=>'existing', 'booking'=>$existing];
+                }
+            }
+            $amount = CampaignPaymentService::pageAmount($page);
+            $published = ($page['status'] ?? null) === 'published' && ($page['slug'] ?? null) === $slug
+                && ($page['revision'] ?? null) === $revision && $amount !== null;
+            if (!$published || $mode === null || ($existing !== null && $existing['mode'] !== $mode)) {
+                $pdo->commit();
+                return ['outcome'=>$published ? 'unavailable' : 'stale'];
+            }
+            if ($existing !== null) {
+                $booking = CampaignPaymentService::claimCreation($existing, time());
+                $this->writeCampaignBooking($booking);
+                $pdo->commit();
+                return ['outcome'=>'retry', 'booking'=>$booking];
+            }
+
+            $booking = CampaignPaymentService::snapshot($page, $id, $owner, $mode, $amount, time());
+            if (!$this->insertIfAbsent('campaign_bookings', $booking)['inserted']) {
+                throw new \RuntimeException('Booking reservation could not be confirmed.');
+            }
+            $pdo->commit();
+            return ['outcome'=>'created', 'booking'=>$booking];
+        } catch (\Throwable $error) {
+            if ($pdo->inTransaction()) $pdo->rollBack();
+            throw $error;
+        }
+    }
+
+    public function claimCampaignBookingCheck(string $id): array {
+        return $this->changeCampaignBooking($id, null);
+    }
+
+    public function updateCampaignBooking(string $id, array $change): array {
+        return $this->changeCampaignBooking($id, $change)['booking'];
+    }
+
+    private function changeCampaignBooking(string $id, ?array $change): array {
+        if (!CampaignPaymentService::validId($id)) throw new \InvalidArgumentException('Invalid booking identity.');
+        if ($this->isTestMode()) throw new \LogicException('Bookings require an isolated database.');
+        if ($this->isRemote()) {
+            return $this->remoteMutation('change_campaign_booking', 'campaign_bookings', compact('id', 'change'))['result'];
+        }
+
+        $pdo = $this->db();
+        $pdo->beginTransaction();
+        try {
+            $booking = $this->lockCampaignBooking($id);
+            if ($booking === null) throw new \RuntimeException('Booking is unavailable.');
+            $now = time();
+            $before = $booking;
+            $claimed = $change === null && !in_array($booking['status'], ['captured','retryable'], true)
+                && $booking['reconcile_after'] <= $now;
+            if ($claimed) $booking['reconcile_after'] = $now+30;
+            if ($change !== null) $booking = CampaignPaymentService::applyChange($booking, $change, $now);
+            if ($booking !== $before) {
+                $booking['updated_at'] = gmdate('Y-m-d H:i:s', $now);
+                $this->writeCampaignBooking($booking);
+            }
+            $pdo->commit();
+            return compact('booking', 'claimed');
+        } catch (\Throwable $error) {
+            if ($pdo->inTransaction()) $pdo->rollBack();
+            throw $error;
+        }
+    }
+
+    private function writeCampaignBooking(array $booking): void {
+        $statement = $this->db()->prepare('UPDATE campaign_bookings SET _data = ?, _status = ?, _updated_at = ? WHERE id = ?');
+        $statement->execute([json_encode($booking, JSON_THROW_ON_ERROR), $booking['status'], $booking['updated_at'], $booking['id']]);
+    }
+
+    private function lockCampaignBooking(string $id): ?array {
+        $rows = $this->query('SELECT _data FROM campaign_bookings WHERE id = ? FOR UPDATE', [$id]);
+        return $rows === [] ? null : json_decode($rows[0]['_data'], true, flags: JSON_THROW_ON_ERROR);
+    }
+
     /** A single settings record owns public header order, independently of the general settings forms. */
     public function saveHeaderMenu(array $items, int $revision): bool {
         SettingsService::validateMenuItems($items);
