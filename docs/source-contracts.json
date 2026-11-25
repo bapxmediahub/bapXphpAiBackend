@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "cad0f26ee82509be8d7b176fc69dbda897f9f58cbef8fcbedd6d8969e43d9e99",
-            "references_sha256": "654f613deac82c31d373ee022e4d5cf4f45288824cdab87954093ffa1c74dea5",
-            "review_note": "Reviewed the Monitoring and Enterprise templates against the agent evidence and runtime guides. The reference label is display-only, and model, tool, feedback and audit evidence remain role-scoped."
+            "source_sha256": "3c6e1cb910ca0d8ad6ca0e30e7c295bb08df0df79ff147624fc80603a23a8525",
+            "references_sha256": "57f1008d0d400462339e81b0bda1b2f023ddbf86826b0eabd0c0c1da4d91bc83",
+            "review_note": "Reviewed the reconciled PHP endpoint and monitoring declarations alongside runtime and observability docs. Agent Monitor retains its sanitized provider, tool and answer-quality evidence as the commerce actions move to Dashboard."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -23,14 +23,14 @@
             "review_note": "Reviewed published Markdown guides, search navigation and module filters against the merged catalogue and account source."
         },
         "foundation": {
-            "source_sha256": "2d4bb586f2aa71a68702c704197743fa1dba2e7189b307e47154c966fb04309b",
+            "source_sha256": "7d10a0293ed9e27d0d8b5e6b87e2e14ac904e882209495e278a0bac35aec7782",
             "references_sha256": "6eba6651fd8e747d8053034a7812f9d41e6dba5a405bc1d1ed669556c8f2474b",
-            "review_note": "Reviewed the reference-profile label and neutral fallback against the white-label and private presentation boundaries. The label is outside public profile fields and the existing authentication paths remain authoritative."
+            "review_note": "Rechecked architecture, backend evidence and hosted route boundaries after integrating the provider config change. Analytics continues to read existing aggregates and carries explicit unavailable states."
         },
         "google-tags": {
-            "source_sha256": "12e326bd61a1281101032aeb26328458c0ca19ebae671e4a888d7e2c9a69e369",
-            "references_sha256": "cbf9b733297bca2778b2907cb304421bcf47b2485581d42523ee0b88d9f050d4",
-            "review_note": "Reviewed Site analytics links against the dashboard, Google reporting, PageSpeed and Integration instructions. Connection setup and established permission and error states remain on their current routes."
+            "source_sha256": "4834fd90479519dba801e19dbd3c1e434d62cf7cb6a4915eed9905f1c21bb8b5",
+            "references_sha256": "9789624757ffb0db61f3558073a31f66a1941a6cea7f7aa4af76da35c88df7dd",
+            "review_note": "Reviewed Google reporting and PageSpeed destinations alongside the reconciled Integrations help. The new Site analytics path keeps authorization, connection states, and dashboard periods as documented."
         },
         "http-errors": {
             "source_sha256": "63602cadbe59868b0d25a1b00729a589e75d1b31c6ea3a1b25c1e5a46fd06d50",
@@ -38,9 +38,9 @@
             "review_note": "Compared the layout-specific title assignment with the request-error boundary. Website error status, sanitized error text and public not-found rendering follow their existing handlers."
         },
         "interface": {
-            "source_sha256": "005bf525b82864de10a606375f7a8ab90e8282615455ed410646b0f9aaeed0c4",
+            "source_sha256": "738e38a60e1cf8946e57026804877aec36c9effa52f9f190db1702b5f8a695a0",
             "references_sha256": "53cc2ed21de9291d5d1d5288ff06d8e236f6f342f6d155e3b695151676d4e235",
-            "review_note": "Reviewed the reconciled Design and interface guide against both release diffs. The analytics navigation is grouped by use, and dashboard labels, ownership, narrow layout, and unavailable states follow the current interface."
+            "review_note": "Reconciled dashboard, owner navigation and integration views against Design and recent UI contracts. The named workspace stays deployment-profile based, and no heading or permission is duplicated."
         },
         "mail": {
             "source_sha256": "20e83e649ed008a9061724716681cff8a4c7888b7e5520459aed8843abdc5cda",
@@ -48,9 +48,9 @@
             "review_note": "Checked the two changed AdminController rendering paths against owner email and delivery-state guidance. Queue and mailbox behavior continues through the existing mail actions."
         },
         "mcp-clients": {
-            "source_sha256": "38828d52259fbd6b6555d790e463ff775e79be85872a5d5b5aea78e599fba3ac",
-            "references_sha256": "c03c08ae447150894d9f4bcc6022521112ac586ab0bdf77dbba17d2bd1cf99d9",
-            "review_note": "Compared the Site analytics entry point in the Integrations guide with the local MCP grant and management page. Setup remains governed by the existing owner forms."
+            "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
+            "references_sha256": "4274d502f7d2500a1a88e8dbb5d2626a6930d3b01197a0698083f41c03981144",
+            "review_note": "Reviewed the merged Integrations page references against the MCP client guide and approved route inventory. Display-group changes are owner navigation and preserve the client capability and config instructions."
         },
         "media": {
             "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed the owner skill changes against media selection, deletion and metadata guidance. The new analytics section describes navigation and owner counts, and the media controls follow their documented path."
         },
         "operator-help": {
-            "source_sha256": "e13f59877facf732a7d93026d849ab4e01706b145de6078516534d5b935451b6",
-            "references_sha256": "d5ba5a7c34dc0a7bfc7218ed7d471592017e794760acacf1e28e9463b4bec4c8",
-            "review_note": "Reviewed the dashboard, site analytics destinations and Enterprise workspace against the operator help. Owners now see separate navigation for provider and quality evidence, traffic and search, and recorded commerce actions."
+            "source_sha256": "711ba481e7a1209bea63a8890341fee1c3a3d64e353992e78d5e4e09046f56f1",
+            "references_sha256": "9c949b4806f5ffa9c5ff122c863e4b2af50516fff6d0ea5e6201d543c147b4a3",
+            "review_note": "Reviewed the reconciled settings and owner docs after the endpoint change. Agent monitoring, site analytics, and commerce are navigable independently while provider configuration and scopes stay in Integrations."
         },
         "public-mcp": {
             "source_sha256": "6855ccd4ae97d341559568e5e6799115f860d8bed5216f003680919a474ab934",
@@ -68,9 +68,9 @@
             "review_note": "Cross-checked the updated route associations with Public MCP and A2UI guidance. The moved storefront evidence is rendered through the authenticated Dashboard and the published contracts stay scoped."
         },
         "remote-commerce": {
-            "source_sha256": "d240d614ae377c8a7195af73b09b5a49e762c87241bf86a1f65ff07985316f2e",
+            "source_sha256": "d4727219602e3533680fbc91389cb2648ede2b15ef7dfa8ea866f2ed8bcd25c9",
             "references_sha256": "1b5573df9e0031b30d2aff8a41f9b249a03ed67030455440ea9edcbbaeb24892",
-            "review_note": "Reviewed Commerce overview and report links in Design against existing lifecycle, authority and payment documentation. Storefront action counts keep the same data and fixed window, and remote checkout contracts are unchanged."
+            "review_note": "Rechecked dashboard and admin Design against remote commerce, checkout, and order source. Site actions remain aggregate counts over the documented window and no new commerce operation is exposed."
         },
         "sales-channels": {
             "source_sha256": "36385e3d18e26f524d0efdd12d26cd8386e368fb5d27441460c688ffdff28b92",
