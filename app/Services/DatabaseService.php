@@ -534,11 +534,8 @@ final class DatabaseService {
         $pdo = $this->db();
         $pdo->beginTransaction();
         try {
-            $read = $pdo->prepare('SELECT id, _data FROM media_files WHERE id = ? FOR UPDATE');
-            $read->execute([$id]);
-            $row = $read->fetch(\PDO::FETCH_ASSOC);
-            if (!$row) throw new \InvalidArgumentException('Uploaded media record not found.');
-            $record = ['id'=>$row['id']] + json_decode($row['_data'], true, 512, JSON_THROW_ON_ERROR);
+            $record = $this->lockMediaRecord($id);
+            if (!$record) throw new \InvalidArgumentException('Uploaded media record not found.');
             $patch = MediaService::metadataPatch($record, $fields, $expected);
             $write = $pdo->prepare('UPDATE media_files SET _data = JSON_MERGE_PATCH(_data, ?), _updated_at = CURRENT_TIMESTAMP WHERE id = ?');
             $write->execute([json_encode($patch, JSON_THROW_ON_ERROR), $id]);
@@ -743,8 +740,35 @@ final class DatabaseService {
         $record = AuthoredPageService::record($input);
         if ($this->isTestMode()) throw new \LogicException('Page writes require a database.');
         if ($this->isRemote()) {
-            return $this->remoteMutation('save_authored_page', 'settings', ['record'=>$record, 'expected'=>$expected])['saved'] === true;
+            $result = $this->remoteMutation('save_authored_page', 'settings', compact('record', 'expected'));
+            if (($result['header_unavailable'] ?? false) === true) {
+                throw new \InvalidArgumentException('Choose an available uploaded image from the Media Library.');
+            }
+            return $result['saved'] === true;
         }
+        $url = $record['header_image_url'] ?? null;
+        if ($url === null) return $this->writeAuthoredPage($record, $expected);
+
+        $media = (new MediaService(store: $this))->findPageHeaderUpload($url);
+        if (!$media) throw new \InvalidArgumentException('Choose an available uploaded image from the Media Library.');
+        // Serialize attachment with removal of the same upload on the database host.
+        $pdo = $this->db();
+        $pdo->beginTransaction();
+        try {
+            $current = $this->lockMediaRecord((string)$media['id']);
+            if (!$current || ($current['url'] ?? null) !== $url || !MediaService::canDeleteRecord($current)) {
+                throw new \InvalidArgumentException('Choose an available uploaded image from the Media Library.');
+            }
+            $saved = $this->writeAuthoredPage($record, $expected);
+            $pdo->commit();
+            return $saved;
+        } catch (\Throwable $error) {
+            if ($pdo->inTransaction()) $pdo->rollBack();
+            throw $error;
+        }
+    }
+
+    private function writeAuthoredPage(array $record, string $expected): bool {
         if ($expected === '0') return $this->insertIfAbsent('settings', $record)['inserted'];
         $query = $this->db()->prepare("UPDATE settings SET _data = ?, _status = ?, _updated_at = ?
             WHERE id = ? AND JSON_UNQUOTE(JSON_EXTRACT(_data, '$.revision')) = ?");
@@ -813,6 +837,32 @@ final class DatabaseService {
         self::$remoteQueryCache = [];
         return ['inserted' => $inserted, 'record' => $inserted ? $record : ($this->find($table, $id) ?? $record)];
     }
+    private function lockMediaRecord(string $id): ?array {
+        $rows = $this->query('SELECT id, _data FROM media_files WHERE id = ? FOR UPDATE', [$id]);
+        if ($rows === []) return null;
+        return ['id'=>$rows[0]['id']] + json_decode($rows[0]['_data'], true, flags: JSON_THROW_ON_ERROR);
+    }
+
+    /** Close the gap between the library's reference scan and the metadata deletion. */
+    private function deleteMediaRecord(string $id): void {
+        $pdo = $this->db();
+        $pdo->beginTransaction();
+        try {
+            $media = $this->lockMediaRecord($id);
+            $url = $media['url'] ?? null;
+            if (MediaService::isPageHeaderPath($url)
+                && $this->query("SELECT id FROM settings WHERE id LIKE 'pg:%'
+                    AND BINARY JSON_UNQUOTE(JSON_EXTRACT(_data, '$.header_image_url')) = BINARY ? LIMIT 1", [$url]) !== []) {
+                throw new \InvalidArgumentException('This image is still referenced by an authored page.');
+            }
+            $pdo->prepare('DELETE FROM media_files WHERE id = ?')->execute([$id]);
+            $pdo->commit();
+        } catch (\Throwable $error) {
+            if ($pdo->inTransaction()) $pdo->rollBack();
+            throw $error;
+        }
+    }
+
     public function delete(string $table, string $value, string $key = 'id'): void {
         if ($this->isTestMode()) return;
         if ($this->isRemote()) {
@@ -821,6 +871,10 @@ final class DatabaseService {
             return;
         }
         $clean = preg_replace('/[^a-z_]/', '', $table);
+        if ($key === 'id' && $clean === 'media_files') {
+            $this->deleteMediaRecord($value);
+            return;
+        }
         if ($key === 'id') {
             $stmt = $this->db()->prepare("DELETE FROM {$clean} WHERE id = ?");
             $stmt->execute([$value]);

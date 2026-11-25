@@ -469,6 +469,8 @@
                 'palette_link' => ['type' => 'string'],
                 // Owner-authored pages occupy pg:<slug> rows in the existing JSON-backed table.
                 'slug' => ['type' => 'string'], 'title' => ['type' => 'string'], 'content' => ['type' => 'text'],
+                'header_image_url' => ['type' => 'string', 'max_length' => 512, 'description' => 'Root-relative URL of a library raster upload'],
+                'header_image_alt' => ['type' => 'string', 'max_length' => 255],
                 'status' => ['type' => 'enum', 'values' => ['draft', 'published']], 'revision' => ['type' => 'string'],
                 // The dedicated header_menu row uses the same JSON-backed settings table.
                 'header_menu' => ['type' => 'array', 'items' => 'string'],

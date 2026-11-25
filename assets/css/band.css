@@ -4389,6 +4389,7 @@ body { background: var(--color-bg); }
     display: block;
     text-align: left;
     margin: 0 0 var(--space-sm);
+    overflow-wrap: anywhere;
 }
 .document-page__header .lede {
     text-align: left;
@@ -4889,4 +4890,32 @@ body { background: var(--color-bg); }
     .site-footer .footer-grid:has(> :nth-child(4)) > :last-child { grid-column: 1 / -1; }
     .site-footer .footer-links a,
     .site-footer .footer-bottom a { min-height: 44px; }
+}
+
+/* The public and owner layouts both use this document reading surface. */
+.document-page__content {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: clamp(24px,4vw,48px);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-white);
+    box-shadow: var(--shadow-sm);
+}
+.document-page__content h2 { margin: 2rem 0 .65rem; color: var(--color-maroon); font-size: 1.35rem; }
+.document-page__content h2:first-child { margin-top: 0; }
+.document-page__content :is(p, li) { color: var(--color-text-muted); line-height: 1.7; }
+.document-page__content ul { padding-left: 1.25rem; }
+
+/* Authored pages use the same reading surface for owner preview and publication. */
+.section.authored-page--preview { padding: 0; }
+.authored-page__image {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    max-height: 460px;
+    object-fit: contain;
+    margin-top: var(--space-md);
+    border-radius: var(--radius-md);
+    background: var(--color-bg-alt);
 }

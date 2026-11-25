@@ -109,7 +109,13 @@ final class RemoteDbController {
                 if (!is_array($input['record'] ?? null) || !is_string($input['expected'] ?? null)) {
                     throw new \InvalidArgumentException('A page record and revision are required.');
                 }
-                echo json_encode(['success'=>true, 'saved'=>$store->saveAuthoredPage($input['record'], $input['expected'])]);
+                try {
+                    $saved = $store->saveAuthoredPage($input['record'], $input['expected']);
+                    echo json_encode(['success'=>true, 'saved'=>$saved]);
+                } catch (\InvalidArgumentException $error) {
+                    if (!isset($input['record']['header_image_url'])) throw $error;
+                    echo json_encode(['success'=>true, 'saved'=>false, 'header_unavailable'=>true]);
+                }
                 return;
             }
             if ($collection === 'settings' && $action === 'save_header_menu') {
