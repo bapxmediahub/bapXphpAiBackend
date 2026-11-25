@@ -4,28 +4,28 @@
     "reviews": {
         "agents": {
             "source_sha256": "bde2bde8a9de8bf32dc819c741e87a13e30ec696f95f2049814fee7028c63a73",
-            "references_sha256": "8df82be9dda3ac0a158b42ed9c3a0bf4423d9bc9b7339ee6a406250a1ed82319",
-            "review_note": "Rechecked native model tool declarations and the owner navigation after the provider changes. Campaign booking receipt storage and gateway mutations remain beyond the existing read-only PHP agent capability boundary."
+            "references_sha256": "eca25412da58ee1eef18bc49445b15a8adf04ca7a22a52eede085850e1bef285",
+            "review_note": "Reviewed backend skill updates alongside the fixed agent capability allowlists. The booking retry remains a private PHP form action."
         },
         "auth": {
             "source_sha256": "c34a5b34bc904f36cda184c26113f91e2cf36afa2b506217d1f74e22e9e0cefd",
-            "references_sha256": "2cb52b89b8bf920f6c67f3f62fd1b0fdd49f51e14153256cc5242c1b3a7e5dfe",
-            "review_note": "Reviewed valid and invalid owner sign-in, flash and regenerated cookie ordering, protected campaign controls and existing customer flow. The owner notice uses the same authenticated request and one durable attempt."
+            "references_sha256": "02468e51e754311543db925388862cbffe9fb02cb9aa5a3dbc658dfea2dcf6c9",
+            "review_note": "Checked the browser and actor owner hash, CSRF form validation, and the database retry identity check."
         },
         "commerce": {
-            "source_sha256": "df52ec9c222d2700c066e207da621ef7a2dd252103def8ea01937080c9457912",
-            "references_sha256": "188c7a1dac9dcc80ffc838347a0d2a9ee8301ffe8de0d4d859e32b45a3ef9246",
-            "review_note": "Verified the reusable Razorpay identity and capture checks still feed the existing order writer for product purchases. Campaign payments write their own receipt."
+            "source_sha256": "c53c5c291d70428a6219887de1da8c789c7fc0f23afb3b909b75ac55f034306a",
+            "references_sha256": "fca25b2f0eb90e32d76a1000e38ca464ae7e7e0dfe7b067eaa885fff82a60e16",
+            "review_note": "Reviewed provider parsing and existing product checkout and verified-order tests. A typed provider refusal preserves the existing numeric error for shop checkout."
         },
         "content": {
-            "source_sha256": "f29d65942144010bb43d2388566b9ed5a84d5b1004e45147e58d40539c50271b",
-            "references_sha256": "65acd8a91dbe2e87fa8a431b80eb9a64588aa1f10418c630a88e154f1fbcbc86",
-            "review_note": "Reviewed the final reconciled campaign editor, form, receipt, download, and booking paths. Current source retains exact publication evidence, approved money handling, scoped timestamp normalization, and matching operator help."
+            "source_sha256": "0cf3fdbab8334c87c055ab44c9d531774c37c03a6a52dc5d0ca7db013969f1a7",
+            "references_sha256": "1697d82dbf2d3fa5156c212ac256e71e4613b5598d29ef36bb1b7eda1f4aa576",
+            "review_note": "Compared the current campaign guide with exact revision checks, repaired-credentials submission, immutable fulfillment and ambiguous-response recovery."
         },
         "foundation": {
-            "source_sha256": "92606f4c2130b5ff0ffafc9c6fff7de09cc9e04ca2967a5a6ee887b151e6856e",
-            "references_sha256": "518460de0233cf4419b29b31f7e7b2b8f43a9fdc3b868bd973f83bc9731cd4d3",
-            "review_note": "Reviewed canonical schema, database transaction and private download docs against the final app path. Pure PHP owns payment evidence and the new separate booking collection, and the existing record and private file boundaries remain intact."
+            "source_sha256": "94e60b2546b62d78d92a1ed3de92c9819d672075440da536f4c95842c3d04dea",
+            "references_sha256": "aca185b739c7bb3b343ced0c9c8118bd40babe9b0d64cecf0a6419c6ce61cd08",
+            "review_note": "Cross-checked the declared booking status and creation generation with its DB-host lock, legacy rows and provider result checks."
         },
         "google-tags": {
             "source_sha256": "366fdab983979cc3a1fec22fb6da4afb61072d6fd24cd0ba2271d67a0c063019",
@@ -34,8 +34,8 @@
         },
         "http-errors": {
             "source_sha256": "0f920c297cfc4e216a87be02a35c20827cc254dd6934ba24a1fa9135520a0560",
-            "references_sha256": "634c2eb89d48cf67e96999b5b2d69e40a1e0d486686697c5113e8d73dd14d9ea",
-            "review_note": "Checked the booking-specific private error responses and the main response guard. Provider and database details stay out of browser errors."
+            "references_sha256": "36c125f4e885edeafe9d19dbad28c6ffab66a1a08c9078349a2259fe6d1026a9",
+            "review_note": "Reviewed sanitized provider failures and private booking responses against the existing dynamic response guard."
         },
         "interface": {
             "source_sha256": "82b14d7ac04642c59d3078ae1c355cee4aa65d582a36ae6dff4fec93456f3f36",
@@ -44,8 +44,8 @@
         },
         "mail": {
             "source_sha256": "50f211eb00addc6fe811c0dfb270f1be9d2d28b2fd0a8e66d321ae83b2d28aec",
-            "references_sha256": "d217956f786884378b33f745ea461dd4971274c7c1390f3dbff29b765fe0517c",
-            "review_note": "Reviewed the owner session release and supported SAPI response completion alongside existing notice queue behavior. Campaign enquiries still create only Contacts and Inbox rows."
+            "references_sha256": "e638d8ea8f21b6f1d078de81bb24d9d9a743e98e953cdd672bd869b923832acf",
+            "review_note": "Checked the shared skill update against payment and enquiry mail event entry points. Retrying booking setup does not write a receipt or queue mail."
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
@@ -58,19 +58,19 @@
             "review_note": "Checked retained campaign file descriptors and protected streaming against Media Library behavior. Booking authorization is scoped to the frozen private manifest."
         },
         "operator-help": {
-            "source_sha256": "36e957c1077052d8d116f185fcaf97e7f403949d96d69d787221d7e6752e816f",
+            "source_sha256": "55249ee4eeb474786251d6e7886137db3628e04ddd85d03ee2f02688bcd56c22",
             "references_sha256": "d7972865c18db0e7cab36b4fdf0cf22cf388c8fbde7bd5ae088de971afd212fe",
-            "review_note": "Reviewed the reconciled Pages and Email help against authorized owner login and campaign preparation. Booking previews and settings stay behind the existing role and session."
+            "review_note": "Checked the Pages and booking handoff against the new owner-bound form retry and the existing publish and preview behavior."
         },
         "public-mcp": {
             "source_sha256": "6817679be2290cbbea52d8a059df0770d1deb686132d09f9d57d0fbda5b62185",
-            "references_sha256": "8d8378db8fdc83a1ef349fa1461908a8931013893513be9e41bb7570228e4f75",
-            "review_note": "Checked registry additions and private booking collection ownership against the public MCP allowlist and its generated map."
+            "references_sha256": "43e89d686d81a31e0d2e95a18c1904f88aab8a9688f54556a1331efe81cab83b",
+            "review_note": "Checked the generated gateway links and existing public MCP checkout boundary. The campaign retry stays on the campaign form POST."
         },
         "remote-commerce": {
-            "source_sha256": "6b38c34acbcacd05569026df95bd9c75f9819199801ef4d0087862209520c80d",
-            "references_sha256": "28072054dd96a103301f08d34ca9b39d988acc6e0a2c149a93e9d49fd009326c",
-            "review_note": "Reviewed the shared Razorpay link validator and signed callback routing against the existing commerce tests. Campaign records carry independent frozen booking and capture evidence and preserve the established cart and order boundary."
+            "source_sha256": "16cdd579f0b1b79b1bdc841eefa697e7cb43663f2ef73407245dcfb268c26e77",
+            "references_sha256": "acdbab8bdbef2062372a3ebbf9026ce81ea5e60355e45c35c744aa25e108dee5",
+            "review_note": "Cross-checked the shared Razorpay creation parser, known rejected responses, duplicate reference recovery, and SQL-backed booking retry claim."
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",
@@ -78,9 +78,9 @@
             "review_note": "Compared the MediaService additions with the Merchant Feed and product image inspection contracts. Header choices are filtered only for the owner authored editor, and catalogue image eligibility and feed URLs retain their existing resolution."
         },
         "workflow": {
-            "source_sha256": "83e9fdada69630419e82f477ec9344a921f18030d3402c1d3126c36fa343699f",
+            "source_sha256": "557d811d12496019f64ed17c4955829aee9c3c62a5d5d3ee62301bc9c06aa6e7",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Reviewed the route registry and verified the new booking collection is wired to the database and campaign service in the generated inventory."
+            "review_note": "Reviewed the new provider exception in generated inventory and the restored booking fixture with the disposable MySQL concurrency path."
         }
     }
 }

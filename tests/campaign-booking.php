@@ -17,6 +17,7 @@ foreach ($environment as $key=>$value) {
 }
 require dirname(__DIR__).'/app/bootstrap.php';
 
+use App\Integrations\Razorpay\{PaymentLinkCreationRejected, RazorpayClient};
 use App\Services\{AgentToolRegistry, AuthoredPageService, CampaignDownloadService, CampaignPaymentService,
     DatabaseService, RemoteCartException, RemoteCheckoutService};
 
@@ -46,6 +47,24 @@ foreach (['0', '0.99', '-20', '50.125', '1e3', '1,000.00', ['99'], '999999999999
     } catch (InvalidArgumentException) { $checks++; }
 }
 
+$invalidCredentials = json_encode(['error'=>['code'=>'BAD_REQUEST_ERROR','description'=>'The api key provided is invalid']], JSON_THROW_ON_ERROR);
+$accountDisabled = json_encode(['error'=>['code'=>'BAD_REQUEST_ERROR',
+    'description'=>'Invalid access: Cannot create a payment link in live mode, as live mode is disabled for merchant.']], JSON_THROW_ON_ERROR);
+$duplicate = json_encode(['error'=>['code'=>'BAD_REQUEST_ERROR','description'=>'payment link creation with reference ID already attempted']], JSON_THROW_ON_ERROR);
+foreach ([
+    [401, $invalidCredentials, true], [400, $accountDisabled, true], [400, $duplicate, false],
+    [401, false, false], [401, '<html>Authentication failed</html>', false],
+    [401, '{"error":{"description":"Authentication failed"}}', false],
+    [500, $invalidCredentials, false],
+] as [$status, $body, $definite]) {
+    try {
+        RazorpayClient::paymentLinkResult($body, $status);
+        throw new LogicException('A failed link POST returned a successful result.');
+    } catch (RuntimeException $failure) {
+        $assert(($failure instanceof PaymentLinkCreationRejected) === $definite, 'Wrong retry classification for provider response.');
+    }
+}
+
 $slug = 'book-qa-'.bin2hex(random_bytes(6));
 $revision = bin2hex(random_bytes(16));
 $nextRevision = bin2hex(random_bytes(16));
@@ -72,16 +91,20 @@ $operate = static function (string $op, array $args) use (&$records, &$page, &$n
     $booking = $records[$id] ?? null;
     if ($op === 'read') return $booking;
     if ($op === 'begin') {
-        if ($booking !== null) return ['outcome'=>'existing', 'booking'=>$booking];
+        if ($booking !== null && $booking['status'] !== 'retryable') return ['outcome'=>'existing', 'booking'=>$booking];
         $amount = CampaignPaymentService::pageAmount($page);
         if (($page['status'] ?? null) !== 'published' || $page['slug'] !== $args['slug']
             || $page['revision'] !== $args['revision'] || $amount === null) return ['outcome'=>'stale'];
-        if ($args['mode'] === null) return ['outcome'=>'unavailable'];
+        if ($args['mode'] === null || ($booking !== null && $args['mode'] !== $booking['mode'])) return ['outcome'=>'unavailable'];
+        if ($booking !== null) {
+            $records[$id] = CampaignPaymentService::claimCreation($booking, $now);
+            return ['outcome'=>'retry','booking'=>$records[$id]];
+        }
         $records[$id] = CampaignPaymentService::snapshot($page, $id, $args['owner'], $args['mode'], $amount, $now);
         return ['outcome'=>'created', 'booking'=>$records[$id]];
     }
     if ($op === 'claim') {
-        $claimed = $booking['status'] !== 'captured' && $booking['reconcile_after'] <= $now;
+        $claimed = !in_array($booking['status'], ['captured','retryable'], true) && $booking['reconcile_after'] <= $now;
         if ($claimed) {
             $booking['reconcile_after'] = $now+30;
             $records[$id] = $booking;
@@ -212,30 +235,85 @@ try {
     $assert($bookingOnly['fulfillment'] === [] && $bookingOnly['amount_paise'] === 75000,
         'Booking-only payment snapshotted a disabled download or stale amount.');
 
+    // The same browser can retry an explicit provider rejection after credential repair.
+    $errors = true;
+    $creates = [];
+    $retrySecrets = $fixture->secrets;
+    $gateway = $fixture->gatewayPort();
+    $retryPayments = new CampaignPaymentService(store:$store, operation:$mysql ? null : $operate,
+        secrets:static function () use (&$retrySecrets): array { return $retrySecrets; },
+        gateway:static function (string $operation, array $attempt, array $payload) use (&$errors, &$creates, $gateway, $invalidCredentials): array {
+            if ($operation === 'create_link') {
+                $creates[] = $payload;
+                if ($errors) return RazorpayClient::paymentLinkResult($invalidCredentials, 401);
+            }
+            return $gateway($operation, $attempt, $payload);
+        });
+    $rejected = $retryPayments->start($slug, $nextRevision, $switched);
+    $ids[] = $rejected['id'];
+    $assert($rejected['status'] === 'retryable' && $rejected['creation_attempt'] === 1
+        && !isset($rejected['provider_link_id']), 'Authentication rejection did not open an explicit retry.');
+    $assert($retryPayments->owned($rejected['id'], $owner) === null
+        && $retryPayments->reconcile($rejected) === $rejected && count($creates) === 1,
+        'Another browser or a status check acquired a provider creation.');
+
+    $retrySecrets = [];
+    $assert($retryPayments->start($slug, $nextRevision, $switched) === ['outcome'=>'unavailable'],
+        'Missing configuration allowed overlap with a rejected creation.');
+    $retrySecrets = ['razorpay_mode'=>'live','razorpay_live_key_id'=>'rzp_live_fixture',
+        'razorpay_live_key_secret'=>'synthetic','razorpay_live_webhook_secret'=>'synthetic'];
+    $assert($retryPayments->start($slug, $nextRevision, $switched) === ['outcome'=>'unavailable'],
+        'A retry changed the approved provider mode.');
+    $retrySecrets = $fixture->secrets;
+    $page['status'] = 'draft';
+    $writePage();
+    $assert($retryPayments->start($slug, $nextRevision, $switched) === ['outcome'=>'stale'] && count($creates) === 1,
+        'A withdrawn page acquired a retry claim.');
+    $page['status'] = 'published';
+    $writePage();
+
+    $errors = false;
+    $recovered = $retryPayments->start($slug, $nextRevision, $switched);
+    $assert($recovered['status'] === 'pending' && $recovered['id'] === $rejected['id']
+        && $recovered['creation_attempt'] === 2 && $recovered['amount_paise'] === $rejected['amount_paise']
+        && $recovered['fulfillment'] == $rejected['fulfillment'] && $recovered['mode'] === $rejected['mode']
+        && count($creates) === 2 && $creates[0]['reference_id'] === $creates[1]['reference_id'],
+        'Credential repair did not reopen the identical frozen booking and reference.');
+    $assert($retryPayments->start($slug, $nextRevision, $switched)['id'] === $recovered['id'] && count($creates) === 2,
+        'Repeated booking after retry created an additional link.');
+    $assert(CampaignPaymentService::applyChange($recovered, ['status'=>'uncertain','creation_attempt'=>1], time()) === $recovered,
+        'A stale provider observation changed the current attempt.');
+
     if ($mysql) {
         // Two workers open the same published page simultaneously. One may create a link.
         $racingId = bin2hex(random_bytes(16));
         $ids[] = $racingId;
-        $job = json_encode([$racingId, $slug, $nextRevision, $other, 'test'], JSON_THROW_ON_ERROR);
-        $workers = [];
-        for ($i = 0; $i < 2; $i++) {
-            $worker = proc_open([PHP_BINARY, __FILE__, '--begin-worker', $job],
-                [0=>['pipe','r'], 1=>['pipe','w'], 2=>['pipe','w']], $pipes);
-            if (!is_resource($worker)) throw new RuntimeException('Unable to start booking concurrency worker.');
-            $workers[] = [$worker, $pipes];
-        }
-        foreach ($workers as [, $pipes]) $assert(trim((string)fgets($pipes[1])) === 'ready', 'Worker did not reach the start barrier.');
-        foreach ($workers as [, $pipes]) { fwrite($pipes[0], "go\n"); fclose($pipes[0]); }
-        $outcomes = [];
-        foreach ($workers as [$worker, $pipes]) {
-            $result = json_decode(stream_get_contents($pipes[1]), true, flags: JSON_THROW_ON_ERROR);
-            fclose($pipes[1]);
-            fclose($pipes[2]);
-            $assert(proc_close($worker) === 0 && $result['booking']['id'] === $racingId, 'Worker did not return the frozen booking.');
-            $outcomes[] = $result['outcome'];
-        }
-        sort($outcomes);
-        $assert($outcomes === ['created','existing'], 'Concurrent starts reserved two provider creations.');
+        $race = static function () use ($racingId, $slug, $nextRevision, $other, $assert): array {
+            $job = json_encode([$racingId, $slug, $nextRevision, $other, 'test'], JSON_THROW_ON_ERROR);
+            $workers = [];
+            for ($i = 0; $i < 2; $i++) {
+                $worker = proc_open([PHP_BINARY, __FILE__, '--begin-worker', $job],
+                    [0=>['pipe','r'], 1=>['pipe','w'], 2=>['pipe','w']], $pipes);
+                if (!is_resource($worker)) throw new RuntimeException('Unable to start booking concurrency worker.');
+                $workers[] = [$worker, $pipes];
+            }
+            foreach ($workers as [, $pipes]) $assert(trim((string)fgets($pipes[1])) === 'ready', 'Worker did not reach the start barrier.');
+            foreach ($workers as [, $pipes]) { fwrite($pipes[0], "go\n"); fclose($pipes[0]); }
+            $outcomes = [];
+            foreach ($workers as [$worker, $pipes]) {
+                $result = json_decode(stream_get_contents($pipes[1]), true, flags: JSON_THROW_ON_ERROR);
+                fclose($pipes[1]);
+                fclose($pipes[2]);
+                $assert(proc_close($worker) === 0 && $result['booking']['id'] === $racingId, 'Worker did not return the frozen booking.');
+                $outcomes[] = $result['outcome'];
+            }
+            sort($outcomes);
+            return $outcomes;
+        };
+        $assert($race() === ['created','existing'], 'Concurrent starts reserved two provider creations.');
+        $store->updateCampaignBooking($racingId, ['status'=>'retryable','creation_attempt'=>1]);
+        $assert($race() === ['existing','retry'], 'Concurrent recovery did not admit exactly one creation retry.');
+        $assert($lookup($racingId)['creation_attempt'] === 2, 'Concurrent retry changed the durable creation generation more than once.');
         $assert((int)$pdo->query('SELECT COUNT(*) FROM orders')->fetchColumn() === $ordersBefore, 'Campaign payment created a shop order.');
     }
     $empty = AgentToolRegistry::commerceReportFromRecords([], [], ['report'=>'products','from'=>'2026-11-01','to'=>'2026-11-15']);

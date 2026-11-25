@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Integrations\Razorpay\PaymentLinkCreationRejected;
+
 /** A booking snapshots a published page and has its own receipt, independent of shop checkout. */
 final class CampaignPaymentService
 {
@@ -70,23 +72,40 @@ final class CampaignPaymentService
     public static function snapshot(array $page, string $id, string $owner, string $mode, int $amount, int $now): array
     {
         $downloads = CampaignDownloadService::manifest($page);
-        return [
+        return self::claimCreation([
             'id'=>$id, 'slug'=>$page['slug'], 'revision'=>$page['revision'], 'title'=>$page['title'],
             'owner_hash'=>$owner, 'amount_paise'=>$amount, 'currency'=>'INR',
             'fulfillment'=>($downloads['enabled'] ?? false) ? $downloads['files'] : [],
-            'reference_id'=>'book_'.$id, 'mode'=>$mode, 'status'=>'preparing',
-            'payment_expires_at'=>$now+RemoteCheckoutService::PAYMENT_TTL, 'reconcile_after'=>$now+30,
-            'created_at'=>gmdate('Y-m-d H:i:s', $now), 'updated_at'=>gmdate('Y-m-d H:i:s', $now),
-        ];
+            'reference_id'=>'book_'.$id, 'mode'=>$mode, 'created_at'=>gmdate('Y-m-d H:i:s', $now),
+        ], $now);
+    }
+
+    /** Called under the booking lock for a new booking or a definitively rejected POST. */
+    public static function claimCreation(array $booking, int $now): array
+    {
+        $booking['status'] = 'preparing';
+        $booking['creation_attempt'] = ($booking['creation_attempt'] ?? 0)+1;
+        $booking['payment_expires_at'] = $now+RemoteCheckoutService::PAYMENT_TTL;
+        $booking['reconcile_after'] = $now+30;
+        $booking['updated_at'] = gmdate('Y-m-d H:i:s', $now);
+        return $booking;
     }
 
     /** Apply the signature-independent, monotonic part of capture under the booking row lock. */
     public static function applyChange(array $booking, array $change, int $now): array
     {
-        if ($booking['status'] === 'captured') return $booking;
+        if ($booking['status'] === 'captured' || ($change['creation_attempt'] ?? 0) !== ($booking['creation_attempt'] ?? 0)) {
+            return $booking;
+        }
         $status = $change['status'] ?? null;
+        if ($status === 'retryable') {
+            if (!isset($booking['provider_link_id']) && in_array($booking['status'], ['preparing','uncertain'], true)) {
+                $booking['status'] = $status;
+            }
+            return $booking;
+        }
         if ($status === 'uncertain') {
-            if (!in_array($booking['status'], ['expired', 'cancelled'], true)) $booking['status'] = $status;
+            if (!in_array($booking['status'], ['retryable','expired','cancelled'], true)) $booking['status'] = $status;
             return $booking;
         }
         $link = $change['provider_link_id'] ?? null;
@@ -120,12 +139,12 @@ final class CampaignPaymentService
     {
         $id = substr(hash_hmac('sha256', 'booking:'.$slug.':'.$revision, $owner), 0, 32);
         $current = $this->owned($id, $owner);
-        if ($current !== null) return $current;
+        if ($current !== null && $current['status'] !== 'retryable') return $current;
         if ($admit !== null && !$admit()) return ['outcome'=>'limited'];
 
         $mode = RazorpayPaymentLinkService::mode($this->secretValues());
         $result = $this->operate('begin', compact('id', 'slug', 'revision', 'owner', 'mode'));
-        if ($result['outcome'] !== 'created') return $result['booking'] ?? $result;
+        if (!in_array($result['outcome'], ['created','retry'], true)) return $result['booking'] ?? $result;
 
         $booking = $result['booking'];
         // The creation claim is written before this call. An uncertain POST is
@@ -136,11 +155,17 @@ final class CampaignPaymentService
                 'reference_id'=>$booking['reference_id'], 'expire_by'=>$booking['payment_expires_at'],
                 'description'=>'Campaign booking', 'notify'=>['sms'=>false, 'email'=>false], 'reminder_enable'=>false,
             ]);
+        } catch (PaymentLinkCreationRejected) {
+            return $this->saveChange($booking, ['status'=>'retryable']);
+        } catch (\Throwable) {
+            return $this->saveChange($booking, ['status'=>'uncertain']);
+        }
+        try {
             $change = $this->linkChange($booking, $link);
         } catch (\Throwable) {
             $change = ['status'=>'uncertain'];
         }
-        return $this->operate('change', ['id'=>$booking['id'], 'change'=>$change]);
+        return $this->saveChange($booking, $change);
     }
 
     public function owned(string $id, ?string $owner): ?array
@@ -152,7 +177,7 @@ final class CampaignPaymentService
 
     public function reconcile(array $booking): array
     {
-        if ($booking['status'] === 'captured') return $booking;
+        if (in_array($booking['status'], ['captured','retryable'], true)) return $booking;
         $claim = $this->operate('claim', ['id'=>$booking['id']]);
         $booking = $claim['booking'];
         if (!$claim['claimed']) return $booking;
@@ -163,6 +188,12 @@ final class CampaignPaymentService
         } catch (\Throwable) {
             $change = ['status'=>'uncertain'];
         }
+        return $this->saveChange($booking, $change);
+    }
+
+    private function saveChange(array $booking, array $change): array
+    {
+        $change['creation_attempt'] = $booking['creation_attempt'] ?? 0;
         return $this->operate('change', ['id'=>$booking['id'], 'change'=>$change]);
     }
 

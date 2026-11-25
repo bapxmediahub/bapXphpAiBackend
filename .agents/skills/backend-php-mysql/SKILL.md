@@ -251,7 +251,10 @@ attachment. Keep names and identifiers out of unauthorized markup.
 Use the database-host campaign booking transaction to read the published page
 revision and freeze the approved integer INR paise, gateway mode, and enabled
 file descriptors. The first durable booking reservation owns provider creation.
-Recover an ambiguous provider response by reference. The shared Razorpay
+Recover an ambiguous provider response by reference.
+Retry only a verified pre-creation rejection through the owner-bound start POST.
+Under the database lock preserve the snapshot and increment the creation
+attempt before any provider POST. Ignore older provider results. The shared Razorpay
 webhook verifies its mode-specific signature before checking the provider API.
 Apply captured receipts and frozen paid files in one booking transition.
 Verify that signed duplicates, delayed expiration, and wrong amounts cannot

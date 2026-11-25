@@ -229,7 +229,12 @@ test or live mode. Configure the matching API key pair and webhook secret. Subsc
 existing `/api/payments/razorpay-webhook` endpoint to Payment Link events. A signed
 notification triggers a fresh API check of the reference, amount, currency and
 captured payment before the database records a receipt. After a lost provider
-response, status uses the same payment reference for recovery. Booking receipts
+response, status uses the same payment reference for recovery.
+A confirmed API credential or merchant access rejection lets the same browser
+retry from the campaign page after configuration is repaired. The retry
+keeps the published revision, mode, price, file versions and payment reference.
+An ambiguous response, including a duplicate reference, stays in status
+recovery. Booking receipts
 live in `campaign_bookings` and are independent of product orders and tax
 reports.
 [Razorpay Payment Link events](https://razorpay.com/docs/webhooks/payment-links)
