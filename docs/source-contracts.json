@@ -18,14 +18,14 @@
             "review_note": "Reviewed the downloaded file resolver and schema field against the source contracts for product orders and payments. This route uses the authored page publication and enquiry grant."
         },
         "content": {
-            "source_sha256": "ea66e55d3743dc71b1cdf4f923ae2dada6d17ff627c5b8cf3714f45c0da60122",
-            "references_sha256": "d6dfd32d3d8e2c782defb6fcf99f7569ad47f252598104d916582b480f95b521",
-            "review_note": "Compared the merged one-column campaign shell and native receipt focus with the ordered file manifest, protected upload, revision gates and content/hosting guidance."
+            "source_sha256": "375b2bd190de1a6c8179aa3c70e0c4be53776afa38847d2e859be67e4b8ec110",
+            "references_sha256": "b86513fa3175b30fae3a1e16dfb1bcddaa69a1c2d380809d14cd421b31556312",
+            "review_note": "Compared the merged one-column campaign shell and native receipt focus with the ordered file manifest, protected upload, revision gates, campaign-only UTC SQL timestamp binding and content/hosting guidance."
         },
         "foundation": {
-            "source_sha256": "20bae1eaa76ff03f0b38e8d8173491ffdf4a172086edead0533249828ab94727",
+            "source_sha256": "1bcc201874515c3d7068bd38fb2237ce6332b9df1e089d43d72fee2829a9051a",
             "references_sha256": "edb833e6497897729ae4c0a1e1eca65934b466c547881885d7e8abb770eeda5b",
-            "review_note": "Compared the hosted page fields and private immutable binaries with the application and host storage contracts, deployment backup instructions and actual direct-path denial."
+            "review_note": "Compared the hosted page fields and private immutable binaries with the application and host storage contracts, deployment backup instructions, campaign-only SQL timestamp normalization and actual direct-path denial."
         },
         "google-tags": {
             "source_sha256": "366fdab983979cc3a1fec22fb6da4afb61072d6fd24cd0ba2271d67a0c063019",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed the independent private download storage against the existing owner Media Library, header image and deletion documentation. Download files keep their own private root."
         },
         "operator-help": {
-            "source_sha256": "42d51f8146f1d2fb90a1130156772e7b4ed9eb33f4d9b1f2584c39e58de771bf",
+            "source_sha256": "31267b44703105e73a6becd4de30e47ced415b6222f437febefd2a3218ee9cbb",
             "references_sha256": "f5c667e8fdb836b615fc47f2c1e84fe62d463ccf085757a8f354a0542de7d2c7",
-            "review_note": "Preserved reconciled operator guides and compared actual Pages controls with upload, file order, removal, preview and browser recovery instructions."
+            "review_note": "Preserved reconciled operator guides and compared actual Pages controls with upload, file order, removal, preview and browser recovery instructions, retaining the owner-readable campaign receipt timestamp."
         },
         "public-mcp": {
             "source_sha256": "ad08f180ca73336364b9cd907dfcbc99fafe564bfbc5555611ed1c41949b4de4",
@@ -68,9 +68,9 @@
             "review_note": "Compared the new public HTTP route with the MCP capability and discoverability contracts. Campaign assets do not extend the existing agent tool surface."
         },
         "remote-commerce": {
-            "source_sha256": "3df5515098feaff9a99a1dc2090656e21ddd31d892b1a8da8e49fd601e092793",
+            "source_sha256": "e1002a568f4707c36a240b3d2297e7fe44f4dc047266ed569fc1b51ab6446364",
             "references_sha256": "f9c8aa084e1f0e49bea48d97b588303f78f6457ee8128f5da9b33f0f369d432c",
-            "review_note": "Checked the authored-page revision write and schema addition against the remote-checkout contract. Validated public download links use the separate published-page resolver."
+            "review_note": "Checked the authored-page revision write and schema addition against the remote-checkout contract. Validated public download links use the separate published-page resolver and campaign-only UTC database envelope bindings."
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",

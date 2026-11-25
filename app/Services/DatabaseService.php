@@ -599,19 +599,37 @@ final class DatabaseService {
             $merged = array_merge($existing, $record);
             $owner = $merged['customer_email'] ?? $merged['email'] ?? $merged['user_id'] ?? null;
             $status = $merged['status'] ?? null;
-            $updated = $merged['updated_at'] ?? date('c');
+            $updated = self::campaignSqlTimestamp($table, $merged, $merged['updated_at'] ?? date('c'));
             $stmt = $this->db()->prepare("UPDATE {$clean} SET _data = ?, _owner = ?, _status = ?, _updated_at = ? WHERE id = ?");
             $stmt->execute([json_encode($merged), $owner, $status, $updated, $id]);
         } else {
             $owner = $record['customer_email'] ?? $record['email'] ?? $record['user_id'] ?? null;
             $status = $record['status'] ?? null;
-            $created = $record['created_at'] ?? date('c');
-            $updated = $record['updated_at'] ?? $created;
+            $created = self::campaignSqlTimestamp($table, $record, $record['created_at'] ?? date('c'));
+            $updated = self::campaignSqlTimestamp($table, $record, $record['updated_at'] ?? $created);
             $stmt = $this->db()->prepare("INSERT INTO {$clean} (id, _data, _owner, _status, _created_at, _updated_at) VALUES (?, ?, ?, ?, ?, ?)");
             $stmt->execute([$id, json_encode($record), $owner, $status, $created, $updated]);
         }
         return $record;
     }
+
+    /** Keep campaign dates in JSON and bind a portable UTC DATETIME for their CRM rows. */
+    private static function campaignSqlTimestamp(string $table, array $record, mixed $value): mixed {
+        $slug = $record['campaign_slug'] ?? null;
+        if (!in_array($table, ['contact_submissions', 'mail_inbox'], true)
+            || !is_string($slug)
+            || !AuthoredPageService::validSlug($slug)
+            || !AuthoredPageService::validRevision($record['campaign_revision'] ?? null)
+            || !is_string($value)
+            || !preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-]\d{2}:\d{2})$/D', $value)) {
+            return $value;
+        }
+        // https://mariadb.com/docs/server/reference/sql-structure/sql-language-structure/date-and-time-literals
+        $parsed = \DateTimeImmutable::createFromFormat(\DateTimeInterface::ATOM, $value);
+        if ($parsed === false || \DateTimeImmutable::getLastErrors() !== false) return $value;
+        return gmdate('Y-m-d H:i:s', $parsed->getTimestamp());
+    }
+
     /** Independent owner forms patch the canonical settings row under one row lock. */
     private function upsertApplicationSettings(array $record): array {
         $id = SettingsService::SETTINGS_ID;
@@ -888,8 +906,8 @@ final class DatabaseService {
         $clean = preg_replace('/[^a-z_]/', '', $table);
         $owner = $record['customer_email'] ?? $record['email'] ?? $record['user_id'] ?? null;
         $status = $record['status'] ?? null;
-        $created = $record['created_at'] ?? date('c');
-        $updated = $record['updated_at'] ?? $created;
+        $created = self::campaignSqlTimestamp($table, $record, $record['created_at'] ?? date('c'));
+        $updated = self::campaignSqlTimestamp($table, $record, $record['updated_at'] ?? $created);
         $stmt = $this->db()->prepare("INSERT IGNORE INTO {$clean} (id, _data, _owner, _status, _created_at, _updated_at) VALUES (?, ?, ?, ?, ?, ?)");
         $stmt->execute([$id, json_encode($record), $owner, $status, $created, $updated]);
         $inserted = $stmt->rowCount() === 1;
