@@ -1,12 +1,35 @@
 /* Native shell only. Cart, form and quote styles are shared with MCP Apps. */
 .support-panel[hidden],.support-panel [hidden]{display:none!important}
+.support-panel { z-index: 1201; }
+.support-panel__head h2 {
+    margin: 0 auto 0 0;
+    color: var(--color-maroon);
+    font-size: 1.05rem;
+    line-height: 1.2;
+}
+.support-panel__head { flex-wrap: wrap; }
+.support-panel__close {
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    color: var(--color-maroon);
+    border-radius: var(--radius-sm,8px);
+}
+.support-panel__close:hover { background: var(--color-bg-alt,#faf7f0); }
+.support-panel :is(.support-panel__close,.support-panel__body):focus-visible {
+    outline: 2px solid var(--color-maroon,#3a0003);
+    outline-offset: -3px;
+}
+.support-panel__body { align-content: start; }
 .support-commerce-toggle,.support-commerce-back,.support-commerce-actions button{min-height:44px;padding:8px 12px;border:1px solid var(--color-border,#d8ccb7);border-radius:8px;background:var(--color-bg-alt,#faf7f0);color:var(--color-text,#222);font:inherit;cursor:pointer}
 .support-commerce-toggle:disabled,.support-commerce-actions button:disabled{opacity:.55;cursor:default}
 .support-commerce-toggle:focus-visible,.support-commerce-back:focus-visible,.support-commerce-actions button:focus-visible{outline:3px solid var(--color-maroon,#3a0003);outline-offset:2px}
 .support-commerce-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .support-commerce-actions button{font-size:.8rem}
 .support-commerce-actions button:first-child{background:var(--color-maroon,#3a0003);color:#fff}
-.support-panel[data-commerce-open="true"]{display:flex;flex-direction:column;width:min(560px,calc(100vw - 24px));max-height:calc(100dvh - 112px)}
+.support-panel[data-commerce-open="true"]{width:min(560px,calc(100vw - 24px))}
 .support-panel[data-commerce-open="true"] .support-panel__head{flex-shrink:0;gap:8px}
 .support-panel[data-commerce-open="true"] .support-help-guide{display:none}
 .support-commerce{padding:12px;overflow:auto;min-height:0;overscroll-behavior:contain}
@@ -16,7 +39,12 @@
 .support-commerce__status:empty{display:none}
 .support-commerce__content{min-width:0}
 .support-commerce__recovery{font-size:.8rem;color:var(--color-text-muted,#6a6259);margin:12px 0}
-@media(max-width:420px){.support-panel__head{gap:6px;padding:10px}.support-commerce-toggle{font-size:.8rem}.support-commerce{padding:10px}}
+@media (max-width: 420px) {
+    .support-panel__head { gap: 4px; padding: 8px 10px; }
+    .support-commerce-toggle { padding-inline: 7px; font-size: .78rem; }
+    .support-panel__head .support-panel__new { padding-inline: 6px; font-size: .76rem; }
+    .support-commerce { padding: 10px; }
+}
 
 /* Existing Support panel's contact form, loaded from the real /contact page. */
 .support-enquiry{flex:1 1 auto;min-height:0;overflow-y:auto;padding:12px 14px;display:grid;align-content:start;gap:12px}

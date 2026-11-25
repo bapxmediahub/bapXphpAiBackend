@@ -83,7 +83,15 @@ Open **Help & Docs** from the permanent sidebar or topbar entry. Search task
 words, select a category, open a guide, and use its links to return to the real
 workspace. The expandable **Help for this page** section on admin screens
 points to the relevant task guide. Search and guide navigation work without
-JavaScript; the topbar link remains available on mobile.
+JavaScript. On mobile, open the owner navigation with **Open navigation**.
+Escape returns focus to that button. When JavaScript is unavailable, use
+**Menu** to open the navigation above the workspace and **Close navigation**
+to return. Use **Skip to page content**
+to go straight to the current task.
+
+Content lists with a local row filter report how many loaded records match.
+Paginated lists use the page's existing search form. Focus a wide table and
+use the arrow keys to read its remaining columns.
 
 Operator instructions are a fixed, authenticated collection, not a browser
 for developer files or private runtime-agent prompts. Customers instead use

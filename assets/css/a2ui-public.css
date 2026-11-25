@@ -161,12 +161,12 @@
     display:flex;
     flex-direction:column;
     height:min(78dvh,720px);
-    max-height:calc(100dvh - 24px);
+    max-height:calc(100dvh - 108px);
 }
 .support-panel__head { flex:0 0 auto;min-height:54px;gap:8px; }
 .support-panel__body {
     flex:1 1 auto;
-    min-height:100px;
+    min-height:0;
     max-height:none;
     overflow-x:hidden;
     overflow-y:auto;
@@ -211,6 +211,13 @@
     }
     .support-panel__head {padding:10px 12px;}
     .support-panel__form {padding:8px 10px;}
+}
+@media(min-width:701px) and (max-height:480px){
+    .support-panel:not([hidden]) {
+        bottom:12px;
+        height:calc(100dvh - 24px);
+        max-height:calc(100dvh - 24px);
+    }
 }
 @media(prefers-reduced-motion:reduce){
     :is(.support-panel,.enterprise-chat) .bapx-a2ui__items {scroll-behavior:auto;}

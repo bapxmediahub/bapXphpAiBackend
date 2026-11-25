@@ -283,6 +283,18 @@ for(const width of [1280,375])test('Existing contact form opens inside Support, 
         assert.equal(await panel.locator('form').getAttribute('toolautosubmit'),null,
             'Writing a contact enquiry may never auto-submit an agent tool');
 
+        if(width===375){
+            await page.setViewportSize({width,height:500});
+            await panel.evaluate(el=>{el.scrollTop=el.scrollHeight;});
+            assert.ok(await panel.evaluate(el=>el.scrollTop>0),'The enquiry pane must be scrollable');
+            await page.getByRole('button',{name:'Close support'}).click();
+            await page.getByRole('button',{name:'Support',exact:true}).press('Enter');
+            const heading=panel.getByRole('heading',{name:'Send an enquiry'});
+            assert.equal(await heading.evaluate(el=>{
+                const pane=el.closest('.support-enquiry');
+                return document.activeElement===el && el.getBoundingClientRect().top>=pane.getBoundingClientRect().top;
+            }),true,'Reopening the pane must reveal its focused heading');
+        }
         await panel.locator('input[name="name"]').fill('PRIVATE_INLINE_NAME');
         await panel.locator('input[name="email"]').fill('private-inline@example.test');
         await panel.locator('textarea[name="message"]').fill('PRIVATE_INLINE_APPOINTMENT_REQUEST');

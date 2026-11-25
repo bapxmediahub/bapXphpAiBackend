@@ -1,7 +1,7 @@
 <section class="report-workspace dashboard-commerce" aria-labelledby="dashboard-commerce-title">
     <div class="report-head">
         <div>
-            <h1 id="dashboard-commerce-title" data-page-section="Commerce" tabindex="-1">Commerce overview</h1>
+            <h2 id="dashboard-commerce-title" data-page-section="Commerce" tabindex="-1">Commerce overview</h2>
             <p><time datetime="<?= e($from) ?>"><?= e($from) ?></time> to <time datetime="<?= e($to) ?>"><?= e($to) ?></time></p>
         </div>
         <div class="admin-card__actions">

@@ -40,7 +40,8 @@ confirmation, account/profile/address management and contacting Support.
 `AdminHelpService::publicReferences` binds these published articles to their
 original source contracts for documentation review. Public page-context links
 use only these published customer-facing articles, not operator guides or
-repository documentation. They are suppressed when the Blog module is disabled.
+repository documentation. They are suppressed when the Blog module is disabled. Help articles link back to
+the Help category. Other articles display the shop action when Shop is enabled.
 The operator Help & Docs hub is a separate authenticated route and content
 allowlist; it does not depend on a live model or customer database mutation.
 
@@ -94,7 +95,10 @@ depends on storage in this browser profile. On a shared computer, discard the
 copy when you finish. Review publication and subscriber email settings before
 selecting **Save**.
 
-Public site search at `/search` includes visible shop products, published articles and temples. The menu opens the same GET form on mobile and desktop. Hidden and scheduled articles follow the blog publication gate.
+Public site search groups the matching visible products, published articles,
+authored pages and temples. The menu submits to the same GET route on mobile
+and desktop. Empty results offer the next search or a clear link. Hidden and
+scheduled articles follow the blog publication gate.
 
 ### A2UI v1.0 published guide presentation
 

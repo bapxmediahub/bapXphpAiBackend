@@ -47,9 +47,8 @@
             <p class="about-kicker">Explore</p>
             <h2 id="about-explore-title"><?= e($about['explore_title']) ?></h2>
             <div class="about-pathways">
-                <?php foreach ($aboutPaths as $index => $entry): ?>
+                <?php foreach ($aboutPaths as $entry): ?>
                     <article class="about-pathway">
-                        <span class="about-pathway__number" aria-hidden="true"><?= str_pad((string)($index + 1), 2, '0', STR_PAD_LEFT) ?></span>
                         <h3><?= e($entry['title']) ?></h3>
                         <p><?= e($entry['description']) ?></p>
                         <a href="<?= e($entry['path']) ?>"><?= e($entry['label']) ?> <span aria-hidden="true">↗</span></a>

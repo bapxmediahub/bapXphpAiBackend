@@ -1,7 +1,7 @@
 <?php
 $emptyCart = <<<'HTML'
 <div class="cart-empty-state">
-    <h2>Your Cart is Empty</h2>
+    <h2>Your cart is empty</h2>
     <p>Browse the shop to find devotional products.</p>
     <a href="/shop" class="btn btn-primary">Browse Shop</a>
 </div>
@@ -26,6 +26,7 @@ HTML;
                 <a href="/checkout" class="btn btn-primary" data-cart-top-actions>Checkout <span aria-hidden="true">→</span></a>
             <?php endif; ?>
         </header>
+        <p class="cart-update-status" role="status" data-cart-status></p>
         <?php if (!$items): ?>
             <?= $emptyCart ?>
         <?php else: ?>
@@ -46,7 +47,10 @@ HTML;
                                     <a class="cart-item__media" href="<?= e($productUrl) ?>" aria-label="View <?= e($item['name']) ?>">
                                         <img class="cart-item__img" src="<?= e(webp_src(($item['image_url'] ?? '') ?: $placeholder)) ?>" data-product-image-fallback="<?= e($placeholder) ?>" alt="" width="76" height="76">
                                     </a>
-                                    <h3 class="cart-item__name"><a href="<?= e($productUrl) ?>"><?= e($item['name']) ?></a></h3>
+                                    <div>
+                                        <h3 class="cart-item__name"><a href="<?= e($productUrl) ?>"><?= e($item['name']) ?></a></h3>
+                                        <p class="cart-item__unit">₹<?= e((string)$unitPrice) ?> each</p>
+                                    </div>
                                 </div>
                                 <div class="cart-item__actions">
                                     <div class="cart-item__qty">
@@ -97,7 +101,6 @@ HTML;
                 <a href="/checkout" class="btn btn-primary">Checkout <span aria-hidden="true">→</span></a>
             </aside>
             <template id="cart-empty-template"><?= $emptyCart ?></template>
-            <p class="cart-update-status" role="status" data-cart-status></p>
         <?php endif; ?>
     </div>
 </section>
@@ -159,6 +162,7 @@ HTML;
         let focusTarget = button;
         pending = true;
         buttons.forEach(control => { control.disabled = true; });
+        delete status.dataset.error;
         status.textContent = '';
 
         try {
@@ -202,6 +206,7 @@ HTML;
             layout.querySelector('[data-cart-gst-row]').hidden = !data.summary.gst_amount;
         } catch {
             const message = 'Could not update the cart. Try again.';
+            status.dataset.error = 'true';
             status.textContent = message;
             if (window.showToast) showToast(message, 'error');
         } finally {

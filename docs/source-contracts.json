@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "5fd13908de25c300715c296ae935e1e4a97d08f23fd30498f34aa4cd5a2ae257",
+            "source_sha256": "e606834c8176fd455fe9260ee5c20d1c30e61ab2e92ba819581aa607330ae6d1",
             "references_sha256": "77d5b3b1de6168b6006e85dc26574b0574988ed1fc5f847f3430ac0317ed1c6b",
-            "review_note": "Cross-checked initial ready-model selection and all-held fallback with transfer-time hold checks, bounded waiting, existing locked tool exchanges, and attempt evidence in the runtime and observability guides."
+            "review_note": "Reconciled main and the provider hold patch. Checked role-scoped declarations, evidence, and credential-scoped hold timing against the runtime and observability guides. When all candidates are held, only a short hold inside the deadline can produce a later transfer. Diagnostics bypass holds and continuing tool exchanges stay on their original model."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -18,29 +18,29 @@
             "review_note": "Compared canonical optional fields, verified payment snapshots, historical flags, HSN groups and CSV review aggregation with the GST commerce guide."
         },
         "content": {
-            "source_sha256": "212c08b38701ff11b88a9017c33cbefc734d241059b3b4d595ff8609de9ad282",
-            "references_sha256": "4a7c2e24302ce60d72e88914f1b756cf44e5fc65c6912f6b00ca4501aafbb4f0",
-            "review_note": "Read the account help Markdown and its source view. The article explains the picture placeholder beside the email."
+            "source_sha256": "9ca1ff8cd0fcc4302ca466ff646e1363396bac0780b7b40b2684486f3e87e465",
+            "references_sha256": "d283e57698fc4ae10cba725749a1723c0f5bea1825f89812b2bf7a15fb2daa20",
+            "review_note": "Reviewed published Markdown guides, search navigation and module filters against the merged catalogue and account source."
         },
         "foundation": {
-            "source_sha256": "f8fda746e7fc7a3e0b2e0ce59de40b8b9125da1e42d280c827ead7b3abf5521b",
+            "source_sha256": "908874452b8774a7e683b6764cf8d4a973e0b6d09936db89dba6f75646c61c83",
             "references_sha256": "6eba6651fd8e747d8053034a7812f9d41e6dba5a405bc1d1ed669556c8f2474b",
-            "review_note": "Checked architecture and private JSON storage against controller replay. Only accepted model responses use native presentation on replay and no replay refreshes business data or changes access scope."
+            "review_note": "Reviewed admin title and native navigation regression coverage against the rendering and request boundary. The browser checks keyboard expansion, visible destinations and module controls."
         },
         "google-tags": {
-            "source_sha256": "55d5b46aafaf292fdd19001910dc1072be3ebb1f1cea31a7dbfc3948db3b178f",
-            "references_sha256": "327d47f02e4a8ad21085d0a1d09c4cc515fb2da60c56659fecfccebb0d4a40ef",
-            "review_note": "Compared the public layout submission handler against the Google rendering boundary and Integrations guide. The response change is outside tag markup, IDs, and consent."
+            "source_sha256": "4f6a8463add868b4016e243e90638e9dc22e442dd5964fc6c25f71a578bc6e40",
+            "references_sha256": "5b221c86c8ea31a5e66710e5b2aa2cfb3bee4d921f0b1356c1b3967c29508d3c",
+            "review_note": "Reviewed public head registration and private Google reporting setup after the owner and customer navigation merge."
         },
         "http-errors": {
-            "source_sha256": "2e2fee3211f50641844c05f86381f277f9c6c10b7fb60fb750c52937b0868e12",
+            "source_sha256": "63602cadbe59868b0d25a1b00729a589e75d1b31c6ea3a1b25c1e5a46fd06d50",
             "references_sha256": "d309fba94f0e9ed81e83cce280b9c5ac3560d4726227d058c866ee0ea4b12cd2",
-            "review_note": "Reviewed the new hosting instructions against existing request-failure guidance. A transport receipt remains distinct from a rendering response, and the worker preserves the canonical queue before reporting an outcome."
+            "review_note": "Compared the layout-specific title assignment with the request-error boundary. Website error status, sanitized error text and public not-found rendering follow their existing handlers."
         },
         "interface": {
-            "source_sha256": "60713aa23c3b3e211cbc890c5080ecf76ddc0574c3cdf696df33e1cee9ae822e",
-            "references_sha256": "99cc04fc48e47c2686cc6efa23f470e7acc6d654dcc91336499ab570364cced6",
-            "review_note": "Compared the shared Design waiting and error pattern with both templates and browser tests. Empty answers and failed payloads use explicit status feedback without rendering an answer card."
+            "source_sha256": "46c0da2ee4fa85f54130e1b7b41dcfc0e0d1af79f9134530cc79bc09829326c7",
+            "references_sha256": "a91a95841dc182236befb1ff651bb22b318c92a7e4e5fd8adac315a9e16cbb9f",
+            "review_note": "Verified the customer-specific forms, named pagination, address focus, reading layouts and their composition with the deployed owner and storefront controls."
         },
         "mail": {
             "source_sha256": "6895291447775bb17e9bef6c3d38d388ed65b3f5985b4c79bc71a9b4fa222c16",
@@ -54,23 +54,23 @@
         },
         "media": {
             "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
-            "references_sha256": "e46a00af045b0f554d796d480bc4c7bfe25b8464276587147872d4c29e2701f1",
-            "review_note": "Compared active-chat restoration and attachment changes with the media operator instructions, and confirmed upload and in-memory draft attachment regressions pass."
+            "references_sha256": "34433348ceb97accb0aea9b04f930b1ec0936825154d70c9ae872f155e0d2cbd",
+            "review_note": "Cross-checked the revised owner UI skill with the current media selection, confirmation and metadata flows. The existing media documentation still describes those operations."
         },
         "operator-help": {
-            "source_sha256": "39a67c36e7f4338ce4d9fe837b1a904e769e7e9f02a63efaf196f633e711e9cb",
-            "references_sha256": "7a684be61b80d3002adcfb6a344e0c4bf547d9c8082bee3fa151bd61b1dc9d98",
-            "review_note": "Reviewed the Enterprise tool declaration and guide scope against the operator help references. The initial dated-order declaration exposes the existing all_time selection within the owner role."
+            "source_sha256": "d95087bc461a998ae4f20fc11bfbf8a8adbb7124d3b949ae4e6442244e0a23de",
+            "references_sha256": "8993a3d96b2f0930673298bce0d268fc582bab2fb7fdf35e16f08abb9ac7c3f9",
+            "review_note": "Validated merged owner help, customer account guidance, contact, footer and public ordering guides against the current merged templates."
         },
         "public-mcp": {
-            "source_sha256": "06a7b8ef4b99e3c70cbae0dbf6ee2b7c97029aabb851906dc8e2e50d9f81c253",
-            "references_sha256": "e78d7cca0b62659190fdfe23f3ed927f456533f97faaa8297cc08ae004008b33",
-            "review_note": "Checked removal of the question-to-A2UI heuristic alongside public MCP and A2UI details. Public and chat presenters consume typed authorized source evidence and selected published products."
+            "source_sha256": "234155f55b0f66f669f6422a85acc30a6a59ebf216d8f682d7a212cd01ee7358",
+            "references_sha256": "d1e0824e500f825020b2cccfaad7fd435a8fefbe73d61e1b5f05fd54fed0b829",
+            "review_note": "Checked the rendered Support enquiry controls against the current public MCP and A2UI documentation. Focus scrolling keeps the existing tool and submission contracts."
         },
         "remote-commerce": {
-            "source_sha256": "fe653f18d2ff851f92e4ad7bbf4a9df97ea29f828837aeae00c8aece1b3ecec0",
-            "references_sha256": "135d6012b4cf58ce8c5942ea0f98245fd8e8e8c38175ea0c839e8a258777d287",
-            "review_note": "Reviewed native Support checkout and WebMCP action registration against the public layout. Scoped verified purchase receipts and recovery remain available independently of failed chat answers."
+            "source_sha256": "d240d614ae377c8a7195af73b09b5a49e762c87241bf86a1f65ff07985316f2e",
+            "references_sha256": "3855f1bbcafb7e5178cc56306a1909c6b074172af1cc6669040a9cec5c6944fc",
+            "review_note": "Checked the deployed shop and checkout review, customer account actions and Support checkout guidance against the merged markup and task help."
         },
         "sales-channels": {
             "source_sha256": "36385e3d18e26f524d0efdd12d26cd8386e368fb5d27441460c688ffdff28b92",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed SettingsService module resolution and Merchant feed guidance. Dropping a retired header slot leaves the saved catalog eligibility inputs intact."
         },
         "workflow": {
-            "source_sha256": "1e46d78f6c3bbe46a284facb813ef84705e65fe3095815c77acdbff28243f322",
+            "source_sha256": "614b98e11a3869f127c0a1fbbefa123c1a705d2cc39b0e529335b98035a990db",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Cross-checked the live model boundary in AGENTS and the issue-based test workflow. Retained genuine controller and tool regressions in place of assertions over obsolete generated prose."
+            "review_note": "Regenerated runtime and documentation indexes and verified the quick standalone search fixture and established browser release workflow on the combined sources."
         }
     }
 }

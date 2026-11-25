@@ -23,7 +23,8 @@
             return '/shop' . ($query === '' ? '' : '?' . $query);
         };
         $returnUrl = $shopUrl($category, $search, $sort);
-        $hasFilters = $category !== '' || $search !== '' || $sort !== '';
+        $hasProductFilter = $category !== '' || $search !== '';
+        $hasFilters = $hasProductFilter || $sort !== '';
     ?>
     <div class="shop-layout">
         <aside class="shop-sidebar">
@@ -45,7 +46,7 @@
             <form class="shop-discovery" action="/shop" method="get" aria-label="Find products" toolname="filter_visible_shop" tooldescription="Filter and sort this shop page using the existing category, keyword and sort controls. This changes only the visible listing." toolautosubmit>
                 <label class="shop-discovery__search">
                     Search products
-                    <input type="search" name="q" toolparamdescription="Search keywords or a published product name" value="<?= e($search) ?>" maxlength="120" placeholder="Try pendant or rudraksha">
+                    <input type="search" name="q" toolparamdescription="Search keywords or a published product name" value="<?= e($search) ?>" maxlength="120" placeholder="Search by name or keyword">
                 </label>
                 <label class="shop-discovery__category">
                     Category or collection
@@ -81,11 +82,11 @@
             <?php endif; ?>
             <?php if (empty($items)): ?>
                 <div class="shop-empty panel">
-                    <h2><?= $hasFilters ? 'No matching products' : 'No products available' ?></h2>
-                    <p><?= $hasFilters ? 'Try another search or choose a different category.' : 'Check back soon for new products.' ?></p>
-                    <?php if ($search !== '' && ($category !== '' || $sort !== '')): ?>
+                    <h2><?= $hasProductFilter ? 'No matching products' : 'No products available' ?></h2>
+                    <p><?= $hasProductFilter ? 'Try another search or choose a different category.' : 'Check back soon for new products.' ?></p>
+                    <?php if ($search !== ''): ?>
                         <a href="<?= e($shopUrl($category, '', $sort)) ?>" class="btn btn-primary">Clear search</a>
-                    <?php elseif ($hasFilters): ?>
+                    <?php elseif ($hasProductFilter): ?>
                         <a href="/shop" class="btn btn-primary">Browse all products</a>
                     <?php endif; ?>
                 </div>
@@ -96,11 +97,13 @@
                         <?php
                             $itemSlug = trim((string)($item['slug'] ?? ''));
                             $productUrl = '/product/' . rawurlencode($itemSlug);
-                            $isPurchasable = in_array((string)($item['stock_status'] ?? 'in_stock'), ['in_stock', 'active'], true);
+                            $placeholder = placeholder_img($item['name']);
+                            $image = trim((string)($item['image_url'] ?? '')) ?: $placeholder;
+                            $isPurchasable = in_array((string)($item['stock_status'] ?? ''), ['in_stock', 'active'], true);
                         ?>
                         <article class="product-card">
                             <a class="product-card__image" href="<?= e($productUrl) ?>" aria-label="View <?= e($item['name']) ?>">
-                                <img src="<?= e(webp_src($item['image_url'] ?? placeholder_img($item['name']))) ?>" data-product-image-fallback="<?= e(placeholder_img($item['name'])) ?>" alt="<?= e($item['name']) ?>" decoding="async">
+                                <img src="<?= e(webp_src($image)) ?>" data-product-image-fallback="<?= e($placeholder) ?>" alt="<?= e($item['name']) ?>" decoding="async">
                                 <?php if($hasOffer): ?>
                                     <span class="product-card__badge product-card__badge--sale">Sale</span>
                                 <?php endif; ?>
@@ -109,7 +112,7 @@
                                 <?php if(!empty($item['category'])): ?>
                                     <span class="shop-product-category"><?= e($categoryLabels[$item['category']] ?? $item['category']) ?></span>
                                 <?php endif; ?>
-                                <h2><a class="product-card__title" href="<?= e($productUrl) ?>"><?= e($item['name']) ?></a></h2>
+                                <h2><a class="product-card__title" href="<?= e($productUrl) ?>" title="<?= e($item['name']) ?>"><?= e($item['name']) ?></a></h2>
                                 <p class="product-card__desc"><?= e(strip_tags($item['description'] ?? '')) ?></p>
                                 <div class="product-card__price-row">
                                     <span class="price">₹<?= e((string)(($item['offer_price'] ?? 0) ?: ($item['price'] ?? 0))) ?></span>
@@ -127,14 +130,14 @@
                                 <input type="hidden" name="slug" value="<?= e($itemSlug) ?>">
                                 <input type="hidden" name="_csrf" value="<?= $csrf ?>">
                                 <input type="hidden" name="redirect" value="/checkout">
-                                <button class="btn btn-sm btn-primary" type="submit">Buy Now</button>
+                                <button class="btn btn-sm btn-primary" type="submit" aria-label="Buy Now: <?= e($item['name']) ?>">Buy Now</button>
                             </form>
                             <div class="product-cart-control">
                                 <form method="post" action="/cart/add" data-cart-add <?= $inCart > 0 ? 'hidden' : '' ?>>
                                     <input type="hidden" name="slug" value="<?= e($itemSlug) ?>">
                                     <input type="hidden" name="_csrf" value="<?= $csrf ?>">
                                     <input type="hidden" name="redirect" value="<?= e($returnUrl) ?>">
-                                    <button class="btn btn-sm btn-outline" type="submit">Add to Cart</button>
+                                    <button class="btn btn-sm btn-outline" type="submit" aria-label="Add to Cart: <?= e($item['name']) ?>">Add to Cart</button>
                                 </form>
                                 <div class="product-cart-control__stepper" data-cart-stepper <?= $inCart > 0 ? '' : 'hidden' ?>>
                                     <?php foreach (['dec' => '−', 'inc' => '+'] as $cartAction => $symbol): ?>
