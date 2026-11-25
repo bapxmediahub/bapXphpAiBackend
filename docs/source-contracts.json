@@ -23,9 +23,9 @@
             "review_note": "Reviewed published Markdown guides, search navigation and module filters against the merged catalogue and account source."
         },
         "foundation": {
-            "source_sha256": "7d10a0293ed9e27d0d8b5e6b87e2e14ac904e882209495e278a0bac35aec7782",
-            "references_sha256": "6eba6651fd8e747d8053034a7812f9d41e6dba5a405bc1d1ed669556c8f2474b",
-            "review_note": "Rechecked architecture, backend evidence and hosted route boundaries after integrating the provider config change. Analytics continues to read existing aggregates and carries explicit unavailable states."
+            "source_sha256": "5daf16f40ef645ba6966227764f223fd6519adea6fd96c895950cb135ddbb265",
+            "references_sha256": "f33493193a7a7277db46d243b7d4066e43731c778d95ee9914c86344c65218d9",
+            "review_note": "Checked the stored audit envelope, site timezone and current read transport. Documented the database-side counts and supported legacy timestamp interpretation in the storage guide."
         },
         "google-tags": {
             "source_sha256": "4834fd90479519dba801e19dbd3c1e434d62cf7cb6a4915eed9905f1c21bb8b5",
@@ -39,13 +39,13 @@
         },
         "interface": {
             "source_sha256": "738e38a60e1cf8946e57026804877aec36c9effa52f9f190db1702b5f8a695a0",
-            "references_sha256": "53cc2ed21de9291d5d1d5288ff06d8e236f6f342f6d155e3b695151676d4e235",
-            "review_note": "Reconciled dashboard, owner navigation and integration views against Design and recent UI contracts. The named workspace stays deployment-profile based, and no heading or permission is duplicated."
+            "references_sha256": "ea428b76bf27f889f5fa0b634a9d84d0557d3199984c6aa5adf0fe7e0dc7ed74",
+            "review_note": "Compared the admin guide with the dashboard panel and controller. The guide now explains both the two database totals and the visible unavailable state after a failed read."
         },
         "mail": {
-            "source_sha256": "20e83e649ed008a9061724716681cff8a4c7888b7e5520459aed8843abdc5cda",
+            "source_sha256": "854044fb01727487fe4398e5a5a3f00c73b6cc5973287d1eedb21a84832c8a19",
             "references_sha256": "903e7da848c1e0472ce9a1823b94afc21004e564d12041ee0456918176a6cc72",
-            "review_note": "Checked the two changed AdminController rendering paths against owner email and delivery-state guidance. Queue and mailbox behavior continues through the existing mail actions."
+            "review_note": "Cross-checked the email guide and AdminController inbox, outbox and template methods. The dashboard aggregate read does not participate in mail persistence or delivery."
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
@@ -58,19 +58,19 @@
             "review_note": "Reviewed the owner skill changes against media selection, deletion and metadata guidance. The new analytics section describes navigation and owner counts, and the media controls follow their documented path."
         },
         "operator-help": {
-            "source_sha256": "711ba481e7a1209bea63a8890341fee1c3a3d64e353992e78d5e4e09046f56f1",
+            "source_sha256": "369beb12a93cc67dbef1a6852d3f914f1b486fa728b3e17097bf7a62ac2402bc",
             "references_sha256": "9c949b4806f5ffa9c5ff122c863e4b2af50516fff6d0ea5e6201d543c147b4a3",
-            "review_note": "Reviewed the reconciled settings and owner docs after the endpoint change. Agent monitoring, site analytics, and commerce are navigable independently while provider configuration and scopes stay in Integrations."
+            "review_note": "Checked the Dashboard getting-started guide against AdminController and the current panel, which still displays the rolling storefront action totals, successful zeroes and an unavailable status."
         },
         "public-mcp": {
-            "source_sha256": "6855ccd4ae97d341559568e5e6799115f860d8bed5216f003680919a474ab934",
+            "source_sha256": "7001f1f32f514052478f62575a5c027d87e97873181ae7682de7f77e039b036e",
             "references_sha256": "d1e0824e500f825020b2cccfaad7fd435a8fefbe73d61e1b5f05fd54fed0b829",
-            "review_note": "Cross-checked the updated route associations with Public MCP and A2UI guidance. The moved storefront evidence is rendered through the authenticated Dashboard and the published contracts stay scoped."
+            "review_note": "Checked the project map against the fixed public MCP commerce routes and contracts. The recorded service dependency change is confined to the private admin dashboard."
         },
         "remote-commerce": {
-            "source_sha256": "d4727219602e3533680fbc91389cb2648ede2b15ef7dfa8ea866f2ed8bcd25c9",
+            "source_sha256": "ac494e951c05b428afd6f4091b5445e7eabcff1863d5f935863377f34a3ed88d",
             "references_sha256": "1b5573df9e0031b30d2aff8a41f9b249a03ed67030455440ea9edcbbaeb24892",
-            "review_note": "Rechecked dashboard and admin Design against remote commerce, checkout, and order source. Site actions remain aggregate counts over the documented window and no new commerce operation is exposed."
+            "review_note": "Compared the added DatabaseService aggregate with the anonymous cart and checkout operation methods and their guide. The dashboard uses one existing read query and leaves the capability and payment transitions intact."
         },
         "sales-channels": {
             "source_sha256": "36385e3d18e26f524d0efdd12d26cd8386e368fb5d27441460c688ffdff28b92",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed SettingsService module resolution and Merchant feed guidance. Dropping a retired header slot leaves the saved catalog eligibility inputs intact."
         },
         "workflow": {
-            "source_sha256": "916168e32dd7086fca5fd23e94e2fbf6a8bd2b94dda0b62f1a5596b6d4f8c86d",
+            "source_sha256": "2b9139f0416187a77937f08a4d85c778e48afb18a20c62e028679e4e7056129d",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Verified current workflow guidance, including the newly released credential history fallback, against the analytics change and existing release tests. The separate Agent and Site sections use the existing approval and private test process."
+            "review_note": "Reviewed the generated dashboard service edges and CI workflow. The MySQL job exercises the aggregate against the previous PHP counter and the authenticated loopback database bridge."
         }
     }
 }

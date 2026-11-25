@@ -778,7 +778,6 @@ flowchart LR
   controller_admincontroller -. declared service .-> service_orderservice
   controller_admincontroller -. declared service .-> service_storestatsservice
   controller_admincontroller -. declared service .-> service_siteinsightsservice
-  controller_admincontroller -. declared service .-> service_auditlogservice
   controller_admincontroller -. declared service .-> service_sitetelemetryservice
   controller_admincontroller -. declared service .-> service_authservice
   controller_admincontroller -. declared related view .-> view_admin_dashboard
@@ -1727,6 +1726,7 @@ flowchart LR
   service_siteprofileservice -. source new .-> service_secretservice
   service_siteprofileservice -. source new .-> service_settingsservice
   service_sitetelemetryservice -. source new .-> service_auditlogservice
+  service_sitetelemetryservice -. source new .-> service_databaseservice
   service_smtpmailer -. source new .-> service_settingsservice
   service_smtpmailer -. source new .-> service_smtpdeliveryuncertainexception
   service_storestatsservice -. static reference .-> service_orderservice

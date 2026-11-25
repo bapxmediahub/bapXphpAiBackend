@@ -870,6 +870,53 @@ final class DatabaseService {
         $stmt->execute($params);
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
+    /** Return only the two storefront counts from the persisted audit envelope. */
+    public function storefrontActivitySince(int $since): array {
+        $counts = ['cart_add' => 0, 'checkout_initiated' => 0];
+        if ($this->isTestMode()) return $counts;
+
+        // The audit JSON preserves the original offset. The DATETIME mirror may
+        // be NULL for older records or reflect the database session's time zone.
+        // Keep this SELECT compatible with both MySQL and the deployed MariaDB bridge.
+        $sql = <<<'SQL'
+            SELECT COUNT(CASE WHEN event_name = CAST('cart_add' AS BINARY) THEN 1 END) AS cart_add,
+                   COUNT(CASE WHEN event_name = CAST('checkout_initiated' AS BINARY) THEN 1 END) AS checkout_initiated
+            FROM (
+                SELECT CAST(JSON_UNQUOTE(JSON_EXTRACT(_data, '$.meta.event')) AS BINARY) AS event_name,
+                       JSON_UNQUOTE(JSON_EXTRACT(_data, '$.created_at')) AS recorded_at
+                FROM audit_events
+                WHERE CAST(JSON_UNQUOTE(JSON_EXTRACT(_data, '$.event')) AS BINARY) = CAST('commerce.event' AS BINARY)
+            ) AS storefront_events
+            WHERE event_name IN (CAST('cart_add' AS BINARY), CAST('checkout_initiated' AS BINARY))
+              AND CASE WHEN recorded_at REGEXP '^[0-9]{4}-[0-9]{2}-[0-9]{2}([Tt ][0-9]{2}:[0-9]{2}(:[0-9]{2}([.][0-9]+)?)?( ?([Zz]|[+-][0-9]{2}:?[0-9]{2}))?)?$'
+                  THEN CONVERT_TZ(
+                      REPLACE(LOWER(REGEXP_SUBSTR(recorded_at, '^[0-9]{4}-[0-9]{2}-[0-9]{2}([Tt ][0-9]{2}:[0-9]{2}(:[0-9]{2})?)?')), 't', ' '),
+                      CASE
+                          WHEN RIGHT(recorded_at, 1) IN ('Z', 'z') THEN '+00:00'
+                          WHEN RIGHT(recorded_at, 6) REGEXP '^[+-][0-9]{2}:[0-9]{2}$' THEN RIGHT(recorded_at, 6)
+                          WHEN RIGHT(recorded_at, 5) REGEXP '^[+-][0-9]{4}$' THEN INSERT(RIGHT(recorded_at, 5), 4, 0, ':')
+                          ELSE ?
+                      END,
+                      '+00:00'
+                  )
+              END >= ?
+            SQL;
+        $rows = $this->query($sql, [date('P', $since), gmdate('Y-m-d H:i:s', $since)]);
+        if (count($rows) !== 1 || !is_array($rows[0] ?? null) || count($rows[0]) !== count($counts)) {
+            throw new \RuntimeException('Database returned an invalid storefront activity result.');
+        }
+        foreach (array_keys($counts) as $event) {
+            $value = $rows[0][$event] ?? null;
+            if (!is_int($value) && !(is_string($value) && ctype_digit($value))) {
+                throw new \RuntimeException('Database returned an invalid storefront activity count.');
+            }
+            $count = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0]]);
+            if ($count === false) throw new \RuntimeException('Database returned an invalid storefront activity count.');
+            $counts[$event] = $count;
+        }
+        return $counts;
+    }
+
     public function connection(): \PDO {
         if ($this->isTestMode()) throw new \RuntimeException('Database connection is disabled in test mode.');
         return $this->db();

@@ -159,6 +159,7 @@ jobs:
         run: |
           php cli/runtime-check.php --json --strict
           php tests/admin-list-pagination.php
+          php tests/storefront-activity-mysql.php
           node --test tests/catalogue-mcp-mysql.test.cjs tests/mcp-client-access.test.cjs
       - name: Test reporting grant storage and disconnect against isolated MySQL
         run: php tests/google-reporting-storage.php

@@ -12,6 +12,12 @@ media metadata and `audit_events`) remains in hosted MySQL through
 `DatabaseService`. `storage/schema/collections.php` defines those collections.
 Do not introduce local JSON mirrors of customer or admin business tables.
 
+The dashboard's storefront activity read aggregates two event types in MySQL.
+It returns two counts through `DatabaseService` and the same authenticated
+`/remotedb` bridge used by other database reads. The cutoff uses the offset in
+the audit record's JSON `created_at`. Legacy absolute ISO or SQL dates without
+an offset use the site's Asia/Kolkata time. Missing and invalid dates are skipped.
+
 **Conversation history** is the deliberate exception: each Support or Enterprise
 Agent chat is stored as one private file in
 `storage/agent-conversations/<conversation-id>.json`. The source of truth for

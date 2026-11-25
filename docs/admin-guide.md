@@ -122,8 +122,11 @@ Choose **Site analytics → Traffic & search** for GA4 traffic and Search Consol
 visibility in the Dashboard's existing web analytics section. Open **Google
 reporting** to manage the connection and **PageSpeed Insights** for a separate
 performance check. Commerce overview shows the previous 30 days of recorded
-storefront cart additions and checkout initiations. Session analytics remains
-under Services for historical records.
+storefront cart additions and checkout initiations. The database returns these
+two totals directly. Zero means no matching actions were recorded in the window.
+If the database read fails, the dashboard shows that storefront activity is
+temporarily unavailable. Session analytics remains under Services for historical
+records.
 
 Open **Enterprise Agent → Agent Monitoring** for provider attempts, tool
 outcomes, saved conversation evidence and quality checks. The reference
