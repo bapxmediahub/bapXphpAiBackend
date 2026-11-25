@@ -78,9 +78,9 @@
             "review_note": "Reviewed SettingsService module resolution and Merchant feed guidance. Dropping a retired header slot leaves the saved catalog eligibility inputs intact."
         },
         "workflow": {
-            "source_sha256": "614b98e11a3869f127c0a1fbbefa123c1a705d2cc39b0e529335b98035a990db",
+            "source_sha256": "25fc02afb350bcc0e86de9e80e8e382c86a2742383625a4853fa9f1208502580",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Regenerated runtime and documentation indexes and verified the quick standalone search fixture and established browser release workflow on the combined sources."
+            "review_note": "Reviewed Testing and the development workflow after the customer release. Owner-authorized project history is a fallback for the ignored browser fixture, with private input and redacted logs, screenshots and release evidence."
         }
     }
 }
