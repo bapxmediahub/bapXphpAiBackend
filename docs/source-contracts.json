@@ -5,12 +5,12 @@
         "agents": {
             "source_sha256": "bde2bde8a9de8bf32dc819c741e87a13e30ec696f95f2049814fee7028c63a73",
             "references_sha256": "59d91112858e014ed292486928ad508929e2a99da261fe3508975bb5f00a7f2b",
-            "review_note": "Matched the 16-character opaque reference, evaluated HTTP 503 and saved-turn replay to the existing Support controller and observability guide. The provider attempt evidence remains in Agent Monitoring."
+            "review_note": "Matched the evaluated HTTP 503, opaque trace ID and saved-turn replay to the Support controller, transcript and observability guide. The owner sign-in update leaves both agent routes intact."
         },
         "auth": {
-            "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
-            "references_sha256": "fb0ed91e79da831124c7268b88c9d77ce218d0b26de28b4773dd0d14acf89ce1",
-            "review_note": "Reviewed the owner constructor authorization, CSRF and session-bound public download grant against the authentication guides and actual guest/owner fixtures."
+            "source_sha256": "c34a5b34bc904f36cda184c26113f91e2cf36afa2b506217d1f74e22e9e0cefd",
+            "references_sha256": "3b0ae5857696e6a3783f663fb5921a02a29d7fd82757fdda2fd50196715d993e",
+            "review_note": "Verified configured owner authentication, session regeneration and flash persistence before native response finalization and confirmed other login paths retain their routes."
         },
         "commerce": {
             "source_sha256": "4d8f53718f4495182ccef03d41eacb3da729dbe5ff1b5db5b54cbfd88957749e",
@@ -20,7 +20,7 @@
         "content": {
             "source_sha256": "d2e1d8cdf1e5ae801cb5a521b488dfb8837886db11eb2370db15d7e3533fa3b1",
             "references_sha256": "b86513fa3175b30fae3a1e16dfb1bcddaa69a1c2d380809d14cd421b31556312",
-            "review_note": "Matched the published Support article and contact link to the evaluated error reference. Compared the protected download guide with the current revision, selected file membership and enquiry grant checks in the page route."
+            "review_note": "Matched the published Support article contact link with the failure reference customers see. Compared the preserved authored-page download guide with the current revision, membership and grant checks."
         },
         "foundation": {
             "source_sha256": "1bcc201874515c3d7068bd38fb2237ce6332b9df1e089d43d72fee2829a9051a",
@@ -30,7 +30,7 @@
         "google-tags": {
             "source_sha256": "67136427c2eed206447c590b386451e42387c976b0c791fa9ebec1201e99019c",
             "references_sha256": "8266adee0c63827f86832ba113e0300b780e0feb95f6e7de2f49976a8f815d44",
-            "review_note": "Reviewed the Support reference rendering in the shared public layout and the frontend guide. The published download list and its gate are rendered in the authored-page view alongside the existing public head."
+            "review_note": "Reviewed Support failure rendering in the shared public layout against the frontend guide. The Google public head and separate owner reporting controls retain their documented paths."
         },
         "http-errors": {
             "source_sha256": "0f920c297cfc4e216a87be02a35c20827cc254dd6934ba24a1fa9135520a0560",
@@ -40,12 +40,12 @@
         "interface": {
             "source_sha256": "89193e9a6a04fbc0f65112f16317c69d9638f947db23d22240303ab811b8032e",
             "references_sha256": "58a84b3f5e424a4487984c2373a63d091b0b08e7d1fd737985c75bdfb88b2a50",
-            "review_note": "Compared the Support error and selectable reference with Design. The authored-page release retains native file controls, the inactive preview list and the published download or enquiry state."
+            "review_note": "Compared the selectable Support reference and separate contact action with Design. The public layout and protected-download view retain their current control placement and shared reading styles."
         },
         "mail": {
-            "source_sha256": "5227980c18b489b2f985b67c057a1f94a95c6784bd1e3b594f7fd2294ce37179",
-            "references_sha256": "5f7bb76e9a89eeb8e4bb8ec4a1c749eea3aee31fb9dd51411e657b1287ea8ffd",
-            "review_note": "Reviewed the download grant placement after a confirmed enquiry and the unchanged local receipt path against the documented held mail and owner Inbox boundary."
+            "source_sha256": "72b1c4a0ac6e5d88b2edb4e8190bbc9bb8271e1c9b25880f6d4ea068b2f82b56",
+            "references_sha256": "b570c94d1b4f038514750f1f5550593ae54324f0da7b659b2d8a184b1baf0fa2",
+            "review_note": "Compared the single configured-owner security notice with the existing claim and settlement rules. Supported SAPIs finish the stored-session response before entering the same mail path."
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed the independent private download storage against the existing owner Media Library, header image and deletion documentation. Download files keep their own private root."
         },
         "operator-help": {
-            "source_sha256": "e863c3ef75e13b61fe680a844208145a4ee61549e49ea8fc7633dbc308b51261",
+            "source_sha256": "db227fa43657f9bb17caff6293594edb565aaf619f6dbcfe8ea2c4171a01b29a",
             "references_sha256": "ec6fd6b5c08c66d7a8b453e6c58fa5d9507ce633f56cc54a2e14e2e8907b62f0",
-            "review_note": "Matched the customer Support guide to the selectable failure reference and existing contact flow. Compared the owner Pages guide with the download settings, inactive preview list and published enquiry requirement."
+            "review_note": "Compared the published Support guide, reference and contact flow. Reviewed the owner Pages guide for protected downloads and the auth guide for the configured-owner session and notice sequence."
         },
         "public-mcp": {
             "source_sha256": "ad08f180ca73336364b9cd907dfcbc99fafe564bfbc5555611ed1c41949b4de4",
@@ -70,7 +70,7 @@
         "remote-commerce": {
             "source_sha256": "5e984b01967b1c562ed41ee7763ade820ec42712a36a0dcd4ad8f723d404c427",
             "references_sha256": "1dc8f801c96ea8a63fd80e8a800b631a12378fa3a76e9eb4086ece101e206377",
-            "review_note": "Compared the Support reference in the shared layout with native cart and checkout recovery. Checkout still uses its explicit payment actions. The authored-page download controls follow their own page revision and enquiry grant."
+            "review_note": "Compared the Support reference against the shared layout, Design and native cart and checkout recovery. Existing payment actions and session capability handling are preserved."
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",
@@ -80,7 +80,7 @@
         "workflow": {
             "source_sha256": "b7343829808b0fe3e6d418fa18ad7a217f3c9d9650494e9f799d8e21eba018cb",
             "references_sha256": "91514e73460242e3e03c4c920f77fa83b07eec73946f176404a72180c249c9be",
-            "review_note": "Reviewed the Support and protected-download guidance together with the browser fixtures. Regenerated the route and service indexes and checked the documentation rules that now include CampaignDownloadService and private storage guidance."
+            "review_note": "Reviewed the Support frontend skill against the targeted desktop and phone browser fixture and documentation review procedures. Regenerated the repository maps and confirmed the protected-download route and owner-auth source indexes."
         }
     }
 }
