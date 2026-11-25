@@ -1,22 +1,20 @@
-<div class="section account-install-section">
+<div class="section account-page">
     <div class="account-layout">
         <?php require __DIR__ . '/_nav.php'; ?>
         <div class="account-content account-install">
             <header class="account-install__header">
-                <span class="eyebrow">Your account</span>
-                <h1>Install Sri Panchami Spiritual</h1>
-                <p>Keep the shop, orders, and temple guidance available from your home screen or desktop app menu.</p>
+                <h1>Install the app</h1>
+                <p>Open the site directly from your home screen or desktop app menu.</p>
             </header>
 
-            <section class="account-install__status" aria-live="polite" data-pwa-state="checking">
+            <section class="account-install__status" aria-live="polite" data-pwa-state="manual">
                 <span class="account-install__status-icon" aria-hidden="true">↓</span>
                 <div>
-                    <strong id="pwa-status-title">Checking this browser</strong>
-                    <p id="pwa-status-copy">Checking if this device supports app installation…</p>
+                    <strong id="pwa-status-title">Install from your browser menu</strong>
+                    <p id="pwa-status-copy">Follow the steps below for your device.</p>
                 </div>
                 <div class="account-install__actions">
-                    <button class="btn btn-primary" id="pwa-install-action" type="button">Install App</button>
-                    <span class="account-install__fallback-note" id="pwa-fallback-note" hidden>Use browser menu → Install app</span>
+                    <button class="btn btn-primary" id="pwa-install-action" type="button" hidden>Install app</button>
                 </div>
             </section>
 
@@ -39,111 +37,69 @@
                 </section>
             </div>
 
-            <p class="account-install__note">Installation does not create another account. Sign in with the same details, and use Logout when you finish on a shared device.</p>
+            <p class="account-install__note">Use the same account to sign in on the installed app. Sign out when you finish on a shared device.</p>
         </div>
     </div>
 </div>
 
 <script>
-(function(){
-    var deferredPrompt=null;
-    var status=document.querySelector('.account-install__status');
-    var title=document.getElementById('pwa-status-title');
-    var copy=document.getElementById('pwa-status-copy');
-    var action=document.getElementById('pwa-install-action');
-    var fallbackNote=document.getElementById('pwa-fallback-note');
-    var standalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
-    var isiOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
-    var reasons=[];
+(() => {
+    let promptEvent = null;
+    const status = document.querySelector('.account-install__status');
+    const title = document.getElementById('pwa-status-title');
+    const copy = document.getElementById('pwa-status-copy');
+    const action = document.getElementById('pwa-install-action');
 
-    function usable(){ action.hidden=false; fallbackNote.hidden=true; }
-    function fallback(){ action.hidden=false; fallbackNote.hidden=false; }
+    const render = (state, heading, description) => {
+        status.dataset.pwaState = state;
+        title.textContent = heading;
+        copy.textContent = description;
+        action.hidden = state !== 'available';
+    };
+    const installed = () => render('installed', 'App installed', 'You can open it from your home screen or desktop app menu.');
+    const manual = () => render('manual', 'Install from your browser menu', 'Follow the steps below for your device.');
 
-    function render(state){
-        status.dataset.pwaState=state;
-        if(state==='installed'){
-            title.textContent='App is installed';
-            copy.textContent='Sri Panchami Spiritual is already running as an installed app on this device.';
-            action.hidden=true; fallbackNote.hidden=true;
-        }else if(state==='available'){
-            title.textContent='Ready to install';
-            copy.textContent='This browser can install the app directly. Tap the button below.';
-            usable();
-        }else if(state==='installing'){
-            title.textContent='Installation started';
-            copy.textContent='Follow the browser confirmation. This page will update when installation finishes.';
-            action.hidden=true; fallbackNote.hidden=true;
-        }else if(state==='ios'){
-            title.textContent='Install from Safari';
-            copy.textContent='Tap Share, then Add to Home Screen to install Sri Panchami Spiritual on your device.';
-            fallback();
-        }else if(state==='no-service-worker'){
-            title.textContent='Not available in this browser';
-            copy.textContent='This browser does not support service workers, which are required for app installation. Try the latest Chrome, Edge, or Safari.';
-            fallback();
-        }else if(state==='not-secure'){
-            title.textContent='HTTPS required';
-            copy.textContent='App installation requires a secure (HTTPS) connection. Visit this page over HTTPS to install.';
-            action.hidden=true; fallbackNote.hidden=true;
-        }else if(state==='no-event'){
-            title.textContent='Install from browser menu';
-            copy.textContent='Use Install app or Add to Home screen in your browser menu. If the option is missing, update your browser and reload.';
-            fallback();
-        }else{
-            title.textContent='Install from your browser menu';
-            copy.textContent='Use Install app or Add to Home screen in the browser menu.';
-            fallback();
-        }
-    }
-
-    if(standalone){ render('installed'); return; }
-
-    if(!('serviceWorker' in navigator)){
-        render('no-service-worker');
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+        installed();
         return;
     }
-    if(window.location.protocol!=='https:'&&window.location.hostname!=='localhost'&&window.location.hostname!=='127.0.0.1'){
-        reasons.push('page not served over HTTPS');
+    if (!window.isSecureContext) {
+        render('not-secure', 'Open the secure site to install', 'Use the HTTPS version of this page and follow the steps below.');
+        return;
     }
-    try{if(window.self!==window.top){reasons.push('page loaded in an iframe');}}catch(e){}
-
-    if(isiOS){
-        render('ios');
+    if (!('serviceWorker' in navigator)) {
+        render('no-service-worker', 'Installation is unavailable in this browser', 'Try opening this page in a browser that supports app installation.');
         return;
     }
 
-    action.addEventListener('click',function(){
-        if(deferredPrompt){
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then(function(choice){
-                deferredPrompt=null;
-                if(choice.outcome==='accepted'){ render('installing'); }
-                else { render('available'); }
-            });
-            return;
-        }
-        // Without a stored prompt the click did nothing at all, so the button looked
-        // broken. Say why, and give the manual route every browser supports.
-        if(standalone){ render('installed'); return; }
-        render('no-event');
-        if(window.showToast){
-            showToast(isiOS
-                ? 'Open the Share menu and choose "Add to Home Screen".'
-                : 'Your browser has not offered installation yet. Use the browser menu and choose "Install app", or reload and try again.','info');
-        }
-    });
-
-    window.addEventListener('beforeinstallprompt',function(event){
+    window.addEventListener('beforeinstallprompt', (event) => {
         event.preventDefault();
-        deferredPrompt=event;
-        render('available');
+        promptEvent = event;
+        render('available', 'Ready to install', 'Select Install app and follow your browser’s instructions.');
     });
-    window.addEventListener('appinstalled',function(){
-        deferredPrompt=null;
-        render('installed');
+    window.addEventListener('appinstalled', () => {
+        promptEvent = null;
+        installed();
     });
-    setTimeout(function(){
-        if(!deferredPrompt&&!standalone)render('no-event');
-    },3000);
+    action.addEventListener('click', async () => {
+        if (!promptEvent) return;
+        const nextPrompt = promptEvent;
+        promptEvent = null;
+        action.disabled = true;
+        try {
+            await nextPrompt.prompt();
+            const choice = await nextPrompt.userChoice;
+            if (status.dataset.pwaState === 'installed') return;
+            if (choice.outcome === 'accepted') {
+                render('installing', 'Installation started', 'Follow your browser’s confirmation to finish.');
+            } else {
+                manual();
+            }
+        } catch (error) {
+            if (status.dataset.pwaState !== 'installed') manual();
+        } finally {
+            action.disabled = false;
+        }
+    });
 })();
 </script>

@@ -285,10 +285,10 @@ Local browser-test credentials and the fixed customer test ID are stored in
 `.env.test-user`. Read the ignored file first when authentication is required.
 If its credentials are missing or stale, the owner authorizes searching the
 current conversation and relevant Codex or ChatGPT conversations for this project.
-Use only credentials the owner explicitly provided for the same site, environment
+Use only credentials the owner explicitly provided for the same site, environment,
 and test role. Pass them to the authorized sign-in privately.
-Keep credential values out of tracked files, shell arguments, command output,
-screenshots, test reports and issue evidence. If the scoped history yields no
+Keep credential values out of tracked files, shell arguments, command output, logs,
+screenshots, test reports, and issue evidence. If the scoped history yields no
 usable credentials or conflicting candidates, ask the owner to refresh the ignored
 file.
 
