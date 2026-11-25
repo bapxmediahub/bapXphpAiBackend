@@ -19,6 +19,7 @@ description: Use when editing public, account, shop, consultant, temple, cart, c
 - Use the shared public site profile for the header, footer, About and Contact.
   Test absent contact methods, app metadata and module-off URLs in an
   independent synthetic deployment as well as the reference layout.
+- In Profile, display initials in the avatar slot from the first render. Reveal an HTTPS photo after it loads and keep the initials for absent, failed or blocked images. Check the slot and form without JavaScript and at 375px with a long email.
 - Audit card families together. Product, consultant, account, authentication, and admin cards have different jobs but share the geometry and focus rules in `Design.md`.
 - Reuse the circular top-overlapping marketplace card geometry and face-focused clipped portrait frame on home and consultation surfaces. Render only real profile metadata and reviews, and keep hero slides isolated on a warm-neutral image frame.
 - Keep public help guides in `content/blog/posts/*.md` with `category: help`. Render them through existing blog cards and article pages; `/docs` and `/help/{slug}` are compatibility redirects only.

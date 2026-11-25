@@ -32,6 +32,8 @@ Open [Saved Addresses](/account/dashboard/addresses). Use **Add an address** or 
 
 ## Update your profile or password
 
+Your profile shows your saved account photo when it loads. If the photo is unavailable, you’ll see an initial beside your email.
+
 Open [My Profile](/account/dashboard/profile), review the supported personal fields and choose **Save profile**. Your login email is not changed by that form.
 
 Where **Change password** is offered, enter your current password and matching new passwords, then save. Accounts signed in through another provider may not have a local password-change form. Use the appropriate sign-in or [recovery flow](/forgot-password), and never share a password with support.
