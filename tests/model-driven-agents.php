@@ -57,7 +57,7 @@ if(PHP_SAPI==='cli-server'){
     if((!$owner&&in_array('order_count',$names,true))||($guest&&array_intersect(['own_order_status','own_ticket_status'],$names))){$fail('Role leak');return;}
     $call=static fn(string $name,array $args,string $id):array=>['functionCall'=>['name'=>$name,'args'=>(object)$args,'id'=>$id]];
     $choice=match($scenario){
-        'aggregate'=>['public_catalogue_summary',[], 'total','catalogue'],
+        'aggregate','catalogue_wrong','catalogue_current'=>['public_catalogue_summary',[], 'total','catalogue'],
         'owner'=>['order_count',['period'=>'all_time'],'count','reporting'],
         'customer'=>['own_order_status',[],'count','customer-policy'],
         'ticket'=>['own_ticket_status',[],'count','customer-policy'],
@@ -67,7 +67,13 @@ if(PHP_SAPI==='cli-server'){
         default=>null
     };
     $finish='STOP';
-    if($scenario==='mixed'){
+    if($n===1&&str_starts_with($scenario,'catalogue_')
+        && !str_contains($wire,'There are currently 43 products published in the shop.')) {
+        $fail('Missing approved historical context for catalogue followup');return;
+    }
+    if($scenario==='catalogue_stale') {
+        $parts=[['text'=>'<final_answer>There are currently 43 products published in the shop.</final_answer>']];
+    }elseif($scenario==='mixed'){
         if($n===1)$parts=[$call('tool_search',['query'=>'public_catalogue_summary'],'d1'),$call('tool_search',['query'=>'public_policy'],'d2')];
         elseif($n===3&&isset($responses['d1']['matches'][0],$responses['d2']['matches'][0]))$parts=[$call('public_catalogue_summary',[],'b1'),$call('public_policy',['key'=>'shipping_cost'],'b2')];
         elseif($n===5&&isset($responses['b1']['total'],$responses['b2']['value']))$parts=[['text'=>'<final_answer>Published products: '.$responses['b1']['total'].'. '.$responses['b2']['value'].'</final_answer>']];
@@ -101,7 +107,8 @@ if(PHP_SAPI==='cli-server'){
         elseif($n===5&&isset($last['instructions'])&&in_array($tool,$names,true))$parts=[$call($tool,$args,'business')];
         elseif($n===7&&array_key_exists($field,$last)&&!isset($last['error'])){
             $answer=match($scenario){
-                'aggregate'=>'The catalogue contains '.$last['total'].' published products.',
+                'aggregate','catalogue_current'=>'The catalogue contains '.$last['total'].' published products.',
+                'catalogue_wrong'=>'The catalogue contains '.($last['total']+1).' published products.',
                 'owner'=>'There are '.$last['count'].' dated order records in the requested period.',
                 'customer'=>'Your matching order count is '.$last['count'].'.',
                 'ticket'=>'Your matching ticket count is '.$last['count'].'.',
@@ -167,13 +174,22 @@ try{
         ['long_retry','support','guest','hi',null],
         ['schema_error','support','guest','hi',null],
     ]);
-    foreach(['google','compatible'] as $protocol)foreach($cases as [$scenario,$surface,$role,$question,$tool]){
+    // These follow-ups exercise the real Support controller and its persisted
+    // conversation. The compatible wire fixture below bypasses that controller.
+    $catalogueCases=[
+        ['catalogue_stale','support','guest','Is that published product count still correct?',null],
+        ['catalogue_wrong','support','guest','Is that published product count still correct?','public_catalogue_summary'],
+        ['catalogue_current','support','guest','Is that published product count still correct?','public_catalogue_summary'],
+    ];
+    foreach(['google','compatible'] as $protocol)foreach(
+        $protocol==='google'?array_merge($cases,$catalogueCases):$cases as [$scenario,$surface,$role,$question,$tool]
+    ){
         $env=['BAPX_MODEL_DRIVEN_FIXTURE'=>'1','BAPX_FIXTURE_ENDPOINT'=>'http://'.$address.'/'.$scenario,'BAPX_TEST_MODE'=>'1','BAPX_FIXTURE_PROTOCOL'=>$protocol]+getenv();
         $child=proc_open([PHP_BINARY,__DIR__.'/fixtures/model-driven-agent-turn.php',$scenario,$surface,$role,$question],[0=>['file','/dev/null','r'],1=>['pipe','w'],2=>['pipe','w']],$io,null,$env);
         if(!is_resource($child))throw new RuntimeException('Child startup failed');
         $raw=stream_get_contents($io[1]);$err=stream_get_contents($io[2]);fclose($io[1]);fclose($io[2]);$exit=proc_close($child);
         $result=json_decode($raw,true);
-        $expected=in_array($scenario,['outage','duplicate','truncated','unfinished','quota','long_retry','schema_error'],true)?'error':'model';
+        $expected=in_array($scenario,['outage','duplicate','truncated','unfinished','quota','long_retry','schema_error','catalogue_stale','catalogue_wrong'],true)?'error':'model';
         $rounds=match($scenario){'mixed'=>3,'denied'=>2,'unfinished','transient_continuation'=>5,'transient_start'=>2,'outage'=>$protocol==='google'?6:3,default=>$tool!==null?4:1};
         $turn=$result['turn']??[];$response=$result['response']??[];
         if($exit!==0||($turn['outcome']??null)!==$expected||count($turn['model_attempts']??[])!==$rounds||($turn['turn_id']??null)!==($response['turn_id']??null)){
@@ -181,6 +197,18 @@ try{
         }
         foreach((array)$tool as $selected)if(!in_array($selected,array_column($turn['tools']??[],'name'),true))throw new RuntimeException("Missing selected tool: $selected");
         if(!empty($response['ticket_id']))throw new RuntimeException('Unapproved ticket creation');
+        if(str_starts_with($scenario,'catalogue_')) {
+            if(($result['history_preserved']??false)!==true)throw new RuntimeException('Historical response was rewritten');
+            if($scenario==='catalogue_current'){
+                if(($result['status']??0)!==200||!str_contains($response['reply']??'','0 published products'))
+                    throw new RuntimeException('Matching fresh zero-product count was not delivered');
+            }else{
+                if(($result['status']??0)!==503||($response['run']['reason']??'')!=='catalogue_total_unverified'
+                    ||!str_contains($response['reply']??'','/shop')||str_contains($response['reply']??'','published products'))
+                    throw new RuntimeException('Unsupported catalogue total was not withheld with an explicit outcome');
+                if($scenario==='catalogue_stale'&&($turn['tools']??[])!==[])throw new RuntimeException('Guard chose a tool instead of the model');
+            }
+        }
         if(str_contains($raw,'fixture-continuation')||str_contains($raw,'opaque-state'))throw new RuntimeException('Provider-only continuation leaked');
         if($protocol==='google'&&$scenario==='contact'&&($response['ui']['kind']??null)!=='contact_enquiry')throw new RuntimeException('Missing model-selected form proposal');
         if($scenario==='outage'&&($turn['tools']??[])!==[])throw new RuntimeException('Outage must not trigger canned lookup');

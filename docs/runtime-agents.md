@@ -250,6 +250,12 @@ rules. Support tool declarations hide private account lookups from guests and
 never expose owner reports. Current public catalogue totals, configured
 category membership and all-time published bestseller ranking are retrieved
 from the actual store services when the model selects the corresponding tool.
+Support uses previous answers to resolve references. The current turn's
+successful `public_catalogue_summary` must support recognizable numeric
+whole-shop claims in the proposed reply. The application withholds missing
+or conflicting claims and links to the Shop when it is available. This check covers common
+English and Tamil sentence forms. It does not parse unrestricted prose,
+numbers written as words, or arbitrary category counts.
 Support can retrieve its own customer-scoped orders, tickets and session cart.
 Enterprise can separately count all dated orders or request paid-sales reports.
 Both roles can search published articles and read an exact public article excerpt.

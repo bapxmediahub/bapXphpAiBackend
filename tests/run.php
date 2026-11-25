@@ -170,6 +170,23 @@ $tests['public catalogue summary and bestseller projection never expose private 
     assertSame(null,\App\Services\SupportBotService::aggregateToolForQuestion('How many products are in my order?'),'Never substitute store totals for private orders');
 };
 
+$tests['current published catalogue total claims need matching same-turn evidence'] = static function (): void {
+    $verify = \App\Services\AgentEvaluationService::publicCatalogueTotalSupported(...);
+    $observed = 'There are currently 43 products published in the shop.';
+    assertTrue(!$verify($observed, null), 'The live phrasing needs a successful fresh lookup');
+    assertTrue(!$verify($observed, 42), 'A previous product count cannot override current evidence');
+    assertTrue($verify($observed, 43), 'The independently verified count can be delivered');
+    assertTrue($verify('The catalogue contains **1,200** published products.', 1200), 'Grouped counts and product-count emphasis are accepted');
+    assertTrue(!$verify('The catalogue contains 1 published product.', 0), 'Singular counts must match the current result');
+    assertTrue(!$verify('கடையில் தற்போது 43 பொருட்கள் உள்ளன.', null), 'Tamil store-wide numeric claim needs evidence');
+    assertTrue($verify('கடையில் தற்போது 43 பொருட்கள் உள்ளன.', 43), 'Tamil store-wide count can use verified evidence');
+    assertTrue($verify('The shop has 0 published products.', 0), 'An explicit zero is a legitimate verified count');
+    assertTrue($verify('The shop has 2 products in the Pendant collection.', null), 'A named collection quantity is not a whole-shop count');
+    assertTrue($verify('There were 43 products published in the shop last year.', null), 'An explicitly historical statement is not current evidence');
+    assertTrue($verify('Your order has 2 products.', null), 'A private order quantity is not a catalogue-total claim');
+    assertTrue(!$verify("The shop has 43 products.\nThere are 44 published products.", 43), 'All explicit current totals in the reply must agree');
+};
+
 $tests['ordinary support questions cannot bypass inference'] = static function (): void {
     $source=file_get_contents(app_path('app/Services/SupportBotService.php'));
     $method=substr($source,strpos($source,'public function answer('),strpos($source,'/** Legacy offline/presentation classifier')-strpos($source,'public function answer('));

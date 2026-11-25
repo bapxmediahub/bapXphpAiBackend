@@ -44,6 +44,30 @@ final class AgentEvaluationService {
         return true;
     }
 
+    /** Check familiar numeric whole-shop claims without inferring the model's intent or routing a request. */
+    public static function publicCatalogueTotalSupported(string $answer, ?int $currentTotal): bool {
+        $text = str_replace(['**', '__', '`'], '', $answer);
+        $start = '(?:^|[.!?\r\n])\h*';
+        $end = '(?=\h*(?:[.!?;:\r\n]|$))';
+        $number = '([0-9]+(?:,[0-9]{3})*)';
+        $shop = '(?:shop|store|storefront|catalog(?:ue)?)';
+        $quantity = $number . '\h+(?:published\h+)?products?';
+        $present = '(?:(?:there\h+are|we\h+have)\h+)?(?:currently\h+)?';
+        $patterns = [
+            "~{$start}(?:(?:the|our|this)\h+)?{$shop}\h+(?:(?:currently|now)\h+)?(?:has|lists|contains)\h+{$quantity}{$end}~iu",
+            "~{$start}{$present}{$quantity}(?:\h+(?:published|listed))?\h+in\h+(?:the|our|this)\h+{$shop}{$end}~iu",
+            "~{$start}{$present}{$number}\h+published\h+products?{$end}~iu",
+            "~{$start}(?:எங்கள்\h+)?கடையில்\h+(?:தற்போது\h+)?{$number}\h+(?:வெளியிடப்பட்ட\h+)?(?:பொருட்கள்|தயாரிப்புகள்)(?:\h+உள்ளன)?{$end}~u",
+        ];
+        foreach ($patterns as $pattern) {
+            preg_match_all($pattern, $text, $matches);
+            foreach ($matches[1] ?? [] as $claimedTotal) {
+                if ($currentTotal === null || (int)str_replace(',', '', $claimedTotal) !== $currentTotal) return false;
+            }
+        }
+        return true;
+    }
+
     /** Article links in model output must be among actual completed public search results. */
     public static function publicArticleLinksSupported(string $answer,array $tools): bool {
         $known=[];
