@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "a88e56591f9d321da42b753a4b1e49d9e665bd5ce1eb3dceea33736d762405c3",
+            "source_sha256": "19d470c8a1c0783592b19a821f58a4133999c976df2576b4db5335314706f82b",
             "references_sha256": "e58fab5d1d36a171095101601858c8e45f19765cd132d6cdfc64b7d0072058c4",
-            "review_note": "Matched the Support controller response, stored evaluation and service trace fields to the new transcript reference and agent observability guide."
+            "review_note": "Matched the Support controller response, stored evaluation and service trace fields to the new transcript reference and agent observability guide. The current Luna transport has the same evaluated failure boundary and opaque trace identifier."
         },
         "auth": {
             "source_sha256": "2d591396fb76fbd8d5f4140127977f1bb88e07ef9959288174eff560138266a6",
@@ -29,7 +29,7 @@
         },
         "google-tags": {
             "source_sha256": "9f09044f67f983b4e87eac4f26391194a914bd7f7f238c6c79c2e0e28abe5c60",
-            "references_sha256": "27df53642eed8b6cd404f56a5d8e18abdea509ac86382e748857703c65ca6411",
+            "references_sha256": "40679acbd9e3b5c54152a932b94de2be6e8eb363a80f35ae19d0f3f8c4390ddc",
             "review_note": "Reviewed the shared layout head and the Google tag rendering boundary. The reference is rendered in the Support submit handler after a failed response."
         },
         "http-errors": {
@@ -38,9 +38,9 @@
             "review_note": "Compared the layout-specific title assignment with the request-error boundary. Website error status, sanitized error text and public not-found rendering follow their existing handlers."
         },
         "interface": {
-            "source_sha256": "fe7db8f578d9449eb98a8f926d2ff67c27778116650f54192e67b006a131877d",
-            "references_sha256": "e53bd84343164363d3e64ac5640418cc9eb3a9598cbcec7ffd5631d8c952e053",
-            "review_note": "Reviewed the reference in the live conversation region, inline error and contact action against the design and frontend guidance. Checked reference readability at desktop and 375px."
+            "source_sha256": "c65d49c63b7d414079ec51b1f404bd72d8b7d5a201ec9678228dad7a3e56145b",
+            "references_sha256": "0c08489101d7c7caa52362bde4e94f32abd656c9fa755fd10eb1f9619d0c5f86",
+            "review_note": "Reviewed the reference in the live conversation region, inline error and contact action against the design and frontend guidance. Checked reference readability at desktop and 375px. Confirmed the reference follows the error text before any separate action buttons."
         },
         "mail": {
             "source_sha256": "6895291447775bb17e9bef6c3d38d388ed65b3f5985b4c79bc71a9b4fa222c16",
@@ -49,8 +49,8 @@
         },
         "mcp-clients": {
             "source_sha256": "45d8095413a14ea0bca0c965b7e2f9964692954a858e7b86f7e7c478ad12fb0d",
-            "references_sha256": "85b869a493003e809468f64813cc5a78b0d0532793151a999375e457417ac0da",
-            "review_note": "Checked the shared SecretsService change against the MCP grant storage and Integrations documentation. The additional field is scoped to the model connection and existing MCP grant handling is preserved."
+            "references_sha256": "0b4814b02f21a481f4cb06d148700595ebfa01586ed4388f52bdf093226b61d9",
+            "review_note": "Checked that the endpoint example and supported model guidance change only the existing AI connection documentation. The local reporting client setup remains accurate."
         },
         "media": {
             "source_sha256": "a4e6449b8c0205d1a70720e6a2f52de9fee52427e306341970e151ccab4581a8",
@@ -69,7 +69,7 @@
         },
         "remote-commerce": {
             "source_sha256": "c7246149f55063767e06c3f5493b71b6d506947252fa69336a767a7737be0245",
-            "references_sha256": "fc6e5ce0378588ce5cc16c226e155b624a0e97ef35f12ab2e142993e06ac2a2b",
+            "references_sha256": "44056cfa2924108d4536d80aaadc375533e2d223e723af6a1326eaf9a8aa2c00",
             "review_note": "Reviewed the shared Support layout with the native checkout and recovery contract. The browser fixture exercises cart, checkout and enquiry alongside the reference."
         },
         "sales-channels": {
