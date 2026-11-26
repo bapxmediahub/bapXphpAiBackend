@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "dd41bbc8e6ecca257da359d315d39e94a62802947399a4338fdf21d3fc5d651d",
+            "source_sha256": "b4df00f4a124fde6cb668d105c5174970e9e90865eabeee0ecfc20834743c436",
             "references_sha256": "362927e7bf2d6ea315efde424804dda08742aab5d8dc1439c7b56a871451816e",
-            "review_note": "Reviewed original correlated exchange, new request-local accepted read evidence, one same-connection alternate inference, actual trace phase and 120 controller/transport regressions."
+            "review_note": "Reviewed actual AgentDraftService owner-only metadata restrictions and 120 controller fixtures; no model-manufactured product identifiers."
         },
         "auth": {
             "source_sha256": "c34a5b34bc904f36cda184c26113f91e2cf36afa2b506217d1f74e22e9e0cefd",
@@ -14,23 +14,23 @@
         },
         "commerce": {
             "source_sha256": "56c2354c15a4b4af4a9698bc2a65f237fdebccff02d9e6b80183b30ec9559d2a",
-            "references_sha256": "67fca72b585808055dbd5bdcbeb5a027176f126d79591e47f879a14da68edf0d",
-            "review_note": "Actual browser controller fixture reproduces zero-discount fallback and verifies authoritative paise, minimum and recovery preservation."
+            "references_sha256": "865725da88363e0802880d1b719eacbb37bfa0f7e7f131d0aeabde521af39076",
+            "review_note": "Reviewed actual eight browser controller amount cases, fractional display and prior payment recovery alongside newly merged product metadata."
         },
         "content": {
-            "source_sha256": "2642ef5e51f740f766884a84365cb1b6848758c82ba383901bd842a69f822543",
+            "source_sha256": "df716574d278497fb26eab84230c8563105ba5271d0aa5bb0fbdd80189559a1d",
             "references_sha256": "bb87a962c5e570bc772f172d9d7956af475f5118e4cc9aeb2b16c875313ccb4d",
-            "review_note": "Reviewed source-derived WP autosave and native revision CAS, private MySQL recovery, history bounds, browser fallback and canonical publication invariants."
+            "review_note": "Reviewed public product metadata/SEO changes and real product landing, no editorial publication behavior changed."
         },
         "foundation": {
-            "source_sha256": "1e9d9fc6153d788b466077f857a34bfcb3230ca97a509a56497edef0ccc49f54",
+            "source_sha256": "bd1636a6fe6c04157eb4d8d88c8c0ef592b622705268ec226964960246e5d69a",
             "references_sha256": "a2f45f72c07d79756151601bc2547a814a56e08a60d853e0c42d5b33bc892221",
-            "review_note": "Reviewed request-local evidence bounds, no new runtime, storage or raw evidence persistence; shared deadline and trace budgets unchanged."
+            "review_note": "Reviewed optional JSON fields in existing hosted MySQL catalogue and existing PHP UI; no new runtime, dependency, OAuth credential or data store."
         },
         "google-tags": {
             "source_sha256": "239140bbf84afe1d759b8fba20f012147c59202640638ffb270bd0820fdbe5b5",
-            "references_sha256": "9c4b6af1c584d8196c73ad9d5bf661cbe6796cc9f778dff719ccf4ce806b2725",
-            "review_note": "Reviewed shared layout; footer text only, Google tracking and consent head scripts unchanged."
+            "references_sha256": "4fb64f889a46afe530fe00933951318b06ace51e2aeb506cb58b94543f37cce9",
+            "review_note": "Reviewed product metadata SEO and separate channel guidance; GA tags, verification and reporting authorization unchanged."
         },
         "http-errors": {
             "source_sha256": "0f920c297cfc4e216a87be02a35c20827cc254dd6934ba24a1fa9135520a0560",
@@ -38,14 +38,14 @@
             "review_note": "Reviewed recovery only for recoverable transport, quota and hold failures; failed alternate remains explicit error, malformed/denied responses are not replayed."
         },
         "interface": {
-            "source_sha256": "25eff325638d0f555f168acd7004979280a82deb1d1451f79bfbd0b9d751b82a",
-            "references_sha256": "4d63f27c7ea8ae671839efae05e3702ef9ba7f29b908490cd257d85029720882",
-            "review_note": "Checkout browser no longer posts an amount; gateway UI uses exact server response and existing recovery states."
+            "source_sha256": "fde92d57feff59ec7f1f72e8014984b35a75f2c0d48ddbdbc2b159ff8288b250",
+            "references_sha256": "eef7e0667f963f48e68350ec36a1e015e0f195d2cda5c0868aeb3e87ccfa0f62",
+            "review_note": "Reviewed updated checkout request and authoritative gateway response; retained new direct product landing guidance and layout."
         },
         "mail": {
-            "source_sha256": "3e515e62031c1609b7cbe61f269e97900ceb6a5d3db5d5f4b90d64d2eb240ef8",
+            "source_sha256": "cb099c4b966b3212aeda987f30f63206bfd9d8d685c828e2c6b3b5468d2bd30f",
             "references_sha256": "f55d00e8a94c81806bd8ad3c99334154db4a91bb299be7e13d5696d523c6d806",
-            "review_note": "Reviewed shared AiClient behavior; mail drafting/text-only calls and transactional mail queue remain unaffected, no send action retried."
+            "review_note": "Reviewed shared controller changes restricted to product validation; no mail or queue changes."
         },
         "mcp-clients": {
             "source_sha256": "2567e2792ed1acb0c80ae14605c2ac550abb824197b404fc2da99e97e1507d8e",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed the owner UI skill changes against authenticated media navigation, route declarations, and Media Library behavior. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
         },
         "operator-help": {
-            "source_sha256": "a8fdfc0d2c7511d25d3fa289251830cc784e6ff9adb6f47e188e01e0a4b043f3",
+            "source_sha256": "790242fb302fc90bf03a945a3ee536e4f92611ef5060d8aeb89a2839af308f89",
             "references_sha256": "4e2591fafd1e772fb73b53865320e18914867c5d36d31f01f3406f58dcc80b4f",
-            "review_note": "Reviewed exact server-derived checkout amount and unchanged owner/customer help scope."
+            "review_note": "Reconciled owner product metadata baseline and checkout amount behavior; no owner help or customer instructions changed except truthful checkout rules."
         },
         "public-mcp": {
             "source_sha256": "16885ac8b5f31d7e7f4734b227e46c4dcce33001b2d019e251fd2891730ae4c7",
@@ -68,19 +68,19 @@
             "review_note": "Reviewed same-model continuation and alternate text-only synthesis; no new public MCP schemas or grants, private tool evidence stays on original configured connection."
         },
         "remote-commerce": {
-            "source_sha256": "367e990628793e62773a6d8f4b3700e2926113be3af4a52f403427a03fbf1eed",
-            "references_sha256": "354f001560c57802c742c357279837222d166d67e10b3a4c5c026434fad6c52e",
-            "review_note": "Removed browser client-supplied amount; existing remote quote and signed payment contracts unchanged."
+            "source_sha256": "1932f2121213b84e2e3620e7dd8b8965d69c1c82b409614ad555a2a22d624591",
+            "references_sha256": "711a06978be39e170b69071048cb0aa2ccbc4c337287ee369e7944ac26f7dc98",
+            "review_note": "Reviewed merged merchant and checkout changes; server computes payable amount and no posted price fallback, remote checkout contract unchanged."
         },
         "sales-channels": {
-            "source_sha256": "9ab05dee5b52c721721e1aa2028472c7c41ee0e2a3b030bacc6a567dbd58e6eb",
-            "references_sha256": "c629b6aa8928d48f6d8f790990e575e3ecd318d3d7acd249749ca1ccdb46c168",
-            "review_note": "Reviewed settings loader exclusion of private ed rows; existing public product feed and channel settings untouched."
+            "source_sha256": "2bc0b017ce4a0ccca5c110ef40fcdcdefc3f45578ad09cff84fcbbe193d6a59b",
+            "references_sha256": "7f28b1ba2c9491423fca2c4fd0026b0932b2b33438179f2734c1d907368d40fd",
+            "review_note": "Reviewed pinned Google for WooCommerce connection source, actual public merchant feed, owner-only metadata, shared product structured data and separate multi-channel account gates."
         },
         "workflow": {
-            "source_sha256": "4a08ec80a4863ff493f96afaede6473f36023060f26d246c39d3bbb1ef8b1845",
-            "references_sha256": "14c2c675da06f0e52ce81e374d38de55ffbbc5cbdffb344aa94a62f7ec668e68",
-            "review_note": "Reviewed REA behavioral contract and provider documentation, existing hosted tests extended with recovery cases, generated maps and review receipts preserved."
+            "source_sha256": "a1c0fcc27ed0ee0996595b2b2091495133c26929389bca1d9149ee3b47de652b",
+            "references_sha256": "ce296268f8e6ab4a20955480efe5431f31112561643d61298121d265ee480280",
+            "review_note": "Reviewed explicit MC01 scope addition, pinned static source and two adapted skill receipts; new denominator is one additional partial obligation, no artificial promotion."
         }
     }
 }

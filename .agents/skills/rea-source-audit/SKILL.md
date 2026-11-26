@@ -38,6 +38,19 @@ PHP commerce only where the actual source proves the feature.
   upstream paths, priority and acceptance tests. Preserve existing payment/GST/
   refund/idempotency safeguards rather than claiming they are absent.
 
+## Pinned reference skills and native routing
+
+Read `.agents/REA/README.md` and the mapped adapted skills:
+`php cli/rea-skills.php --for <capability-id>` lists the guides, and
+`./bapXphp skill rea-...` reads a specific adaptation. All 20 WordPress and
+two WooCommerce skill bundles have a native counterpart. Their original
+pinned copies and GPL notices are reference material only. The original
+skill describes a research technique or behavioral contract; trace the
+actual application source before writing a native component. Never run
+upstream installers, package scripts or WP commands against bapX. When a
+finding changes, inspect the mapped guides and update their actionable
+instructions and mappings in the same scoped PR.
+
 ## Reconstruct behavior, not a feature name
 
 For every reference component, trace actual entrypoints and callees, input and
@@ -70,3 +83,12 @@ Follow `docs/research/rea-engineering-workflow.md`. For every changed mapped
 capability, inspect actual local/upstream code and acceptance evidence, record
 the row with `php cli/rea-capabilities.php --record ID --reason ...`, and regenerate
 the report. Never promote on file existence, CI alone or an invented live result.
+
+## Repeated engineering cycles
+
+After source-derived acceptance, reconcile the current capability finding and
+its mapped native guides; select the next highest-priority clear obligation and
+execute its full loop without waiting for a new prompt. If a gate is pending,
+advance an independent obligation while preserving exact-head evidence. At
+narration, distinguish completed loops, unfinished validation and the next
+concrete acceptance target. Ask for a decision only when genuinely needed.

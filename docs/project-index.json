@@ -531,6 +531,14 @@
         },
         {
             "from": "controller:AdminController",
+            "to": "service:MerchantFeedService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 1728
+        },
+        {
+            "from": "controller:AdminController",
             "to": "service:ProductImportService",
             "relation": "static_reference",
             "provenance": "source_token",
@@ -543,7 +551,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1748
+            "line": 1756
         },
         {
             "from": "controller:AdminController",
@@ -1783,7 +1791,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AgentDraftService.php",
-            "line": 171
+            "line": 176
         },
         {
             "from": "service:AgentEvaluationService",
@@ -2519,7 +2527,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/DocsMapService.php",
-            "line": 152
+            "line": 153
         },
         {
             "from": "service:EditorDraftService",
@@ -2591,7 +2599,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/KnowledgeGraphService.php",
-            "line": 384
+            "line": 387
         },
         {
             "from": "service:MailQueueService",
@@ -2767,7 +2775,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/MerchantFeedService.php",
-            "line": 108
+            "line": 162
         },
         {
             "from": "service:OrderService",
@@ -3363,6 +3371,14 @@
         },
         {
             "from": "service:SeoService",
+            "to": "service:ProductService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Services/SeoService.php",
+            "line": 269
+        },
+        {
+            "from": "service:SeoService",
             "to": "service:SettingsService",
             "relation": "constructs",
             "provenance": "source_token",
@@ -3375,7 +3391,15 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/SeoService.php",
-            "line": 364
+            "line": 370
+        },
+        {
+            "from": "service:SeoService",
+            "to": "service:MerchantFeedService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/SeoService.php",
+            "line": 270
         },
         {
             "from": "service:SeoService",

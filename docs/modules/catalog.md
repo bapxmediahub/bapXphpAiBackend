@@ -27,3 +27,10 @@ The product directory counts matching records and reads one page from MySQL. Nam
 CSV preview validates the complete file before offering confirmation. The admin session retains a digest of the reviewed file and its excluded slugs. Confirmation checks the digest, parses the original file again and takes the catalogue lock shared with product-form saves. It checks for existing slugs on the database host and commits all new hidden products together. This path accepts simple products in the sample format. For fields, limits and the owner workflow, see [Catalogue help](../../content/help/admin/catalogue.md).
 
 The interactive `./bapXphp write product [slug]` command uses the same database-host catalogue lock. With a slug, blank prompts keep the latest stored values. Visibility, offer dates, tax fields, galleries and additional category memberships survive an ordinary edit. Without a slug, the command creates a product and refuses a slug already in use. The gallery import uses the same lock and updates only the target product’s featured image and gallery URLs.
+
+The existing product editor also accepts actual owner-confirmed Google Merchant
+brand, GTIN (string/check digit), manufacturer part number, condition and
+identifier status. These fields are optional; clear explicitly, do not invent
+missing facts or contradict a no-identifier declaration. They are projected
+through the same validation policy to the Merchant feed and Product JSON-LD.
+See [Google sales channels](../google-sales-channels.md).

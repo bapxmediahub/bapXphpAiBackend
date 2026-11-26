@@ -64,7 +64,7 @@ async function project(t) {
     // by the same real interpreter; generators produce their expected artifacts.
     for (const [file, marker] of Object.entries({
         'tests/run.php': 'test', 'tests/storefront-search.php': 'storefront-search',
-        'cli/agent-contracts.php': 'contracts', 'cli/rea-capabilities.php': 'rea-capabilities',
+        'cli/agent-contracts.php': 'contracts', 'cli/rea-capabilities.php': 'rea-capabilities', 'cli/rea-skills.php': 'rea-skills',
         'cli/docs-check.php': 'docs', 'cli/validate-project-map.php': 'map',
         'cli/validate-docs-map.php': 'docs-map', 'cli/smoke-local.php': 'smoke',
     })) await write(file, '<?php\necho "FIXTURE:' + marker + '-ok\\n";\n');
@@ -286,4 +286,65 @@ test('REA coverage rejects stale source/evidence, stale reports and unsupported 
     updated.rows[0].references[0].path='upstream.php';updated.rows[1].id='F01';
     await writeFile(register,JSON.stringify(updated));
     assert.match((await run(['--check'])).output,/duplicate capability ID/);
+});
+
+test('REA native skill routing rejects changed upstream bytes, incomplete mapping and stale reviews', {timeout:60000}, async t => {
+    const directory=await mkdtemp(join(tmpdir(),'bapx-rea-skills-'));
+    t.after(()=>rm(directory,{recursive:true,force:true}));
+    const copy=async name=>{
+        const dest=join(directory,name);
+        await mkdir(dirname(dest),{recursive:true});
+        await copyFile(join(sourceRoot,name),dest);
+    };
+    const manifestPath='.agents/REA/skill-map.json';
+    const registerPath='docs/research/capability-register.json';
+    const manifest=JSON.parse(await readFile(join(sourceRoot,manifestPath),'utf8'));
+    const register=JSON.parse(await readFile(join(sourceRoot,registerPath),'utf8'));
+    const files=new Set(['cli/rea-skills.php',manifestPath,registerPath]);
+    for(const s of manifest.sources)for(const file of s.files)files.add('.agents/REA/upstream/'+s.id+'/'+file.path);
+    for(const skill of manifest.skills){
+        files.add('.agents/REA/'+skill.adapted);
+        for(const file of [...skill.local_sources,...skill.acceptance_tests])files.add(file);
+    }
+    for(const name of files)await copy(name);
+    const run=args=>invoke('php',['cli/rea-skills.php',...args],directory);
+    let result=await run(['--check']);assert.equal(result.status,0,result.output);
+    assert.match(result.output,new RegExp("22 adaptations, 210 pinned upstream files, "+register.rows.length+" mapped obligations"));
+    result=await run(['--for','P23']);assert.equal(result.status,0,result.output);
+    assert.match(result.output,/rea-abilities-api-implement/);
+    result=await run(['--show','rea-wp-abilities-api']);assert.equal(result.status,0,result.output);
+    assert.match(result.output,/name: rea-wp-abilities-api/);
+    assert.match(result.output,/Native implementation workflow/);
+    const source=manifest.sources[0];
+    const upstream='.agents/REA/upstream/'+source.id+'/'+source.files[0].path;
+    const original=await readFile(join(directory,upstream));
+    await writeFile(join(directory,upstream),Buffer.concat([original,Buffer.from('changed')]));
+    assert.match((await run(['--check'])).output,/Upstream reference drift/);
+    await writeFile(join(directory,upstream),original);
+    const changed=structuredClone(register);
+    const row=changed.rows.find(r=>r.id==='P23');
+    row.finding+=' Synthetic changed finding.';
+    await writeFile(join(directory,registerPath),JSON.stringify(changed));
+    const affected=manifest.skills.filter(s=>s.capability_ids.includes('P23')).map(s=>s.id);
+    result=await run(['--affected']);assert.equal(result.status,0,result.output);
+    assert.deepEqual(result.output.trim().split(/\r?\n/).sort(),affected.sort());
+    assert.match((await run(['--check'])).output,/Mapped findings or native skill changed/);
+    for(const id of affected){
+        result=await run(['--record',id,'--reason','Reviewed synthetic changed shipping evidence without promoting a capability.']);
+        assert.equal(result.status,0,result.output);
+    }
+    assert.equal((await run(['--check'])).status,0);
+    assert.deepEqual(JSON.parse(await readFile(join(directory,registerPath),'utf8')),changed,'Skill review must never change capability status or evidence');
+    const updated=JSON.parse(await readFile(join(directory,manifestPath),'utf8'));
+    const removed=structuredClone(updated);removed.skills.pop();
+    await writeFile(join(directory,manifestPath),JSON.stringify(removed));
+    assert.match((await run(['--check'])).output,/Every upstream skill must have one native adaptation/);
+    await writeFile(join(directory,manifestPath),JSON.stringify(updated));
+    const unmapped=structuredClone(changed);unmapped.rows.push({...row,id:'QA99'});
+    await writeFile(join(directory,registerPath),JSON.stringify(unmapped));
+    assert.match((await run(['--check'])).output,/Unrouted REA capability: QA99/);
+    await writeFile(join(directory,registerPath),JSON.stringify(changed));
+    const guide=join(directory,'.agents/REA',updated.skills[0].adapted);
+    await writeFile(guide,(await readFile(guide,'utf8'))+'\nSynthetic change\n');
+    assert.match((await run(['--check'])).output,/Mapped findings or native skill changed/);
 });

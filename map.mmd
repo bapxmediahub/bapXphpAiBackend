@@ -14,13 +14,13 @@ flowchart LR
     legend_limits["No execution, autoload or dynamic reachability proof; gaps are inspection candidates"]:::arch
   end
 
-  subgraph ARCH["Architecture Overview — 189 routes, 20 controllers, 93 services, 77 views, 0 data files, 31 tools"]
+  subgraph ARCH["Architecture Overview — 189 routes, 20 controllers, 93 services, 77 views, 0 data files, 32 tools"]
     arch_routes["> Routes: 189 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 20"]:::arch
     arch_svc["> Services: 93"]:::arch
     arch_views["> Views: 77"]:::arch
     arch_data["> Collections: 25 schema | 0 files"]:::arch
-    arch_tools["> Tools: 31"]:::arch
+    arch_tools["> Tools: 32"]:::arch
     arch_gaps["> Gaps: 7"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
@@ -499,6 +499,7 @@ flowchart LR
     tool_product_read["product-read"]:::tool
     tool_product_write["product-write"]:::tool
     tool_rea_capabilities["rea-capabilities"]:::tool
+    tool_rea_skills["rea-skills"]:::tool
     tool_reconcile_checkouts["reconcile-checkouts"]:::tool
     tool_reconcile_media["reconcile-media"]:::tool
     tool_refresh_blog_cache["refresh-blog-cache"]:::tool
@@ -1474,6 +1475,7 @@ flowchart LR
   controller_admincontroller -. static reference .-> service_gstregisterservice
   controller_admincontroller -. static reference .-> service_mailtemplateservice
   controller_admincontroller -. static reference .-> service_mediaservice
+  controller_admincontroller -. static reference .-> service_merchantfeedservice
   controller_admincontroller -. static reference .-> service_productimportservice
   controller_admincontroller -. static reference .-> service_productservice
   controller_admincontroller -. static reference .-> service_settingsservice
@@ -1828,8 +1830,10 @@ flowchart LR
   service_runtimehealthservice -. source new .-> service_databaseservice
   service_secretservice -. source new .-> service_databaseservice
   service_secretservice -. static reference .-> service_mcpclientservice
+  service_seoservice -. source new .-> service_productservice
   service_seoservice -. source new .-> service_settingsservice
   service_seoservice -. static reference .-> service_mediaservice
+  service_seoservice -. static reference .-> service_merchantfeedservice
   service_seoservice -. static reference .-> service_siteprofileservice
   service_settingsservice -. source new .-> service_authoredpageservice
   service_settingsservice -. source new .-> service_databaseservice

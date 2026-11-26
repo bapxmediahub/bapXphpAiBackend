@@ -369,11 +369,11 @@ final class PublicController extends BaseController {
             $all = (new ProductService())->visible();
             $related = array_values(array_filter($all, fn($p) => ($p['slug'] ?? '') !== $slug));
             $this->seoKey = 'product';
-            $price = $product['offer_price'] ?? $product['price'] ?? 0;
+            $price = (new ProductService())->priceOf($product);
             $schema = (new SeoService((new SecretService())->all()))->productSchema($product);
             $this->seoOverrides = [
                 'title' => ($product['name'] ?? 'Product') . ' – Buy Online at ' . $this->siteProfile()->name(),
-                'description' => 'Buy ' . ($product['name'] ?? 'this product') . ' online at ' . $this->siteProfile()->name() . '. ' . ($product['description'] ?? '') . ' Price: ₹' . $price . '. Authentic spiritual product with fast shipping.',
+                'description' => 'Buy ' . ($product['name'] ?? 'this product') . ' online at ' . $this->siteProfile()->name() . '. ' . ($product['description'] ?? '') . ' Price: ₹' . $price . '.',
                 'og_image' => $product['image_url'] ?? '',
                 'json_ld' => '<script type="application/ld+json">' . json_encode($schema) . '</script>',
             ];

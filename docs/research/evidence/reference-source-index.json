@@ -199,7 +199,7 @@
       "origin": "woocommerce.11.3.0.zip",
       "revision": "d9eb1e46df8309eb37b6f7f3fba51480f2a9a00e7feb10b1487592fde39accc6",
       "license": "GPL-3.0 (archive readme)",
-      "scope": "Selected static source; no upstream execution",
+      "scope": "Selected static source; no upstream execution; supplementary selected shipping/checkout source classes",
       "rea": {
         "version": "6.8.0",
         "authority": "historical-reference",
@@ -543,8 +543,40 @@
           "path": "woocommerce.php",
           "sha256": "5a3d1c31d8add1106d100323f4ba1038be2c7bd52e93285d76b3c9ac29658803",
           "bytes": 2401
+        },
+        {
+          "path": "includes/class-wc-cart-totals.php",
+          "sha256": "e4ce6c2bd160e6c33017bfcf4215eaa399775e409529fa7cda143381bf97bfbe",
+          "bytes": 30332
+        },
+        {
+          "path": "includes/class-wc-checkout.php",
+          "sha256": "34725ad282099d72348bdbca41db040693433775dc0fbaaece8d6aa144562c20",
+          "bytes": 57626
+        },
+        {
+          "path": "includes/class-wc-shipping-zones.php",
+          "sha256": "b0d3cec14e8425fd73b5802d0daa0660e46694668bb94b36fab1ea36b7235558",
+          "bytes": 12128
+        },
+        {
+          "path": "includes/shipping/flat-rate/class-wc-shipping-flat-rate.php",
+          "sha256": "a355a15e14a53bac73668b5314f9ec29b05ee0976f96df55f163e3aa1e2d05fa",
+          "bytes": 11224
+        },
+        {
+          "path": "includes/shipping/free-shipping/class-wc-shipping-free-shipping.php",
+          "sha256": "8371a7f5a4d9f460f1243e64c6ed7a88df2c7b02825114161bf7b95e5c632712",
+          "bytes": 8007
         }
-      ]
+      ],
+      "supplementary_shipping_rea": {
+        "authority": "historical-reference",
+        "inventory_state": "partial",
+        "root_sha256": "d428db88a7474d7e6d7844b7ab71b2ee6bd90fa5e4e046b0fcd559d28aa9bd27",
+        "artifact_sha256": "c07b4439216a4e3cacdbdc73d57a1e5a80efa031cb2fa2296bed7c70b62eb5e7",
+        "parse_failure_count": 0
+      }
     },
     {
       "id": "wordpress-mcp",
@@ -1705,6 +1737,78 @@
       "revision": "Chrome 160 compatibility contract reviewed 2026-11-26",
       "license": "documentation reference only",
       "scope": "Native browser Tool interface and invocation compatibility; not MCP HTTP transport"
+    },
+    {
+      "id": "google-for-woocommerce",
+      "origin": "https://github.com/woocommerce/google-listings-and-ads",
+      "revision": "e4c389ba652d10d427c4595edfd67d93d9320e48",
+      "license": "GPL-3.0 (LICENSE at pinned commit)",
+      "scope": "Selected static YouTube linking and Merchant API client/owner UI/test sources; not an authorized partner service or runtime execution",
+      "rea": {
+        "version": "6.8.0",
+        "authority": "historical-reference",
+        "inventory_state": "partial",
+        "root_sha256": "4e1100bee6b578d07d16984712316cf01119bfff0d618309ee44ce12e7950a58",
+        "artifact_sha256": "e7fa12fe8d18a1f5dc4130ca696df6ced062a4212e657f9b7a1bba0523b922e4",
+        "parse_failure_count": 0
+      },
+      "files": [
+        {
+          "path": "LICENSE",
+          "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+          "bytes": 35149
+        },
+        {
+          "path": "js/src/hooks/useYouTubeAccount.js",
+          "sha256": "c4ed0a017d52103a3e604bc86e6b2697fece18d6faabc5e11772fd486ca7c43e",
+          "bytes": 512
+        },
+        {
+          "path": "js/src/hooks/useYouTubeSetupCompleteCallback.js",
+          "sha256": "5006ba674da32fb103c974bd9a9ab658c2cb3900efee57d71f0bae048a986c96",
+          "bytes": 747
+        },
+        {
+          "path": "js/src/pages/settings/accounts/youtube-account-card/connect-youtube-account-card.js",
+          "sha256": "7e46bb4180c1e03d907494a3fddb2de714a1b1c9382a8ba51ee848c8860ce7df",
+          "bytes": 3673
+        },
+        {
+          "path": "js/src/pages/settings/accounts/youtube-account-card/connected-youtube-account-card.js",
+          "sha256": "70702f8aecc76bae5cebd0564f58c44e3978822c8545f7c7b51eaf8382656dd7",
+          "bytes": 3692
+        },
+        {
+          "path": "js/src/pages/settings/accounts/youtube-account-card/index.js",
+          "sha256": "f61eab3d9d3ff029828df6274db7752a7021d9bba7bda94922e8fc6f9fc54cd0",
+          "bytes": 1552
+        },
+        {
+          "path": "src/API/Google/Mapi/MerchantApiClient.php",
+          "sha256": "96679e755e242009018874ebb0b4cf7508a2bf75195dc8424207c7d267ee8b02",
+          "bytes": 8834
+        },
+        {
+          "path": "src/API/Site/Controllers/YouTube/AccountController.php",
+          "sha256": "033c0d00f1b00e6f5c42703eec9f6e3a19afd3281e3a877cd2dfbd2398ffe0a5",
+          "bytes": 7355
+        },
+        {
+          "path": "src/API/YouTube/Connection.php",
+          "sha256": "95d278d1381348e5d8046341c9a4fac9d89a5307cfb4fa8987e7f887c1e49810",
+          "bytes": 10597
+        },
+        {
+          "path": "tests/Unit/API/Site/Controllers/YouTube/AccountControllerTest.php",
+          "sha256": "bc22a1b12a27f7fa0fc8386c7e6cb57741e1e1b70f5e7ad5681b0be20104033b",
+          "bytes": 8842
+        },
+        {
+          "path": "tests/Unit/API/YouTube/ConnectionTest.php",
+          "sha256": "6cd9f03a862c2cb8758dd78e600f888d583ba6e1eb08a30789b08fc9abc1e1b2",
+          "bytes": 11628
+        }
+      ]
     }
   ],
   "historical_artifacts": [

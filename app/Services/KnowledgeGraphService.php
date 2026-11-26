@@ -57,7 +57,7 @@ final class KnowledgeGraphService {
                 'schema' => 'storage/schema/collections.php',
                 'blogs' => 'content/blog/posts/*.md',
                 'operator_help' => 'content/help/admin/*.md through AdminHelpService allowlists',
-                'developer_instructions' => 'AGENTS.md and .agents/skills/*/SKILL.md',
+                'developer_instructions' => 'AGENTS.md, .agents/skills/*/SKILL.md and .agents/REA/skills/rea-*/SKILL.md (adapted developer guidance only)',
                 'runtime_instructions' => '.bapX/ via AgentInstructionService role allowlists',
                 'images' => 'assets/images/**/*',
                 'code_map' => 'map.mmd',
@@ -79,7 +79,7 @@ final class KnowledgeGraphService {
                 ['question' => 'What is the live product, category, consultant, temple or admin-editable value?', 'use' => 'DatabaseService and deployment-local config/database.php; authorized direct or configured /remotedb access'],
                 ['question' => 'Where is a blog article and what frontmatter does it declare?', 'use' => 'concepts filtered by type=blog, then read its resource'],
                 ['question' => 'Where is an image and which source files reference it?', 'use' => 'concepts filtered by type=image; query by filename or resource'],
-                ['question' => 'What repository instructions or skill apply?', 'use' => 'AGENTS.md, then the matching .agents/skills/<name>/SKILL.md'],
+                ['question' => 'What repository instructions or skill apply?', 'use' => 'AGENTS.md, then matching native skill and php cli/rea-skills.php --for <capability-id> for source-derived work'],
                 ['question' => 'Which operator guide explains this admin task?', 'use' => 'operator_guide metadata then original allowlisted content/help/admin source; not runtime-agent instructions'],
                 ['question' => 'Which live business-agent instruction file applies?', 'use' => 'runtime_instruction references under .bapX; PHP role checks determine what can actually load'],
             ],
@@ -315,7 +315,10 @@ final class KnowledgeGraphService {
     private function indexSkillFiles(): void {
         $skillsDir = $this->root . '/.agents/skills';
         if (!is_dir($skillsDir)) return;
-        foreach (glob($skillsDir . '/*/SKILL.md') ?: [] as $file) {
+        $nativeFiles = array_merge(glob($skillsDir . '/*/SKILL.md') ?: [],
+            glob($this->root . '/.agents/REA/skills/rea-*/SKILL.md') ?: []);
+        // Do not index upstream reference skills as executable instructions.
+        foreach ($nativeFiles as $file) {
             $name = basename(dirname($file));
             $content = file_get_contents($file);
             $frontmatter = $this->parseFrontmatter($content);

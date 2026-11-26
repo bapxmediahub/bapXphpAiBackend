@@ -188,3 +188,9 @@ config/about.php; use the canonical public contact and SEO services and the
 existing module-filtered navigation targets. Do not invent brand history or
 duplicate the domain in the template. Test the real route, configured origin,
 disabled modules, image loading, contact navigation and no-JavaScript phone layout.
+
+For Google/YouTube direct product landings, compare feed, visible price and stock,
+Product/Offer JSON-LD and actual buy form; show known product identity and clear
+checkout/terms/contact guidance near actions without claiming unknown delivery
+or approval. Measure full title/CTA position and overflow at 1280/375 and keep
+no-JS purchase behavior and established branding.
