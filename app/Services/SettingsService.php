@@ -163,6 +163,16 @@ final class SettingsService {
         return $this->modules()[$key] ?? true;
     }
 
+    public function shippingDraft(): array {
+        return ShippingService::storedDraft($this->load(true)['shipping_policy_draft']??null);
+    }
+
+    public function saveShippingDraft(array $zones,string $expected): bool {
+        $saved=$this->store->saveShippingDraft($zones,$expected);
+        self::flushCache();
+        return $saved;
+    }
+
     public function savePublic(array $settings): void {
         unset($settings['gst_state_code']);
         if (array_key_exists('gst_state', $settings)) {

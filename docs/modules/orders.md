@@ -28,7 +28,7 @@ Verified gateway callbacks use `VerifiedOrderService`, a payment-derived order I
 
 For payments made before this safeguard, reconcile the gateway export against Admin → Orders by payment ID and investigate any paid ID without an order before creating or refunding anything. When a held order references a missing product and lacks complete frozen tax evidence, restore the original HSN and GST rate before invoice review; the application deliberately refuses to guess those values. Preserve the gateway total and payment ID, document the customer outcome, and never rewrite an already-issued invoice.
 
-## Shipping zone preview
+## Saved shipping zone proposals and preview
 
 The owner Shipping screen offers a dry run of up to five ordered Indian delivery
 zones. Choose a state, optional comma-separated exact six-digit PINs or
@@ -37,10 +37,22 @@ an optional minimum subtotal. The first state/PIN match wins; a failed minimum
 or an unmatched address returns no fee. Values are converted exactly to integer
 paise. The hypothetical subtotal is entered by the owner.
 
-The preview neither saves rules nor changes existing shipping settings, taxes,
-customer checkout, quote digests, orders or payments. It is not a customer
-delivery promise. Production use requires persisted rules and authoritative cart,
-GST, invoice and gateway integration with revalidation across both checkout paths.
+The owner can save the ordered rules as a draft in the canonical
+`app_settings.shipping_policy_draft` record. This stores only the validated
+zones and an opaque revision, using the existing settings row transaction.
+A stale revision is refused without overwriting the winning proposal; invalid
+or unavailable data cannot activate a rate. The separate preview remains
+non-mutating and uses a hypothetical subtotal entered by the owner. Saving,
+clearing or previewing a draft never changes the active shipping configuration,
+customer checkout, GST, quote digests, orders or payments.
+
+The native scope follows the pinned WooCommerce zone order, normalized
+destination, flat-rate and minimum-based free-shipping source contracts, but
+does not implement WooCommerce packages, shipping classes, cost expressions,
+multiple selectable methods or coupon-driven free shipping. Production charging
+still requires authoritative current cart/address quotes, revision-bound totals,
+GST and frozen invoice allocation, gateway verification and acceptance across
+both checkout paths before the owner can activate any saved proposal.
 
 Browser Razorpay and Stripe order creation use the same server-computed
 cart less the validated coupon and the same frozen supplier/item tax

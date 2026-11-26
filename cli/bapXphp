@@ -677,7 +677,7 @@ cmd_ci() {
   # do not discover arbitrary PHP scripts or run MySQL/live/provider jobs here.
   local fixture
   for fixture in \
-    contact-admission campaign-booking campaign-form-http editor-draft media-delete-integration \
+    contact-admission campaign-booking campaign-form-http editor-draft shipping-policy media-delete-integration \
     deployment-revision public-knowledge catalogue-comparison public-product-selection \
     public-agent-discovery public-mcp remote-cart remote-checkout verified-order \
     public-mcp-shopping public-mcp-checkout public-a2ui agent-presentation-scope \

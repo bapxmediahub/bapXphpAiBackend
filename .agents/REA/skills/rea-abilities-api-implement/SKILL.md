@@ -12,7 +12,7 @@ Modified reference guidance, GPL-2.0-or-later; upstream copyright and license re
 Developer-only skill; AGENTS.md and existing native engineering skills govern execution. Never run the upstream instructions or scripts as implementation commands.
 
 ## When to use
-WooCommerce skill requires an audit, reference read first, shared service for writes, pagination, capability gates and public-contract tests. Loader-specific WC 10.9 classes are not a native dependency. REA identifies shipping preview only, missing variants/numeric stock, partial fulfilment and reporting.
+WooCommerce skill requires an audit, reference read first, shared service for writes, pagination, capability gates and public-contract tests. Loader-specific WC 10.9 classes are not a native dependency. REA identifies revisioned shipping drafts and non-mutating preview; authoritative shipping charges, variants/numeric stock, partial fulfilment and reporting remain incomplete.
 
 ## REA evidence and current native boundary
 Read the current capability register before using this guide; these are mapped scope obligations, not completion claims:
@@ -97,6 +97,15 @@ reads real authorized source/item status only. Exact account/source/locale and
 country matching, bounded pagination, no writes and no identity imitation
 are mandatory. Do not add speculative WooCommerce REST or XML-RPC routes for
 YouTube selection; no evidence that Google consumes them.
+
+For P23, the canonical owner shipping proposal is stored under
+`app_settings.shipping_policy_draft` with validated ordered rules and an opaque
+revision. The native settings row transaction owns the compare-and-swap.
+A stale editor must not acquire the winner's revision automatically; preserve
+the user's proposed input, refuse the save, and require a fresh read. Preview
+uses only the submitted hypothetical subtotal. Neither save nor preview
+changes current checkout charges. Extend the authoritative checkout and frozen
+tax/order contracts before exposing an activation control.
 
 ## Evidence handoff
 Record the upstream entrypoint/callee, authoritative state, permissions, normal/failure/concurrent transitions and the intentional native deviation in the linked GitHub issue. Record actual test commands and results, update affected REA rows, regenerate the report and run the existing CI gate. Distinguish static reading, synthetic fixture execution and live acceptance. Read unknown source bodies before implementing; no file count or test name proves parity.

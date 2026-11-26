@@ -14,18 +14,18 @@
         },
         "commerce": {
             "source_sha256": "982980f41e5f696533d985019693fcb70f8db63b80b97a03059f9799c619eab8",
-            "references_sha256": "5e3c98a7f3923a1ab921b618e4ee85af753f78c575e86bcbbb9a6fbdf52ee435",
-            "review_note": "Reviewed actual both-gateway recording fixtures, exact server payable paise, frozen tax data and persisted verified-order evidence; no live charge."
+            "references_sha256": "f32d1fe5f7800b2ada153f4ac6a88248f9c98b7379b5e63fd2502d17962615fb",
+            "review_note": "Reviewed merged P23 draft and both gateway pending evidence; actual isolated tests preserve confirmed invoice facts, no live charges."
         },
         "content": {
-            "source_sha256": "7bc0e3afdd5a80dcbe48b999af092c2609cc94d7eb44da9efa39f7494402254d",
+            "source_sha256": "0feee066974550247ef6080d120b56fe51c95471c9e81cfd5448c9b3597397ae",
             "references_sha256": "b51bf13ae52f94e391eab038ee358b9f4d1135bd567aed8c50033b4412a19f12",
-            "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
+            "review_note": "Reviewed shared settings and database changes: scoped shipping revision comparison; canonical pages, campaign and blog recovery unchanged."
         },
         "foundation": {
-            "source_sha256": "0e9c368c5cbc2a11037c4227724cab4196df01f1e6afe1071152611c7a195e0d",
+            "source_sha256": "f723f63b1e7a7644e86799b3f8f18fde64e26eea828b0823fbb97f93205c3239",
             "references_sha256": "fbfb24aa19302e8b09b0fbe1cd05458c331795045fa3b256990b1a0574e103e5",
-            "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
+            "review_note": "Reviewed existing canonical settings JSON storage and authenticated bridge; no new database table, runtime or dependency. Actual hosted database test remains required."
         },
         "google-tags": {
             "source_sha256": "239140bbf84afe1d759b8fba20f012147c59202640638ffb270bd0820fdbe5b5",
@@ -38,14 +38,14 @@
             "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
         },
         "interface": {
-            "source_sha256": "fde92d57feff59ec7f1f72e8014984b35a75f2c0d48ddbdbc2b159ff8288b250",
+            "source_sha256": "8f81364e6025266236ac80f12895f1606262edbee8ae39686f2688107cdc731a",
             "references_sha256": "eef7e0667f963f48e68350ec36a1e015e0f195d2cda5c0868aeb3e87ccfa0f62",
-            "review_note": "Reviewed native checkout request omits shopper amount and uses authoritative response; existing mobile product and purchase guidance preserved."
+            "review_note": "Reviewed actual desktop/mobile owner save, reload, preview and stale/invalid form behavior. No new activation control or customer-side charge claim."
         },
         "mail": {
-            "source_sha256": "d6701ee87e38200539b4d91602756009396ba9564e7e9dec371c048502dcf3ac",
+            "source_sha256": "183a3321ee8f8da52599df9f52ef3ed4877d08a81954f9330b90f2d07bd2af1f",
             "references_sha256": "18b4092f26b698eef0a8027f266cbd6e58d9377f6f8a8b5719be0a0e5cd724c2",
-            "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
+            "review_note": "Reviewed AdminController diff: shipping proposal and preview only, no mail queue or delivery change."
         },
         "mcp-clients": {
             "source_sha256": "2567e2792ed1acb0c80ae14605c2ac550abb824197b404fc2da99e97e1507d8e",
@@ -58,29 +58,29 @@
             "review_note": "Reviewed the owner UI skill changes against authenticated media navigation, route declarations, and Media Library behavior. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
         },
         "operator-help": {
-            "source_sha256": "72087e86ac9a613839c4370c420b4ed0c126fb9e9e59d43fb25ae474970ae0d4",
-            "references_sha256": "a1d740de3a88f050bdc402955b7eaca59edb27f5169edb7ebd652f1ed20dcf09",
-            "review_note": "Reviewed shared tax projection before both browser gateways and actual coupon rejection; no owner controls or help behavior changed."
+            "source_sha256": "da4e3b5fc4eae444ebd83d68e222f281a0e25e9154625f7c1727f8e11bd3e831",
+            "references_sha256": "849572d2c8f8934a251f30fbe74bc3ae5e5e8f08dbf17a5579f4d2dfcc07b4bb",
+            "review_note": "Reviewed reconciled shipping draft help and shared both-provider checkout tax/coupon inputs; no activation."
         },
         "public-mcp": {
-            "source_sha256": "41c1243435ecb682c9f3f12859ce7f6d060fa5c933144e2e08f49d7747feda07",
+            "source_sha256": "ddd574f91ff690956cd74d17c97531c6fc94d69b4c683f14297989c26314c284",
             "references_sha256": "18b90cbbc442ae32810c0e9545032e61e157fb1b25157e654ec6f2bf143aebaa",
-            "review_note": "Reviewed RemoteCheckoutService refactor only, existing public checkout schema and projection unchanged."
+            "review_note": "Reviewed RemoteCheckoutService refactor against unchanged public capability contract and existing zero shipping."
         },
         "remote-commerce": {
-            "source_sha256": "8d0e05991b8b1523c1adfdf5b9d852e2b30d25db0cc4ca9c04029a41fe8acb9c",
-            "references_sha256": "f3eb378c70f9c7cad4c58fd9b259c0291dbe7245f550481e8a2abd332e7be5e0",
-            "review_note": "Reviewed identical remote checkout frozen tax field order/types and shared native browser gateway amount; 120 remote checkout checks passed."
+            "source_sha256": "54a9839758b00ed463b4364420ea6c38eb87adad2c3c0e32bc098d14d6107794",
+            "references_sha256": "edeac3ebc35d24a1e4db973f2380b59f0e640e0659d44281571233881c8f5ea4",
+            "review_note": "Reviewed actual shared remote tax projection and server-only browser gateway amount, preserving zero shipping until activation."
         },
         "sales-channels": {
-            "source_sha256": "0012f20cbd5531b10a54baf77e4070710c02f926dae38c826cc657cf1939ec07",
+            "source_sha256": "41708bd68d61562fe23c5f42bca8c17ae6bb2c939c970f8533b989d5023d5465",
             "references_sha256": "f2d81de1cbac07c6783060e22cc859e0ec6e86c66f50c9d7d2ec590b11ec5c8a",
-            "review_note": "Reviewed actual Woo core and Google plugin source, current Google v1 ProductInput and processed product contracts, offline projection and read-only country-specific diagnostics; browser and 47 checks pass."
+            "review_note": "Reviewed SettingsService draft methods; no change to Merchant feed, Google API or YouTube link status. Draft is not a live shipping rate."
         },
         "workflow": {
-            "source_sha256": "db0669c73a6b004effc7ad18248790104b62bd12a4a68fcccfb6746c6bcdc046",
+            "source_sha256": "b6b1584509ec436ec4f577a16dd785a5fc4cdc281219a70ab56456b9f03b256a",
             "references_sha256": "5a27cde698babfc821a71a740e94a9ff3035f44912123bc1ea47f3a348dc7911",
-            "review_note": "Reconciled deployed #529 recovery identity width and source contracts. Reviewed owner-directed inference rehydration/checkpoint instructions, canonical issue/PR and exact source/deployment receipts, unknown outcome reconciliation; developer-only process unchanged by runtime repair."
+            "review_note": "Reconciled merged #531 continuity instructions with #532 existing reviewed shipping proposal, generated maps, native skill routing and isolated PHP/Chromium/MySQL gates; no runtime workflow agent change."
         }
     }
 }

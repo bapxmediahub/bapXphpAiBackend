@@ -121,6 +121,7 @@ final class ProjectMapService {
             ['method'=>'POST','path'=>'/admin/orders/{id}/tax-review','name'=>'admin.order.tax-review','page'=>'admin/detail','controller'=>'AdminController@resolveOrderTaxReview','services'=>['OrderService','TaxService','SettingsService','AuditLogService']],
             ['method'=>'GET','path'=>'/admin/shipping','name'=>'admin.shipping','page'=>'admin/shipping','controller'=>'AdminController@shipping','services'=>['ShippingService']],
             ['method'=>'POST','path'=>'/admin/shipping/preview','name'=>'admin.shipping.preview','page'=>'admin/shipping','controller'=>'AdminController@previewShipping','services'=>['ShippingService']],
+            ['method'=>'POST','path'=>'/admin/shipping/save-draft','name'=>'admin.shipping.draft.save','page'=>'admin/shipping','controller'=>'AdminController@saveShippingDraft','services'=>['ShippingService','SettingsService','DatabaseService','AuditLogService']],
             ['method'=>'GET','path'=>'/admin/astrologers','name'=>'admin.astrologers','page'=>'admin/dashboard','controller'=>'AdminController@astrologers','services'=>[]],
             ['method'=>'GET','path'=>'/admin/appointments','name'=>'admin.appointments','page'=>'admin/list','controller'=>'AdminController@appointments','services'=>['AppointmentService']],
             ['method'=>'GET','path'=>'/admin/consultation-analytics','name'=>'admin.consultation-analytics','page'=>'admin/consultation-analytics','controller'=>'AdminController@consultationAnalytics','services'=>['ConsultationService']],

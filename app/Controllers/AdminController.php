@@ -416,7 +416,52 @@ final class AdminController extends BaseController {
         $this->redirect('/admin/orders/'.$id);
     }
     public function shipping(): void {
-        $this->render('admin/shipping', ['pageTitle'=>'Shipping zone preview', 'form'=>[]]);
+        try {
+            $draft=(new SettingsService())->shippingDraft();
+            $this->render('admin/shipping', ['pageTitle'=>'Shipping zone draft', 'form'=>['zones'=>$draft['zones']],
+                'draftRevision'=>$draft['revision']]);
+        } catch (\Throwable) {
+            $this->render('admin/shipping', ['pageTitle'=>'Shipping zone draft','form'=>[],
+                'draftRevision'=>null,'error'=>'Saved shipping draft is unavailable. Reload before editing.']);
+        }
+    }
+
+    public function saveShippingDraft(): void {
+        $this->validateCsrf();
+        $expected=$_POST['draft_revision']??null;
+        $zones=$_POST['zones']??null;
+        $form=['zones'=>[]];$error=null;
+        try {
+            if (!\App\Services\ShippingService::validRevision($expected)||!is_array($zones))
+                throw new \InvalidArgumentException('Reload the shipping editor before saving.');
+            $form['zones']=\App\Services\ShippingService::normaliseZones($zones);
+            if (!(new SettingsService())->saveShippingDraft($form['zones'],$expected)) {
+                http_response_code(409);
+                $error='Another owner session saved the shipping draft. Your changes are not saved. Reopen the current draft before editing again.';
+            } else {
+                (new AuditLogService())->record('save','shipping_policy','draft',['zone_count'=>count($form['zones'])]);
+                $this->flash('Shipping draft saved. Customer charges are unchanged.','success');
+                $this->redirect('/admin/shipping');
+            }
+        } catch (\InvalidArgumentException $failure) {
+            http_response_code(422);
+            $error=$failure->getMessage();
+        } catch (\Throwable $failure) {
+            http_response_code(503);
+            error_log('Shipping draft save unavailable: '.$failure::class);
+            $error='Shipping draft save could not be confirmed. Reopen the stored draft before retrying.';
+        }
+        // Retain safe form values for correction; never silently give a stale edit
+        // the newer revision or permit an unavailable save to be retried blindly.
+        if (is_array($zones) && array_is_list($zones)) {
+            foreach (array_slice($zones,0,\App\Services\ShippingService::MAX_ZONES) as $i=>$zone) {
+                if (!is_array($zone)) continue;
+                foreach (['state','pins','method','fee','minimum'] as $field)
+                    if (is_string($zone[$field]??null)) $form['zones'][$i][$field]=mb_substr($zone[$field],0,$field==='pins'?500:100);
+            }
+        }
+        $this->render('admin/shipping',['pageTitle'=>'Shipping zone draft','form'=>$form,
+            'draftRevision'=>http_response_code()===422&&\App\Services\ShippingService::validRevision($expected)?$expected:null,'error'=>$error]);
     }
 
     public function previewShipping(): void {
@@ -450,7 +495,9 @@ final class AdminController extends BaseController {
             http_response_code(422);
             $error = $exception->getMessage();
         }
-        $this->render('admin/shipping', ['pageTitle'=>'Shipping zone preview','form'=>$form,'quote'=>$quote,'error'=>$error]);
+        $revision=$_POST['draft_revision']??null;
+        $this->render('admin/shipping', ['pageTitle'=>'Shipping zone draft','form'=>$form,'quote'=>$quote,'error'=>$error,
+            'draftRevision'=>\App\Services\ShippingService::validRevision($revision)?$revision:null]);
     }
     public function astrologers(): void{
         $this->redirect('/admin');

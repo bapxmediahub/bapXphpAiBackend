@@ -1105,18 +1105,23 @@
             "local_sources": [
                 "docs/research/capability-register.json",
                 "docs/research/rea-engineering-workflow.md",
-                "app/Services/ProjectMapService.php"
+                "app/Services/ProjectMapService.php",
+                "app/Services/SettingsService.php",
+                "app/Services/ShippingService.php",
+                "app/Services/DatabaseService.php"
             ],
             "acceptance_tests": [
-                "tests/project-map.php"
+                "tests/project-map.php",
+                "tests/shipping-policy.php",
+                "tests/shipping-policy-browser.cjs"
             ],
             "upstream_references": [
                 "references/decision-tree.md"
             ],
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed actual deployed #518 failure and explicit next-cycle routing; advance independent work without narrating incomplete acceptance as success.",
-                "sha256": "2c985b27977a2f4580b00fdc5ef34f609361e3fe9e3e4705704151a488ad5c5f"
+                "reason": "Reviewed new owner-only save route, authenticated remotedb operation, normalized stored proposal and separate preview. No new public/agent route or activation.",
+                "sha256": "281a7b011109646f9e482c403afe8d5f38b4f9c08e733ef0c8a6da02452f8e8d"
             }
         },
         {
@@ -1855,7 +1860,9 @@
                 "app/Services/ProductImportService.php",
                 "app/Services/MerchantFeedService.php",
                 "app/Services/SeoService.php",
-                "app/Services/MerchantApiService.php"
+                "app/Services/MerchantApiService.php",
+                "app/Services/SettingsService.php",
+                "app/Services/DatabaseService.php"
             ],
             "acceptance_tests": [
                 "tests/shipping-preview-browser.cjs",
@@ -1867,7 +1874,9 @@
                 "docs/modules/catalog.md",
                 "tests/gst-unit-browser.cjs",
                 "docs/google-sales-channels.md",
-                "tests/merchant-api.php"
+                "tests/merchant-api.php",
+                "tests/shipping-policy.php",
+                "tests/shipping-policy-browser.cjs"
             ],
             "upstream_references": [
                 "references/audit-precondition.md",
@@ -1877,8 +1886,8 @@
             ],
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed shared browser and remote frozen tax inputs, same authoritative coupon-adjusted gateway amount for Stripe and Razorpay, 194 verified-order and 120 remote checkout checks. Shipping pricing activation and actual captured-payment acceptance remain separate.",
-                "sha256": "7b7945523667ecbd53095d32667df5b07125f0a474a8384586d9ed591850b904"
+                "reason": "Reconciled deployed P23 owner proposal and checkout tax/coupon projection. No activation or paid shipping; actual gateway fixtures prove both browser paths.",
+                "sha256": "1f48b15a761d711e9892f76778b34854e5f7f49871694b6702e59d3c35c65695"
             }
         },
         {
