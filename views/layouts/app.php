@@ -590,7 +590,7 @@ if ($__flash):
         <div class="footer-bottom">
             <span>&copy; <?= date('Y') ?> <?= e($__siteName) ?></span>
             <nav class="footer-legal" aria-label="Legal"><a href="/terms">Terms</a><a href="/privacy">Privacy</a></nav>
-            <span>Developed by <a href="https://mediahub.bapx.in/" target="_blank" rel="noopener noreferrer">bapxmediahub</a></span>
+            <span>Developed with ♥️ by <a href="https://mediahub.bapx.in/" target="_blank" rel="noopener noreferrer">@bapxmediahub</a></span>
         </div>
     </div>
 </footer>

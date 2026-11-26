@@ -28,9 +28,9 @@
             "review_note": "Reviewed canonical Markdown and owner/session boundaries; no new dependency, public grant or storage mutation."
         },
         "google-tags": {
-            "source_sha256": "ee67bf3e50c0de63820bd128a2c2df6f29571d0df37e7e3f22bd910948554f0e",
-            "references_sha256": "242d531767e83cd1100a04a04cc83a08e50f02dff2b825c33bdb0b9d9bb23c85",
-            "review_note": "Reviewed independent GST Settings form and help alongside Google tags guidance; existing integration fields and tag handling are unchanged."
+            "source_sha256": "239140bbf84afe1d759b8fba20f012147c59202640638ffb270bd0820fdbe5b5",
+            "references_sha256": "9c4b6af1c584d8196c73ad9d5bf661cbe6796cc9f778dff719ccf4ce806b2725",
+            "review_note": "Reviewed shared layout; footer text only, Google tracking and consent head scripts unchanged."
         },
         "http-errors": {
             "source_sha256": "0f920c297cfc4e216a87be02a35c20827cc254dd6934ba24a1fa9135520a0560",
@@ -38,9 +38,9 @@
             "review_note": "Reviewed runtime failure and response integrity; rejected tool errors remain explicit and provider/HTTP status paths unchanged."
         },
         "interface": {
-            "source_sha256": "95ae053805106b3ce9581ae64dd0c3c06e2c313b92629f8a1d0f493f39993f89",
-            "references_sha256": "7593f0def754e85b99f97b22336cda86a8b0be70b70fadeae820f17b1cfae663",
-            "review_note": "Reviewed actual desktop/375px editor controls and chat create-only unpublished form; three browser tests passed."
+            "source_sha256": "e6a96a5f1b0f4d111c928394ad5b4091cdb9718b145d8cb3e98323e766efc89f",
+            "references_sha256": "4d63f27c7ea8ae671839efae05e3702ef9ba7f29b908490cd257d85029720882",
+            "review_note": "Restored owner-approved heart and @ handle in shared footer without changing structure, verified red-before and green-after homepage at four sizes and no JS."
         },
         "mail": {
             "source_sha256": "e5254fa76163ffb93a3a407d8a4f729929a5c07af839c593e3729c4aa79226d8",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed the owner UI skill changes against authenticated media navigation, route declarations, and Media Library behavior. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
         },
         "operator-help": {
-            "source_sha256": "b995af72856aba1a4439c543b31a024ab3870fdd0128c28bb228145b7f6223f1",
+            "source_sha256": "3ed11b8fea8b9c4d0a1be0c5b8cabe94f2cb0b6bfe26cca5295bb9d388a791d1",
             "references_sha256": "205c5bc2fef6f6021093ca04c9a2901e84b4adf068575f5abdfdf0811bb9f56a",
-            "review_note": "Reconciled actual owner guide changes for model-only editorial generation, manual form and unpublished save against the combined ledger baseline."
+            "review_note": "Reviewed exact footer credit restoration; no owner or customer help route or authorization change."
         },
         "public-mcp": {
             "source_sha256": "ed8e9f70d2a8d778b8fa52a47aac671d1cb94f24502562e50ba9b8fe93a5ca17",
@@ -68,9 +68,9 @@
             "review_note": "Reviewed route map and authenticated editor action; public MCP declarations and scopes unchanged."
         },
         "remote-commerce": {
-            "source_sha256": "d7f17dc773cd47a72b919c8d03702c8b27ab02a4a47034117b01e16e8a18fe88",
-            "references_sha256": "e0101fccba5025482055255fa88b93bb3295ec220b67cef749d8cec9267b8990",
-            "review_note": "Reviewed existing commerce and browser scopes; direct declarations are confined to existing in-app role allowlists, no checkout mutation or transport exposure."
+            "source_sha256": "7cb3b8a8a5a8c2ffd2d48bc46d716dee4d8aad0dd58b0c1075718e023e38317c",
+            "references_sha256": "8fb7dde77626744439e3fb3b700ea61c4928b4f4dfe10aaa8f63f18f4ee8107a",
+            "review_note": "Reviewed shared public layout diff; only owner-approved studio credit changes, commerce, cart and checkout behavior untouched."
         },
         "sales-channels": {
             "source_sha256": "5133aad1b8eb87f5ca305e4e42ec0acbcb1d279b6d5b773b0a8ce6f6f5003647",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed merchant feed and approved read-only CLI operations; portable validation uses synthetic fixtures only, no channel publishing."
         },
         "workflow": {
-            "source_sha256": "69f0bfbe3a103b7f1bc528ef4128a1970e587c81ac7ffe16ee72b524b108906c",
+            "source_sha256": "176f5ca4b2b506535e30d7d1a99759c6dc8e455dbad8762be6997535dca067c3",
             "references_sha256": "14c2c675da06f0e52ce81e374d38de55ffbbc5cbdffb344aa94a62f7ec668e68",
-            "review_note": "Reviewed REA review mappings and updated browser validation lane; real controller and provider fixture suites remain separate from live acceptance."
+            "review_note": "Reviewed frontend skill and exact branding preservation regression; follow existing independent PR and deployment workflow."
         }
     }
 }

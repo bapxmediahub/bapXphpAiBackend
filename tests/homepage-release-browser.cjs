@@ -17,6 +17,17 @@ async function freePort(){
 }
 const expected=process.env.EXPECTED_SHA||'';
 const live=Boolean(expected);
+async function verifyCredit(page) {
+ const credit=page.locator('.site-footer .footer-bottom span').filter({has:page.locator('a[href="https://mediahub.bapx.in/"]')});
+ assert.equal(await credit.count(),1,'Exactly one studio credit');
+ assert.equal((await credit.innerText()).trim(),'Developed with ♥️ by @bapxmediahub','Preserve exact owner-approved credit');
+ const link=credit.getByRole('link',{name:'@bapxmediahub',exact:true});
+ assert.equal(await link.getAttribute('href'),'https://mediahub.bapx.in/');
+ assert.equal(await link.getAttribute('target'),'_blank');
+ assert.deepEqual((await link.getAttribute('rel')).split(/\s+/).sort(),['noopener','noreferrer']);
+ assert.ok(await link.isVisible());
+}
+
 if(live&&!/^[a-f0-9]{40}$/.test(expected))throw Error('Expected exact deployed Git SHA');
 
 test('actual public layout: pinned brand, complete editorial sequence, readable footer and navigation',{timeout:120000},async()=>{
@@ -63,6 +74,7 @@ test('actual public layout: pinned brand, complete editorial sequence, readable 
    assert.equal(await header.locator('.brand span').innerText(),'Sri Panchami Spiritual');
    assert.ok(await header.locator('.brand img').isVisible());
    assert.equal(await p.locator('.site-footer').count(),1);
+   await verifyCredit(p);
    assert.equal(await p.locator('[data-home-stack] > .site-footer:last-child').count(),1);
    assert.equal(await p.locator('.site-footer').getAttribute('role'),'contentinfo');
    const sections=await p.evaluate(()=>{
@@ -128,6 +140,7 @@ test('actual public layout: pinned brand, complete editorial sequence, readable 
   if(!live)await context.route('https://**/*',r=>r.abort());
   const p=await context.newPage();await p.goto(origin+'/');
   assert.equal(await p.locator('.site-footer').count(),1);
+  await verifyCredit(p);
   assert.ok(await p.locator('.site-footer .footer-bottom a[href="/privacy"]').count());
   assert.equal(await p.locator('#site-header').evaluate(e=>getComputedStyle(e).position),'sticky');
   await p.getByRole('link',{name:'Menu',exact:true}).click();
