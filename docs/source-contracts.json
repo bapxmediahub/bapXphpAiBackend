@@ -24,8 +24,8 @@
         },
         "foundation": {
             "source_sha256": "cbe9cc784939b451fccbd4e1c1447ca82630f101f52d5dfc0a2336e91c825864",
-            "references_sha256": "b74a87abe3b3116729352d75ffa1d346d973d2c1810d8792c868480d670e74be",
-            "review_note": "Reviewed architecture public knowledge projection and deployment verification boundaries against changed read adapters and WebMCP documentation; existing data isolation unchanged."
+            "references_sha256": "f5e7ad43b6f0d80ca150504118e12c5cbbe31fbcb6d045a673bc9660c20b7243",
+            "review_note": "Reviewed native WebMCP version thresholds, canonical PHP schemas and live deployment verification boundaries; tests use synthetic registration only."
         },
         "google-tags": {
             "source_sha256": "ee67bf3e50c0de63820bd128a2c2df6f29571d0df37e7e3f22bd910948554f0e",
@@ -69,8 +69,8 @@
         },
         "remote-commerce": {
             "source_sha256": "28a3c2d025729100fe529cb5d1d05d3bd967ca18d4f29f99bb27505419d09e56",
-            "references_sha256": "88a430822a21f9fdd98971ec33f4632a4e311c9f2670a097e6cb43fe264840d5",
-            "review_note": "Reviewed public read adapters and WebMCP cancellation guidance against remote commerce and public MCP contracts; no mutation, checkout or authorization changes."
+            "references_sha256": "2dead72b599083a551fc7b5c17791a9b571942379c6703e32318e9454d9f7bba",
+            "review_note": "Cross-checked existing commerce isolation and checkout fixtures against the added forward browser gate; no API or payment behavior changed."
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",
@@ -78,9 +78,9 @@
             "review_note": "Compared the CLI guide combining catalogue, storefront search, and generated artifact checks. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
         },
         "workflow": {
-            "source_sha256": "34127a2258781c2684ecd7ac64d3f66e56a31577dc17cb6ea62f11bab8670a11",
+            "source_sha256": "db465530e3fdb0326d704ac698843b20afeb4734f574f21e81c0c3dde33a25f1",
             "references_sha256": "e02da7c441df6fad273bb71dd829c2564589fc319753a291036c415e8b8494ca",
-            "review_note": "Compared the full local release gate, independent artifact scratch paths, malformed generation reporting and the focused map and CLI regressions. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
+            "review_note": "Reviewed validation workflow and development release gates; forward job is separate and runs the same pinned test dependencies with explicit native version assertion."
         }
     }
 }
