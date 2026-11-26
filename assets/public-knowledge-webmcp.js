@@ -43,7 +43,7 @@
         inputSchema: contract.inputSchema,
         outputSchema: contract.outputSchema,
         annotations: { readOnlyHint: true, untrustedContentHint: true },
-        async execute(input = {}) {
+        async execute(input = {}, { signal } = {}) {
             if (!input || typeof input !== 'object' || Array.isArray(input)
                 || Object.keys(input).some(k => !['query', 'offset', 'limit'].includes(k))) {
                 throw new TypeError('Invalid public article search arguments.');
@@ -62,7 +62,7 @@
                 method: 'GET',
                 credentials: 'omit',
                 headers: { Accept: 'application/json' },
-                signal: lifecycle.signal
+                signal: signal ? AbortSignal.any([lifecycle.signal, signal]) : lifecycle.signal
             });
             if (!response.ok) throw new Error('Public article search unavailable.');
             return validate(await response.json());

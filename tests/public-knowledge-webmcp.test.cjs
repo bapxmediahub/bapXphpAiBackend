@@ -38,7 +38,7 @@ function fixture(fetchData, modelContext = true, mode = 'promise') {
             location:{origin:'https://example.test'},
             addEventListener:(name, handler)=>{if(name==='pagehide')event=handler;}
         },
-        URL, AbortController,
+        URL, AbortController, AbortSignal,
         fetch:async (url, opts)=>{
             calls.push({url:String(url),opts});
             return {ok:true,json:async()=>fetchData};
@@ -90,4 +90,19 @@ test('browser refuses invalid input and a forged private or external article URL
     await assert.rejects(x.registration.tool.execute({query:'secret'}),{name:'TypeError'});
     const external=fixture({articles:[{title:'Bad',path:'https://outside.test',category:'help',score:1}],total:1,nextOffset:null});
     await assert.rejects(external.registration.tool.execute({query:'test'}),{name:'TypeError'});
+});
+
+test('execution cancellation is independent of registration lifetime', async () => {
+    const x=fixture({articles:[],total:0,nextOffset:null});
+    const controller=new AbortController();
+    await x.registration.tool.execute({}, {signal:controller.signal});
+    const signal=x.calls[0].opts.signal;
+    assert.equal(signal.aborted,false);
+    controller.abort();
+    assert.equal(signal.aborted,true);
+    assert.equal(x.registration.opts.signal.aborted,false);
+    await x.registration.tool.execute({});
+    assert.equal(x.calls[1].opts.signal.aborted,false);
+    x.event({persisted:false});
+    assert.equal(x.calls[1].opts.signal.aborted,true);
 });

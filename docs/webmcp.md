@@ -276,3 +276,6 @@ Discovery and form navigation are distinct checks, not a CDP form invocation.
 This proves browser-level production behavior in the recorded Chrome
 version; it does not claim that an unrelated chat client has installed the site's
 connector or rendered its MCP App.
+
+### Execution cancellation (Chrome 153+)
+Public read tools combine the invocation AbortSignal with their document lifetime signal; cancelling one call does not unregister the tool. See https://developer.chrome.com/docs/ai/webmcp/updates and the public knowledge cancellation regression.

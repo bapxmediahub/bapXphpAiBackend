@@ -52,11 +52,11 @@
         }
         return data;
     };
-    const get = async (path, params = {}) => {
+    const get = async (path, params = {}, signal) => {
         const url = new URL(path, window.location.origin);
         for (const [key, value] of Object.entries(params)) url.searchParams.set(key, String(value));
         const response = await fetch(url, {method: 'GET', credentials: 'omit',
-            headers: {Accept: 'application/json'}, signal: lifecycle.signal});
+            headers: {Accept: 'application/json'}, signal: signal ? AbortSignal.any([lifecycle.signal, signal]) : lifecycle.signal});
         if (!response.ok) throw new Error('Published business information unavailable.');
         return response.json();
     };
@@ -66,9 +66,9 @@
             title: 'Get published contact details',
             description: 'Get the business name, public phone numbers, support email, opening hours and enquiry page. Use this for how to contact the business. Reads published information only; does not send a message.',
             ...contracts.contact,
-            async execute(input = {}) {
+            async execute(input = {}, { signal } = {}) {
                 if (!keys(input, []) || Object.keys(input).length) throw new TypeError('Contact lookup takes no arguments.');
-                return contact(await get('/api/knowledge/contact'));
+                return contact(await get('/api/knowledge/contact', {}, signal));
             }
         },
         {
@@ -76,8 +76,8 @@
             title: 'List published services and enquiry options',
             description: 'List or search the existing product enquiry, temple guidance, order support and general enquiry options. Returns descriptions and contact-form links. No booking or order changes. Follow nextOffset for more.',
             ...contracts.services,
-            async execute(input = {}) {
-                return services(await get('/api/knowledge/services', pageInput(input)));
+            async execute(input = {}, { signal } = {}) {
+                return services(await get('/api/knowledge/services', pageInput(input), signal));
             }
         }
     ];

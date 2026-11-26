@@ -19,7 +19,7 @@
         inputSchema:contract.inputSchema,
         outputSchema:contract.outputSchema,
         annotations:{readOnlyHint:true,untrustedContentHint:true},
-        async execute(input={}) {
+        async execute(input = {}, { signal } = {}) {
             if(!input || typeof input!=='object' || Array.isArray(input)
                 || Object.keys(input).some(k=>!['view','query','limit','layout','slugs'].includes(k))) {
                 throw new TypeError('Invalid A2UI input.');
@@ -44,7 +44,7 @@
             if(slugs.length)url.searchParams.set('slugs',JSON.stringify(slugs));
             const response=await fetch(url,{
                 method:'GET',credentials:'omit',
-                headers:{Accept:'application/json'},signal:lifecycle.signal
+                headers:{Accept:'application/json'},signal: signal ? AbortSignal.any([lifecycle.signal, signal]) : lifecycle.signal
             });
             if(!response.ok)throw new Error('Published A2UI presentation unavailable.');
             const payload=await response.json();
