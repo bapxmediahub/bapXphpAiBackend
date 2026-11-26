@@ -24,8 +24,8 @@
         },
         "foundation": {
             "source_sha256": "cbe9cc784939b451fccbd4e1c1447ca82630f101f52d5dfc0a2336e91c825864",
-            "references_sha256": "f5e7ad43b6f0d80ca150504118e12c5cbbe31fbcb6d045a673bc9660c20b7243",
-            "review_note": "Reviewed native WebMCP version thresholds, canonical PHP schemas and live deployment verification boundaries; tests use synthetic registration only."
+            "references_sha256": "ab8280bb52a12774a146db46d004b3ce31f11071370c2203171f6f5d2ece1412",
+            "review_note": "Reviewed merged native Chrome 160 acceptance and rollback of incomplete business group against canonical schemas and public-only projection; preserve existing deployment and private boundaries."
         },
         "google-tags": {
             "source_sha256": "ee67bf3e50c0de63820bd128a2c2df6f29571d0df37e7e3f22bd910948554f0e",
@@ -38,9 +38,9 @@
             "review_note": "Compared article trace redaction with the private response guard, Chat Completions provider failures and labelled Support reference. A failed turn reports a bounded application trace identifier."
         },
         "interface": {
-            "source_sha256": "bd36cf28217c90e2822174e23f90107b57d1a3d1fefa76b693f8c7998ec5b0e3",
+            "source_sha256": "cf5d389babfbae48dd6a69b2ed894b818fe72db4aa1ed246e8f813a1cebfab33",
             "references_sha256": "7593f0def754e85b99f97b22336cda86a8b0be70b70fadeae820f17b1cfae663",
-            "review_note": "Reviewed public adapter invocation and lifecycle cleanup against frontend skill and Design; no visual or checkout state change, public reads preserve existing schema and credential omission."
+            "review_note": "Reviewed combined public browser discovery, readiness guard, native descriptor metadata and lifecycle; no human form or visual behavior changed."
         },
         "mail": {
             "source_sha256": "11a3b674d92d0714846359177499966c2f5ad2b1af5380a972280c64bb79b7b8",
@@ -69,8 +69,8 @@
         },
         "remote-commerce": {
             "source_sha256": "28a3c2d025729100fe529cb5d1d05d3bd967ca18d4f29f99bb27505419d09e56",
-            "references_sha256": "2dead72b599083a551fc7b5c17791a9b571942379c6703e32318e9454d9f7bba",
-            "review_note": "Cross-checked existing commerce isolation and checkout fixtures against the added forward browser gate; no API or payment behavior changed."
+            "references_sha256": "b0106f13d7b5f63eef0f5325c846a3e8298ae7a2e74bce2494eff5045ee72772",
+            "review_note": "Reconciled main Chrome 160 forward test and business group rollback: credential-free read contracts and checkout unaffected; reviewed both WebMCP sections and commerce fixtures."
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",

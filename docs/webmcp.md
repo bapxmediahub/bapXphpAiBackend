@@ -29,7 +29,11 @@ settings row. The four offerings are Product Inquiry, Temple Guidance, Order
 Support and General Question; they do not claim that retired consultation
 booking is available. The human contact page and tools use the same values,
 subject allowlist and descriptions. A service link prefills an enquiry subject;
-it does not submit the form.
+it does not submit the form. Contact and service tools form one registration
+group. A refused registration aborts the shared lifetime, removes any installed
+sibling and prevents execution until both registrations complete. This follows
+[Chrome's capability-group guidance](https://developer.chrome.com/docs/ai/webmcp/best-practices);
+it does not remove independently registered product, article or commerce tools.
 
 The JSON GET endpoints are `/api/knowledge/products`, `/articles`, `/contact`,
 `/services` and `/a2ui`, all under `/api/knowledge`. The scripts use
