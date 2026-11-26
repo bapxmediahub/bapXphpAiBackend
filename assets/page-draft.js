@@ -173,6 +173,27 @@
         form.elements.browser_draft_token.value = dirty ? '' : token;
         submitting = true;
     });
+    const server = window.bapxEditorServerDraft?.({
+        form,kind:'page',capture:values,localRecovery:recovery,
+        apply(saved) {
+            if (!fields.every(name => saved[name] === undefined || typeof saved[name] === 'string')
+                || !settingsControls.every(control => validSettingValue(control,saved[control.name]))
+                || Object.keys(saved).some(name=>!fields.includes(name))) return false;
+            const header = form.elements.header_image_url;
+            if (saved.header_image_url !== undefined && !Array.from(header.options).some(option=>option.value===saved.header_image_url)) return false;
+            for (const name of fields) {
+                const control = form.elements[name], next = saved[name];
+                if (control.readOnly || next === undefined) continue;
+                if (control.type === 'checkbox') control.checked = next === control.value;
+                else control.value = next;
+            }
+            form.dispatchEvent(new Event('page-draft-restored'));
+            dirty=true; saveDraft(); form.elements.title.focus();
+            return true;
+        },
+    });
+    server?.open();
+    form.addEventListener('page-draft-restored',()=>server?.changed());
     window.addEventListener('pagehide', saveDraft);
     window.addEventListener('beforeunload', event => {
         saveDraft();

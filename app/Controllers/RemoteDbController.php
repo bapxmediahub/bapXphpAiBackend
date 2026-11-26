@@ -101,6 +101,16 @@ final class RemoteDbController {
                 }
                 echo json_encode(['success'=>true,'result'=>$result],JSON_THROW_ON_ERROR);return;
             }
+            if ($collection === 'settings' && $action === 'editor_draft_operation') {
+                foreach (['owner','kind','target','operation','expected','revision'] as $field) {
+                    if (!is_string($input[$field] ?? null)) throw new \InvalidArgumentException('Invalid editor recovery identity.');
+                }
+                if (!is_array($input['values'] ?? null)) throw new \InvalidArgumentException('Invalid editor recovery fields.');
+                $result = $store->editorDraftOperation($input['owner'],$input['kind'],$input['target'],$input['operation'],
+                    $input['expected'],$input['revision'],$input['values']);
+                echo json_encode(['success'=>true,'result'=>$result],JSON_THROW_ON_ERROR);
+                return;
+            }
             if ($collection === 'settings' && $action === 'delete_authored_page') {
                 if (!is_string($input['slug'] ?? null) || !is_string($input['expected'] ?? null)) throw new \InvalidArgumentException('Page and revision required.');
                 echo json_encode(['success'=>true, 'deleted'=>$store->deleteAuthoredPage($input['slug'], $input['expected'])]);

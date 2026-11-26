@@ -102,6 +102,7 @@
         recovery.hidden = true;
         editFields.inert = false;
         status.textContent = 'Browser draft restored. Review publication and save when ready.';
+        server?.changed();
         document.getElementById('edit-title').focus();
     });
 
@@ -132,6 +133,27 @@
         saveDraft();
         submission.value = token || '';
     });
+    const server = window.bapxEditorServerDraft?.({
+        form,kind:'blog',localRecovery:recovery,
+        capture() {
+            window.beSyncMarkdown();
+            return Object.fromEntries(fields.map(name=>[name,form.elements[name].value]));
+        },
+        apply(saved) {
+            if (!fields.every(name=>typeof saved[name]==='string')) return false;
+            for (const name of fields) {
+                const control=form.elements[name];
+                if (control.options && !Array.from(control.options).some(option=>option.value===saved[name])) return false;
+            }
+            if (form.elements.original_slug.value && saved.slug!==form.elements.original_slug.value) return false;
+            for (const name of fields) form.elements[name].value=saved[name];
+            document.getElementById('edit-slug-display').value=saved.slug;
+            window.beLoadMarkdown(saved.content);
+            dirty=true; saveDraft(); document.getElementById('edit-title').focus();
+            return true;
+        },
+    });
+    form.addEventListener('blog:open',()=>server?.open());
     window.addEventListener('pagehide', saveDraft);
     form.addEventListener('blog:close', event => {
         saveDraft();

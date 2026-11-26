@@ -53,6 +53,32 @@ Partial rows receive no fractional completion credit.
 The initial snapshot is a conservative source reconciliation, not an assertion
 that every listed test was rerun during the audit.
 
+## Recover the behavioral contract before writing a component
+
+REA is not a checklist generator or a substitute for engineering the underlying
+mechanism. For each component, identify the actual entrypoint and the downstream
+call chain, the inputs and result schema, authoritative state and persistence,
+identity/permission checks, error and retry transitions, and visible user
+behavior. Read the referenced source bodies and tests behind every static
+inventory result. Use REA tracing or reconstruction-obligation commands only
+when their provider and evidence scope support the claim; distinguish observed
+static semantics, executed behavior and unverified assumptions.
+
+Record the upstream symbols and exact pins alongside the native counterpart
+and any intentional deviations. Before coding, specify normal, rejected,
+concurrent, interrupted and recovery behavior where applicable. Map each
+critical invariant to an executable regression; a passing benchmark or mock
+response cannot certify a live subsystem. Preserve unrelated UI copy, branding,
+routes, permissions and working behavior. Never remove an established capability
+to satisfy an isolated prompt. A partially mapped reference is an unknown or
+partial obligation, not an instruction to fabricate the missing code.
+
+The editorial recovery contract in [Content and SEO](../modules/content-and-seo.md)
+is a concrete example: source-backed per-author autosaves, nonce/permission
+checks, canonical publication boundaries and edit conflicts are adapted to
+native MySQL and Markdown. An upstream heartbeat edit lease and native revision
+CAS are different mechanisms; do not claim lease parity from a conflict test.
+
 ## Every relevant PR: review, implement, measure, record
 
 1. Read AGENTS.md, the relevant developer skills, existing issue/PR history,

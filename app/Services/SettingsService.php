@@ -34,7 +34,7 @@ final class SettingsService {
         if (self::$cache !== null && (!$requireReadable || !self::$readFailed)) return self::$cache;
         try {
             // Authored page bodies share the table; ordinary settings requests only need configuration.
-            $rows = $this->store->query("SELECT id, _data FROM settings WHERE id NOT LIKE 'pg:%'");
+            $rows = $this->store->query("SELECT id, _data FROM settings WHERE id NOT LIKE 'pg:%' AND id NOT LIKE 'ed:%'");
         } catch (\Throwable $error) {
             self::$readFailed = true;
             if ($requireReadable) throw $error;
@@ -46,6 +46,7 @@ final class SettingsService {
         $settings = null;
         foreach ($rows as $record) {
             $id = (string)$record['id'];
+            if (str_starts_with($id,'ed:')) continue;
             $row = ['id'=>$id] + (json_decode($record['_data'], true, 512, JSON_THROW_ON_ERROR) ?: []);
             if ($id === self::HEADER_MENU_ID) {
                 self::$menuRecord = $row;

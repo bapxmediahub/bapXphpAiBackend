@@ -38,6 +38,16 @@ PHP commerce only where the actual source proves the feature.
   upstream paths, priority and acceptance tests. Preserve existing payment/GST/
   refund/idempotency safeguards rather than claiming they are absent.
 
+## Reconstruct behavior, not a feature name
+
+For every reference component, trace actual entrypoints and callees, input and
+output shapes, state/persistence, actor/permission checks, normal/error/concurrent
+transitions and recovery. Read the pinned source bodies and tests, then map
+the invariants and intentional native deviations to executable regressions.
+Do not substitute source inventories, screenshots, benchmark success or a
+component scaffold for the complete working mechanism. Preserve unrelated
+owner-approved content and design during adaptation.
+
 ## Engineering constraints
 
 Native PHP remains the runtime. Business records remain MySQL. Agent conversations

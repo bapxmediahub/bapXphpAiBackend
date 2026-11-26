@@ -69,7 +69,7 @@ async function project(t) {
         'cli/validate-docs-map.php': 'docs-map', 'cli/smoke-local.php': 'smoke',
     })) await write(file, '<?php\necho "FIXTURE:' + marker + '-ok\\n";\n');
     for (const name of [
-        'contact-admission', 'campaign-booking', 'campaign-form-http', 'media-delete-integration',
+        'contact-admission', 'campaign-booking', 'campaign-form-http', 'editor-draft', 'media-delete-integration',
         'deployment-revision', 'public-knowledge', 'catalogue-comparison', 'public-product-selection',
         'public-agent-discovery', 'public-mcp', 'remote-cart', 'remote-checkout', 'verified-order',
         'public-mcp-shopping', 'public-mcp-checkout', 'public-a2ui', 'agent-presentation-scope',
@@ -181,7 +181,7 @@ test('ci executes the portable hosted PHP fixtures and aggregates HTTP fixture f
     const good = await fixture.run(['ci']);
     assert.equal(good.status, 0, good.output);
     for (const name of [
-        'contact-admission', 'campaign-booking', 'campaign-form-http', 'media-delete-integration',
+        'contact-admission', 'campaign-booking', 'campaign-form-http', 'editor-draft', 'media-delete-integration',
         'deployment-revision', 'public-knowledge', 'catalogue-comparison', 'public-product-selection',
         'public-agent-discovery', 'public-mcp', 'remote-cart', 'remote-checkout', 'verified-order',
         'public-mcp-shopping', 'public-mcp-checkout', 'public-a2ui', 'agent-presentation-scope',

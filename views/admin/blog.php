@@ -21,6 +21,7 @@
         </div>
     </section>
     <p id="be-draft-status" class="be-draft-status" role="status"></p>
+    <?php require app_path('views/admin/editor-server-draft.php'); ?>
     <input type="hidden" name="browser_draft_token" id="be-draft-token">
     <div id="be-edit-fields">
     <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
@@ -525,6 +526,7 @@ function previewArticle(){var f=document.getElementById('blog-form');var fd=new 
 })();
 </script>
 
+<script src="/assets/editor-server-draft.js?v=<?= filemtime(app_path('assets/editor-server-draft.js')) ?>"></script>
 <script src="/assets/blog-draft.js?v=<?= filemtime(app_path('assets/blog-draft.js')) ?>"></script>
 <script>
 document.getElementById('edit-slug-display').addEventListener('input',function(){if(!document.getElementById('edit-original-slug').value)document.getElementById('edit-slug').value=this.value;});
