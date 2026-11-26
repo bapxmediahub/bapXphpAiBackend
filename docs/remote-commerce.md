@@ -163,7 +163,11 @@ server-frozen GST/HSN/unit-price/line fields plus all eight supplier/default set
 remain usable after product deletion; fulfillment still requires review.
 Incomplete/invalid tax evidence records the payment with tax review required,
 without inventing an invoice. Shared persistence never changes `$_SESSION`.
-The browser wrapper clears only its matching pending order and matching cart.
+The browser wrapper clears only its matching pending order and matching cart. Browser Razorpay and
+Stripe now share the remote checkout's TaxService projection for the confirmed
+product and supplier tax inputs, and both apply the server-validated coupon
+before initiating payment. Neither browser gateway relies on later catalogue
+tax edits to reconstruct a newly prepared checkout.
 
 Configured GST reporting unit and per-item quantity are also captured in the
 private quote and its digest. Issued lines use the confirmed values even if the

@@ -13,19 +13,19 @@
             "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
         },
         "commerce": {
-            "source_sha256": "56c2354c15a4b4af4a9698bc2a65f237fdebccff02d9e6b80183b30ec9559d2a",
-            "references_sha256": "1fa8fb3454d9d51e211e141c08d963101f47dcb7ffeaf12d501cb2de2fce9d51",
-            "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
+            "source_sha256": "982980f41e5f696533d985019693fcb70f8db63b80b97a03059f9799c619eab8",
+            "references_sha256": "f32d1fe5f7800b2ada153f4ac6a88248f9c98b7379b5e63fd2502d17962615fb",
+            "review_note": "Reviewed merged P23 draft and both gateway pending evidence; actual isolated tests preserve confirmed invoice facts, no live charges."
         },
         "content": {
-            "source_sha256": "7bc0e3afdd5a80dcbe48b999af092c2609cc94d7eb44da9efa39f7494402254d",
+            "source_sha256": "0feee066974550247ef6080d120b56fe51c95471c9e81cfd5448c9b3597397ae",
             "references_sha256": "8718e91d3903c271860c204b32dd094697396c3613105d1c1cf4717640d042a7",
-            "review_note": "Reviewed storage contract amendment for the bounded disposable PageSpeed cache; authored pages, blogs, customer records and private editor recovery are unchanged."
+            "review_note": "Reviewed private disposable PageSpeed report cache alongside existing storage contract; no business data moved out of MySQL."
         },
         "foundation": {
-            "source_sha256": "6fc5cb14ffde03582c78d54613857c3d36a91c77b178c69d00b5fefea42bf384",
+            "source_sha256": "03cf763899f4c85c9482592b8a00fb5ec8dc88d0ab095b34a733e6193534f91b",
             "references_sha256": "2737cf76a2f3249f89ed355655706f942b1f288d29e6ddd78557ec7c54ab254b",
-            "review_note": "Reviewed exact PageSpeed runtime writer destinations: private fixed deployment cache, separate lock, 0600 atomic temporary replacement, no keys or business records. Specific storage-boundary allowlist only, no general exemption."
+            "review_note": "Reviewed merged storage boundaries, atomic cache/lock and encrypted separate key. Existing checkout and settings persistence preserved."
         },
         "google-tags": {
             "source_sha256": "006d919a539b18d3f9a6009503e572435d00d5936de246632d12414636d8e617",
@@ -38,14 +38,14 @@
             "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
         },
         "interface": {
-            "source_sha256": "4516d1c7d95b1306d75608a37a7f26d7187124b3b968666cf13b743d8ea435e5",
+            "source_sha256": "e196028434af836c73e004f696df579d93f22e57f9215243d0e60e21b3845b98",
             "references_sha256": "eef7e0667f963f48e68350ec36a1e015e0f195d2cda5c0868aeb3e87ccfa0f62",
-            "review_note": "Reviewed masked dedicated-key field, explicit anonymous/key mode, dated prior-result and unfinished-attempt rendering at desktop/mobile; no key echoed."
+            "review_note": "Reviewed masked PageSpeed key UI, current/previous report rendering and preserved shipping editor; no new charge or credential display."
         },
         "mail": {
-            "source_sha256": "d6701ee87e38200539b4d91602756009396ba9564e7e9dec371c048502dcf3ac",
+            "source_sha256": "183a3321ee8f8da52599df9f52ef3ed4877d08a81954f9330b90f2d07bd2af1f",
             "references_sha256": "18b4092f26b698eef0a8027f266cbd6e58d9377f6f8a8b5719be0a0e5cd724c2",
-            "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
+            "review_note": "Reviewed AdminController diff: shipping proposal and preview only, no mail queue or delivery change."
         },
         "mcp-clients": {
             "source_sha256": "ca4eeba3cf3e85708ec73064e77ab330226f105fda950d5787be15fa86b8e7b3",
@@ -58,29 +58,29 @@
             "review_note": "Reviewed the owner UI skill changes against authenticated media navigation, route declarations, and Media Library behavior. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
         },
         "operator-help": {
-            "source_sha256": "a055485d8d8ade46ece6aff3ffb3d846fcfed41e1a9d179cc35ad3921e866ee3",
-            "references_sha256": "8a30e25579fa04715a5b5724fd2983dbbe65d83b32be7d74f4894f35b3684d49",
-            "review_note": "Reviewed dedicated PageSpeed configuration help and latest/prior report state; unrelated owner actions unchanged."
+            "source_sha256": "50ad841fdc4a2b0342354aec7ae91b7cfa1657cd3ee2c12a920fa5aaab323f6b",
+            "references_sha256": "426200b86bff5899b8bc53793c71fbebfac5a69c0f0deb430ac98c9c4d7f1e07",
+            "review_note": "Reviewed PageSpeed key mode, historical-report view, and reconciled shipping draft and checkout operator help. No live configuration change."
         },
         "public-mcp": {
-            "source_sha256": "41c1243435ecb682c9f3f12859ce7f6d060fa5c933144e2e08f49d7747feda07",
-            "references_sha256": "68f79ed443df0cba4c7aa1bf073c7d7afd53cab5b9447fb5aef1628fb4743345",
-            "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
+            "source_sha256": "ddd574f91ff690956cd74d17c97531c6fc94d69b4c683f14297989c26314c284",
+            "references_sha256": "18b90cbbc442ae32810c0e9545032e61e157fb1b25157e654ec6f2bf143aebaa",
+            "review_note": "Reviewed RemoteCheckoutService refactor against unchanged public capability contract and existing zero shipping."
         },
         "remote-commerce": {
-            "source_sha256": "12de4419cb4bbaa5c696d1b66712b172c95e7abff68bcc72e1c51c4df0a5d0d2",
-            "references_sha256": "30d51b4bee8d26efc0fd2ab3034f6d58f007c4e95cd807f00146d5ab4291cf3d",
-            "review_note": "Reviewed shared SecretService changes; no payment credentials, checkout requests, gateway or remote commerce behavior changed."
+            "source_sha256": "37b4ea745b3df307872568ee4b001e0ee0d46328c3877498afc2b8f2bb40db94",
+            "references_sha256": "edeac3ebc35d24a1e4db973f2380b59f0e640e0659d44281571233881c8f5ea4",
+            "review_note": "Reviewed shared checkout pending inputs and separate PageSpeed credentials. Remote commerce and payment behavior unchanged by PageSpeed."
         },
         "sales-channels": {
-            "source_sha256": "0012f20cbd5531b10a54baf77e4070710c02f926dae38c826cc657cf1939ec07",
+            "source_sha256": "41708bd68d61562fe23c5f42bca8c17ae6bb2c939c970f8533b989d5023d5465",
             "references_sha256": "f2d81de1cbac07c6783060e22cc859e0ec6e86c66f50c9d7d2ec590b11ec5c8a",
-            "review_note": "Reviewed actual Woo core and Google plugin source, current Google v1 ProductInput and processed product contracts, offline projection and read-only country-specific diagnostics; browser and 47 checks pass."
+            "review_note": "Reviewed SettingsService draft methods; no change to Merchant feed, Google API or YouTube link status. Draft is not a live shipping rate."
         },
         "workflow": {
-            "source_sha256": "fd15fae57ca958ba53f938ceb33930055cb9ba7b571ce5e9c29c11c38a778434",
+            "source_sha256": "c077ea7d9392c7930b35659c4f53d1e3654232a88927ebacd2fd88af76b5528c",
             "references_sha256": "5a27cde698babfc821a71a740e94a9ff3035f44912123bc1ea47f3a348dc7911",
-            "review_note": "Reviewed new integration class and documentation ownership, updated REA source mappings and regenerated inventories; no developer execution or runtime agent policy changes."
+            "review_note": "Reviewed reconciled shipping, checkout and PageSpeed native sources, regenerated maps, exact review evidence and test gates."
         }
     }
 }

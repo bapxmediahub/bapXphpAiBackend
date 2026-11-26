@@ -509,6 +509,7 @@
                 'header_menu' => ['type' => 'array', 'items' => 'string'],
                 'menu_revision' => ['type' => 'integer'],
                 'shipping_mode' => ['type' => 'enum', 'values' => ['free', 'flat']],
+                'shipping_policy_draft' => ['type'=>'object','description'=>'Revisioned ordered owner proposal; never an activated checkout rate'],
                 'flat_rate' => ['type' => 'number'],
                 'currency' => ['type' => 'string'],
                 'timezone' => ['type' => 'string'],

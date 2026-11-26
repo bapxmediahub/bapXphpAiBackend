@@ -45,8 +45,13 @@ product/offer policy with remote estimates. Displayed lines use those resolved
 amounts; both server and checkout gateway payloads round to integer paise rather
 than truncating floating-point multiplication.
 
-The browser Razorpay checkout derives its payable amount exclusively from the
-server-resolved cart and validated coupon. A total below ₹1 is rejected before
+Both browser gateways (Razorpay and Stripe) derive their payable amount
+exclusively from the server-resolved cart and validated coupon. The shared
+TaxService checkout projection freezes the exact product unit price, GST/HSN
+and configured reporting unit, plus the eight supplier/default tax facts,
+before either gateway creates checkout. Later catalogue and supplier edits
+cannot alter those confirmed inputs; legacy pending checkouts retain the
+existing verified-order recovery path. A total below ₹1 is rejected before
 the gateway is invoked; a fully discounted cart does not fall back to a posted
 amount or implicitly become a free-order workflow. Rejection preserves any
 existing pending-payment recovery and cart. The isolated controller regression

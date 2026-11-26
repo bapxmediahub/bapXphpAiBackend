@@ -630,15 +630,28 @@ final class DatabaseService {
         return gmdate('Y-m-d H:i:s', $parsed->getTimestamp());
     }
 
+    /** A shipping draft is an owner configuration proposal, never an active rate. */
+    public function saveShippingDraft(array $zones,string $expected): bool {
+        if (!ShippingService::validRevision($expected)) throw new \InvalidArgumentException('Reload the shipping editor before saving.');
+        $zones=ShippingService::normaliseZones($zones);
+        if ($this->isTestMode()) throw new \LogicException('Shipping draft writes require an isolated database.');
+        if ($this->isRemote()) {
+            return $this->remoteMutation('save_shipping_draft','settings',compact('zones','expected'))['saved']===true;
+        }
+        $record=['id'=>SettingsService::SETTINGS_ID,'shipping_policy_draft'=>[
+            'revision'=>bin2hex(random_bytes(16)), 'zones'=>$zones]];
+        return $this->upsertApplicationSettings($record,$expected)!==[];
+    }
+
     /** Independent owner forms patch the canonical settings row under one row lock. */
-    private function upsertApplicationSettings(array $record): array {
+    private function upsertApplicationSettings(array $record,?string $shippingRevision=null): array {
         $id = SettingsService::SETTINGS_ID;
         $pdo = $this->db();
         $pdo->beginTransaction();
         try {
             $ensure = $pdo->prepare('INSERT INTO settings (id, _data, _created_at, _updated_at)
                 VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) ON DUPLICATE KEY UPDATE id = id');
-            $ensure->execute([$id, json_encode($record, JSON_THROW_ON_ERROR)]);
+            $ensure->execute([$id, json_encode($shippingRevision===null?$record:['id'=>$id], JSON_THROW_ON_ERROR)]);
 
             $read = $pdo->prepare('SELECT _data FROM settings WHERE id = ? FOR UPDATE');
             $read->execute([$id]);
@@ -653,6 +666,11 @@ final class DatabaseService {
                     unset($legacy['admin_password']);
                 }
                 $current += $legacy;
+            }
+            if ($shippingRevision!==null
+                && ShippingService::storedDraft($current['shipping_policy_draft']??null)['revision']!==$shippingRevision) {
+                $pdo->rollBack();
+                return [];
             }
             $merged = array_replace($current, $record);
             $write = $pdo->prepare('UPDATE settings SET _data = ?, _owner = ?, _status = ?, _updated_at = CURRENT_TIMESTAMP WHERE id = ?');

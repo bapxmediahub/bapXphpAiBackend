@@ -36,7 +36,13 @@ $checkoutCases=[
     [['price'=>1.15,'posted'=>'999999'],200,115],
     [['price'=>1.0],200,100],
 ];
-foreach($checkoutCases as [$case,$status,$amount]){
+$checkoutCases[]=[['price'=>105.0,'couponCode'=>'MISSING'],422,0];
+$checkoutCases[]=[['price'=>105.0,'settingsUnavailable'=>true],503,0];
+$checkoutCases[]=[['price'=>105.0,'settings'=>['gst_state'=>'Unknown']],503,0];
+$checkoutCases[]=[['price'=>105.0,'product'=>['gst_rate'=>0,'hsn_code'=>'ZERO']],200,10500];
+$browserPendingEvidence=[];
+foreach(['razorpay','stripe'] as $method) foreach($checkoutCases as [$case,$status,$amount]){
+    $case['method']=$method;
     $process=proc_open([PHP_BINARY,__DIR__.'/fixtures/browser-checkout-amount.php',json_encode($case,JSON_THROW_ON_ERROR)],
         [0=>['pipe','r'],1=>['pipe','w'],2=>['pipe','w']],$pipes,null,['BAPX_CHECKOUT_AMOUNT_FIXTURE'=>'1']);
     if(!is_resource($process))throw new RuntimeException('Cannot start checkout fixture');
@@ -48,7 +54,22 @@ foreach($checkoutCases as [$case,$status,$amount]){
     $expect($result['gateway_calls']===($amount>0?[$amount]:[]),'Only the authoritative amount may reach the recording gateway');
     $expect($result['session']['cart']===[['slug'=>'fixture-product','qty'=>1]],'Checkout creation must preserve cart');
     if($amount>0){
-        $expect($result['body']['amount']===$amount && (int)round($result['session']['pending_order']['total']*100)===$amount,'Response and pending order must agree with gateway amount');
+        $pending=$result['session']['pending_order'];
+        $expect(($method==='stripe' ? isset($result['body']['stripe_url']) && $pending['stripe_session_id']==='cs_fixture'
+            : $result['body']['amount']===$amount && $pending['razorpay_order_id']==='order_fixture')
+            && (int)round($pending['total']*100)===$amount,'Gateway response and pending order must agree with the authoritative amount');
+        $expect((int)round($pending['discount']*100)===(int)round($case['price']*100)-$amount,
+            'Both gateways preserve the actual server-applied discount.');
+        $expect($pending['tax_settings']['gst_state']==='Tamil Nadu' && count($pending['tax_settings'])===8
+            && !isset($pending['tax_settings']['private_marker']), 'Freeze only allowlisted supplier tax facts.');
+        $line=$pending['items'][0];
+        $expect($line['gst_rate']===(float)($case['product']['gst_rate']??5) || (float)$line['gst_rate']===(float)($case['product']['gst_rate']??5),
+            'Freeze actual product GST including zero rate.');
+        $expect($line['hsn_code']===($case['product']['hsn_code']??'8306')
+            && $line['gst_uqc']==='KGS' && $line['gst_qty_per_unit']==='0.125'
+            && (int)round($line['unit_price']*100)===(int)round($case['price']*100),
+            'Freeze actual unit price, HSN and reporting quantity.');
+        if ($amount===9450) $browserPendingEvidence[$method]=$pending;
     }else{
         $expect(isset($result['body']['error'])&&$result['session']['pending_order']===['marker'=>'existing recovery'],'Rejected amount must preserve prior payment recovery');
     }
@@ -94,6 +115,16 @@ try {
     $frozen['items'][0]+=['unit_price'=>105.0,'gst_rate'=>5.0,'hsn_code'=>'8306','gst_uqc'=>'KGS','gst_qty_per_unit'=>'0.125'];
     $catalogue['item']['gst_rate']=18;$settings['gst_state']='Karnataka';
     $catalogue['item'] += ['gst_uqc'=>'PCS','gst_qty_per_unit'=>'1.000'];
+    foreach ($browserPendingEvidence as $method=>$browserEvidence) {
+        $browserId=$service->persist($browserEvidence,'pay_fixture_'.$method,[],$ports);
+        $browserOrder=$records[$browserId];
+        $expect($browserOrder['total']===94.5 && $browserOrder['tax_total']===4.5
+            && $browserOrder['supplier']['state']==='Tamil Nadu'
+            && $browserOrder['items'][0]['hsn_code']==='8306'
+            && $browserOrder['tax_lines'][0]['uqc_quantity']==='0.125'
+            && $browserOrder['tax_review_required']===false,
+            'Actual browser pending checkout preserves the prepayment invoice after supplier/catalogue changes.');
+    }
     $frozenId=$service->persist($frozen,'pay_frozen',[],$ports);
     $expect($records[$frozenId]['tax_total']===4.5 && $records[$frozenId]['supply_type']==='intrastate',
         'Later catalogue/supplier edits cannot rewrite confirmed quote tax evidence.');
