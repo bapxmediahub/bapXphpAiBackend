@@ -806,6 +806,44 @@ $tests['support source-link evaluation detects invented products without claimin
     assertSame('not_evaluated',$ok['factual_accuracy'],'Link correctness is not blanket factual correctness');
 };
 
+$tests['owner report observations do not credit article results or regrade legacy turns'] = static function (): void {
+    $dir = sys_get_temp_dir() . '/bapx-report-observation-' . bin2hex(random_bytes(8));
+    mkdir($dir, 0700);
+    $conversations = new \App\Services\AgentConversationService($dir);
+    $actor = ['type'=>'admin', 'id'=>'owner-fixture'];
+    $article = ['name'=>'search_articles','status'=>'complete','evidence'=>
+        \App\Services\AgentTraceService::toolEvidence('search_articles', ['query'=>'fixture subject'], ['found'=>1])];
+    $conversationId = str_repeat('1', 32);
+    $traceId = str_repeat('a', 16);
+    $legacy = ['version'=>2, 'passed'=>true,'checks'=>['source_lookup_used'=>true]];
+    file_put_contents($dir . '/' . $conversationId . '.json', json_encode([
+        'schema_version'=>2,'id'=>$conversationId,'surface'=>'admin','actor'=>$actor,
+        'started_at'=>'2026-10-01T00:00:00Z','turns'=>[['turn_id'=>str_repeat('2',32),'evaluation'=>$legacy]],
+    ], JSON_THROW_ON_ERROR));
+    try {
+        $conversations->prepareTurn('admin', $actor, $conversationId, 'What was net revenue in October?', $traceId);
+        \App\Services\AgentTraceService::begin($traceId);
+        $record = $conversations->record('admin', $actor, $conversationId, 'What was net revenue in October?',
+            'Net revenue was INR 1,200.', $traceId, 'model', [$article]);
+        $stored = $conversations->getForActor($conversationId, 'admin', $actor);
+        assertSame($legacy, $stored['turns'][0]['evaluation'], 'Historical evaluation stays as saved');
+        $evaluation = $record['evaluation'];
+        assertSame(3, $evaluation['version'], 'New interpretation uses a new version');
+        assertSame(false, $evaluation['observations']['owner_report_lookup_observed'], 'Article is not owner report evidence');
+        assertSame(true, $evaluation['checks']['response_present'], 'A nonempty response is separately observed');
+        assertSame('not_evaluated', $evaluation['factual_accuracy'], 'Tool observation does not grade answer facts');
+        assertSame('not_evaluated', $evaluation['groundedness'], 'Tool observation does not grade answer grounding');
+        assertTrue(!isset($evaluation['checks']['source_lookup_used']), 'Legacy inference is not applied to a new turn');
+        $spans = array_column($stored['turns'][1]['trace']['spans'], null, 'type');
+        assertSame(false, $spans['evaluation']['owner_report_lookup_observed'], 'Observed evaluation span keeps the typed result');
+        assertSame('produced', $spans['response']['status'], 'Produced response evidence is independent of lookup observation');
+    } finally {
+        \App\Services\AgentTraceService::reset();
+        foreach (glob($dir . '/{*,.*}', GLOB_BRACE) ?: [] as $entry) if (is_file($entry)) unlink($entry);
+        rmdir($dir);
+    }
+};
+
 $tests['agent operational rates use observed attempt and tool denominators plus median'] = static function (): void {
     $now=strtotime('2026-11-15T12:00:00Z');$events=[];
     foreach([10,20,100] as $i=>$ms)$events[]=['event'=>'agent.run','created_at'=>gmdate('c',$now-10),'meta'=>[

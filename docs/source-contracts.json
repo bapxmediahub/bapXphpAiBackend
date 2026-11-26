@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "447772ab323fec2e5e0434bebdd1e10ee669c9f09cd5860dad07bc1df0daea0c",
-            "references_sha256": "3eb29e94c9dd79b7f3dc4d3762193f106558df5e7edd6e2c1397d93217916c4d",
-            "review_note": "Compared shared endpoint diagnostics, published passages and typed Enterprise reporting evidence with the current chat and trace contracts. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
+            "source_sha256": "a8315ffdb60d338e41303595cf8a95012c1e5d2189cbc472e72e3d772b7c77d3",
+            "references_sha256": "cd622f5bf32c5ea4bc6223a8f9e62283ba79d7d3757ae4f9c85d21d1d04a9bdb",
+            "review_note": "Reconciled reviewed version 3 report evidence from merged PR 475 with unchanged shared Chat Completions adapter and generated-artifact checks."
         },
         "auth": {
             "source_sha256": "c34a5b34bc904f36cda184c26113f91e2cf36afa2b506217d1f74e22e9e0cefd",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed the owner UI skill changes against authenticated media navigation, route declarations, and Media Library behavior. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
         },
         "operator-help": {
-            "source_sha256": "db722f9e19d53cf3b35bf3abff7d1254c76f1a08e9a5cb265dafb97ffdf45be8",
+            "source_sha256": "5b228cf8312f9774e73c4ae89be1be152efac4308a6405d4032bcb19b13d063e",
             "references_sha256": "7ac21e243ab67d658be2730305e40e8e22c505ecd97d1725532ca8def1118f0d",
-            "review_note": "Compared the operator Integrations and dashboard paths with published article access and role-scoped report guidance. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
+            "review_note": "Preserved both reviewed owner integration guidance and version 3 report evidence; regenerated exact route inventory against merged main."
         },
         "public-mcp": {
             "source_sha256": "e45e0b33143554284f2733f661c71751693e3b31b37ee47efb90a766e46c6bba",

@@ -105,7 +105,8 @@ final class AgentConversationService
         $evaluationSpan = AgentTraceService::activeTraceId() === $traceId ? AgentTraceService::startSpan('evaluation','deterministic_guardrails') : null;
         $retrieval = array_map(static fn(array $entry):array=>AgentTraceService::safeRetrieval($entry),array_slice(array_filter($retrieval,'is_array'),0,8));
         $evaluation = AgentEvaluationService::evaluate($surface, $question, $answer, $tools, $outcome, $retrieval);
-        AgentTraceService::endSpan($evaluationSpan,!empty($evaluation['passed'])?'pass':'needs_review',['version'=>(int)$evaluation['version']]);
+        AgentTraceService::endSpan($evaluationSpan, !empty($evaluation['passed']) ? 'pass' : 'needs_review',
+            ['version'=>(int)$evaluation['version']] + ($evaluation['observations'] ?? []));
         $turn = [
             'turn_id' => bin2hex(random_bytes(16)),
             'trace_id' => $traceId,
