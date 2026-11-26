@@ -9,7 +9,21 @@ foreach (['BAPX_TEST_MODE'=>$mysql?'0':'1','BAPX_MYSQL_HOST'=>'127.0.0.1','BAPX_
 }
 require dirname(__DIR__).'/app/bootstrap.php';
 use App\Services\{DatabaseService,EditorDraftService,SettingsService};
-function check(bool $ok,string $message):void {if(!$ok) throw new RuntimeException($message);}
+function check(bool $ok,string $message):void {
+    if(!$ok) {
+        // All check labels in this fixture are fixed developer assertions.
+        fwrite(STDERR,'Editor recovery fixture assertion: '.$message."\n");
+        throw new RuntimeException($message);
+    }
+}
+/** JSON objects have no key ordering; preserve array order and scalar types. */
+function canonicalFixtureJson(mixed $value): mixed {
+    if(!is_array($value))return $value;
+    if(!array_is_list($value))ksort($value,SORT_STRING);
+    foreach($value as &$child)$child=canonicalFixtureJson($child);
+    unset($child);
+    return $value;
+}
 if (($argv[1]??'')==='--worker') {
     $args=json_decode($argv[2],true,flags:JSON_THROW_ON_ERROR);
     $db=new DatabaseService(true);
@@ -64,6 +78,12 @@ $failure=static function(string $state,int $code):PDOException {
     $error->errorInfo=[$state,$code,'Synthetic fixture failure'];
     return $error;
 };
+check(canonicalFixtureJson(['owner'=>'fixture','versions'=>[['at'=>1,'values'=>['title'=>'x','slug'=>'y']]]])
+    ===canonicalFixtureJson(['versions'=>[['values'=>['slug'=>'y','title'=>'x'],'at'=>1]],'owner'=>'fixture']),
+    'JSON object key normalization does not change stored evidence');
+check(canonicalFixtureJson(['versions'=>[1,2]])!==canonicalFixtureJson(['versions'=>[2,1]])
+    &&canonicalFixtureJson(['at'=>1])!==canonicalFixtureJson(['at'=>'1']),
+    'JSON normalization preserves array order and exact scalar types');
 $attempts=0;$conflict=['outcome'=>'conflict','draft'=>['token'=>'winning-token']];
 $result=EditorDraftService::retryDeadlock(static function() use(&$attempts,$failure,$conflict):array {
     if (++$attempts===1)throw $failure('40001',1213);
@@ -148,7 +168,7 @@ try {
         check($states===['conflict','saved'],'Concurrent initial insert has one winner');
         $latest=$db->editorDraftOperation($a,'page',$slug,'read')['draft'];
         $winner=array_values(array_filter($out,static fn($result)=>$result['outcome']==='saved'))[0]['draft'];
-        check($latest===$winner&&count($latest['versions'])===1,'Only the winning initial copy persisted');
+        check(canonicalFixtureJson($latest)===canonicalFixtureJson($winner)&&count($latest['versions'])===1,'Only the winning initial copy persisted');
         check($db->editorDraftOperation($a,'page',$slug,'discard',$latest['token'])['outcome']==='discarded','Clear only the exact fixture winner before next race');
     }
     $pdo->beginTransaction();

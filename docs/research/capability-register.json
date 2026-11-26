@@ -154,8 +154,8 @@
             "finding": "Native browser fallback, owner-scoped server recovery, bounded three CAS versions, stale download and explicit canonical save exist. Hosted MariaDB #521 reported SQLSTATE 40001/vendor 1213 during initial recovery insert. Candidate #526 uses strict insert, duplicate conflict and at most two retries of the complete autocommit recovery CAS only after confirmed rollback. Deterministic policy and HTTP fixtures pass; repeated isolated database races and authorized production recovery remain outstanding. WordPress timestamped edit presence lease remains incomplete.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed actual hosted MariaDB 40001/1213 at initial INSERT IGNORE and confirmed rollback semantics; strict insert, duplicate conflict and bounded original-token autocommit retry. Portable policy and real router fixtures passed, hosted repeated CAS and production owner acceptance pending.",
-                "source_sha256": "6d046a5ded5f4c63a0483515de93cc69d572b959708c23ea68b3e5c5b37755c4"
+                "reason": "Reviewed MySQL validate failure with no worker exception and actual MariaDB 12-race pass. Test compared PHP object key insertion order; normalize only object keys, retain exact scalar types and list order and all CAS assertions. Added fixed assertion diagnostics; root cause of latest failure not independently confirmed until both engines pass.",
+                "source_sha256": "b90c8024ab9978c1abe2d2a7a322600496852d15a8a4f053410be043850e07cb"
             },
             "production_evidence": []
         },
