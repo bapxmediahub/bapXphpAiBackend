@@ -8,7 +8,7 @@ Open Blog and choose **New Post** or an existing record. Set a clear title and s
 
 ## Draft, enhance and preview
 
-Use the document/Markdown modes to edit and Preview to inspect the result. Template scaffolding and AI Enhance controls return content for review; they are not an automatic publication. Choose **Enhance title** or **Enhance content**, review the AI suggestion, then use **Apply to title** or **Apply to content**. Review names, links, instructions and policy claims. If the provider is unavailable, keep editing or review the separately labelled local formatting option when offered. You can dismiss either suggestion. Images must come from a valid uploaded or bundled asset with a useful description.
+Use the document/Markdown modes to edit and Preview to inspect the result. AI Enhance controls request the configured model and return content for review; they are not automatic publication. When the body is empty, Enhance content requests a new draft from the title. Choose **Enhance title** or **Enhance content**, review the AI suggestion, then use **Apply to title** or **Apply to content**. Review names, links, instructions and policy claims. If the provider is unavailable, no AI suggestion is shown and your original text remains unchanged. You can dismiss a suggestion. Images must come from a valid uploaded or bundled asset with a useful description.
 
 ## Save deliberately
 

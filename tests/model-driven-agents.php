@@ -40,10 +40,36 @@ if(PHP_SAPI==='cli-server'){
         || !in_array($r['model'] ?? null, $expectedModels, true)
         || !isset($r[$tokenField]) || !is_array($r['messages'] ?? null)
         || ($luna && ($r['reasoning_effort'] ?? null) !== 'none')
-        || ($google && (!in_array($r['temperature'] ?? null, [0.2, 0.3], true)
+        || ($google && (!in_array($r['temperature'] ?? null, [0.2, 0.3, 0.4], true)
             || ($r['extra_body'] ?? null) !== ['google'=>['thinking_config'=>['thinking_level'=>'minimal']]]))
         || array_diff(array_keys($r), $allowedFields)) {
         $fail('Unexpected Chat Completions request');
+        return;
+    }
+    if (str_starts_with($scenario,'draft_')) {
+        if (in_array($scenario,['draft_manual','draft_editor_existing'],true)) {
+            file_put_contents(getenv('BAPX_RECOVERY_FIXTURE_DIR').'/'.$scenario,'Unexpected inference');
+            $fail('Manual or rejected draft reached provider');return;
+        }
+        if (isset($r['tools']) || isset($r['tool_choice']) || count($r['messages'])!==1
+            || ($r['messages'][0]['role']??'')!=='user'
+            || !str_contains($r['messages'][0]['content']??'','Return ONLY a JSON object')) {
+            $fail('Draft must be a real bounded text-generation request');return;
+        }
+        file_put_contents(getenv('BAPX_RECOVERY_FIXTURE_DIR').'/'.$scenario,'Actual synthetic HTTP transfer');
+        if (in_array($scenario,['draft_unavailable','draft_editor_failure'],true)) {
+            http_response_code(401);echo '{"error":{"message":"Synthetic credential rejection"}}';return;
+        }
+        $draft=match($scenario) {
+            'draft_invalid'=>['title'=>'No body'],
+            'draft_product'=>['name'=>'Fixture lamp','slug'=>'fixture-lamp','description'=>'Model-generated proposal.',
+                'category'=>'fixture','price'=>'999','gst_rate'=>'18','stock_status'=>'in_stock',
+                'status'=>'visible','image_url'=>'/unverified.webp','gst_uqc'=>'PCS'],
+            default=>['title'=>'Fixture article','slug'=>'fixture-article','category'=>'help',
+                'content'=>'## Model-authored fixture paragraph','og_image'=>'/unverified.webp','published'=>'1'],
+        };
+        echo json_encode(['choices'=>[['message'=>['role'=>'assistant','content'=>'<final_answer>'.json_encode($draft).'</final_answer>'],
+            'finish_reason'=>'stop']]],JSON_THROW_ON_ERROR);
         return;
     }
     if($scenario==='outage'){http_response_code(503);echo '{"error":{"status":"UNAVAILABLE"}}';return;}
@@ -439,11 +465,20 @@ try{
         in_array($case[0], ['guest','capability','direct_delivery_charge','direct_order_total'], true)));
     $profiles = [
         'google' => [...$standard, ...$chatCompletionBoundaries,
+            ['draft_blog','admin','admin','/create-blog Fixture article',null],
             ['oversized_signature','support','guest','What is the delivery charge?',null]],
         'google_fallback' => $textAndTools,
         'compatible' => array_merge($standard, $providerRecovery, $chatCompletionBoundaries, [
             ['owner_multi_scope','admin','admin','Compare orders from 1 to 5 February and 1 to 5 March 2024.','order_count'],
             ['owner_ambiguous_followup','admin','admin','What about that same period?',null],
+            ['draft_blog','admin','admin','/create-blog Fixture article',null],
+            ['draft_product','admin','admin','/add-product Fixture lamp',null],
+            ['draft_invalid','admin','admin','/create-blog Fixture article',null],
+            ['draft_unavailable','admin','admin','/create-blog Fixture article',null],
+            ['draft_manual','admin','admin','/create-blog',null],
+            ['draft_editor','admin','admin','Fixture article',null],
+            ['draft_editor_existing','admin','admin','Fixture article',null],
+            ['draft_editor_failure','admin','admin','Fixture article',null],
         ]),
         'openai' => [$cases[9], $followupCases[3]],
         'openai_legacy' => [$followupCases[3]],
@@ -471,6 +506,38 @@ try{
         $raw=stream_get_contents($io[1]);$err=stream_get_contents($io[2]);fclose($io[1]);fclose($io[2]);$exit=proc_close($child);
         $result=json_decode($raw,true);
         $turn=$result['turn']??[];$response=$result['response']??[];
+        if (str_starts_with($scenario,'draft_')) {
+            if ($exit!==0) throw new RuntimeException('Draft controller failed: '.$err);
+            $status=$result['status']??0;
+            $actualTransfer=is_file($recoveryDir.'/'.$scenario);
+            if (str_starts_with($scenario,'draft_editor')) {
+                if ($scenario==='draft_editor') {
+                    if ($status!==200 || ($response['source']??null)!=='provider'
+                        || ($response['content']??null)!=='## Model-authored fixture paragraph' || !$actualTransfer) throw new RuntimeException('Editor draft did not use actual provider output');
+                } elseif ($scenario==='draft_editor_existing') {
+                    if ($status!==409 || isset($response['content']) || $actualTransfer) throw new RuntimeException('Existing text was not protected');
+                } elseif ($status!==503 || isset($response['content']) || !$actualTransfer) throw new RuntimeException('Provider failure masqueraded as editor draft');
+            } elseif ($scenario==='draft_manual') {
+                if ($status!==200 || ($response['draft']['source']??null)!=='manual'
+                    || ($turn['model_attempts']??[])!==[] || $actualTransfer) throw new RuntimeException('Manual form masqueraded as inference');
+            } elseif (in_array($scenario,['draft_invalid','draft_unavailable'],true)) {
+                if ($status!==503 || isset($response['draft']) || ($turn['outcome']??null)!=='error'
+                    || count($turn['model_attempts']??[])!==1 || !$actualTransfer) throw new RuntimeException('Failed inference was stored as a successful draft');
+            } else {
+                $fields=array_column($response['draft']['fields']??[],'value','name');
+                if ($status!==200 || ($response['draft']['source']??null)!=='provider'
+                    || ($turn['outcome']??null)!=='draft' || count($turn['model_attempts']??[])!==1
+                    || !$actualTransfer || isset($response['draft']['attempts'])) throw new RuntimeException('Draft provenance missing');
+                if ($scenario==='draft_blog' && (($fields['content']??null)!=='## Model-authored fixture paragraph'
+                    || ($fields['og_image']??null)!=='' || isset($fields['published']))) throw new RuntimeException('Model injected a publication or image decision');
+                if ($scenario==='draft_product' && (($fields['description']??null)!=='Model-generated proposal.'
+                    || ($fields['price']??null)!=='' || ($fields['gst_rate']??null)!=='' || ($fields['image_url']??null)!==''
+                    || ($fields['stock_status']??null)!=='' || ($fields['gst_uqc']??null)!=='' || ($fields['status']??null)!=='hidden')) throw new RuntimeException('Model overrode owner-only commerce fields');
+            }
+            echo "PASS $protocol/$scenario: actual inference provenance, explicit error or manual state\n";
+            if ($actualTransfer) unlink($recoveryDir.'/'.$scenario);
+            continue;
+        }
         if (str_starts_with($scenario, 'foreign_')) {
             if ($exit !== 0 || ($result['status'] ?? 0) < 400 || ($turn['model_attempts'] ?? []) !== []
                 || is_file($recoveryDir . '/' . $scenario) || str_contains(json_encode($response), 'private answer')) {

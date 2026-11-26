@@ -1383,8 +1383,10 @@ flowchart LR
   controller_admincontroller -. declared service .-> service_authservice
   controller_admincontroller -. declared related view .-> view_admin_blog
   route_post_admin_blog_ai_draft -- registered handler --> controller_admincontroller
-  controller_admincontroller -. declared service .-> service_blogservice
+  controller_admincontroller -. declared service .-> service_agentdraftservice
+  controller_admincontroller -. declared service .-> service_aiclient
   controller_admincontroller -. declared service .-> service_blogdraftservice
+  controller_admincontroller -. declared service .-> service_siteprofileservice
   controller_admincontroller -. declared service .-> service_authservice
   controller_admincontroller -. declared related view .-> view_admin_blog
   view_admin_list -. declared include .-> view_admin_list_controls
@@ -1418,7 +1420,6 @@ flowchart LR
   controller_admincontroller -. source new .-> service_auditlogservice
   controller_admincontroller -. source new .-> service_authservice
   controller_admincontroller -. source new .-> service_authoredpageservice
-  controller_admincontroller -. source new .-> service_blogdraftservice
   controller_admincontroller -. source new .-> service_blogservice
   controller_admincontroller -. source new .-> service_campaigndownloadservice
   controller_admincontroller -. source new .-> service_categoryservice
@@ -1607,6 +1608,8 @@ flowchart LR
   service_agentconversationservice -. static reference .-> service_aiclient
   service_agentdraftservice -. source new .-> service_aiclient
   service_agentdraftservice -. source new .-> service_schemaservice
+  service_agentdraftservice -. static reference .-> service_blogdraftservice
+  service_agentdraftservice -. static reference .-> service_siteprofileservice
   service_agentevaluationservice -. source new .-> service_agenttoolregistry
   service_agentevaluationservice -. source new .-> service_categoryservice
   service_agentevaluationservice -. source new .-> service_supporttoolregistry

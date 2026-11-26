@@ -246,8 +246,8 @@
             "finding": "Product reviews exist; blog-comment moderation lifecycle not established.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Inspected #512 AdminController diff; only agent guidance changed, not product review or blog moderation operations.",
-                "source_sha256": "535c6041b8c2eec2494a67d95566c4499fd43fef33e87e2158b52337cf7fbc7b"
+                "reason": "Reviewed editorial-only controller changes; existing review moderation and comment workflow unchanged.",
+                "source_sha256": "c7f1d17a0ca110b6bcfe83832836c4599d4ce4662362321ce538ecf86865b243"
             },
             "production_evidence": []
         },
@@ -338,8 +338,8 @@
             "finding": "Native filters/pagination exist; verify consistent bulk-action safety across every owner list.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Inspected #512 AdminController diff; list pagination, filters and bulk actions unchanged; partial scope remains.",
-                "source_sha256": "f3168f69c5c1ca89630da2dc0c0335fdb20eba6cb78cf5fdc93f31bb96c1d505"
+                "reason": "Reviewed editorial-only controller changes; owner list pagination and bulk actions unchanged.",
+                "source_sha256": "f0242c9cb6fe23d69227b51b052b78606720d7358f774b4f4c24042716cd032e"
             },
             "production_evidence": []
         },
@@ -504,8 +504,8 @@
             "finding": "Canonical metadata and slugs exist; managed redirect registry, conflict and lifecycle checks remain.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
-                "source_sha256": "d24d8f6474e8bdbe327fb3fde4d627bc59a14c4a3625a4d528b24383113f5da6"
+                "reason": "Reviewed actual article generation and SEO source contracts; canonical metadata and slug CAS preserved, redirect governance still incomplete.",
+                "source_sha256": "4aad39957c650cce9f893eaeb599dd46506f1077676bbf8704e74e66057dbe09"
             },
             "production_evidence": []
         },
@@ -745,8 +745,8 @@
             "finding": "CSV parse/import exists; full validated resumable import/export and reconciliation remain.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Inspected #512 AdminController diff; product CSV import/export and resumable processing unchanged.",
-                "source_sha256": "c46e4f4fcd93315c18f0e66ca8aa4454dce67f128e8e2bd06499bd6511ca92f6"
+                "reason": "Reviewed shared controller changes; product CSV workflow unchanged and remains partial.",
+                "source_sha256": "a6ce26293fd1a63f9bcdffda5fd47297f32850cd889eeaad5706403de273eeb1"
             },
             "production_evidence": []
         },
@@ -1697,8 +1697,8 @@
             "finding": "Original text and stored evidence replay; no new model call for replay.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
-                "source_sha256": "34adc0bd4e615b27fe5a55dd72b902725a842d23f78b34cf54da3f4f589d2ce2"
+                "reason": "Reviewed chat draft form and retained stored answer presentation/history; no replay or authorization change.",
+                "source_sha256": "3ddd41b8697d5646e868fed44101aa5845bb51eae69d27fc99759e73d773ade5"
             },
             "production_evidence": []
         },
@@ -1881,8 +1881,8 @@
             "finding": "Wire fixture covers tools, role=tool and call IDs; not support for Responses-only models.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed unchanged Chat Completions envelope/call correlation and actual controller fixtures after #512; compatible wire contract remains implemented.",
-                "source_sha256": "2cdc0b7f51f233b6bffb26d0f69d325ef2a2141af3138cbc98dc31661696ad29"
+                "reason": "Reviewed actual model-driven controller tests and Chat Completions text and tool message paths; existing wire contract intact.",
+                "source_sha256": "7dcd98d56c5fcfcce12f67146917c88e44b2558faf4bfa9f328df3ecc68ea0c7"
             },
             "production_evidence": []
         },
@@ -1910,8 +1910,8 @@
             "finding": "Bounded Google signatures and OpenRouter reasoning continuity; validate selected live model, never leak internal metadata.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed #512 safe invalid-call guidance change and provider continuation fixtures; no Google or OpenRouter continuation field changed.",
-                "source_sha256": "4a27ba916f3d691e08b91974b4cbd937900982266252e398b7a6c7cca931bb32"
+                "reason": "Reviewed unchanged provider-specific continuation and synthetic transfer tests; no provider metadata crossing.",
+                "source_sha256": "3e4012a8d70269e65b9176e2e425ec581cc9600e35959f969339468c05a47f3f"
             },
             "production_evidence": []
         },
@@ -1972,8 +1972,8 @@
             "finding": "PR #512 removed forced lexical preselection and cumulative tool activation ceiling; all six hosted checks, direct multilingual controller fixtures and deployed SHA passed. Live model answer acceptance remains CC06.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed merged #512 direct role/module-filtered declarations, multilingual and permission regressions; all six hosted checks and exact deployed SHA passed.",
-                "source_sha256": "78e64e8893e046e7b8704a12dfa9471c993ad065f4032089cd4dec5369cc02f3"
+                "reason": "Reviewed retained direct role/module-filtered schemas and multilingual model fixtures; no new fake free-form reply or activation gate.",
+                "source_sha256": "a8c710fba81a1feebf4001a607e2a85989daea523d594e2e26bdfa0a344735af"
             },
             "production_evidence": []
         },
@@ -2000,19 +2000,27 @@
             "acceptance_evidence": [
                 "tests/model-driven-agents.php"
             ],
-            "finding": "Current direct native and compatible probes returned 503. Both real agent paths require complete live answer, not synthetic probe success.",
+            "finding": "Live Chromium at deployed 00ad614: Enterprise /help blog-publishing completed operator_guide and real model answer/A2UI (trace 9e1f92fba3349f0c); Support completed public_policy then rate-limited continuation (trace 4f2cb1a30a412b56). Whole both-agent scope remains partial.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed #512 exact-head controlled provider fixtures; no fresh successful production answer, so preserve partial status.",
-                "source_sha256": "073d6c85fa36b4cc3864d75d3f8969d4fc9b575d36c6f0020ba50da8715dcf74"
+                "reason": "Reviewed live owner and Support traces on 00ad614 and candidate controller tests; one success and one rate-limited final response, still partial.",
+                "source_sha256": "1df7d1a0f0e878711efba9272f1c84b7bfa81c240fbab987f23a089d8d9de595"
             },
-            "production_evidence": []
+            "production_evidence": [
+                {
+                    "deployed_sha": "00ad614096cade47a1701cf6dfa13819a92b2de6",
+                    "date": "2026-11-26",
+                    "url": "https://github.com/bapxmediahub/bapXphpAiBackend/issues/496#issuecomment-7196002143",
+                    "scope": "Enterprise real tool-to-answer pass, Support real tool then failed final continuation; partial only",
+                    "source_sha256": "073d6c85fa36b4cc3864d75d3f8969d4fc9b575d36c6f0020ba50da8715dcf74"
+                }
+            ]
         },
         {
             "id": "CC07",
             "group": "chat-completions",
             "title": "Model-backed editorial draft generation and truthful failure",
-            "status": "partial",
+            "status": "implemented",
             "issues": [
                 251,
                 47
@@ -2026,16 +2034,21 @@
             "local_sources": [
                 "app/Services/AgentDraftService.php",
                 "app/Services/BlogDraftService.php",
-                "app/Controllers/AdminController.php"
+                "app/Controllers/AdminController.php",
+                "assets/blog-enhancement.js",
+                "views/admin/agent.php",
+                "views/admin/blog.php"
             ],
             "acceptance_evidence": [
-                "tests/run.php"
+                "tests/run.php",
+                "tests/model-driven-agents.php",
+                "tests/blog-inference-browser.cjs"
             ],
-            "finding": "Legacy AI draft scaffold is non-inference; draft failure reporting and safe review require candidate validation.",
+            "finding": "Editor empty-body and Enterprise draft commands require actual configured provider output. Manual empty command labelled manual, failed/invalid inference is error, protected owner-only fields and explicit create-only unpublished save. Real controller loopback and desktop/mobile browser regression pass; live draft generation unverified.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed #512 owner instruction-only diff and test changes; legacy editorial inference correction remains isolated and unmerged.",
-                "source_sha256": "b21857fd6b79e46a823f86a5ddc3505f7ffcfe8653facb7214b6ef3912be4346"
+                "reason": "Reviewed actual provider generation, errors and manual state in 118-case model/controller suite; actual editor and unpublished form Chromium regressions passed.",
+                "source_sha256": "cb8175aab4ed20d431c2fb54008dfd4921d77939927d8468773102b8b7a3df4c"
             },
             "production_evidence": []
         },
@@ -2098,8 +2111,8 @@
             "finding": "One private JSON per chat, ownership before inference and accepted multi-turn history; live acceptance remains.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed updated controller fixtures and retained actor-owned dialogue, foreign conversation rejection and report scope regressions.",
-                "source_sha256": "c90f7487541616ac964c8e9b5d43de63688d2ac55ea5c7928d8bbaf6bd9f2565"
+                "reason": "Reviewed model-driven conversation tests; actor-owned history and isolation unchanged by draft response provenance.",
+                "source_sha256": "f82a7864d45f657e7f999d0658f1589dcbd21934fa48af2a0b7515a161a02a0a"
             },
             "production_evidence": []
         },
@@ -2195,8 +2208,8 @@
             "finding": "Fixed role-specific .bapX instruction manifest and execution authorization; not developer harness exposure.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed #512 direct authorized tool and existing instruction-manifest regression; private skill selection and policy unchanged.",
-                "source_sha256": "4a1248f0a39ef30c7cfaa84a02047bb6bd6b5b25dfa183c775aed933db5f755d"
+                "reason": "Reviewed retained role instruction and authorization tests, draft generation is authenticated and no public capability added.",
+                "source_sha256": "b1b27820007863ab7f9e1e6c7b743ebb8389b0cfa768b2e810a6fe71d8b2361b"
             },
             "production_evidence": []
         },
@@ -2225,8 +2238,8 @@
             "finding": "Sanitized observed metadata, durations, usage and safe evidence; no exported private telemetry.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed changed registry tests; telemetry, safe evidence and actual span semantics remain unchanged.",
-                "source_sha256": "c8f0abd7392fb108708435cd7e75cc925deffd0cf9b87808588c5b6452431607"
+                "reason": "Reviewed observed draft provider attempts persisted in turn and audit outcome; no invented execution metadata.",
+                "source_sha256": "54dd456ca0d084911f36d5d199b358b9e21e9205d6d0524402c66ba8b0a55bca"
             },
             "production_evidence": []
         },
@@ -2296,8 +2309,8 @@
             "finding": "Explicit form actions and payment idempotency exist; generic approval/unknown-outcome recovery missing.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
-                "source_sha256": "2d424047ee4bac03a018b4dcdaad43a35c7462fdaca36065f4e88555f430dcc0"
+                "reason": "Reviewed draft owner-only fields, create-only unpublished form and explicit Save; no automatic publication or payment, generic approval recovery still partial.",
+                "source_sha256": "4653a66a0298fc473f1548d52d760c9f906b647cd096afa35630e420267c9a06"
             },
             "production_evidence": []
         },
@@ -2331,8 +2344,8 @@
             "finding": "Golden and loopback results do not prove model quality; retain prompt/model/source hashes and real multilingual outcomes.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed #512 model fixture changes and 38 golden checks; no promotion of real model quality from scripted decisions.",
-                "source_sha256": "75e15344a1a12daf098ff7e42f3443c81f068f0ca5d44d009479b6896155b4d2"
+                "reason": "Reviewed real loopback requests and actual live traces; synthetic provider results are transport regression evidence only.",
+                "source_sha256": "f9b0eaae1d9b08061993c172325b9853cbbb495f58f4c76708c2fba062028f7e"
             },
             "production_evidence": []
         },

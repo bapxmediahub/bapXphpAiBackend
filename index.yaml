@@ -47,7 +47,7 @@ query_examples:
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
   concepts: 516
-  relationships: 482
+  relationships: 483
   by_type:
     blog: 16
     controller: 19
@@ -4203,8 +4203,10 @@ concepts:
     path: "/admin/blog/ai-draft"
     controller: "AdminController@aiDraftBlog"
     services:
-      - "BlogService"
+      - "AgentDraftService"
+      - "AiClient"
       - "BlogDraftService"
+      - "SiteProfileService"
       - "AuthService"
     view: "admin/blog"
     response: null
@@ -6708,6 +6710,9 @@ relationships:
     relation: "declared_service"
   - from: "controller:AdminController"
     to: "service:SiteInsightsService"
+    relation: "declared_service"
+  - from: "controller:AdminController"
+    to: "service:SiteProfileService"
     relation: "declared_service"
   - from: "controller:AdminController"
     to: "service:SiteTelemetryService"

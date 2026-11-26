@@ -2745,20 +2745,16 @@ $tests['blog enhancement candidates preserve manual images and distinguish provi
     assertTrue(!str_contains($service::enhancementError('upstream-private-details'), 'private-details'), 'Unknown provider failures use a public message');
 };
 
-$tests['blog draft templates render usable internal links and require explicit save'] = static function (): void {
-    $templates = new \App\Services\BlogDraftService();
-    $renderer = new \App\Services\MarkdownRenderer();
-    foreach (['editorial' => '/shop', 'product' => '/checkout', 'tool' => '/login', 'help' => '/account'] as $template => $href) {
-        $draft = $templates->draft($template, 'Fixture title', '/help');
-        $document = new DOMDocument();
-        $document->loadHTML($renderer->render($draft), LIBXML_NOERROR | LIBXML_NOWARNING);
-        $links = (new DOMXPath($document))->query('//a[@href="' . $href . '"]');
-        assertTrue($links->length > 0, "Template {$template} must link to {$href}");
-        assertTrue(!str_contains($links->item(0)->textContent, '['), "Template {$template} must render a clean link label");
-        assertTrue(!str_contains($document->textContent, ']'), "Template {$template} must not leave Markdown brackets in the article");
-    }
-    $guide = $templates->draft('tool', 'Fixture feature', '/help');
-    assertTrue(!str_contains($guide, 'saved automatically') && str_contains($guide, 'Save'), 'Tool guides should describe explicit saving');
+$tests['blog draft endpoint cannot return deterministic AI templates or overwrite existing content'] = static function (): void {
+    assertTrue(!method_exists(\App\Services\BlogDraftService::class,'draft'),'Remove the old no-inference scaffold method');
+    $source=fileRead('app/Controllers/AdminController.php');
+    assertTrue(str_contains($source,"->draft('create-blog',$".'title)'),'Editor uses the actual generation service');
+    assertTrue(str_contains($source,'Use Enhance content for an existing article body.'),'Generation refuses existing text');
+    $script=fileRead('assets/blog-enhancement.js');
+    assertTrue(!str_contains($script,'localFormatting')&&!str_contains($script,'Local formatting'),'Provider failure does not create another suggestion');
+    assertTrue(str_contains($script,"data.source === 'provider'"),'Only a verified provider-labelled proposal is reviewable');
+    $view=fileRead('views/admin/agent.php');
+    assertTrue(str_contains($view,"published:'0',expected_revision:'new'") && str_contains($view,'Save unpublished draft'),'Chat blog form cannot publish implicitly');
 };
 
 $tests['missing hosted blog photos show bundled image instead of broken thumbnail'] = static function (): void {
@@ -4218,6 +4214,8 @@ $tests['the admin agent attaches documents and drafts into a form it cannot save
 
     $draft = (new \App\Services\AgentDraftService())->draft('create-blog', '');
     assertSame('/admin/blog/save', $draft['action'], 'A draft posts to the existing save route');
+    assertSame('manual',$draft['source'],'Empty command is explicitly manual');
+    assertSame([],$draft['attempts'],'Manual form makes no fake provider calls');
     assertTrue(count($draft['fields']) > 0, 'A draft lists the fields a save needs');
     $names = array_column($draft['fields'], 'name');
     foreach (['title', 'slug', 'category', 'content'] as $needed) {

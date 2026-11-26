@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "1cdb5a23cde24f33294a2ff5b45b7d141b00064cf7840535041f239995408e51",
+            "source_sha256": "a2789258c44b5bfdb7385256d0652b1220043d5555266f29c850198758fa211c",
             "references_sha256": "a6e26a5652b6c579797bb27aa3047ebe22a9e6b0edc19f9a758dac83d4c8d337",
-            "review_note": "Reviewed merged direct tool declarations, role-scoped instruction contract and README; REA register preserves actual model evidence separate from controlled fixtures, no runtime or permission changes."
+            "review_note": "Reviewed actual provider-only draft results, failure and manual outcomes, attempt evidence, retained direct tool access and history isolation."
         },
         "auth": {
             "source_sha256": "c34a5b34bc904f36cda184c26113f91e2cf36afa2b506217d1f74e22e9e0cefd",
@@ -18,14 +18,14 @@
             "review_note": "Reviewed read-only commerce schemas and report scope; no changes to order, tax, stock or payment calculations."
         },
         "content": {
-            "source_sha256": "cc6d3c2ac9863368f2be91dc2ca1b1f94d6e6c3c96c51a5f0420e1ddc688f831",
-            "references_sha256": "1bfb97b404d442826e8298afa290e9ee3551eedeaa80a101d83ed759567aac10",
-            "review_note": "Reviewed blog and publishing boundaries; direct owner guide and published article access only, no authoring/publishing mutation."
+            "source_sha256": "df68f1374f08f6c91552534e906b1f82eefb0e9b87007616e7cac8c31663d17f",
+            "references_sha256": "40b3bf1865153c2bf2a213dce5a6b1c1ce813eccc363b6c89c667e66e04cb0b5",
+            "review_note": "Reviewed model-backed empty-body drafts, explicit review and preserved body on failure, stale edit protections and no deterministic scaffold."
         },
         "foundation": {
-            "source_sha256": "8fafe834f4d3a3e3a48bfee6258a8d88a7b5b2aeaf59ca9f33fafbf088a0aa99",
+            "source_sha256": "8d1cfe0b1792114646640d8ab925567f6dd146c12879f3350a68b49da464d054",
             "references_sha256": "93864b93a7fca6c95b512dd68bb5abcd53bb32c5de7833ff77feb2438a9e9f06",
-            "review_note": "Reviewed architecture and private chat storage; no new service, store, transport or dependency."
+            "review_note": "Reviewed canonical Markdown and owner/session boundaries; no new dependency, public grant or storage mutation."
         },
         "google-tags": {
             "source_sha256": "ee67bf3e50c0de63820bd128a2c2df6f29571d0df37e7e3f22bd910948554f0e",
@@ -38,14 +38,14 @@
             "review_note": "Reviewed runtime failure and response integrity; rejected tool errors remain explicit and provider/HTTP status paths unchanged."
         },
         "interface": {
-            "source_sha256": "74ac131a1196c7ca6704c1a23680333838870118a36866d719e97ed57005d2ec",
+            "source_sha256": "95ae053805106b3ce9581ae64dd0c3c06e2c313b92629f8a1d0f493f39993f89",
             "references_sha256": "7593f0def754e85b99f97b22336cda86a8b0be70b70fadeae820f17b1cfae663",
-            "review_note": "Reviewed Settings selector, invoice register scroll layout and generated schema, verified actual desktop/375px form and report browser regression."
+            "review_note": "Reviewed actual desktop/375px editor controls and chat create-only unpublished form; three browser tests passed."
         },
         "mail": {
-            "source_sha256": "eda192c768a40ebb23839bba55ce2aa922401b8ba8659d7ce865d9969dc42a76",
+            "source_sha256": "e5254fa76163ffb93a3a407d8a4f729929a5c07af839c593e3729c4aa79226d8",
             "references_sha256": "fe274ff81fb95e67114618c86edd6e2d0343bc420937f4d2e5f9a081420ce3d0",
-            "review_note": "Shared AdminController changes only inference guidance; mail actions and queues unchanged."
+            "review_note": "Reviewed explicit unpublished save and shared owner controller, no automatic newsletter or delivery behavior change."
         },
         "mcp-clients": {
             "source_sha256": "2567e2792ed1acb0c80ae14605c2ac550abb824197b404fc2da99e97e1507d8e",
@@ -58,14 +58,14 @@
             "review_note": "Reviewed the owner UI skill changes against authenticated media navigation, route declarations, and Media Library behavior. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
         },
         "operator-help": {
-            "source_sha256": "359fe35caf4c9ffa8d3ebfa623b749813799016e19cdd9ed4fdad529088104d8",
-            "references_sha256": "e563e22b4c63d35757ec425fd5cb161af8535352e7e3e1d9f753faa9ab072166",
-            "review_note": "Reviewed owner help and agent operator paths: natural-language and explicit help receive the owner guide directly; no save or operator permission change."
+            "source_sha256": "b995af72856aba1a4439c543b31a024ab3870fdd0128c28bb228145b7f6223f1",
+            "references_sha256": "205c5bc2fef6f6021093ca04c9a2901e84b4adf068575f5abdfdf0811bb9f56a",
+            "review_note": "Reconciled actual owner guide changes for model-only editorial generation, manual form and unpublished save against the combined ledger baseline."
         },
         "public-mcp": {
-            "source_sha256": "e45e0b33143554284f2733f661c71751693e3b31b37ee47efb90a766e46c6bba",
+            "source_sha256": "ed8e9f70d2a8d778b8fa52a47aac671d1cb94f24502562e50ba9b8fe93a5ca17",
             "references_sha256": "484d487f4eca600ce7c80e1129f70a3092e9ede2d3d26180e5c9dd7f33fb5e5a",
-            "review_note": "Reviewed HTTP MCP and A2UI scope: optional in-app metadata search is not public MCP discovery, no public schema or permission expanded."
+            "review_note": "Reviewed route map and authenticated editor action; public MCP declarations and scopes unchanged."
         },
         "remote-commerce": {
             "source_sha256": "d7f17dc773cd47a72b919c8d03702c8b27ab02a4a47034117b01e16e8a18fe88",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed merchant feed and approved read-only CLI operations; portable validation uses synthetic fixtures only, no channel publishing."
         },
         "workflow": {
-            "source_sha256": "0f8c845368443b614ac89ece7717a4cde3889764a929894a927400768329eac7",
+            "source_sha256": "69f0bfbe3a103b7f1bc528ef4128a1970e587c81ac7ffe16ee72b524b108906c",
             "references_sha256": "14c2c675da06f0e52ce81e374d38de55ffbbc5cbdffb344aa94a62f7ec668e68",
-            "review_note": "Reviewed AGENTS and REA skill, documentation index and CLI gate; historical source evidence retained, GitHub sole issue backlog, reviewed hashes and generated completion separate from live proof."
+            "review_note": "Reviewed REA review mappings and updated browser validation lane; real controller and provider fixture suites remain separate from live acceptance."
         }
     }
 }
