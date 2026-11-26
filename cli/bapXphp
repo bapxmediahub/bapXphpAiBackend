@@ -27,7 +27,7 @@ set -euo pipefail
 # ── Development ─────────────────────────────────────────────────
 #   bapXphp test                    — run test suite (php tests/run.php)
 #   bapXphp lint [path]             — PHP syntax check (php -l)
-#   bapXphp ci                      — non-mutating validation: lint → test → storefront search → maps → smoke
+#   bapXphp ci                      — non-mutating validation: lint → test → portable PHP fixtures → maps → smoke
 #   bapXphp check                   — alias for bapXphp ci
 #   bapXphp update                  — regenerate maps, indexes, and agent tool contracts
 #   bapXphp serve                   — start dev server on 127.0.0.1:6020
@@ -342,7 +342,7 @@ cmd_understand() {
   printf "${B}── Quick Reference ─────────────────────────${N}\n"
   printf "  ${C}bapXphp test${N}        php tests/run.php\n"
   printf "  ${C}bapXphp serve${N}       php -S 127.0.0.1:6020 index.php\n"
-  printf "  ${C}bapXphp ci${N}          lint → test → storefront search → map validation → docs-map validation → smoke\n"
+  printf "  ${C}bapXphp ci${N}          lint → test → portable PHP fixtures → map validation → docs-map validation → smoke\n"
   printf "  ${C}bapXphp check${N}       alias for ci\n"
   printf "  ${C}bapXphp update${N}      regenerate and validate both repository maps\n"
   printf "  ${C}bapXphp db query <col>${N}  --where 'field=val' --limit 10\n"
@@ -670,6 +670,19 @@ cmd_ci() {
 
   echo "── storefront-search ──"
   php "$ROOT/tests/storefront-search.php" 2>&1 || { failed=1; warn "STOREFRONT SEARCH FAILED"; }
+
+  # Shared with hosted validation. Explicitly list isolated portable fixtures;
+  # do not discover arbitrary PHP scripts or run MySQL/live/provider jobs here.
+  local fixture
+  for fixture in \
+    contact-admission campaign-booking campaign-form-http media-delete-integration \
+    deployment-revision public-knowledge catalogue-comparison public-product-selection \
+    public-agent-discovery public-mcp remote-cart remote-checkout verified-order \
+    public-mcp-shopping public-mcp-checkout public-a2ui agent-presentation-scope \
+    enterprise-commerce documentation-review; do
+    echo "── fixture: $fixture ──"
+    php "$ROOT/tests/$fixture.php" 2>&1 || { failed=1; warn "PORTABLE FIXTURE FAILED: $fixture"; }
+  done
 
   echo "── agent-contracts:check ──"
   php "$ROOT/cli/agent-contracts.php" --check 2>&1 || { failed=1; warn "AGENT TOOL DOCUMENTATION STALE"; }

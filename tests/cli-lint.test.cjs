@@ -67,6 +67,13 @@ async function project(t) {
         'cli/docs-check.php': 'docs', 'cli/validate-project-map.php': 'map',
         'cli/validate-docs-map.php': 'docs-map', 'cli/smoke-local.php': 'smoke',
     })) await write(file, '<?php\necho "FIXTURE:' + marker + '-ok\\n";\n');
+    for (const name of [
+        'contact-admission', 'campaign-booking', 'campaign-form-http', 'media-delete-integration',
+        'deployment-revision', 'public-knowledge', 'catalogue-comparison', 'public-product-selection',
+        'public-agent-discovery', 'public-mcp', 'remote-cart', 'remote-checkout', 'verified-order',
+        'public-mcp-shopping', 'public-mcp-checkout', 'public-a2ui', 'agent-presentation-scope',
+        'enterprise-commerce', 'documentation-review',
+    ]) await write('tests/' + name + '.php', '<?php\necho "FIXTURE:' + name + '-ok\\n";\n');
     for (const [generator, artifact, content] of [
         ['generate-project-index.php', 'docs/project-index.json', 'fixture project index'],
         ['generate-okf-bundle.php', 'index.yaml', 'fixture knowledge index'],
@@ -166,6 +173,28 @@ test('ci reports storefront search failure and completes independent gates', {ti
     assert.match(failure.output, /FIXTURE:test-ok/);
     assert.match(failure.output, /FIXTURE:smoke-ok/);
     assert.doesNotMatch(failure.output, /LINT FAILED|TESTS FAILED|SMOKE FAILED|ALL CHECKS PASSED/);
+});
+
+test('ci executes the portable hosted PHP fixtures and aggregates HTTP fixture failures', {timeout: 60000}, async t => {
+    const fixture = await project(t);
+    const good = await fixture.run(['ci']);
+    assert.equal(good.status, 0, good.output);
+    for (const name of [
+        'contact-admission', 'campaign-booking', 'campaign-form-http', 'media-delete-integration',
+        'deployment-revision', 'public-knowledge', 'catalogue-comparison', 'public-product-selection',
+        'public-agent-discovery', 'public-mcp', 'remote-cart', 'remote-checkout', 'verified-order',
+        'public-mcp-shopping', 'public-mcp-checkout', 'public-a2ui', 'agent-presentation-scope',
+        'enterprise-commerce', 'documentation-review',
+    ]) assert.match(good.output, new RegExp('FIXTURE:' + name + '-ok'));
+    await fixture.write('tests/campaign-form-http.php', '<?php echo "FIXTURE:http-error\\n"; exit(17);');
+    await rm(join(fixture.directory, 'tests', 'public-knowledge.php'));
+    const failure = await fixture.run(['ci']);
+    assert.notEqual(failure.status, 0, failure.output);
+    assert.match(failure.output, /PORTABLE FIXTURE FAILED: campaign-form-http/);
+    assert.match(failure.output, /PORTABLE FIXTURE FAILED: public-knowledge/);
+    assert.match(failure.output, /FIXTURE:documentation-review-ok/);
+    assert.match(failure.output, /FIXTURE:smoke-ok/);
+    assert.doesNotMatch(failure.output, /ALL CHECKS PASSED/);
 });
 
 test('ci reports generator failure, stale index and missing map while still running smoke', {timeout: 60000}, async t => {

@@ -49,8 +49,8 @@
         },
         "mcp-clients": {
             "source_sha256": "2567e2792ed1acb0c80ae14605c2ac550abb824197b404fc2da99e97e1507d8e",
-            "references_sha256": "c5f5b6496695e656047ecc330dac37fc2b156be6a357aa08954e544086952c8c",
-            "review_note": "Reviewed Settings help update and scoped MCP client guide: tax configuration addition leaves client identity and integration instructions unchanged."
+            "references_sha256": "d53c35e5619515b0fc525390c35584fcf6cf692077eaab6495b3a41ce146fb75",
+            "review_note": "Reconciled shared CLI guide against current main; public and owner STDIO grant behavior unchanged, no new MCP tool."
         },
         "media": {
             "source_sha256": "edc32a5a9f73cf7f2954eac135a2eaed1394089034bac24ea835af48c4d9600e",
@@ -74,13 +74,13 @@
         },
         "sales-channels": {
             "source_sha256": "5133aad1b8eb87f5ca305e4e42ec0acbcb1d279b6d5b773b0a8ce6f6f5003647",
-            "references_sha256": "74993e200695917d28e7714a13d8c126a4b32ce85051d19dfa7931f3f49525b0",
-            "review_note": "Reviewed SettingsService canonical patch semantics and sales channel guides; deriving supplier tax code touches no channel settings, feed or product behavior."
+            "references_sha256": "c629b6aa8928d48f6d8f790990e575e3ecd318d3d7acd249749ca1ccdb46c168",
+            "review_note": "Reviewed merchant feed and approved read-only CLI operations; portable validation uses synthetic fixtures only, no channel publishing."
         },
         "workflow": {
-            "source_sha256": "21bcae735e4f29dae1d555ee32216b2e32735eea789c64ee30ac2e4aaa63314f",
-            "references_sha256": "e02da7c441df6fad273bb71dd829c2564589fc319753a291036c415e8b8494ca",
-            "review_note": "Reviewed backend skill update and current release/deployment contract: explicit proof, database serialization, deterministic tests, no live charges and no new infrastructure."
+            "source_sha256": "11afb137093bf847ec8ce9cabaf5f518d9f184da20eaae697409c0a93722de12",
+            "references_sha256": "cd3939fbb9f484ab9ae4a118eedba00f198ee078c132e26c9a99b46478e4bf2a",
+            "review_note": "Reconciled campaign recovery baseline with shared PHP release gate, all standalone portable tests retained, hosted browser/SDK/MySQL lanes unchanged."
         }
     }
 }
