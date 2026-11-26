@@ -314,6 +314,11 @@ revision-bound booking receipt and its selected download versions in
 `campaign_bookings`. A booking with a definitive pre-creation rejection may
 be retried through the campaign form. The database grants one retry to the
 same browser on the published revision and preserves the payment reference.
-Transport failures and duplicate-reference errors continue by lookup. Product checkout references continue to use
+Transport failures and duplicate-reference errors continue by lookup. A local
+payment-window deadline hides the external payment link but does not prove
+provider expiry or cancellation. The booking receipt distinguishes these
+provider-confirmed terminal states from a still-unconfirmed outcome, preserves
+the status recheck, and releases downloads only after captured evidence.
+Product checkout references continue to use
 `checkout_attempts` and the shared verified-order writer.
 See [Authored pages](modules/content-and-seo.md#authored-pages).
