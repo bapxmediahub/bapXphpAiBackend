@@ -126,6 +126,11 @@ const APPROVED_STORAGE_WRITES = [
         'mkdir $dir' => 2, "fopen \$path.'.lock'" => 1, 'tempnam $dir' => 1,
         'file_put_contents $tmp' => 1, 'rename $path' => 1, 'file_put_contents $this->file' => 1,
     ],
+    // Deployment-local PageSpeed admission and bounded sanitized reports, not business rows.
+    'integrations/google-site-kit/PageSpeedReportCache.php' => [
+        'mkdir $dir' => 1, "fopen \$this->path.'.lock'" => 1, 'tempnam dirname($this->path)' => 1,
+        'file_put_contents $temp' => 1, 'rename $this->path' => 1,
+    ],
     'app/Services/StoragePermissionService.php' => ['mkdir $absolute' => 1, 'touch $absolute' => 1],
 ];
 

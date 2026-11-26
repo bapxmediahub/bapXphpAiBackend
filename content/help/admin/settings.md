@@ -96,3 +96,14 @@ payment solely to test these settings.
 ## Authorize a local reporting client
 
 Open **Integrations → Manage local MCP clients**. Authorize a named client to read paid-sales totals for 7, 30 or 90 days. Copy the credential from its single display into the trusted client’s secret manager as `BAPX_MCP_CLIENT_TOKEN` for `bapXphp mcp:stdio`. Grants expire after 30 days. Return to this page to check the last successful read or revoke access.
+
+### PageSpeed quota and reporting
+
+Open Integrations to configure a dedicated PageSpeed API key, if the owner's
+Google Cloud project has authorized it. Keep the AI and reporting credentials
+separate. Blank replacement retains the saved key; anonymous mode disables its
+use without deleting it. Open PageSpeed Insights and press Analyze to request
+a report. The shared cooldown applies across owner sessions. A quota failure
+never replaces a previous measured score with zero; dated previous measurements
+are shown separately from the current failed or unfinished attempt. No key or
+external request is required merely to view the settings.

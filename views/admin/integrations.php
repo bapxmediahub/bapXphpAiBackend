@@ -179,6 +179,17 @@
             <li data-google-setting="<?= e($key) ?>" data-google-configuration="<?= e($state) ?>"><?= e($label) ?>: <?= e(['missing'=>'not configured','invalid'=>'invalid saved value; it is not rendered','configured'=>'valid format; external verification still required'][$state]) ?></li>
         <?php endforeach; ?>
         </ul>
+        <div class="admin-form__row">
+            <?php $psiKey=(string)($secrets['google_pagespeed_api_key']??''); $psiEnabled=($secrets['google_pagespeed_key_enabled']??($psiKey!==''?'1':'0'))==='1'; ?>
+            <label>PageSpeed API mode<select name="google_pagespeed_key_enabled">
+                <option value="0" <?= !$psiEnabled?'selected':'' ?>>Anonymous Google quota</option>
+                <option value="1" <?= $psiEnabled?'selected':'' ?>>Dedicated PageSpeed key</option>
+            </select></label>
+            <label>Dedicated PageSpeed API key<input type="password" name="google_pagespeed_api_key" value="" autocomplete="new-password" maxlength="128">
+                <small><?= $psiKey!==''?'A key is saved. Leave blank to retain it.':'No key is saved.' ?> Restrict it to the PageSpeed Insights API. It is not used for AI or reporting OAuth.</small>
+            </label>
+        </div>
+        <p><a href="/admin/google-pagespeed">PageSpeed Insights</a> runs only after an explicit Analyze action. Changing this mode does not initiate a request or change Google billing.</p>
         <p><a href="/admin/google-reporting">Connect or manage Google reporting</a> to select a GA4 property and Search Console site. Use <a href="https://tagassistant.google.com/" target="_blank" rel="noopener noreferrer">Tag Assistant</a> to inspect tag collection.</p>
         </section>
 

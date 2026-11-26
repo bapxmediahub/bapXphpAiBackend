@@ -45,6 +45,19 @@ checkReporting(array_column($secrets->getProviderPlan(),'provider')===['google',
     && ($secrets->getModelConfig()['model']??'')===SecretService::PRIMARY_MODEL
     && ($secrets->getProviderPlan()[1]['models']??[])===[SecretService::OPENROUTER_MODEL],
     'Enabled OpenRouter must stay after the ordered Google models.');
+$psiFixture='fixture-psi-'.str_repeat('p',32);
+$secrets->save(['google_pagespeed_api_key'=>$psiFixture,'google_pagespeed_key_enabled'=>'1']);
+checkReporting(!str_contains(json_encode($db->read('secrets')),$psiFixture),'PageSpeed key must be encrypted at rest.');
+checkReporting(($secrets->all()['google_pagespeed_api_key']??'')===$psiFixture
+    && ($secrets->all()['ai_api_key']??'')==='fixture-google-key','Dedicated PageSpeed key must not replace the AI key.');
+$secrets->save(['google_pagespeed_api_key'=>'','google_pagespeed_key_enabled'=>'0']);
+checkReporting(($secrets->all()['google_pagespeed_api_key']??'')===$psiFixture
+    && ($secrets->all()['google_pagespeed_key_enabled']??'')==='0','Blank input preserves the key when disabling use.');
+foreach (['********1234',"invalid\r\nheader"] as $badKey) {
+    $rejected=false;
+    try{$secrets->save(['google_pagespeed_api_key'=>$badKey]);}catch(InvalidArgumentException){$rejected=true;}
+    checkReporting($rejected&&($secrets->all()['google_pagespeed_api_key']??'')===$psiFixture,'Reject masked or header-injection key.');
+}
 $before=$secrets->all();
 $secrets->save(['ai_api_key'=>'','ai_openrouter_key'=>'','ai_compatible_key'=>'']);
 checkReporting($secrets->all()===$before,'Blank replacement fields must preserve all stored credentials.');

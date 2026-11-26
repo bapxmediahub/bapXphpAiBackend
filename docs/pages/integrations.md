@@ -198,16 +198,37 @@ OAuth consent, browser API key or arbitrary target URL is involved.
 Results contain the actual provider performance score, Lighthouse lab measurements,
 available CrUX field data and up to four measured opportunities. If Google supplies
 no score, insufficient field data, denies access or exhausts quota, the screen says
-so instead of displaying fabricated zero metrics. A ten-minute PHP session cooldown
-prevents repeated costly requests, and the last report is retained for up to
-30 minutes in that owner's session; no database record or customer data is written.
+so instead of displaying fabricated zero metrics. Google plans to remove field data
+from this API; missing field metrics must remain unavailable rather than inferred.
+
+A ten-minute deployment-local, origin-bound cooldown is claimed atomically before
+a provider request, across independent owner sessions. If the preceding strategy
+receives an authorization/quota rejection, the next strategy is explicitly not
+attempted. An interrupted request retains its claim. A bounded private report cache
+keeps the latest attempt and last successful measurement per strategy for at most
+seven days; historical observations have their original timestamps and are not
+presented as a fresh successful analysis. Only the sanitized projection is cached,
+with no customer records or raw provider response.
+
+Integrations supports an optional dedicated PageSpeed API key in the existing
+encrypted secret store, or the deployment environment `GOOGLE_PAGESPEED_API_KEY`.
+Select dedicated-key or anonymous mode explicitly. Blank replacement preserves
+the stored key; disabling use does not delete it. Restrict the key to the PageSpeed
+Insights API in the owner's Google project. The server sends the key only in the
+`X-Goog-Api-Key` header to the fixed Google endpoint, never in URLs or HTML.
+No AI credential, reporting grant, billing setting or automatic external request
+is reused. Actual quota/access and successful provider reports require separate
+owner acceptance.
 
 The source analysis was derived from `google-site-kit.1.192.0.zip` and is
-implemented independently in `PageSpeedInsightsClient` and
-`AdminPageSpeedController`. Site Kit's other modules (AdSense, Tag Manager,
+implemented independently in `PageSpeedInsightsClient`,
+`PageSpeedReportCache` and `AdminPageSpeedController`. The pinned module
+validates its mobile/desktop strategy and uses the reference URL for its shareable
+PageSpeed datapoint; our native cache and key mode are explicit adaptation choices. Site Kit's other modules (AdSense, Tag Manager,
 Ads, consent and email reports) are **not** implicitly implemented.
 See `docs/research/native-wordpress-woocommerce-sitekit-20261124.md` and
-[PageSpeed Insights API](https://developers.google.com/resources/api-libraries/documentation/pagespeedonline/v5/csharp/latest/classGoogle_1_1Apis_1_1PagespeedInsights_1_1v5_1_1PagespeedapiResource_1_1RunpagespeedRequest.html).
+[PageSpeed Insights API](https://developers.google.com/speed/docs/insights/v5/get-started) and
+[Google REST API key guidance](https://docs.cloud.google.com/docs/authentication/api-keys-use).
 
 ## Local MCP reporting clients
 

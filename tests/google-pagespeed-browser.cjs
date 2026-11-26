@@ -16,7 +16,8 @@ const view=execFileSync('php',['-r',[
   "['strategy'=>'mobile','status'=>'complete','performance_score'=>92,",
   "'field_status'=>'unavailable','field'=>[],'lab'=>[['name'=>'Largest contentful paint','display'=>'1.8 s']],",
   "'opportunities'=>[['title'=>'Reduce unused CSS','savings_ms'=>650]]],",
-  "['strategy'=>'desktop','status'=>'unavailable','message'=>'PageSpeed quota reached. Try again later.', 'performance_score'=>null]]];",
+  "['strategy'=>'desktop','status'=>'unavailable','message'=>'PageSpeed quota reached. Try again later.', 'performance_score'=>null]],",
+  "'last_good'=>['desktop'=>['at'=>time()-3600,'report'=>['strategy'=>'desktop','status'=>'complete','performance_score'=>81,'lab'=>[['name'=>'Largest contentful paint','display'=>'2.4 s']]]]]];",
   "include 'views/admin/google-pagespeed.php';",
 ].join(' ')],{cwd:root,encoding:'utf8',maxBuffer:2*1024*1024});
 const pageHtml='<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
@@ -47,6 +48,10 @@ for(const width of [375,1280]) test('native owner PageSpeed displays honest obse
     assert.ok(await tab.getByRole('heading',{name:'PageSpeed Insights'}).isVisible());
     assert.match(await tab.locator('main').innerText(),/92\/100 performance/);
     assert.match(await tab.locator('main').innerText(),/PageSpeed quota reached/);
+    const previous=tab.getByRole('region',{name:'Previous successful PageSpeed reports'});
+    assert.match(await previous.innerText(),/81\/100 performance/);
+    assert.match(await previous.innerText(),/not a successful measurement from the latest attempt/);
+
     assert.match(await tab.locator('main').innerText(),/Not enough field data/);
     const layout=await tab.evaluate(()=>({
       width:document.documentElement.scrollWidth,

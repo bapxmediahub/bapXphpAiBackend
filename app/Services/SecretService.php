@@ -66,6 +66,17 @@ final class SecretService {
             if(strlen($key)>512||preg_match('/[^\x21-\x7e]|\*/',$key))throw new \InvalidArgumentException('Enter the complete API key, not a masked value.');
             $values[$field]=$key;
         }
+        if (array_key_exists('google_pagespeed_api_key',$values)) {
+            if (!is_string($values['google_pagespeed_api_key'])) throw new \InvalidArgumentException('Enter a valid dedicated PageSpeed API key.');
+            $key=trim($values['google_pagespeed_api_key']);
+            if ($key==='') unset($values['google_pagespeed_api_key']);
+            elseif (!\App\Integrations\GoogleSiteKit\PageSpeedInsightsClient::validKey($key))
+                throw new \InvalidArgumentException('Enter the complete dedicated PageSpeed API key, not a masked value.');
+            else $values['google_pagespeed_api_key']=$key;
+        }
+        if (array_key_exists('google_pagespeed_key_enabled',$values)
+            && !in_array($values['google_pagespeed_key_enabled'],['0','1'],true))
+            throw new \InvalidArgumentException('Select a valid PageSpeed key mode.');
         // Never clear the separately stored OpenRouter key when the masked field is blank.
         // The toggle persists independently of the older Google/compatible selection.
         if (array_key_exists('ai_openrouter_key', $values)) {
@@ -323,6 +334,7 @@ final class SecretService {
         return [
             'google_client_id' => (string)(getenv('GOOGLE_CLIENT_ID') ?: ''),
             'google_client_secret' => (string)(getenv('GOOGLE_CLIENT_SECRET') ?: ''),
+            'google_pagespeed_api_key' => (string)(getenv('GOOGLE_PAGESPEED_API_KEY') ?: ''),
             'razorpay_mode' => (string)(getenv('RAZORPAY_MODE') ?: ''),
             'razorpay_test_key_id' => (string)(getenv('RAZORPAY_TEST_KEY_ID') ?: ''),
             'razorpay_test_key_secret' => (string)(getenv('RAZORPAY_TEST_KEY_SECRET') ?: ''),

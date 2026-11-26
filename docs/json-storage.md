@@ -64,6 +64,14 @@ directory.
 - Offline deterministic agent experiment snapshots, **only on explicit CLI
   request**: `storage/agent-evals/eval-<timestamp>-<fixture-hash>.json`. These
   contain test scores and version hashes, never customer messages.
+- Disposable owner PageSpeed quota claim and sanitized report cache:
+  `storage/logs/pagespeed-report.json` with a separate atomic lock. The fixed
+  production destination is deployment-local; a constructor path override is
+  only used by isolated fixtures. Retains the latest attempt and last successful
+  measurement per strategy for at most seven days, bounded to 64 KiB. No keys,
+  raw provider bodies, customer records or durable business settings are stored.
+  Private 0600 atomic replacement and the existing HTTP storage denial apply.
+  The dedicated API key remains in the encrypted MySQL secrets record.
 - Optional one-time seed fixtures: `storage/data/*.json`; they are **not**
   runtime fallbacks for business data.
 
