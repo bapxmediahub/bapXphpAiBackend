@@ -309,7 +309,7 @@ test('REA native skill routing rejects changed upstream bytes, incomplete mappin
     for(const name of files)await copy(name);
     const run=args=>invoke('php',['cli/rea-skills.php',...args],directory);
     let result=await run(['--check']);assert.equal(result.status,0,result.output);
-    assert.match(result.output,/22 adaptations, 210 pinned upstream files, 75 mapped obligations/);
+    assert.match(result.output,new RegExp("22 adaptations, 210 pinned upstream files, "+register.rows.length+" mapped obligations"));
     result=await run(['--for','P23']);assert.equal(result.status,0,result.output);
     assert.match(result.output,/rea-abilities-api-implement/);
     result=await run(['--show','rea-wp-abilities-api']);assert.equal(result.status,0,result.output);

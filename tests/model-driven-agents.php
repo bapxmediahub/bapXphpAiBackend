@@ -64,7 +64,7 @@ if(PHP_SAPI==='cli-server'){
             'draft_invalid'=>['title'=>'No body'],
             'draft_product'=>['name'=>'Fixture lamp','slug'=>'fixture-lamp','description'=>'Model-generated proposal.',
                 'category'=>'fixture','price'=>'999','gst_rate'=>'18','stock_status'=>'in_stock',
-                'status'=>'visible','image_url'=>'/unverified.webp','gst_uqc'=>'PCS'],
+                'status'=>'visible','image_url'=>'/unverified.webp','gst_uqc'=>'PCS','brand'=>'Invented','gtin'=>'012345678905','mpn'=>'Invented','condition'=>'new','identifier_exists'=>'no'],
             default=>['title'=>'Fixture article','slug'=>'fixture-article','category'=>'help',
                 'content'=>'## Model-authored fixture paragraph','og_image'=>'/unverified.webp','published'=>'1'],
         };
@@ -574,7 +574,8 @@ try{
                     || ($fields['og_image']??null)!=='' || isset($fields['published']))) throw new RuntimeException('Model injected a publication or image decision');
                 if ($scenario==='draft_product' && (($fields['description']??null)!=='Model-generated proposal.'
                     || ($fields['price']??null)!=='' || ($fields['gst_rate']??null)!=='' || ($fields['image_url']??null)!==''
-                    || ($fields['stock_status']??null)!=='' || ($fields['gst_uqc']??null)!=='' || ($fields['status']??null)!=='hidden')) throw new RuntimeException('Model overrode owner-only commerce fields');
+                    || ($fields['stock_status']??null)!=='' || ($fields['gst_uqc']??null)!=='' || ($fields['status']??null)!=='hidden'
+                    || ($fields['brand']??null)!=='' || ($fields['gtin']??null)!=='' || ($fields['mpn']??null)!=='' || ($fields['condition']??null)!=='' || ($fields['identifier_exists']??null)!=='')) throw new RuntimeException('Model overrode owner-only commerce fields');
             }
             echo "PASS $protocol/$scenario: actual inference provenance, explicit error or manual state\n";
             if ($actualTransfer) unlink($recoveryDir.'/'.$scenario);

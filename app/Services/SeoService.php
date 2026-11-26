@@ -266,8 +266,9 @@ final class SeoService {
     }
 
     public function productSchema(array $product): array {
-        $price = $product['offer_price'] ?? $product['price'] ?? 0;
-        return [
+        $price = (new ProductService())->priceOf($product);
+        $metadata=MerchantFeedService::metadata($product)['fields'];
+        $schema = [
             '@context' => 'https://schema.org',
             '@type' => 'Product',
             'name' => $product['name'] ?? '',
@@ -282,6 +283,11 @@ final class SeoService {
                 'url' => $this->pageUrl('/product/' . rawurlencode((string)($product['slug'] ?? ''))),
             ],
         ];
+        if (isset($metadata['brand'])) $schema['brand']=['@type'=>'Brand','name'=>$metadata['brand']];
+        if (isset($metadata['gtin'])) $schema['gtin'.strlen($metadata['gtin'])]=$metadata['gtin'];
+        if (isset($metadata['mpn'])) $schema['mpn']=$metadata['mpn'];
+        if (isset($metadata['condition'])) $schema['offers']['itemCondition']='https://schema.org/'.ucfirst($metadata['condition']).'Condition';
+        return $schema;
     }
 
     public function personSchema(array $astrologer): array {

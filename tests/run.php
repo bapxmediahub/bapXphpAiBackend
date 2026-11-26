@@ -1606,6 +1606,32 @@ $tests['merchant metadata keeps explicit identifiers and serializes hostile Unic
     $private=$s->inspect([array_replace($base,['image_url'=>'https://name:secret@images.example/picture.jpg'])]);assertSame(0,$private['exported_count'],'Credential-bearing image is not public output');
 };
 
+$tests['merchant owner metadata preserves omissions and refuses invented or contradictory identifiers'] = static function (): void {
+    $s=\App\Services\MerchantFeedService::class;
+    $existing=['brand'=>'Actual maker','gtin'=>'012345678905','mpn'=>'Part-01','condition'=>'new','identifier_exists'=>'yes'];
+    assertSame([], $s::validateMetadata($existing,['name'=>'Updated title']), 'An unrelated edit does not rewrite merchant metadata');
+    assertSame(['gtin'=>'012345678905'],$s::validateMetadata([],['gtin'=>'012345678905']),'Leading zero and checksum retained');
+    assertSame(['brand'=>'','gtin'=>'','mpn'=>'','condition'=>'','identifier_exists'=>'no'],
+        $s::validateMetadata($existing,['brand'=>'','gtin'=>'','mpn'=>'','condition'=>'','identifier_exists'=>'no']),'Explicit clearing is distinct from omission');
+    foreach ([['gtin'=>'012345678906'],['gtin'=>['bad']],['condition'=>'invented'],['identifier_exists'=>'no'],['brand'=>str_repeat('x',71)],['mpn'=>"X\nY"]] as $invalid) {
+        try {$s::validateMetadata($existing,$invalid);throw new RuntimeException('Invalid metadata accepted');}
+        catch (InvalidArgumentException) {assertTrue(true,'Reject invalid or contradictory identity');}
+    }
+    $m=$s::metadata(['brand'=>'Actual maker','identifier_exists'=>'no','condition'=>'new']);
+    assertTrue(!isset($m['fields']['identifier_exists'])&&in_array('identifier_status_conflict',$m['warnings'],true),'Legacy contradictory no-identifier flag cannot enter feed');
+    $record=['id'=>'fixture-identity','slug'=>'fixture-identity','name'=>'Fixture','description'=>'Actual fixture','price'=>105.0,'offer_price'=>0,'stock_status'=>'in_stock','image_url'=>'/assets/images/blog/order-products.webp']+$existing;
+    $merchant=new $s(origin:'https://configured.example');
+    $item=$merchant->inspect([$record])['items'][0];
+    $schema=(new \App\Services\SeoService([],'https://configured.example'))->productSchema($record);
+    assertSame('105.00 INR',$item['price'],'Zero offer does not replace base price');
+    assertSame(105.0,$schema['offers']['price'],'Product structured data uses the same resolved price');
+    assertSame($item['brand'],$schema['brand']['name'],'Brand projection agrees');
+    assertSame($item['gtin'],$schema['gtin12'],'GTIN projection agrees');
+    assertSame($item['mpn'],$schema['mpn'],'MPN projection agrees');
+    assertSame('https://schema.org/NewCondition',$schema['offers']['itemCondition'],'Actual condition projected');
+    assertTrue(!isset((new \App\Services\SeoService([],'https://configured.example'))->productSchema(array_diff_key($record,$existing))['brand']),'Unknown brand is not fabricated');
+};
+
 $tests['merchant product correction link selects actual record rather than an empty new-product form'] = static function (): void {
     $source=fileRead('app/Controllers/AdminController.php');$start=strpos($source,'public function products()');$end=strpos($source,'public function importProducts',$start);$method=substr($source,$start,$end-$start);
     assertTrue(str_contains($method,"\$_GET['edit']") && str_contains($method,"->find('products', \$edit)") && str_contains($method,'$this->renderNotFound()'),

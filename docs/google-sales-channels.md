@@ -43,10 +43,14 @@ January 31, 2027 requirement, not silently upscaled or labeled compliant.
 Brand, GTIN, MPN and condition are emitted only when explicitly recorded and
 valid. Unknown identifiers are **not** converted to `identifier_exists=no`.
 An explicit no-identifier record can be represented, but the owner must confirm
-that the exception is legitimate. Existing product-editor fields do not supply
-all Merchant attributes; missing identifier/category/variant data must be
-reviewed and supplied through supported catalogue work or Google supplementary
-data, never guessed by an agent.
+that the exception is legitimate. The native product editor provides owner-only brand, GTIN, MPN, condition and
+identifier-status fields. Use the existing product record; explicit blanks clear
+fields, omission preserves them. GTINs are validated as strings with a check
+digit; contradictory no-identifier declarations and invalid conditions are
+refused. The Enterprise draft model cannot populate these facts. RSS and
+product JSON-LD share the public metadata projection, and the visible product
+page displays supplied brand/condition/MPN. Unknown identifiers and categories
+or variants must still be reviewed, never guessed.
 
 ## Connect in Merchant Center
 
@@ -71,6 +75,44 @@ YouTube Studio store linking otherwise uses supported shopping platforms or
 retailers. A custom PHP feed alone does not enable product tagging or bypass
 YouTube channel eligibility. Confirm direct-onboarding access with YouTube;
 no channel is marked linked and no `YouTube_Shopping` destination is fabricated.
+
+## Multi-channel customer onboarding and WooCommerce reference
+
+Google for WooCommerce v3.6 introduced YouTube Shopping. The pinned source
+`woocommerce/google-listings-and-ads@e4c389ba652d10d427c4595edfd67d93d9320e48`
+was imported with REA as a selected static historical reference. Its
+`Connection::connect()` obtains a connection URL from the authorized Connect
+Server, `third_party_link()` sends store URL, name and Merchant ID through its
+proxy, and the account controller distinguishes Google connection, incomplete
+link and linked state. Its Merchant API client is separate. These public source
+findings do not provide partner credentials or authority to clone that service.
+No fake WooCommerce REST identity is needed or implemented.
+
+For Sri Panchami's multiple channels, first verify the business's own Merchant
+Center website/data source, actual catalogue approvals, configured shipping and
+return policy, and Analytics connection. In YouTube Studio confirm each actual
+channel's eligibility and account access. Request direct invited-creator
+onboarding with YouTube when available. A participating platform may use repeated
+channel-ID attributes only after approved platform onboarding; do not put
+placeholder or guessed channel IDs into the feed. Keep each channel's real
+linking and product-tagging evidence separate. The owner has not yet supplied
+channel identities or authorized account access.
+
+In the initial live audit at `1a3a160`, 43 feed items were returned, all
+in stock, none with brand/GTIN/MPN/condition. Sample product landing price matched
+RSS and JSON-LD (1689 INR), and actual Chromium at 1280 and 375 px showed the
+long title occupied 248/182 px respectively, with no purchase-adjacent terms
+or contact links. The native landing improvement preserves the full product
+title, adds visible stock and real checkout/purchase guidance beside existing
+buttons, and does not promise unverified delivery times or returns. General
+storefront UI and actual shipping/return policy verification remain separate.
+
+References:
+- https://woocommerce.com/document/youtube-shopping-google-for-woocommerce/
+- https://support.google.com/merchants/answer/12375531
+- https://support.google.com/merchants/answer/6324478
+- https://developers.google.com/search/docs/appearance/structured-data/merchant-listing
+- https://baymard.com/research-articles/mobile-ux-ecommerce (updated 2026-07-14).
 
 ## Shared CLI and verification
 

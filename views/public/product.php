@@ -10,8 +10,10 @@
         </div>
     <?php else: ?>
         <?php
-            $hasOffer = !empty($product['offer_price']) && $product['offer_price'] < $product['price'];
+            $displayPrice = (new \App\Services\ProductService())->priceOf($product);
+            $hasOffer = $displayPrice > 0 && $displayPrice < (float)($product['price'] ?? 0);
             $canPurchase = in_array($product['stock_status'] ?? '', ['in_stock', 'active'], true);
+            $merchantIdentity = \App\Services\MerchantFeedService::metadata($product)['fields'];
             $placeholder = placeholder_img($product['name']);
             $gallery = [];
             if (!empty($product['image_urls'])) {
@@ -67,17 +69,21 @@
                         <span style="color:var(--color-text-muted); font-size:0.8rem;"><?= $productReviewCount > 0 ? e((string)$productRating) . ' from ' . e((string)$productReviewCount) . ($productReviewCount === 1 ? ' review' : ' reviews') : 'No reviews yet' ?></span>
                     </div>
                 </div>
+                <?php if (isset($merchantIdentity['brand']) || isset($merchantIdentity['condition']) || isset($merchantIdentity['mpn'])): ?>
+                    <p class="product-info__identity"><?php if (isset($merchantIdentity['brand'])): ?>Brand: <?= e($merchantIdentity['brand']) ?><?php endif; ?><?php if (isset($merchantIdentity['condition'])): ?> <span>Condition: <?= e(ucfirst($merchantIdentity['condition'])) ?></span><?php endif; ?><?php if (isset($merchantIdentity['mpn'])): ?> <span>MPN: <?= e($merchantIdentity['mpn']) ?></span><?php endif; ?></p>
+                <?php endif; ?>
                 <div class="product-info__price">
-                    <span class="price">₹<?= e(number_format((float)(($product['offer_price'] ?? 0) ?: ($product['price'] ?? 0)), 2)) ?></span>
+                    <span class="price">₹<?= e(number_format($displayPrice, 2)) ?></span>
                     <?php if($hasOffer): ?>
                         <span class="old-price">₹<?= e(number_format((float)$product['price'], 2)) ?></span>
-                        <?php $pct = round((1 - $product['offer_price'] / ($product['price'] ?: 1)) * 100); ?>
+                        <?php $pct = round((1 - $displayPrice / ($product['price'] ?: 1)) * 100); ?>
                         <span class="badge badge--success">Save <?= $pct ?>%</span>
                     <?php endif; ?>
                 </div>
                 <?php if (empty($adminPreview)): ?>
                     <div class="product-buy" id="product-purchase" data-page-section="Purchase" tabindex="-1">
                         <?php if ($canPurchase): ?>
+                            <p class="product-buy__availability"><span aria-hidden="true">●</span> In stock</p>
                             <form id="product-cart-form" method="post" action="/cart/add">
                                 <input type="hidden" name="slug" value="<?= e($product['slug']) ?>">
                                 <?php $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16)); ?>
@@ -95,6 +101,10 @@
                                     <button name="redirect" value="/checkout" class="btn btn-outline">Buy Now</button>
                                 </div>
                             </form>
+                            <div class="product-buy__guidance">
+                                <p>Delivery details and final charges are confirmed at checkout.</p>
+                                <div><a href="/terms">Purchase terms</a><a href="/contact">Product or delivery questions</a></div>
+                            </div>
                         <?php else: ?>
                             <strong>Out of stock</strong>
                             <a href="/shop">Browse available products</a>

@@ -47,7 +47,7 @@ query_examples:
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
   concepts: 541
-  relationships: 495
+  relationships: 496
   by_type:
     blog: 16
     controller: 20
@@ -7246,6 +7246,9 @@ relationships:
     relation: "references"
   - from: "doc:blog"
     to: "doc:a2ui"
+    relation: "references"
+  - from: "doc:catalog"
+    to: "doc:google-sales-channels"
     relation: "references"
   - from: "doc:deployment-hostinger"
     to: "doc:a2ui"

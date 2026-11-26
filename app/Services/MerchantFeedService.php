@@ -45,15 +45,9 @@ final class MerchantFeedService
             $item=['id'=>$id,'title'=>$title,'description'=>$description,
                 'link'=>$this->origin.'/product/'.rawurlencode($slug),'image_link'=>$image['url']??'',
                 'price'=>number_format($price,2,'.','').' INR','availability'=>$stock==='out_of_stock'?'out_of_stock':'in_stock'];
-            $gtin=trim(self::scalar($record['gtin']??''));$mpn=self::text($record['mpn']??'',70);$brand=self::text($record['brand']??'',70);
-            if($gtin!==''&&self::validGtin($gtin))$item['gtin']=$gtin;
-            elseif($gtin!=='')$warnings[]='invalid_gtin_omitted';
-            if($mpn!=='')$item['mpn']=$mpn;if($brand!=='')$item['brand']=$brand;
-            $noIdentifiers=($record['identifier_exists']??null)===false||($record['identifier_exists']??null)==='no';
-            if($noIdentifiers&&$gtin===''&&$mpn==='')$item['identifier_exists']='no';
-            elseif(!isset($item['gtin'])&&($mpn===''||$brand===''))$warnings[]='identifiers_need_review';
-            if(in_array($record['condition']??null,['new','used','refurbished'],true))$item['condition']=$record['condition'];
-            else $warnings[]='condition_needs_review';
+            $metadata=self::metadata($record);
+            $item+=$metadata['fields'];
+            $warnings=array_merge($warnings,$metadata['warnings']);
             $gallery=is_array($record['image_urls']??null)?$record['image_urls']:[];$additional=[];
             foreach(array_slice($gallery,0,10) as $candidate){$extra=$this->image(self::scalar($candidate));if($extra!==null&&$extra['url']!==$item['image_link'])$additional[]=$extra['url'];}
             if($additional!==[])$item['additional_image_link']=array_values(array_unique($additional));
@@ -78,6 +72,66 @@ final class MerchantFeedService
         }
         return $xml."\n</channel></rss>\n";
     }
+    /** Validate explicitly submitted owner metadata; omission preserves existing values.
+     * Empty strings clear fields. Never infer a manufacturer, barcode or exception. */
+    public static function validateMetadata(array $existing,array $submitted): array {
+        $updates=[];
+        foreach (['brand','gtin','mpn','condition','identifier_exists'] as $key) {
+            if (!array_key_exists($key,$submitted)) continue;
+            $value=$submitted[$key];
+            if(!is_string($value)||!mb_check_encoding($value,'UTF-8')||preg_match('/[\x00-\x1f\x7f]/',$value)) {
+                throw new \InvalidArgumentException('Enter valid product identity fields.');
+            }
+            $value=trim($value);
+            if (in_array($key,['brand','mpn'],true) && mb_strlen($value)>70) {
+                throw new \InvalidArgumentException('Brand and manufacturer part number must be at most 70 characters.');
+            }
+            if ($key==='gtin' && $value!=='' && !self::validGtin($value)) {
+                throw new \InvalidArgumentException('Enter the actual 8, 12, 13 or 14-digit GTIN with a valid check digit, or leave it blank.');
+            }
+            if ($key==='condition' && !in_array($value,['','new','used','refurbished'],true)) {
+                throw new \InvalidArgumentException('Select a valid product condition.');
+            }
+            if ($key==='identifier_exists' && !in_array($value,['','yes','no'],true)) {
+                throw new \InvalidArgumentException('Select a valid identifier status.');
+            }
+            $updates[$key]=$value;
+        }
+        if ($updates===[]) return [];
+        $combined=array_replace($existing,$updates);
+        if (self::noIdentifiers($combined) && self::hasRecordedIdentifiers($combined)) {
+            throw new \InvalidArgumentException('Only confirm no assigned identifiers when no brand, GTIN or manufacturer part number is recorded. Correct the identifier status or the actual fields.');
+        }
+        return $updates;
+    }
+
+    /** Shared validated public projection for the feed, product page and JSON-LD. */
+    public static function metadata(array $record): array {
+        $fields=[];$warnings=[];
+        $gtin=trim(self::scalar($record['gtin']??''));
+        $mpn=self::text($record['mpn']??'',70);$brand=self::text($record['brand']??'',70);
+        if($gtin!==''&&self::validGtin($gtin))$fields['gtin']=$gtin;
+        elseif($gtin!=='')$warnings[]='invalid_gtin_omitted';
+        if($mpn!=='')$fields['mpn']=$mpn;
+        if($brand!=='')$fields['brand']=$brand;
+        if(self::noIdentifiers($record)&&!self::hasRecordedIdentifiers($record))$fields['identifier_exists']='no';
+        else {
+            if(self::noIdentifiers($record))$warnings[]='identifier_status_conflict';
+            if(!isset($fields['gtin'])&&($mpn===''||$brand===''))$warnings[]='identifiers_need_review';
+            if(($record['identifier_exists']??null)==='yes')$fields['identifier_exists']='yes';
+        }
+        if(in_array($record['condition']??null,['new','used','refurbished'],true))$fields['condition']=$record['condition'];
+        else $warnings[]='condition_needs_review';
+        return ['fields'=>$fields,'warnings'=>$warnings];
+    }
+    private static function noIdentifiers(array $record): bool {
+        return ($record['identifier_exists']??null)===false||($record['identifier_exists']??null)==='no';
+    }
+    private static function hasRecordedIdentifiers(array $record): bool {
+        foreach(['brand','gtin','mpn'] as $key) if(trim(self::scalar($record[$key]??''))!=='')return true;
+        return false;
+    }
+
     private static function scalar(mixed $value): string {return is_string($value)||is_int($value)||is_float($value)?(string)$value:'';}
     private static function text(mixed $value,int $limit): string {
         $text=html_entity_decode(strip_tags(self::scalar($value)),ENT_QUOTES|ENT_HTML5,'UTF-8');

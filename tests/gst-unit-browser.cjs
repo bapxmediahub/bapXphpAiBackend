@@ -11,7 +11,7 @@ const path = require('node:path');
 const {test} = require('node:test');
 const {chromium} = require('playwright');
 
-test('owner edits GST units and reconciles frozen invoice quantities in Chromium', {timeout:45000}, async t => {
+test('owner edits GST units, issued invoices and merchant product identity in Chromium', {timeout:90000}, async t => {
     const root = path.resolve(__dirname, '..');
     const sessions = await mkdtemp(path.join(os.tmpdir(), 'bapx-gst-unit-'));
     const profile = {id:'app_settings', site_display_name:'GST Unit Fixture',gst_state:'Tamil Nadu',gst_state_code:'99'};
@@ -178,4 +178,85 @@ test('owner edits GST units and reconciles frozen invoice quantities in Chromium
     assert.equal(product.gst_uqc, '');
     assert.equal(product.gst_qty_per_unit, '');
     assert.equal(order.tax_lines[0].uqc, 'KGS', 'Clearing catalogue fields cannot rewrite an issued invoice');
+    // Extend the existing isolated owner fixture; no real catalogue is changed.
+    await page.goto(edit);
+    const brand=form.getByLabel('Brand',{exact:true});
+    const gtin=form.getByLabel('GTIN / barcode');
+    const mpn=form.getByLabel('Manufacturer part number (MPN)');
+    const condition=form.getByLabel('Product condition');
+    const identity=form.locator('#field-identifier_exists');
+    const priorWrites=writes;
+    await brand.fill('Actual Fixture Maker');
+    await gtin.fill('012345678906');
+    await mpn.fill('Fixture-01');
+    await condition.selectOption('new');
+    await identity.selectOption('yes');
+    await save.click();
+    await page.getByText(/valid check digit/).waitFor();
+    assert.equal(writes,priorWrites,'Invalid metadata does not reach the isolated store');
+    assert.equal(await gtin.inputValue(),'012345678906');
+    await gtin.fill('012345678905');
+    await save.click();
+    await page.waitForURL(origin+'/admin/products');
+    assert.equal(product.gtin,'012345678905');
+    assert.equal(product.brand,'Actual Fixture Maker');
+    assert.equal(product.condition,'new');
+    for(const width of [1280,375]){
+        await page.setViewportSize({width,height:812});
+        await page.goto(edit);
+        assert.equal(await gtin.inputValue(),'012345678905');
+        assert.equal(await mpn.inputValue(),'Fixture-01');
+        assert.equal(await condition.inputValue(),'new');
+        assert.equal(await identity.inputValue(),'yes');
+        assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+    }
+    await identity.selectOption('no');
+    await save.click();
+    await page.getByText(/no assigned identifiers when no brand/).waitFor();
+    assert.equal(writes,priorWrites+1,'Contradictory metadata must not be stored');
+    await brand.fill('');await gtin.fill('');await mpn.fill('');await condition.selectOption('');
+    await save.click();
+    await page.waitForURL(origin+'/admin/products');
+    assert.equal(product.identifier_exists,'no');
+    assert.equal(product.gtin,'');assert.equal(product.brand,'');assert.equal(product.mpn,'');
+    assert.equal(product.condition,'');
+    await page.goto(origin+'/admin/google-merchant');
+    assert.equal(await page.locator('a[href="https://studio.youtube.com/"]').count(),1);
+    // Public projection against synthetic published records in the same isolated
+    // bridge. No real product publication or purchase is attempted.
+    Object.assign(product,{status:'visible',stock_status:'in_stock',description:'Actual fixture description.',
+        image_url:'/assets/images/blog/order-products.webp',price:105,offer_price:0,
+        name:'Long fixture spiritual product title for a direct video shopping landing page',
+        brand:'Actual Fixture Maker',gtin:'012345678905',mpn:'Fixture-01',condition:'new',identifier_exists:'yes'});
+    const landing=origin+'/product/'+product.slug;
+    for(const width of [1280,375]){
+        await page.setViewportSize({width,height:812});
+        const response=await page.goto(landing);
+        assert.equal(response.status(),200);
+        assert.match(await page.locator('.product-info__identity').innerText(),/Actual Fixture Maker/);
+        assert.match(await page.locator('.product-info__price .price').innerText(),/105\.00/);
+        assert.match(await page.locator('.product-buy__availability').innerText(),/In stock/);
+        assert.equal(await page.locator('.product-buy a[href="/terms"]').count(),1);
+        assert.equal(await page.locator('.product-buy a[href="/contact"]').count(),1);
+        const schema=await page.evaluate(()=>[...document.querySelectorAll('script[type="application/ld+json"]')].map(s=>{try{return JSON.parse(s.textContent)}catch{return null}}).find(s=>s?.['@type']==='Product'));
+        assert.equal(schema.gtin12,'012345678905');
+        assert.equal(schema.brand.name,'Actual Fixture Maker');
+        assert.equal(schema.offers.price,105);
+        assert.equal(schema.offers.itemCondition,'https://schema.org/NewCondition');
+        assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+    }
+    const feed=await page.request.get(origin+'/feeds/google-products.xml');
+    assert.equal(feed.status(),200);
+    const xml=await feed.text();
+    assert.match(xml,/<g:gtin>012345678905<\/g:gtin>/);
+    assert.match(xml,/<g:price>105\.00 INR<\/g:price>/);
+    const noScript=await browser.newContext({javaScriptEnabled:false,viewport:{width:375,height:812}});
+    await noScript.route('https://**/*',route=>route.abort());
+    const fallback=await noScript.newPage();
+    await fallback.goto(landing);
+    assert.equal(await fallback.getByRole('button',{name:'Add to Cart',exact:true}).count(),1);
+    assert.equal(await fallback.locator('.product-buy a[href="/terms"]').count(),1);
+    await noScript.close();
+
+
 });

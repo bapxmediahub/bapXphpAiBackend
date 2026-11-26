@@ -108,7 +108,7 @@
             'primary_key' => 'id',
             'admin_managed' => true,
             'media_fields' => ['image_url', 'image_urls'],
-            'admin_fields' => ['slug', 'name', 'description', 'highlights', 'description_points', 'specifications', 'category', 'image_url', 'image_urls', 'price', 'offer_price', 'offer_starts_at', 'offer_ends_at', 'hsn_code', 'gst_rate', 'gst_uqc', 'gst_qty_per_unit', 'stock_status', 'status'],
+            'admin_fields' => ['slug', 'name', 'description', 'highlights', 'description_points', 'specifications', 'category', 'image_url', 'image_urls', 'price', 'offer_price', 'offer_starts_at', 'offer_ends_at', 'hsn_code', 'gst_rate', 'gst_uqc', 'gst_qty_per_unit', 'stock_status', 'status', 'brand', 'gtin', 'mpn', 'condition', 'identifier_exists'],
             'agent_context' => ['id', 'slug', 'name', 'description', 'highlights', 'description_points', 'specifications', 'category', 'categories', 'price', 'offer_price', 'hsn_code', 'gst_rate', 'stock_status'],
             'fields' => [
                 'id' => ['type' => 'string', 'required' => true],
@@ -136,6 +136,11 @@
                 // An offer with no end kept discounting until somebody remembered.
                 'offer_starts_at' => ['type' => 'datetime'],
                 'offer_ends_at' => ['type' => 'datetime'],
+                'brand' => ['type' => 'string', 'description' => 'Owner-confirmed product brand, not an inferred store name'],
+                'gtin' => ['type' => 'string', 'description' => 'Actual manufacturer-assigned GTIN; preserve leading zeros'],
+                'mpn' => ['type' => 'string', 'description' => 'Actual manufacturer part number'],
+                'condition' => ['type' => 'enum', 'values' => ['', 'new', 'used', 'refurbished']],
+                'identifier_exists' => ['type' => 'enum', 'values' => ['', 'yes', 'no'], 'description' => 'Explicit owner confirmation only; blank means unassessed'],
             ],
         ],
         'astrologers' => [

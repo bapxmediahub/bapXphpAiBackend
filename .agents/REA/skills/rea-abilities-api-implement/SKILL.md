@@ -2,7 +2,7 @@
 name: rea-abilities-api-implement
 description: Implement commerce capabilities through native domain services using source-pinned REA evidence and native bapX implementation contracts.
 compatibility: Native bapX developer workflow (PHP, MySQL, vanilla JavaScript; no upstream runtime)
-capability_ids: [P18, P19, P22, P23, P24, P25, P26, P27, P28, P29, P31, P33, P34, MCP01, DS07, P20, P21]
+capability_ids: [P18, P19, P22, P23, P24, P25, P26, P27, P28, P29, P31, P33, P34, MCP01, DS07, P20, P21, MC01]
 ---
 
 # Implement commerce capabilities through native domain services
@@ -35,6 +35,8 @@ Read the current capability register before using this guide; these are mapped s
 - `P20` — Virtual/downloadable products and download permissions.
 - `P21` — Catalog import/export with validation and resumable work.
 
+- `MC01` — Google Merchant catalogue readiness and authorized multi-channel YouTube Shopping.
+
 Representative pinned source anchors (see the full source index and row references for revisions and hashes):
 - `woocommerce`: `includes/class-wc-product-variable.php`
 - `woocommerce`: `src/Checkout/Helpers/ReserveStock.php`
@@ -54,6 +56,8 @@ Representative pinned source anchors (see the full source index and row referenc
 Additional pinned anchors for these native extensions:
 - `woocommerce`: `includes/class-wc-product-download.php`
 - `woocommerce`: `includes/admin/class-wc-admin-importers.php`
+
+Additional pinned source: Google for WooCommerce `src/API/YouTube/Connection.php`, `src/API/Site/Controllers/YouTube/AccountController.php` and `src/API/Google/Mapi/MerchantApiClient.php` at `e4c389b`. The authorized Connect Server and third-party link receipt are external dependencies, not a generic Woo REST endpoint.
 
 ## Native implementation workflow
 Start with reviewed rea-wp-abilities-audit and capability IDs. Trace exact WooCommerce source operation and side effects; keep native PHP domain service as authority, with thin UI/HTTP/MCP/agent projections. Implement one complete business operation, a safe read first, reviewed writes only after confirmation/idempotency; no duplicated SQL/calculations or transport-driven analytics inflation. For shipping P23 read zone matching, cart totals, checkout and flat/free rate source; preserve zero-charge legacy until owner enables tested rules. Use authoritative address/cart, integer paise, frozen tax/quote digest, gateway verification and order/refund evidence. For variants/inventory preserve SKU identity and reservations across cart/order. Never invoke WP/WC loader or enable an unverified paid feature.
@@ -83,6 +87,8 @@ Existing test starting points (extend rather than claim these cover the entire n
 
 - `tests/campaign-booking.php`
 - `docs/modules/catalog.md`
+
+For YouTube Shopping, use actual native product metadata, RSS, visible landing and checkout facts. Read Google Merchant data-source and direct invited-creator onboarding docs. An eligible creator may link an authorized data source/channel; a store platform must be approved and may submit repeated actual channel IDs only under that authorized contract. Never impersonate WooCommerce, invent identifiers, channel names or a connected status, or join affiliate data to customer identities. Verify each account, item approval, link and actual tagging separately. A generated feed or schema is not approval. See `docs/google-sales-channels.md`.
 
 ## Evidence handoff
 Record the upstream entrypoint/callee, authoritative state, permissions, normal/failure/concurrent transitions and the intentional native deviation in the linked GitHub issue. Record actual test commands and results, update affected REA rows, regenerate the report and run the existing CI gate. Distinguish static reading, synthetic fixture execution and live acceptance. Read unknown source bodies before implementing; no file count or test name proves parity.

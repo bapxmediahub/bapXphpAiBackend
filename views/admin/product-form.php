@@ -89,6 +89,37 @@
                         <option value="draft">Draft</option>
                     </select>
                 </label>
+                <p class="pf-section">Google Shopping · Product identity</p>
+                <p class="pf-hint">Use actual product packaging or manufacturer information. Leave unknown fields blank; never invent identifiers. <a href="/admin/google-merchant">Review feed readiness</a>.</p>
+                <div class="admin-form__row">
+                    <label>Brand
+                        <input type="text" name="brand" id="field-brand" maxlength="70" autocomplete="off">
+                    </label>
+                    <label>GTIN / barcode
+                        <input type="text" name="gtin" id="field-gtin" maxlength="14" inputmode="numeric" autocomplete="off">
+                    </label>
+                </div>
+                <div class="admin-form__row">
+                    <label>Manufacturer part number (MPN)
+                        <input type="text" name="mpn" id="field-mpn" maxlength="70" autocomplete="off">
+                    </label>
+                    <label>Product condition
+                        <select name="condition" id="field-condition">
+                            <option value="">Not assessed</option>
+                            <option value="new">New</option>
+                            <option value="used">Used</option>
+                            <option value="refurbished">Refurbished</option>
+                        </select>
+                    </label>
+                </div>
+                <label>Product identifiers
+                    <select name="identifier_exists" id="field-identifier_exists">
+                        <option value="">Not assessed</option>
+                        <option value="yes">Identifiers are assigned</option>
+                        <option value="no">Confirmed: no assigned identifiers</option>
+                    </select>
+                </label>
+                <p class="pf-hint">Confirm no assigned identifiers only if the product genuinely has none. Unknown or unavailable data is not the same as no identifiers. Google reviews eligibility independently.</p>
                 <p class="pf-section">Tax</p>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--space-sm);">
                     <label>HSN Code
@@ -401,6 +432,10 @@ function fillProductForm(item) {
         document.getElementById('field-gst_rate').value = item.gst_rate || '';
         document.getElementById('field-gst_uqc').value = item.gst_uqc || '';
         document.getElementById('field-gst_qty_per_unit').value = item.gst_qty_per_unit || '';
+        for (const key of ['brand','gtin','mpn','condition']) {
+            document.getElementById('field-' + key).value = item[key] ?? '';
+        }
+        document.getElementById('field-identifier_exists').value = item.identifier_exists === false ? 'no' : (item.identifier_exists ?? '');
         document.getElementById('field-description').value = item.description || '';
         document.getElementById('field-highlights').value = lines(item.highlights);
         document.getElementById('field-description_points').value = lines(item.description_points);

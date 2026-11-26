@@ -1475,6 +1475,7 @@ flowchart LR
   controller_admincontroller -. static reference .-> service_gstregisterservice
   controller_admincontroller -. static reference .-> service_mailtemplateservice
   controller_admincontroller -. static reference .-> service_mediaservice
+  controller_admincontroller -. static reference .-> service_merchantfeedservice
   controller_admincontroller -. static reference .-> service_productimportservice
   controller_admincontroller -. static reference .-> service_productservice
   controller_admincontroller -. static reference .-> service_settingsservice
@@ -1829,8 +1830,10 @@ flowchart LR
   service_runtimehealthservice -. source new .-> service_databaseservice
   service_secretservice -. source new .-> service_databaseservice
   service_secretservice -. static reference .-> service_mcpclientservice
+  service_seoservice -. source new .-> service_productservice
   service_seoservice -. source new .-> service_settingsservice
   service_seoservice -. static reference .-> service_mediaservice
+  service_seoservice -. static reference .-> service_merchantfeedservice
   service_seoservice -. static reference .-> service_siteprofileservice
   service_settingsservice -. source new .-> service_authoredpageservice
   service_settingsservice -. source new .-> service_databaseservice
