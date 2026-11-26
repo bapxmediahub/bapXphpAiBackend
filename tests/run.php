@@ -2391,6 +2391,21 @@ $tests['enterprise follow-up retrieves only actor-owned persisted history'] = st
     assertSame('2026-11-01',$report['from'],'The latest accepted model report controls previous scope');
     assertSame(null, $service::previousReportFromDocument(array_replace($doc, ['turns'=>array_slice($doc['turns'],1)]), ['type'=>'admin','id'=>'u1']),
         'Error and old local turns do not supply an earlier model report scope');
+    $actor = ['type'=>'admin','id'=>'u1'];
+    $ambiguous = ['outcome'=>'model','report_context_ambiguous'=>true];
+    $legacy = ['outcome'=>'model','tools'=>[['name'=>'order_count','status'=>'complete',
+        'evidence'=>['filters'=>['from'=>'2026-11-15','to'=>'2026-11-21']]]]];
+    foreach ([$ambiguous, $legacy] as $boundary) {
+        $later = $doc;
+        $later['turns'][] = $boundary;
+        $later['turns'][] = ['outcome'=>'model','answer'=>'Ordinary conversation'];
+        assertSame(['context'=>null,'ambiguous'=>true],$service::previousReportStateFromDocument($later,$actor),'Accepted ambiguous report blocks older scope even after ordinary dialogue');
+        $later['turns'][] = ['outcome'=>'model','report_context'=>['tool'=>'order_count','from'=>'2026-11-22','to'=>'2026-11-25']];
+        assertSame('2026-11-22',$service::previousReportFromDocument($later,$actor)['from'],'A subsequent single-scope report restores the referent');
+    }
+    $failed = $doc;
+    $failed['turns'][] = array_replace($ambiguous,['outcome'=>'error']);
+    assertSame('2026-11-01',$service::previousReportFromDocument($failed,$actor)['from'],'Failed ambiguous report does not replace accepted context');
     try {
         $service::previousReportFromDocument($doc,['type'=>'admin','id'=>'u2']);
         throw new \RuntimeException('Expected actor rejection');

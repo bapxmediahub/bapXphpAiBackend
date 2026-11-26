@@ -57,11 +57,14 @@ if(PHP_SAPI==='cli-server'){
     }
     $names = array_column(array_column($tools, 'function'), 'name');
     $contents = $r['messages'];
-    $owner=in_array($scenario,['owner','capability','owner_followup','owner_article','slash_capabilities','slash_help','direct_order_total','missing_finish','router_changed_answer'],true);
+    $owner=in_array($scenario,['owner','capability','owner_followup','owner_multi_scope','owner_ambiguous_followup','owner_article','slash_capabilities','slash_help','direct_order_total','missing_finish','router_changed_answer'],true);
     $guest=!$owner&&!in_array($scenario,['customer','ticket'],true);
     $hasHistory = str_starts_with($scenario, 'catalogue_') || $scenario === 'owner_followup';
     $instructionRole = $luna || ($r['model'] ?? '') === 'gpt-5' ? 'developer' : 'system';
-    $expectedRoles = $hasHistory ? [$instructionRole,'user','assistant','user','assistant','user'] : [$instructionRole,'user'];
+    $scopeChain = in_array($scenario,['owner_multi_scope','owner_ambiguous_followup'],true);
+    $expectedRoles = $hasHistory || $scenario === 'owner_ambiguous_followup'
+        ? [$instructionRole,'user','assistant','user','assistant','user']
+        : ($scenario === 'owner_multi_scope' ? [$instructionRole,'user','assistant','user'] : [$instructionRole,'user']);
     $initialMessages = array_slice($contents, 0, count($expectedRoles));
     $instruction = array_shift($initialMessages)['content'] ?? '';
     $text = static fn(array $message): string => $message['content'] ?? '';
@@ -80,6 +83,21 @@ if(PHP_SAPI==='cli-server'){
         || (!$owner && (isset($context['previous_report']) || isset($context['attachments'])))) {
         $fail('Reference data crossed its provider-role boundary');
         return;
+    }
+    if ($scopeChain) {
+        $history = array_map($text, array_slice($initialMessages, 0, -1));
+        $first = ['Show the first order report.','The last delivered order report covered 3 to 7 January.'];
+        if ($scenario === 'owner_multi_scope') {
+            if ($history !== $first || ($context['previous_report']['from'] ?? null) !== '2024-01-03'
+                || ($context['previous_report_ambiguous'] ?? null) !== false) {
+                $fail('Initial report context missing'); return;
+            }
+        } elseif ($history !== [...$first,'Compare orders from 1 to 5 February and 1 to 5 March 2024.',
+            'February: 0 orders. March: 0 orders.']
+            || !array_key_exists('previous_report',$context) || $context['previous_report'] !== null
+            || ($context['previous_report_ambiguous'] ?? null) !== true) {
+            $fail('Ambiguous accepted report reused an older scope'); return;
+        }
     }
     if ($hasHistory) {
         $expectedFirst = $owner
@@ -202,7 +220,20 @@ if(PHP_SAPI==='cli-server'){
         default=>null
     };
     $finish='stop';
-    if($scenario==='catalogue_stale') {
+    if ($scenario === 'owner_multi_scope') {
+        if ($n===1) $parts=[$call('tool_search',['query'=>'order_count'],'discover')];
+        elseif ($n===3 && in_array('order_count',$names,true)) $parts=[
+            $call('order_count',['from'=>'2024-02-01','to'=>'2024-02-05'],'feb'),
+            $call('order_count',['from'=>'2024-03-01','to'=>'2024-03-05'],'mar')];
+        elseif ($n===5 && ($responses['feb']['from'] ?? null)==='2024-02-01'
+            && ($responses['mar']['from'] ?? null)==='2024-03-01'
+            && ($responses['feb']['count'] ?? null)===0 && ($responses['mar']['count'] ?? null)===0) {
+            $parts=[['text'=>'<final_answer>February: 0 orders. March: 0 orders.</final_answer>']];
+        } else { $fail('Missing distinct model-selected report scopes'); return; }
+    } elseif ($scenario === 'owner_ambiguous_followup') {
+        if ($n!==1) { $fail('Ambiguous report must not trigger an implicit lookup'); return; }
+        $parts=[['text'=>'<final_answer>Which of the two report periods should I use?</final_answer>']];
+    } elseif($scenario==='catalogue_stale') {
         $parts=[['text'=>'<final_answer>There are currently 43 products published in the shop.</final_answer>']];
     }elseif($scenario==='mixed'){
         if($n===1)$parts=[$call('tool_search',['query'=>'public_catalogue_summary'],'d1'),$call('tool_search',['query'=>'public_policy'],'d2')];
@@ -408,7 +439,10 @@ try{
         'google' => [...$standard, ...$chatCompletionBoundaries,
             ['oversized_signature','support','guest','What is the delivery charge?',null]],
         'google_fallback' => $textAndTools,
-        'compatible' => array_merge($standard, $providerRecovery, $chatCompletionBoundaries),
+        'compatible' => array_merge($standard, $providerRecovery, $chatCompletionBoundaries, [
+            ['owner_multi_scope','admin','admin','Compare orders from 1 to 5 February and 1 to 5 March 2024.','order_count'],
+            ['owner_ambiguous_followup','admin','admin','What about that same period?',null],
+        ]),
         'openai' => [$cases[9], $followupCases[3]],
         'openai_legacy' => [$followupCases[3]],
         'openai_luna' => [$cases[9], $followupCases[3]],
@@ -425,6 +459,11 @@ try{
     ];
     foreach ($profiles as $protocol=>$requests) foreach ($requests as [$scenario,$surface,$role,$question,$tool]) {
         $env=['BAPX_MODEL_DRIVEN_FIXTURE'=>'1','BAPX_FIXTURE_ENDPOINT'=>'http://'.$address.'/'.$scenario,'BAPX_TEST_MODE'=>'1','BAPX_FIXTURE_PROTOCOL'=>$protocol]+getenv();
+        if (in_array($scenario,['owner_multi_scope','owner_ambiguous_followup'],true)) {
+            $chainDir=$recoveryDir.'/scope-chain';
+            if ($scenario==='owner_multi_scope') {mkdir($chainDir,0700);mkdir($chainDir.'/logs',0700);}
+            $env['BAPX_FIXTURE_SCOPE_CHAIN_DIR']=$chainDir;
+        } else unset($env['BAPX_FIXTURE_SCOPE_CHAIN_DIR']);
         $child=proc_open([PHP_BINARY,__DIR__.'/fixtures/model-driven-agent-turn.php',$scenario,$surface,$role,$question],[0=>['file','/dev/null','r'],1=>['pipe','w'],2=>['pipe','w']],$io,null,$env);
         if(!is_resource($child))throw new RuntimeException('Child startup failed');
         $raw=stream_get_contents($io[1]);$err=stream_get_contents($io[2]);fclose($io[1]);fclose($io[2]);$exit=proc_close($child);
@@ -443,7 +482,7 @@ try{
         ], true);
         $routerChangedModel = in_array($scenario, ['router_changed_tool','router_changed_answer'], true);
         $expected=$invalidChatCompletion||$routerChangedModel||in_array($scenario,['outage','duplicate','truncated','unfinished','quota','long_retry','schema_error','catalogue_stale','catalogue_wrong','catalogue_locked'],true)?'error':'model';
-        $rounds=match($scenario){'mixed'=>3,'denied'=>2,'unfinished','transient_continuation','catalogue_fallback'=>5,
+        $rounds=match($scenario){'mixed','owner_multi_scope'=>3,'denied'=>2,'unfinished','transient_continuation','catalogue_fallback'=>5,
             'transient_start','slash_help','direct_shop_total','direct_delivery_charge','direct_order_total','router_changed_tool','router_changed_answer'=>2,
             'outage'=>6,default=>$tool!==null?4:1};
         if($exit!==0||($turn['outcome']??null)!==$expected||count($turn['model_attempts']??[])!==$rounds||($turn['turn_id']??null)!==($response['turn_id']??null)){
@@ -507,6 +546,15 @@ try{
         if (str_starts_with($scenario, 'catalogue_') || $scenario === 'owner_followup') {
             if (($result['history_preserved'] ?? false) !== true) throw new RuntimeException('Existing conversation history was rewritten or lost');
         }
+        if ($scenario === 'owner_multi_scope'
+            && (($turn['report_context_ambiguous'] ?? false) !== true || isset($turn['report_context'])
+                || count(array_filter($turn['tools'] ?? [],static fn(array $t):bool=>$t['name']==='order_count' && $t['status']==='complete'))!==2)) {
+            throw new RuntimeException('Successful multi-scope controller turn did not persist an ambiguity boundary');
+        }
+        if ($scenario === 'owner_ambiguous_followup'
+            && (($turn['tools'] ?? []) !== [] || !str_contains($turn['answer'] ?? '', 'Which of the two report periods'))) {
+            throw new RuntimeException('Follow-up did not request clarification without an implicit lookup');
+        }
         if ($scenario === 'owner_followup'
             && (($result['status'] ?? 0) !== 200 || !str_contains($response['answer'] ?? '', '2024-01-03 through 2024-01-07'))) {
             throw new RuntimeException('Owner follow-up did not rerun its tool for the last delivered report period');
@@ -555,4 +603,4 @@ try{
         }
         echo "PASS $protocol/$surface/$scenario: $expected, ".count($turn['model_attempts'])." HTTP rounds\n";
     }
-}finally{proc_terminate($process);proc_close($process);foreach(glob($recoveryDir.'/*')?:[] as $file)unlink($file);rmdir($recoveryDir);}
+}finally{proc_terminate($process);proc_close($process);foreach(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($recoveryDir,FilesystemIterator::SKIP_DOTS),RecursiveIteratorIterator::CHILD_FIRST) as $entry){if($entry->isDir())rmdir($entry->getPathname());else unlink($entry->getPathname());}rmdir($recoveryDir);}
