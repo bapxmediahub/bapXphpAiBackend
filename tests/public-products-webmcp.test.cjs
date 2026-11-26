@@ -30,7 +30,7 @@ function setup(payload,enabled=true,mode='promise',schema=contract) {
             ?{textContent:JSON.stringify(schema)}:null},
         window:{location:{origin:'https://shop.example.test'},
             addEventListener:(name,listener)=>{if(name==='pagehide')handle=listener}},
-        AbortController,URL,
+        AbortController, AbortSignal,URL,
         fetch:async(url,opts)=>{calls.push({url:String(url),opts});return {ok:true,json:async()=>payload}},
         console:{warn(message){warnings.push(message)}}
     });
@@ -115,7 +115,7 @@ test('shop snapshot adds only visible bounded descriptions and safe local images
     let tool;
     vm.runInNewContext(shopSource,{document:{modelContext:{registerTool(value){tool=value;}},
         querySelector:()=>({querySelectorAll:()=>cards})},window:{location:{origin:'https://shop.example.test',
-        href:'https://shop.example.test/shop'},addEventListener(){}},AbortController,URL,console});
+        href:'https://shop.example.test/shop'},addEventListener(){}},AbortController, AbortSignal,URL,console});
     const result=tool.execute({limit:2});
     assert.equal(result.total,3);
     assert.equal(result.nextOffset,2);

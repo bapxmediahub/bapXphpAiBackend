@@ -23,7 +23,7 @@ function fixture(payload,{mode='promise',enabled=true,ok=true}={}) {
     vm.runInNewContext(source,{
         document:{modelContext:registry,getElementById:id=>id==='bapx-public-business-schema'?{textContent:JSON.stringify(contracts)}:null},
         window:{location:{origin:'https://example.test'},addEventListener:(name,handler)=>{if(name==='pagehide')pagehide=handler}},
-        URL,AbortController,console:{warn:message=>warnings.push(message)},
+        URL,AbortController, AbortSignal,console:{warn:message=>warnings.push(message)},
         fetch:async(url,options)=>{requests.push({url:new URL(url),options});return {ok,json:async()=>payload};}
     });
     return {tools,requests,warnings,get pagehide(){return pagehide},tool:name=>tools.find(x=>x.tool.name===name)?.tool};
