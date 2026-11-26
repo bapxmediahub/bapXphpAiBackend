@@ -207,6 +207,7 @@
                 'tax_total' => ['type' => 'number'],
                 'supply_type' => ['type' => 'string'],
                 'place_of_supply' => ['type' => 'string'],
+                'place_of_supply_code' => ['type' => 'string', 'description' => 'Two-digit official code frozen at invoice issue'],
                 'supplier' => ['type' => 'object'],
                 'invoice_sequence' => ['type' => 'number'],
                 'invoice_financial_year' => ['type' => 'string'],

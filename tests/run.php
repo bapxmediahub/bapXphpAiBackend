@@ -5582,9 +5582,21 @@ $tests['tax invoices require a valid delivery state and classify supply consiste
     $intra = $tax->snapshot($items, 0, 'Tamil Nadu', $settings);
     assertSame('intrastate', $intra['supply_type'], 'Tamil Nadu delivery from a Tamil Nadu supplier uses intrastate tax');
     assertSame('Tamil Nadu', $intra['place_of_supply'], 'Invoice place of supply uses the validated delivery state');
+    assertSame('33', $intra['place_of_supply_code'], 'Invoice freezes the official delivery code');
+    assertSame('33', $intra['supplier']['state_code'], 'Supplier code derives from its saved state');
     assertTrue($intra['cgst_total'] > 0 && $intra['sgst_total'] > 0 && $intra['igst_total'] === 0.0, 'Intrastate GST splits into CGST and SGST');
     $inter = $tax->snapshot($items, 0, 'Telangana', $settings);
     assertSame('interstate', $inter['supply_type'], 'Telangana delivery from a Tamil Nadu supplier uses interstate tax');
+    assertSame('36', $inter['place_of_supply_code'], 'Interstate destination has its own code');
+    assertSame('33', $tax->snapshot($items,0,'Delhi',$settings+['gst_state_code'=>'99'])['supplier']['state_code'], 'Ignore stale configured code');
+    assertSame('07', App\Services\TaxService::stateCode('NCT of Delhi'), 'Leading zero and known aliases retained');
+    assertSame('26', App\Services\TaxService::stateCode('Dadra and Nagar Haveli and Daman and Diu'), 'Merged UT uses 26');
+    assertSame('38', App\Services\TaxService::stateCode('Ladakh'), 'Ladakh uses 38');
+    assertSame('37', App\Services\TaxService::stateCode('Andhra Pradesh'), 'Current Andhra Pradesh code');
+    assertSame(null, App\Services\TaxService::stateCode('Unknown'), 'No invented code');
+    $codes = array_map(App\Services\TaxService::stateCode(...), App\Services\TaxService::states());
+    assertSame(36, count(array_unique($codes)), 'Every domestic checkout option has a unique code');
+    assertTrue(!in_array(null,$codes,true), 'All state options have evidence');
     assertTrue($inter['igst_total'] > 0 && $inter['cgst_total'] === 0.0 && $inter['sgst_total'] === 0.0, 'Interstate GST uses IGST only');
     foreach (['', 'Not a state'] as $invalid) {
         try { $tax->snapshot($items, 0, $invalid, $settings); assertTrue(false, 'Invalid delivery state must stop invoice creation'); }
@@ -5601,6 +5613,15 @@ $tests['historical tax inconsistencies are flagged without rewriting invoices'] 
     assertSame('Place of supply conflicts with delivery state', App\Services\TaxService::invoiceReviewReason($wrong, $settings), 'Contradictory historical place of supply is flagged');
     $clear = ['shipping_state'=>'Telangana','place_of_supply'=>'Telangana','supply_type'=>'interstate'];
     assertSame(null, App\Services\TaxService::invoiceReviewReason($clear, $settings), 'Consistent historical invoice needs no review');
+    $legacyCodes = App\Services\TaxService::issuedStateCodes($clear);
+    assertSame(['supplier'=>'','place'=>'','issues'=>['Missing issued supplier code','Missing issued place-of-supply code']], $legacyCodes, 'Never backfill issued legacy codes');
+    $stored = $clear + ['supplier'=>['state'=>'Tamil Nadu','state_code'=>'33'],'place_of_supply_code'=>'36'];
+    assertSame(['supplier'=>'33','place'=>'36','issues'=>[]], App\Services\TaxService::issuedStateCodes($stored), 'Verified saved codes retained');
+    $mismatch = array_replace($stored, ['place_of_supply_code'=>'33']);
+    assertSame(['supplier'=>'33','place'=>'','issues'=>['Issued place-of-supply code conflicts with saved state']], App\Services\TaxService::issuedStateCodes($mismatch), 'Conflicting code suppressed');
+    $rows = iterator_to_array(App\Services\GstRegisterService::lines([$mismatch+['invoice_number'=>'Fixture']], []));
+    assertSame(['33',''],array_slice($rows[0],-2),'Export retains only supported evidence');
+    assertTrue(str_contains($rows[0][18], 'code conflicts'), 'Export explains mismatch even if caller omits review map');
     $report = file_get_contents(app_path('views/admin/tax-report.php'));
     assertTrue(str_contains($report, 'require accountant review') && str_contains($report, 'not been rewritten'), 'Tax report should surface immutable historical invoices requiring review');
 };
@@ -5828,9 +5849,9 @@ $tests['HSN reconciliation splits recipient classes and preserves excluded lines
         'taxable_value'=>10.01,'cgst'=>0.15,'sgst'=>0.15,'igst'=>0,'gross_value'=>10.31];
     $supplier = ['gstin'=>'33ABCDE1234F1Z5'];
     $summary = \App\Services\GstRegisterService::hsnSummary([
-        ['invoice_number'=>'A','supplier'=>$supplier,'tax_lines'=>[$line, $line, array_replace($line, ['hsn_code'=>''])]],
-        ['invoice_number'=>'B','supplier'=>$supplier,'customer_gstin'=>'33ABCDE1234F1Z5','tax_lines'=>[$line]],
-        ['invoice_number'=>'C','supplier'=>$supplier,'customer_gstin'=>'invalid','tax_lines'=>[$line]],
+        ['invoice_number'=>'A','supplier'=>$supplier+['state'=>'Tamil Nadu','state_code'=>'33'],'place_of_supply'=>'Tamil Nadu','place_of_supply_code'=>'33','tax_lines'=>[$line, $line, array_replace($line, ['hsn_code'=>''])]],
+        ['invoice_number'=>'B','supplier'=>$supplier+['state'=>'Tamil Nadu','state_code'=>'33'],'place_of_supply'=>'Tamil Nadu','place_of_supply_code'=>'33','customer_gstin'=>'33ABCDE1234F1Z5','tax_lines'=>[$line]],
+        ['invoice_number'=>'C','supplier'=>$supplier+['state'=>'Tamil Nadu','state_code'=>'33'],'place_of_supply'=>'Tamil Nadu','place_of_supply_code'=>'33','customer_gstin'=>'invalid','tax_lines'=>[$line]],
         ['invoice_number'=>'D'],
     ], ['B'=>'Credit note review']);
     assertSame(2, $summary['excluded'], 'Missing HSN and missing snapshot are counted for review');
@@ -5868,8 +5889,8 @@ $tests['GST quantity reconciles only matching issued units and preserves histori
     assertSame(1, $summary['missingUnits'], 'Unitless line remains visible for review');
     assertSame(0, $summary['excluded'], 'Unitless line keeps its monetary evidence');
     $export = iterator_to_array(\App\Services\GstRegisterService::lines($issued, []));
-    assertSame(['KGS','0.375'], array_slice($export[0], -2), 'CSV appends issued unit and quantity to legacy columns');
-    assertSame(['',''], array_slice($export[3], -2), 'Legacy unit and reported quantity remain blank');
+    assertSame(['KGS','0.375'], array_slice($export[0], 19, 2), 'CSV appends issued unit and quantity to legacy columns');
+    assertSame(['',''], array_slice($export[3], 19, 2), 'Legacy unit and reported quantity remain blank');
     assertTrue(str_contains($export[3][18], 'issued GST unit'), 'CSV explains missing historical quantity evidence');
 };
 

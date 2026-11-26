@@ -144,6 +144,7 @@ try {
     mysqlCheckoutCheck($status['paymentStatus']==='captured'&&$status['orderStatus']==='saved','Captured native payment did not survive cart cleanup.');
     $order=$store->find('orders',$status['orderReference']);
     mysqlCheckoutCheck($order['total']==2.30&&isset($order['invoice_number'])&&!$order['tax_review_required'],'Native verified order lost fractional amount or frozen GST snapshot.');
+    mysqlCheckoutCheck($order['supplier']['state_code']==='33'&&$order['place_of_supply_code']==='33','Native MySQL checkout persists the official state codes.');
     $again=$service->checkoutStatus(['paymentToken'=>$prepared['paymentToken']]);
     mysqlCheckoutCheck($again['orderReference']===$status['orderReference'],'Native status replay saved a different order.');
 

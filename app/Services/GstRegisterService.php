@@ -7,7 +7,7 @@ final class GstRegisterService {
         'Invoice', 'Invoice date', 'Order', 'Supplier GSTIN', 'Recipient GSTIN', 'Recipient classification',
         'Place of supply', 'Supply type', 'Line', 'Item', 'HSN', 'Quantity', 'GST rate (%)',
         'Taxable (INR)', 'CGST (INR)', 'SGST (INR)', 'IGST (INR)', 'Line total (INR)', 'Review',
-        'UQC', 'Quantity in UQC',
+        'UQC', 'Quantity in UQC', 'Supplier state code', 'Place of supply code',
     ];
 
     public const SEQUENCE_HEADERS = [
@@ -104,7 +104,8 @@ final class GstRegisterService {
         $reasons = [];
         foreach ($orders as $order) {
             $reason = TaxService::invoiceReviewReason($order, $settings);
-            if ($reason !== null) $reasons[(string)($order['id'] ?? $order['invoice_number'])] = $reason;
+            $issues = array_merge($reason === null ? [] : [$reason], TaxService::issuedStateCodes($order)['issues']);
+            if ($issues) $reasons[(string)($order['id'] ?? $order['invoice_number'])] = implode('; ', $issues);
         }
         return $reasons;
     }
@@ -165,19 +166,22 @@ final class GstRegisterService {
             $supplier = strtoupper(trim((string)($order['supplier']['gstin'] ?? '')));
             $recipient = strtoupper(trim((string)($order['customer_gstin'] ?? '')));
             $classification = $recipient === '' ? 'B2C' : (preg_match(self::GSTIN_PATTERN, $recipient) ? 'B2B' : 'Review');
+            $codes = TaxService::issuedStateCodes($order);
             $issues = array_filter([
-                $reviewReasons[$id] ?? '',
+                ...explode('; ', $reviewReasons[$id] ?? ''),
+                ...$codes['issues'],
                 preg_match(self::GSTIN_PATTERN, $supplier) ? '' : 'Missing or invalid supplier GSTIN',
                 $classification === 'Review' ? 'Invalid recipient GSTIN' : '',
                 empty($order['verified_refunds']) ? '' : 'Verified refund recorded; review credit note separately',
             ]);
+            $issues = array_values(array_unique($issues));
             $prefix = array_map(self::text(...), [
                 $invoice, substr((string)($order['invoice_date'] ?? ''), 0, 10), $id, $supplier, $recipient,
                 $classification, (string)($order['place_of_supply'] ?? ''), (string)($order['supply_type'] ?? ''),
             ]);
             $lines = array_values(array_filter((array)($order['tax_lines'] ?? []), 'is_array'));
             if (!$lines) {
-                yield [...$prefix, ...array_fill(0, 10, ''), implode('; ', [...$issues, 'No issued tax lines']), '', ''];
+                yield [...$prefix, ...array_fill(0, 10, ''), implode('; ', [...$issues, 'No issued tax lines']), '', '', $codes['supplier'], $codes['place']];
             }
             foreach ($lines as $index => $line) {
                 $hsn = trim((string)($line['hsn_code'] ?? ''));
@@ -198,7 +202,7 @@ final class GstRegisterService {
                 }
                 yield [...$prefix, $index + 1, self::text((string)($line['name'] ?? '')), self::text($hsn),
                     ...$numbers, implode('; ', $lineIssues), $uqc,
-                    $uqc === '' || $quantity === null ? '' : TaxService::quantityDecimal($quantity)];
+                    $uqc === '' || $quantity === null ? '' : TaxService::quantityDecimal($quantity), $codes['supplier'], $codes['place']];
             }
         }
     }

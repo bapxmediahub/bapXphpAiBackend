@@ -8,7 +8,7 @@ Sales reports use recorded paid-commerce facts. Gross, refunded and net amounts 
 
 ## Review GST records
 
-The GST invoice register is based on issued order snapshots and recorded refunds. Inspect tax-review flags and the underlying order before relying on a row. Downloaded invoices preserve the issued details; later settings must not silently replace them.
+The GST invoice register is based on issued order snapshots and recorded refunds. Supplier and place-of-supply codes are displayed and exported only if the recorded code agrees with the saved state. Review blank or conflicting codes with your accountant; do not use current settings to fill historical invoice evidence. Inspect tax-review flags and the underlying order before relying on a row. Downloaded invoices preserve the issued details; later settings must not silently replace them.
 
 Open **HSN reconciliation by recipient, unit and tax rate** to compare quantities
 within the same unit. **Unrecorded** rows keep their monetary amounts for

@@ -53,6 +53,7 @@ try {
         'Discounted invoice lines must agree with the charged total.');
     $expect($records[$id]['razorpay_order_id']==='order_discount' && isset($records[$id]['invoice_number']),
         'Verified gateway reference and one invoice must survive shared persistence.');
+    $expect($records[$id]['place_of_supply_code']==='33' && $records[$id]['supplier']['state_code']==='33','Both official codes persist with the issued invoice.');
     $expect($_SESSION===$untouched,'API/shared persistence must not clear any browser session.');
     $expect($service->persist($pending,'pay_discount',[],$ports)===$id && count($records)===1,
         'Repeated verified payment must converge on the first saved order.');
@@ -67,6 +68,7 @@ try {
         'Later catalogue/supplier edits cannot rewrite confirmed quote tax evidence.');
     $expect($records[$frozenId]['items'][0]['gst_rate']===5.0 && $records[$frozenId]['supplier']['state']==='Tamil Nadu',
         'Frozen rate and supplier state must be preserved.');
+    $expect($records[$frozenId]['supplier']['state_code']==='33' && $records[$frozenId]['place_of_supply_code']==='33','Later supplier edits cannot alter frozen state-code evidence.');
     $line = $records[$frozenId]['tax_lines'][0];
     $expect($line['uqc']==='KGS' && $line['uqc_quantity']==='0.125', 'Changing the catalogue cannot reclassify a frozen unit.');
     $browserPending = $pending;

@@ -14,15 +14,18 @@ const {chromium} = require('playwright');
 test('owner edits GST units and reconciles frozen invoice quantities in Chromium', {timeout:45000}, async t => {
     const root = path.resolve(__dirname, '..');
     const sessions = await mkdtemp(path.join(os.tmpdir(), 'bapx-gst-unit-'));
-    const profile = {id:'app_settings', site_display_name:'GST Unit Fixture'};
+    const profile = {id:'app_settings', site_display_name:'GST Unit Fixture',gst_state:'Tamil Nadu',gst_state_code:'99'};
     const product = {id:'fixture-item', slug:'fixture-item', name:'Fixture product', stock_status:'draft', status:'hidden',
         price:100, hsn_code:'3307', gst_rate:12};
     const taxLine = {name:'Fixture product', hsn_code:'3307', qty:3, gst_rate:12,
         taxable_value:250, cgst:15, sgst:15, igst:0, gross_value:280};
     const order = {id:'gst-fixture-order', invoice_number:'SPS/2627/00001', invoice_date:'2026-11-02', shipping_state:'Tamil Nadu',
-        place_of_supply:'Tamil Nadu', supply_type:'intrastate', supplier:{gstin:'33ABCDE1234F1Z5', state:'Tamil Nadu', state_code:'33'},
+        place_of_supply:'Tamil Nadu', place_of_supply_code:'33', supply_type:'intrastate', supplier:{gstin:'33ABCDE1234F1Z5', state:'Tamil Nadu', state_code:'33'},
         tax_lines:[{...taxLine, uqc:'KGS', uqc_quantity:'0.750'}, {...taxLine, uqc:'PCS', uqc_quantity:'3.000'}, taxLine]};
-    let writes = 0;
+    const historical = {...order,id:'gst-legacy-order',invoice_number:'SPS/2627/00002',
+        supplier:{...order.supplier,state_code:'29'},place_of_supply_code:undefined,tax_lines:[],
+        taxable_value:0,cgst_total:0,sgst_total:0,igst_total:0,total:0};
+    let writes = 0, settingsWrites = 0;
     let server, serverClosed, browser;
     const bridge = createServer(async (request, response) => {
         const chunks = [];
@@ -33,7 +36,7 @@ test('owner edits GST units and reconciles frozen invoice quantities in Chromium
         if (input.password !== 'gst-unit-fixture') return response.writeHead(403).end('{}');
         if (typeof input.query === 'string') {
             const table = /\bFROM (\w+)/i.exec(input.query)?.[1];
-            const rows = ({settings:[profile], products:[product], orders:[order]})[table] ?? [];
+            const rows = ({settings:[profile], products:[product], orders:[order,historical]})[table] ?? [];
             const matching = input.query.includes('WHERE id = ?') ? rows.filter(row => row.id === input.params[0]) : rows;
             return ok({data:/^SELECT COUNT\(/i.test(input.query) ? [{total:matching.length}] :
                 matching.map(record => ({id:record.id, _data:JSON.stringify(record)}))});
@@ -42,6 +45,11 @@ test('owner edits GST units and reconciles frozen invoice quantities in Chromium
             writes++;
             Object.assign(product, input.record);
             return ok({record:product});
+        }
+        if (input.action === 'upsert' && input.collection === 'settings' && input.record.id === profile.id) {
+            settingsWrites++;
+            Object.assign(profile,input.record);
+            return ok({record:profile});
         }
         if (input.action === 'upsert' && input.collection === 'audit_events') return ok({record:input.record});
         response.writeHead(400).end('{}');
@@ -117,7 +125,28 @@ test('owner edits GST units and reconciles frozen invoice quantities in Chromium
         assert.equal(await quantity.inputValue(), value);
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
 
+        await page.goto(origin+'/admin/settings');
+        const state = page.getByLabel('State',{exact:true});
+        assert.equal(await state.inputValue(),width===1280?'Tamil Nadu':'Delhi');
+        assert.equal(await page.locator('[name=gst_state_code]').count(),0,'No independent state-code field');
+        await state.selectOption(width===1280?'Delhi':'Tamil Nadu');
+        await page.getByRole('button',{name:'Save GST Configuration'}).press('Enter');
+        await page.waitForURL(origin+'/admin/settings');
+        assert.equal(profile.gst_state,width===1280?'Delhi':'Tamil Nadu');
+        assert.equal(profile.gst_state_code,width===1280?'07':'33');
+        await page.reload();
+        assert.equal(await state.inputValue(),profile.gst_state);
+        assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
         await page.goto(report);
+        const register=page.getByRole('region',{name:'GST invoice register',exact:true});
+        assert.equal(await register.getByRole('columnheader',{name:'Supplier state code'}).count(),1);
+        assert.equal(await register.getByRole('columnheader',{name:'Place of supply code'}).count(),1);
+        const issuedRow=register.getByRole('row').filter({hasText:'SPS/2627/00001'});
+        assert.deepEqual(await issuedRow.locator('td').evaluateAll(c=>c.slice(4,6).map(x=>x.textContent.trim())),['33','33']);
+        const legacyRow=register.getByRole('row').filter({hasText:'SPS/2627/00002'});
+        assert.deepEqual(await legacyRow.locator('td').evaluateAll(c=>c.slice(4,6).map(x=>x.textContent.trim())),['Unrecorded / review','Unrecorded / review']);
+        assert.match(await legacyRow.innerText(),/Issued supplier code conflicts with saved state/);
+        assert.match(await legacyRow.innerText(),/Missing issued place-of-supply code/);
         const summary = page.getByText('HSN reconciliation by recipient, unit and tax rate', {exact:true});
         await summary.press('Space');
         const table = page.getByRole('region', {name:'HSN reconciliation',exact:true});
@@ -126,13 +155,16 @@ test('owner edits GST units and reconciles frozen invoice quantities in Chromium
             [['3307','B2C','Unrecorded','—'],['3307','B2C','KGS','0.750'],['3307','B2C','PCS','3.000']]);
         assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
     }
+    assert.equal(settingsWrites,2);
+    assert.equal(order.supplier.state_code,'33');
+    assert.equal(historical.supplier.state_code,'29');
     const [csvDownload] = await Promise.all([
         page.waitForEvent('download'), page.getByRole('link',{name:'Download invoice lines CSV'}).click(),
     ]);
     const csv = await readFile(await csvDownload.path(), 'utf8');
-    assert.match(csv, /Review,UQC,"Quantity in UQC"/);
-    assert.match(csv, /,KGS,0\.750\r?\n/);
-    assert.match(csv, /,PCS,3\.000\r?\n/);
+    assert.match(csv, /Review,UQC,"Quantity in UQC","Supplier state code","Place of supply code"/);
+    assert.match(csv, /,KGS,0\.750,33,33\r?\n/);
+    assert.match(csv, /,PCS,3\.000,33,33\r?\n/);
     assert.match(csv, /Missing or invalid issued GST unit or quantity/);
     await page.goto(origin + '/admin/orders/' + order.id + '/invoice');
     await page.getByText('0.750 KGS',{exact:true}).waitFor();

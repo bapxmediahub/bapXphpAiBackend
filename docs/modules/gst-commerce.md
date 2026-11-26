@@ -10,7 +10,7 @@ This workflow applies only to paid ecommerce product orders.
 
 ## Owner Setup
 
-1. Open **Admin -> Settings** and enter the GST legal name, trade name, GSTIN, principal place of business, supplier state, and state code from the registration certificate.
+1. Open **Admin -> Settings** and enter the GST legal name, trade name, GSTIN, principal place of business, supplier state from the registration certificate. The official two-digit GST state code is derived from that selection; it is not an independent input.
 2. Open **Admin -> Products** and enter the confirmed HSN code and GST rate for every taxable product. Do not infer a rate from the product name; confirm classification with the business tax professional.
 3. Open **Admin -> Integrations** to configure Meta Pixel, GA4, Google Ads, and Search Console identifiers.
 
@@ -23,7 +23,7 @@ an unconfigured product available for ordinary catalogue work.
 
 ## Product Order Tax Data
 
-Storefront prices are treated as GST-inclusive. At checkout the order records the delivery state and optional customer GSTIN. The order stores an immutable product-tax snapshot containing HSN, rate, taxable value, CGST, SGST, IGST, total tax, place of supply, and supplier identity.
+Storefront prices are treated as GST-inclusive. At checkout the order records the delivery state and optional customer GSTIN. The order stores an immutable product-tax snapshot containing HSN, rate, taxable value, CGST, SGST, IGST, total tax, place of supply, its official state code, and supplier identity including its official state code.
 
 Both checkout paths capture the product's reporting unit and per-item amount
 before payment. Issued lines multiply the saved amount by the checkout item count
@@ -44,7 +44,7 @@ Checkout requires a valid Indian state or Union Territory before starting paymen
 Open **Admin → Analytics → Commerce Reports**, select **GST**, and apply the invoice date range.
 The totals CSV contains one row per issued invoice. The lines CSV contains one row per recorded tax line and
 includes supplier and recipient GSTIN, a provisional recipient classification, place of supply, HSN, quantity,
-rate and tax amounts. The last two columns contain the issued unit and quantity in that unit. If an issued
+rate and tax amounts. The existing unit and quantity columns are followed by the issued supplier and place-of-supply state codes. Codes appear only when recorded and consistent with the saved state label. Missing or inconsistent legacy codes are flagged for accountant review, never reconstructed from current settings. See the [official state master](https://docs.ewaybillgst.gov.in/apidocs/state-code.html). If an issued
 invoice has no lines, the export keeps a row with a review note.
 Invoice snapshots stay intact; a gateway refund is flagged for review and is not a GST credit note.
 
