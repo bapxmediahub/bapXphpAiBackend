@@ -50,21 +50,23 @@ with a catalogue identifier; related business lookups also load their matching
 guidance automatically. This adapts the Agent Skills progressive-disclosure
 pattern, with no arbitrary filesystem selector and no public transport
 registration. Actual loaded paths and content hashes accumulate in the trace.
-Business declarations use the same authenticated allowlist. A bounded lexical
-match against tool names, descriptions and parameter names seeds up to three
-business tools per turn. The `tool_search` meta-tool can enable up to four
-matching declarations per search, with eight active business tools total; an
-unknown exact identifier never activates a substitute. The shared loop
-refreshes declarations each round while retaining correlated tool-call history.
-The initial declarations cover common wording for the published shop total,
-delivery charges, and total orders. Support can use the public catalogue or
-shipping policy directly. Enterprise can request `order_count` with `all_time`
-to count dated orders across all statuses. A model-selected direct call returns
-the matching task guidance with its result in the same tool exchange.
-Discovery returns metadata, not records. The full role-filtered tool metadata
-catalogue is visible to the model; lexical seeding only prioritizes declarations.
-A fresh free-form turn has no server-selected business lookup or answer bypass.
-Trace spans record safe activation names and counts, never the raw search text.
+Business declarations use the same authenticated allowlist. The current small
+registries expose every eligible function on the first inference (11 guest,
+13 signed-in Support and 14 Enterprise business functions before module
+filtering, plus the two meta-tools). Measured schemas are about 3.4–6.6 KB;
+do not duplicate their full catalogue in the instruction message. This removes
+the three-tool lexical preselection and eight-tool ceiling introduced by
+PR #376 (commit 4aec4d2). In particular, Tamil, paraphrased, and elliptical
+requests no longer depend on English lexical ranking to expose business tools.
+The optional tool_search returns up to four authorized metadata matches;
+it never grants, hides or executes a business function. Actual selection
+remains a model decision; the PHP actor/module policy, advertised-function
+snapshot, argument validation and invocation budget remain authoritative.
+Use progressive disclosure for instruction bodies; reconsider deferred tool
+schemas only when a measured large-registry need and live model evaluations
+justify it. See [OpenAI function calling](https://developers.openai.com/api/docs/guides/function-calling).
+A model-selected direct business call also returns its matching task guidance.
+No free-form question is routed to a canned answer.
 The old forSurface() method remains the full-bundle offline/legacy contract.
  `manifestForSurface()` returns
 only version, surface, relative paths, per-document SHA-256 and the bundle hash.
@@ -113,12 +115,11 @@ execution and presentation. It does not select a canned answer.
    fixed skills associated with the current request's eligible tool names and
    activate an allowed document by ID. Record its
    actual path/hash. Never use developer rules as runtime business guidance.
-3. Tool RAG: rank capabilities allowed by the actor and public module settings,
-   activate bounded declarations
-   and refresh them each provider round. An explicit Enterprise `/help`
-   command advertises the owner-only `operator_guide` in the first round. The
-   model chooses the guide topic and writes the answer using the returned
-   content. Validate each call before invoking the existing service and return
+3. Tool RAG: resolve the eligible declarations using the actor and public
+   module settings. The model receives all current small-registry declarations
+   from the first round, optionally searches their metadata, and chooses which
+   tool to call. Both explicit Enterprise `/help` and ordinary questions can
+   use the owner-only `operator_guide` directly. Validate each call before invoking the existing service and return
    its structured result or explicit failure.
 
 Both discovery layers use the same eligible business tools. Disabling Shop
@@ -229,8 +230,7 @@ use their existing one-shot prompt path.
 
 A batch can contain multiple calls. Its call identifiers must be valid and unique
 before any member executes. The advertised declaration snapshot controls the
-current round; `tool_search` activates new schemas only on subsequent model
-rounds. An invalid or unauthorized request returns a safe tool error for the
+current round; optional `tool_search` does not change the advertised set. An invalid or unauthorized request returns a safe tool error for the
 model to handle. The Chat Completions response must contain an assistant message
 with `finish_reason: "tool_calls"` for a nonempty call batch, or
 `finish_reason: "stop"` for a final answer or refusal. Invalid finishes and
@@ -369,8 +369,8 @@ eligibility up to the 24-hour local cap. Without a positive delay, the
 application keeps its existing fallback intervals. The stored expiry rounds
 up to the next second. Ordinary transient observations do not extend an
 active provider hold. Do not infer a daily quota reset time. Provider/model
-holds are deployment-local and explicit diagnostics can bypass them. Already advertised functions may be called directly; tool_search remains
-available for non-advertised authorized functions. No deterministic answer path.
+holds are deployment-local and explicit diagnostics can bypass them. All eligible functions may be called directly; tool_search remains available
+for optional metadata lookup. No deterministic answer path.
 
 See [Google RetryInfo](https://github.com/googleapis/googleapis/blob/master/google/rpc/error_details.proto),
 [ProtoJSON](https://protobuf.dev/programming-guides/json/) and

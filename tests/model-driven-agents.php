@@ -241,7 +241,7 @@ if(PHP_SAPI==='cli-server'){
         elseif($n===5&&isset($responses['b1']['total'],$responses['b2']['value']))$parts=[['text'=>'<final_answer>Published products: '.$responses['b1']['total'].'. '.$responses['b2']['value'].'</final_answer>']];
         else{$fail('Mixed tool results lost');return;}
     }elseif($scenario==='recover'){
-        if($n===1&&!in_array('public_policy',$names,true))$parts=[$call('tool_search',['query'=>'public_policy'],'d1'),$call('public_policy',['key'=>'shipping_cost'],'early')];
+        if($n===1&&in_array('public_policy',$names,true))$parts=[$call('tool_search',['query'=>'public_policy'],'d1'),$call('own_order_status',[],'early')];
         elseif($n===3&&isset($responses['d1']['matches'][0],$responses['early']['error']))$parts=[$call('public_policy',['key'=>'invalid'],'bad')];
         elseif($n===5&&isset($responses['bad']['error']))$parts=[$call('public_policy',['key'=>'shipping_cost'],'fixed')];
         elseif($n===7&&isset($responses['fixed']['value']))$parts=[['text'=>'<final_answer>'.$responses['fixed']['value'].'</final_answer>']];
@@ -391,6 +391,8 @@ try{
         ['direct_shop_total','support','guest','How many items are in the shop?','public_catalogue_summary'],
         ['direct_delivery_charge','support','guest','What is the delivery charge?','public_policy'],
         ['direct_order_total','admin','admin','How many orders in total?','order_count'],
+        ['direct_delivery_charge','support','guest','Do you ship to Erode?','public_policy'],
+        ['direct_delivery_charge','support','guest','டெலிவரி கட்டணம் என்ன?','public_policy'],
         ['capability','admin','admin','What kinds of store tasks can you help me with?',null],
         ['slash_capabilities','admin','admin','/capabilities',null],
         ['slash_help','admin','admin','/help blog-publishing','operator_guide'],
@@ -586,7 +588,7 @@ try{
         if($scenario==='contact'&&($response['ui']['kind']??null)!=='contact_enquiry')throw new RuntimeException('Missing model-selected form proposal');
         if($scenario==='outage'&&($turn['tools']??[])!==[])throw new RuntimeException('Outage must not trigger canned lookup');
         if(in_array($scenario,['denied','duplicate','truncated'],true)&&($turn['tools']??[])!==[])throw new RuntimeException('Denied call executed');
-        if($scenario==='recover'&&count(array_filter($turn['tools']??[],static fn(array $t):bool=>$t['name']==='public_policy'))!==2)throw new RuntimeException('Unadvertised tool executed');
+        if($scenario==='recover'&&count(array_filter($turn['tools']??[],static fn(array $t):bool=>$t['name']==='public_policy'))!==2)throw new RuntimeException('Unauthorized tool executed or invalid-argument recovery failed');
         if($scenario==='transient_start'||$scenario==='transient_continuation'){
             $attempts=$turn['model_attempts'];
             $statusKey=array_key_exists('http_status',$attempts[0])?'http_status':'status';

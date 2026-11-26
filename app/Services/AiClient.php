@@ -517,7 +517,7 @@ final class AiClient
         if(!is_array($args)||($args!==[]&&array_is_list($args))||!in_array($name,$advertised,true)||!$tools->has($name)){
             $span=AgentTraceService::startSpan('retrieval','tool_call_rejected');
             AgentTraceService::endSpan($span,'error');
-            return ['error'=>'Invalid tool call','guidance'=>'Use advertised functions and JSON object arguments. Discover other authorized functions with tool_search for the next model round.'];
+            return ['error'=>'Invalid tool call','guidance'=>'Use advertised functions and JSON object arguments. Consult the authorized declarations; tool_search can explain available capabilities.'];
         }
         $result=$tools->run($name,$args);
         if(!isset($result['error']))$this->toolCalls++;
