@@ -9,6 +9,7 @@
         || !contracts?.services?.inputSchema || !contracts.services.outputSchema) return;
 
     const lifecycle = new AbortController();
+    let ready = false;
     window.addEventListener('pagehide', event => {
         if (!event.persisted) lifecycle.abort();
     });
@@ -53,6 +54,9 @@
         return data;
     };
     const get = async (path, params = {}, signal) => {
+        // A tool can be discovered while its sibling is still registering.
+        // Do not execute a partially installed business capability group.
+        if (!ready || lifecycle.signal.aborted) throw new Error('Public business browser tools unavailable.');
         const url = new URL(path, window.location.origin);
         for (const [key, value] of Object.entries(params)) url.searchParams.set(key, String(value));
         const response = await fetch(url, {method: 'GET', credentials: 'omit',
@@ -81,10 +85,20 @@
             }
         }
     ];
-    for (const definition of definitions) {
-        const register = async () => { await registry.registerTool({
-            ...definition, annotations: {readOnlyHint: true, untrustedContentHint: true}
-        }, {signal: lifecycle.signal}); };
-        register().catch(() => console.warn('Public business browser tool could not be registered.'));
-    }
+    (async () => {
+        try {
+            for (const definition of definitions) {
+                if (lifecycle.signal.aborted) return;
+                await registry.registerTool({
+                    ...definition, annotations: {readOnlyHint: true, untrustedContentHint: true}
+                }, {signal: lifecycle.signal});
+            }
+            ready = !lifecycle.signal.aborted;
+        } catch {
+            // Registration is asynchronous; if either declaration fails,
+            // abort the shared lifetime to remove any installed sibling.
+            lifecycle.abort();
+            console.warn('Public business browser tools could not be registered.');
+        }
+    })();
 })();

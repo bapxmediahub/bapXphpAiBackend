@@ -29,7 +29,11 @@ settings row. The four offerings are Product Inquiry, Temple Guidance, Order
 Support and General Question; they do not claim that retired consultation
 booking is available. The human contact page and tools use the same values,
 subject allowlist and descriptions. A service link prefills an enquiry subject;
-it does not submit the form.
+it does not submit the form. Contact and service tools form one registration
+group. A refused registration aborts the shared lifetime, removes any installed
+sibling and prevents execution until both registrations complete. This follows
+[Chrome's capability-group guidance](https://developer.chrome.com/docs/ai/webmcp/best-practices);
+it does not remove independently registered product, article or commerce tools.
 
 The JSON GET endpoints are `/api/knowledge/products`, `/articles`, `/contact`,
 `/services` and `/a2ui`, all under `/api/knowledge`. The scripts use
@@ -254,9 +258,20 @@ MCP Apps host-bridge and native MySQL tests are documented in
 [public MCP](public-mcp.md) and [remote commerce](remote-commerce.md). Fixture
 success does not certify merchant provider configuration or a real paid purchase.
 
-Native Chrome versions before 159 need not expose `outputSchema` in discovered
-descriptors. The PHP schema remains canonical and returned values are checked
-in either lane. Unit fixtures cover both void and promise registration and
+Native Chrome builds before 159.0.8140.0 need not expose `outputSchema` in
+discovered descriptors. The PHP schema remains canonical and returned values
+are checked in either lane. At and after that build, the browser fixture
+requires the canonical output schemas, not just successful return values.
+Chrome 160.0.8173.0 and later expose native Tool objects: use explicit
+descriptor reads and keep the original object for execution; do not clone,
+spread or JSON-serialize the handle. The synthetic registration-identity
+regression verifies that unregistering and registering the same name again
+does not allow a stale handle to invoke the replacement. See the [official
+WebMCP update history](https://developer.chrome.com/docs/ai/webmcp/updates).
+The separate forward CI job uses a sufficiently new system Chrome or pinned
+Chrome for Testing 160.0.8184.0 and requires the new interface to be exercised.
+It also checks both native commerce viewport fixtures, without production
+credentials or payments. Unit fixtures cover both void and promise registration and
 synchronous refusal. HTTP/controller fixtures exercise bounded input and
 public/private separation.
 
