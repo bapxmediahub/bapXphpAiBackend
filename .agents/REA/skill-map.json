@@ -1718,19 +1718,24 @@
                 "SK02",
                 "SK04",
                 "CC04",
-                "DS05"
+                "DS05",
+                "MC01"
             ],
             "local_sources": [
                 "app/Services/RuntimeHealthService.php",
                 "app/Services/ImageOptimizerService.php",
                 "app/Services/SiteTelemetryService.php",
                 "integrations/google-site-kit/PageSpeedInsightsClient.php",
-                "app/Services/AiClient.php"
+                "app/Services/AiClient.php",
+                "app/Services/MerchantFeedService.php",
+                "app/Services/SeoService.php"
             ],
             "acceptance_tests": [
                 "tests/google-pagespeed.php",
                 "tests/google-pagespeed-browser.cjs",
-                "tests/ai-provider-transport.php"
+                "tests/ai-provider-transport.php",
+                "tests/gst-unit-browser.cjs",
+                "docs/google-sales-channels.md"
             ],
             "upstream_references": [
                 "references/measurement.md",
@@ -1740,8 +1745,8 @@
             ],
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed real initial provider failures and single alternate synthesis failure; no arbitrary retry budget increase or new paid connection.",
-                "sha256": "f0216cab059909ee004e2ab59771bce93a4e7ed65c1e1366ce734792f67f601b"
+                "reason": "Reviewed actual 43-item feed and Chromium baseline, pinned Google for WooCommerce separate link and Merchant API contract; no fabricated approval, channel analytics or customer join.",
+                "sha256": "52d13f84d1dd8229cf827c64a5652baadb962392f983b3af6eb46a7a937095d9"
             }
         },
         {
@@ -1834,7 +1839,8 @@
                 "MCP01",
                 "DS07",
                 "P20",
-                "P21"
+                "P21",
+                "MC01"
             ],
             "local_sources": [
                 "app/Services/ShippingService.php",
@@ -1844,7 +1850,9 @@
                 "app/Services/AgentCapabilityPolicy.php",
                 "app/Services/PublicMcpService.php",
                 "app/Services/CampaignDownloadService.php",
-                "app/Services/ProductImportService.php"
+                "app/Services/ProductImportService.php",
+                "app/Services/MerchantFeedService.php",
+                "app/Services/SeoService.php"
             ],
             "acceptance_tests": [
                 "tests/shipping-preview-browser.cjs",
@@ -1853,7 +1861,9 @@
                 "tests/verified-order.php",
                 "tests/public-mcp-checkout.php",
                 "tests/campaign-booking.php",
-                "docs/modules/catalog.md"
+                "docs/modules/catalog.md",
+                "tests/gst-unit-browser.cjs",
+                "docs/google-sales-channels.md"
             ],
             "upstream_references": [
                 "references/audit-precondition.md",
@@ -1863,8 +1873,8 @@
             ],
             "review": {
                 "date": "2026-11-26",
-                "reason": "Initial pinned skill adaptation: WooCommerce skill requires an audit, reference read first, shared service for writes, pagination, capability gates and public-contract tests. Loader-specific WC 10.9 classes are not a native dependency. REA identifies shipping preview only, missing variants/numeric stock, partial fulfilment and reporting.",
-                "sha256": "355f468d4be10f5f8b935d21c0d271fd202dc511a98a8894e89079823dc36d1b"
+                "reason": "Reviewed native owner-only identity fields and shared product data projection, pinned approved partner link boundary and multiple-channel acceptance; no WordPress runtime or spoofed platform.",
+                "sha256": "f448242448a5a1e1c9c00cde673691209995e0ad1284dc7e7389fe229e5e92d2"
             }
         },
         {

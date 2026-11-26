@@ -2,7 +2,7 @@
 name: rea-wp-performance
 description: Reconstruct measurable native performance and analytics using source-pinned REA evidence and native bapX implementation contracts.
 compatibility: Native bapX developer workflow (PHP, MySQL, vanilla JavaScript; no upstream runtime)
-capability_ids: [P01, P09, P17, P28, P29, SK02, SK04, CC04, DS05]
+capability_ids: [P01, P09, P17, P28, P29, SK02, SK04, CC04, DS05, MC01]
 ---
 
 # Reconstruct measurable native performance and analytics
@@ -26,6 +26,8 @@ Read the current capability register before using this guide; these are mapped s
 - `CC04` — Provider retries, holds, time budgets and latency.
 - `DS05` — Tool/result evidence and telemetry failure isolation.
 
+- `MC01` — Google Merchant catalogue readiness and authorized multi-channel YouTube Shopping.
+
 Representative pinned source anchors (see the full source index and row references for revisions and hashes):
 - `wordpress`: `wp-admin/includes/class-wp-site-health.php`
 - `wordpress`: `wp-admin/includes/class-wp-list-table.php`
@@ -36,6 +38,8 @@ Representative pinned source anchors (see the full source index and row referenc
 - `sitekit`: `includes/Modules/PageSpeed_Insights.php`
 - `chat-completions`: `https://developers.openai.com/api/docs/guides/function-calling`
 - `deepseek`: `packages/session/session-telemetry/src/coordinator.ts`
+
+Additional pinned source: Google for WooCommerce `src/API/YouTube/Connection.php`, `src/API/Site/Controllers/YouTube/AccountController.php` and `src/API/Google/Mapi/MerchantApiClient.php` at `e4c389b`. The authorized Connect Server and third-party link receipt are external dependencies, not a generic Woo REST endpoint.
 
 ## Native implementation workflow
 Choose a reproducible exact URL/task, viewport, auth and source SHA; establish baseline request latency, SQL/remoteDB calls, asset weight, layout and provider spans. Identify dominant bottleneck from actual traces; use existing RuntimeHealthService, ImageOptimizerService, SiteTelemetryService and bounded query/queue tools. Inspect Site Kit reporting grants, separate cached result age, quota and no-data; do not invent analytics or install WP plugins/APMs. Preserve correct data and scope before tuning; no broad cache flush or hardcoded numbers.
@@ -56,6 +60,8 @@ Existing test starting points (extend rather than claim these cover the entire n
 - `tests/ai-provider-transport.php`
 
 Live #518 exhausted multiple initial provider attempts and then failed both continuation and alternate synthesis. Separate observed transport failure from application latency; do not expand retry budgets or add unconfigured/paid providers to force a success. Re-evaluate the actual working connection before a new real acceptance attempt.
+
+For YouTube Shopping, use actual native product metadata, RSS, visible landing and checkout facts. Read Google Merchant data-source and direct invited-creator onboarding docs. An eligible creator may link an authorized data source/channel; a store platform must be approved and may submit repeated actual channel IDs only under that authorized contract. Never impersonate WooCommerce, invent identifiers, channel names or a connected status, or join affiliate data to customer identities. Verify each account, item approval, link and actual tagging separately. A generated feed or schema is not approval. See `docs/google-sales-channels.md`.
 
 ## Evidence handoff
 Record the upstream entrypoint/callee, authoritative state, permissions, normal/failure/concurrent transitions and the intentional native deviation in the linked GitHub issue. Record actual test commands and results, update affected REA rows, regenerate the report and run the existing CI gate. Distinguish static reading, synthetic fixture execution and live acceptance. Read unknown source bodies before implementing; no file count or test name proves parity.

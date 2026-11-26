@@ -46,8 +46,10 @@
     </section>
     <section class="admin-card" aria-labelledby="youtube-readiness-title"><h3 id="youtube-readiness-title">Then connect YouTube Shopping</h3>
         <p>Google documents direct Merchant Center onboarding for <strong>eligible, invited creators</strong>, including Analytics and channel/data-source linking. Standard YouTube Studio store connection otherwise depends on a supported platform or retailer. A custom PHP feed does not bypass these requirements.</p>
+        <p>If your business runs several podcast or video channels, confirm each channel's own Shopping access and authorized Google account. The same merchant catalogue can serve multiple channels where Google has enabled that relationship; no channel names or IDs are assumed.</p>
+        <p>WooCommerce's integration uses an authorized partner connection and separate store-link receipt. This native store does not imitate that identity or mark a channel connected without Google evidence.</p>
         <p>Confirm the channel's Shopping access and direct-onboarding eligibility with YouTube before promising product tagging. This page does not set the YouTube destination or claim that your channel is linked.</p>
-        <div class="merchant-actions"><a href="https://support.google.com/merchants/answer/12375531" target="_blank" rel="noopener noreferrer">Direct creator onboarding ↗</a><a href="https://support.google.com/youtube/answer/12258186" target="_blank" rel="noopener noreferrer">Supported store connections ↗</a></div>
+        <div class="merchant-actions"><a href="https://support.google.com/merchants/answer/12375531" target="_blank" rel="noopener noreferrer">Direct creator onboarding ↗</a><a href="https://studio.youtube.com/" target="_blank" rel="noopener noreferrer">YouTube Studio ↗</a><a href="https://support.google.com/youtube/answer/12258186" target="_blank" rel="noopener noreferrer">Supported store connections ↗</a></div>
     </section>
     <section class="admin-card"><h3>Analytics and Search Console are separate</h3><p>The current Google integration places tracking and verification tags. Those IDs do not establish reporting OAuth, Google Merchant approval or YouTube access. Use <a href="/admin/integrations">Integrations</a> for the existing tag configuration; do not treat it as a completed Site Kit reporting connection.</p></section>
 </section>

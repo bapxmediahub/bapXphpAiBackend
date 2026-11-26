@@ -344,3 +344,12 @@ The authored page uses the existing enquiry card geometry for the independent
 booking action. The booking status page uses the same card treatment and places
 the next action directly below the amount or payment state. File links appear
 on the confirmed receipt and retain 44px targets on mobile.
+
+### Direct commerce landing pages
+
+Keep the full product heading legible on desktop and mobile without truncation.
+Use a compact responsive type scale, show actual product identity and availability,
+and place factual checkout guidance plus real purchase terms/contact links beside
+the native Add to Cart and Buy Now actions. Preserve the actual current price,
+image, no-JavaScript forms, existing mobile cart and exact footer credit. Do not
+invent shipping speed, product provenance, reviews or channel affiliation.

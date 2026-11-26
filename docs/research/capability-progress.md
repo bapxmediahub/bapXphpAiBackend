@@ -14,13 +14,13 @@ This measures selected native acceptance obligations, not a percentage of all up
 | Reference area | Scope | Implemented incl. verified | Partial | Missing | Production verified | Implementation | Verified |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | WordPress CMS and native admin | 17 | 4 | 12 | 1 | 0 | 23.5% | 0.0% |
-| WooCommerce commerce | 15 | 1 | 12 | 2 | 0 | 6.7% | 0.0% |
+| WooCommerce commerce | 16 | 1 | 13 | 2 | 0 | 6.3% | 0.0% |
 | Google Site Kit reporting | 8 | 1 | 3 | 4 | 0 | 12.5% | 0.0% |
 | WordPress MCP / Abilities adaptation | 7 | 2 | 4 | 1 | 0 | 28.6% | 0.0% |
 | A2UI 1.0 | 8 | 4 | 3 | 1 | 1 | 50.0% | 12.5% |
 | OpenAI-compatible Chat Completions | 8 | 5 | 2 | 1 | 0 | 62.5% | 0.0% |
 | DeepSeek Harness agent engineering | 9 | 4 | 5 | 0 | 0 | 44.4% | 0.0% |
-| **Total** | 72 | 21 | 41 | 10 | 1 | 29.2% | 1.4% |
+| **Total** | 73 | 21 | 42 | 10 | 1 | 28.8% | 1.4% |
 
 3 explicit exclusions. No percentage is a claim of live inference quality or external protocol conformance.
 
@@ -68,6 +68,7 @@ This measures selected native acceptance obligations, not a percentage of all up
 | P29 | Order attribution and trustworthy funnel denominators | partial | Bounded storefront activity exists; trusted attribution, cohort and denominator completeness remain. | [#356](https://github.com/bapxmediahub/bapXphpAiBackend/issues/356) |
 | P30 | Transactional email controls and actual receipt evidence | partial | Claimed deliveries and safe contact hold exist; actual customer/owner inbox receipts unverified. | [#25](https://github.com/bapxmediahub/bapXphpAiBackend/issues/25), [#383](https://github.com/bapxmediahub/bapXphpAiBackend/issues/383), [#384](https://github.com/bapxmediahub/bapXphpAiBackend/issues/384) |
 | P32 | Signed webhooks and retry-safe event delivery | missing | Inbound gateway webhook is not signed outgoing webhook subscription/delivery/replay. | [#356](https://github.com/bapxmediahub/bapXphpAiBackend/issues/356) |
+| MC01 | Google Merchant catalogue readiness and authorized multi-channel YouTube Shopping | partial | Existing native scheduled-fetch RSS exports 43 live items; all lacked brand, GTIN, MPN and condition in the audited baseline. Candidate adds owner-validated metadata and shared product/offer projection, clearer purchase guidance and multi-channel onboarding instructions. Google account, product approval, direct creator invitation/partner eligibility, Merchant API sync and each channel link remain unverified; no WooCommerce impersonation. | [#522](https://github.com/bapxmediahub/bapXphpAiBackend/issues/522), [#277](https://github.com/bapxmediahub/bapXphpAiBackend/issues/277), [#356](https://github.com/bapxmediahub/bapXphpAiBackend/issues/356) |
 
 ## Google Site Kit reporting
 

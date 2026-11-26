@@ -1724,6 +1724,14 @@ final class AdminController extends BaseController {
     private function saveProductRecord(): void{
         $data=$this->cleanPost();
         $data=$this->mergeExistingRecord('products', $data);
+        try {
+            $data=array_replace($data, \App\Services\MerchantFeedService::validateMetadata($data,$_POST));
+        } catch (\InvalidArgumentException $error) {
+            $draft=$_POST;unset($draft['_csrf']);
+            $_SESSION['product_form_draft']=$draft;
+            $this->flash($error->getMessage(),'error');
+            $this->redirect('/admin/products');
+        }
         if (array_key_exists('gst_uqc', $_POST) || array_key_exists('gst_qty_per_unit', $_POST)) {
             $code = $_POST['gst_uqc'] ?? $data['gst_uqc'] ?? '';
             $quantity = $_POST['gst_qty_per_unit'] ?? $data['gst_qty_per_unit'] ?? '';

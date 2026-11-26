@@ -141,6 +141,11 @@ final class AgentDraftService
             'offer_ends_at' => 'Choose the promotion end yourself.',
             'gst_uqc' => 'Verify the tax unit yourself.',
             'gst_qty_per_unit' => 'Verify the unit quantity yourself.',
+            'brand' => 'Enter the actual brand yourself; do not infer it.',
+            'gtin' => 'Enter the assigned barcode yourself, preserving leading zeros.',
+            'mpn' => 'Enter the actual manufacturer part number yourself.',
+            'condition' => 'Confirm the actual condition yourself.',
+            'identifier_exists' => 'Confirm whether identifiers are assigned yourself.',
             'image_url' => 'Choose the actual image from the media library.',
             'image_urls' => 'Choose the actual image from the media library.',
         ];
