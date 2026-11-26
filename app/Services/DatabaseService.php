@@ -853,54 +853,85 @@ final class DatabaseService {
         }
     }
 
-    /** Freeze the exact approved booking and file versions while the owner page is locked. */
-    public function beginCampaignBooking(string $id, string $slug, string $revision, string $owner, ?string $mode): array {
+    /** Freeze the exact approved booking and file versions while the page and family are locked. */
+    public function beginCampaignBooking(string $id, string $slug, string $revision, string $owner, ?string $mode, ?string $freshFrom = null): array {
         if (!CampaignPaymentService::validId($id) || !AuthoredPageService::validSlug($slug)
             || !AuthoredPageService::validRevision($revision) || !preg_match('/^[a-f0-9]{64}$/D', $owner)
-            || !in_array($mode, [null, 'test', 'live'], true)) {
+            || !in_array($mode, [null, 'test', 'live'], true)
+            || ($freshFrom !== null && !CampaignPaymentService::validId($freshFrom))) {
             throw new \InvalidArgumentException('Invalid booking identity.');
         }
         if ($this->isTestMode()) throw new \LogicException('Bookings require an isolated database.');
         if ($this->isRemote()) {
-            return $this->remoteMutation('begin_campaign_booking', 'campaign_bookings', compact('id', 'slug', 'revision', 'owner', 'mode'))['result'];
+            return $this->remoteMutation('begin_campaign_booking', 'campaign_bookings',
+                compact('id', 'slug', 'revision', 'owner', 'mode', 'freshFrom'))['result'];
         }
 
         $pdo = $this->db();
         $pdo->beginTransaction();
         try {
-            // Always take the page lock first, including for duplicate starts.
+            // Page first, then root, then successor IDs in the recorded order.
             $rows = $this->query('SELECT _data FROM settings WHERE id = ? FOR UPDATE', ['pg:'.$slug]);
             $page = $rows === [] ? [] : json_decode($rows[0]['_data'], true, flags: JSON_THROW_ON_ERROR);
-            $existing = $this->lockCampaignBooking($id);
-            if ($existing !== null) {
-                if (!hash_equals($existing['owner_hash'], $owner) || $existing['slug'] !== $slug || $existing['revision'] !== $revision) {
-                    throw new \DomainException('Invalid booking identity.');
+            $root = $this->lockCampaignBooking($id);
+            $decision = CampaignPaymentService::reserve($page, $id, $slug, $revision, $owner, $mode,
+                $freshFrom, $root, fn(string $childId) => $this->lockCampaignBooking($childId), time());
+            if ($decision['outcome'] === 'retry') {
+                $this->writeCampaignBooking($decision['booking']);
+            } elseif ($decision['outcome'] === 'created') {
+                if (!$this->insertIfAbsent('campaign_bookings', $decision['booking'])['inserted']) {
+                    throw new \RuntimeException('Booking reservation could not be confirmed.');
                 }
-                if ($existing['status'] !== 'retryable' || isset($existing['provider_link_id'])) {
-                    $pdo->commit();
-                    return ['outcome'=>'existing', 'booking'=>$existing];
-                }
+                if (isset($decision['root_update'])) $this->writeCampaignBooking($decision['root_update']);
             }
-            $amount = CampaignPaymentService::pageAmount($page);
-            $published = ($page['status'] ?? null) === 'published' && ($page['slug'] ?? null) === $slug
-                && ($page['revision'] ?? null) === $revision && $amount !== null;
-            if (!$published || $mode === null || ($existing !== null && $existing['mode'] !== $mode)) {
-                $pdo->commit();
-                return ['outcome'=>$published ? 'unavailable' : 'stale'];
-            }
-            if ($existing !== null) {
-                $booking = CampaignPaymentService::claimCreation($existing, time());
-                $this->writeCampaignBooking($booking);
-                $pdo->commit();
-                return ['outcome'=>'retry', 'booking'=>$booking];
-            }
-
-            $booking = CampaignPaymentService::snapshot($page, $id, $owner, $mode, $amount, time());
-            if (!$this->insertIfAbsent('campaign_bookings', $booking)['inserted']) {
-                throw new \RuntimeException('Booking reservation could not be confirmed.');
-            }
+            unset($decision['root_update']);
             $pdo->commit();
-            return ['outcome'=>'created', 'booking'=>$booking];
+            return $decision;
+        } catch (\Throwable $error) {
+            if ($pdo->inTransaction()) $pdo->rollBack();
+            throw $error;
+        }
+    }
+
+    /** All family mutations serialize on the original receipt, not on an arbitrary successor. */
+    private function campaignFamilyRoot(string $id): string {
+        $row = $this->find('campaign_bookings', $id);
+        if ($row === null) throw new \RuntimeException('Booking is unavailable.');
+        $rootId = $row['family_id'] ?? $id;
+        if (!is_string($rootId) || !CampaignPaymentService::validId($rootId)) {
+            throw new \RuntimeException('Invalid booking family.');
+        }
+        return $rootId;
+    }
+
+    private function lockCampaignBookingFamily(string $rootId, string $id): array {
+        $root = $this->lockCampaignBooking($rootId);
+        if ($root === null) throw new \RuntimeException('Booking family is unavailable.');
+        $rows = CampaignPaymentService::familyRows($root, fn(string $childId) => $this->lockCampaignBooking($childId));
+        foreach ($rows as $row) {
+            if ($row['id'] === $id) return [$rows,$row];
+        }
+        throw new \RuntimeException('Booking is not in its recorded family.');
+    }
+
+    public function readCampaignBookingFamily(string $id, string $owner): ?array {
+        if (!CampaignPaymentService::validId($id) || !preg_match('/^[a-f0-9]{64}$/D', $owner)) {
+            throw new \InvalidArgumentException('Invalid booking identity.');
+        }
+        if ($this->isTestMode()) throw new \LogicException('Bookings require an isolated database.');
+        if ($this->isRemote()) {
+            return $this->remoteMutation('read_campaign_booking_family', 'campaign_bookings',
+                compact('id','owner'))['result'];
+        }
+        $rootId = $this->campaignFamilyRoot($id);
+        $pdo = $this->db();
+        $pdo->beginTransaction();
+        try {
+            [$rows,$booking] = $this->lockCampaignBookingFamily($rootId,$id);
+            $result = hash_equals($booking['owner_hash'],$owner)
+                ? CampaignPaymentService::familyState($rows,time()) + ['requested'=>$booking] : null;
+            $pdo->commit();
+            return $result;
         } catch (\Throwable $error) {
             if ($pdo->inTransaction()) $pdo->rollBack();
             throw $error;
@@ -922,17 +953,17 @@ final class DatabaseService {
             return $this->remoteMutation('change_campaign_booking', 'campaign_bookings', compact('id', 'change'))['result'];
         }
 
+        $rootId = $this->campaignFamilyRoot($id);
         $pdo = $this->db();
         $pdo->beginTransaction();
         try {
-            $booking = $this->lockCampaignBooking($id);
-            if ($booking === null) throw new \RuntimeException('Booking is unavailable.');
+            [, $booking] = $this->lockCampaignBookingFamily($rootId,$id);
             $now = time();
             $before = $booking;
-            $claimed = $change === null && !in_array($booking['status'], ['captured','retryable'], true)
-                && $booking['reconcile_after'] <= $now;
-            if ($claimed) $booking['reconcile_after'] = $now+30;
-            if ($change !== null) $booking = CampaignPaymentService::applyChange($booking, $change, $now);
+            $claimed = false;
+            if ($change === null) {
+                ['booking'=>$booking,'claimed'=>$claimed] = CampaignPaymentService::claimCheck($booking,$now);
+            } else $booking = CampaignPaymentService::applyChange($booking, $change, $now);
             if ($booking !== $before) {
                 $booking['updated_at'] = gmdate('Y-m-d H:i:s', $now);
                 $this->writeCampaignBooking($booking);

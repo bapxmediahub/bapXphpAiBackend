@@ -234,9 +234,18 @@ A confirmed API credential or merchant access rejection lets the same browser
 retry from the campaign page after configuration is repaired. The retry
 keeps the published revision, mode, price, file versions and payment reference.
 An ambiguous response, including a duplicate reference, stays in status
-recovery. Booking receipts
-live in `campaign_bookings` and are independent of product orders and tax
-reports.
+recovery. When the provider confirms a terminal unpaid link with no payment
+records, its status page offers **Start a new booking payment**. This is an
+explicit confirmation, not an automatic retry. The new receipt retains the
+same published revision, price, payment mode and file versions and uses a
+separate provider reference. Pending, uncertain, and previously paid attempts
+do not offer a replacement. Any recorded payment, including a failed one,
+requires confirmation before a separate charge. If an old receipt settles
+later, the status page stops presenting new payment links and preserves the
+confirmed receipt; multiple confirmed payments require business review rather
+than an automatic refund. See [payment recovery](../remote-commerce.md).
+Booking receipts live in `campaign_bookings` and are independent of product
+orders and tax reports.
 [Razorpay Payment Link events](https://razorpay.com/docs/webhooks/payment-links)
 
 The dedicated About route uses the deployment-owned public story descriptor

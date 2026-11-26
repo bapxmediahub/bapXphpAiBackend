@@ -117,8 +117,11 @@ final class RemoteCheckoutFixture
             static fn(array $link):bool=>$link['reference_id']===$attempt['reference_id']))];
         if($operation==='fetch_link')return $this->links[$attempt['provider_link_id']]??throw new RuntimeException('Synthetic missing link',404);
         if($operation==='fetch_payment')return $this->payments[$args['payment_id']]??throw new RuntimeException('Synthetic missing payment',404);
-        if($operation==='order_payments')return ['items'=>array_values(array_filter($this->payments,
-            static fn(array $payment):bool=>$payment['order_id']===$args['order_id']))];
+        if($operation==='order_payments'){
+            $items=array_values(array_filter($this->payments,
+                static fn(array $payment):bool=>$payment['order_id']===$args['order_id']));
+            return ['entity'=>'collection','count'=>count($items),'items'=>$items];
+        }
         throw new LogicException('Unexpected fixture provider operation.');
     }
 

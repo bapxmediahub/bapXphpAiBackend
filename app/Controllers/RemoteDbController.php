@@ -132,7 +132,10 @@ final class RemoteDbController {
                 $id = (string)($input['id'] ?? '');
                 if ($action === 'begin_campaign_booking') {
                     $result = $store->beginCampaignBooking($id, (string)($input['slug'] ?? ''),
-                        (string)($input['revision'] ?? ''), (string)($input['owner'] ?? ''), $input['mode'] ?? null);
+                        (string)($input['revision'] ?? ''), (string)($input['owner'] ?? ''), $input['mode'] ?? null,
+                        $input['freshFrom'] ?? null);
+                } elseif ($action === 'read_campaign_booking_family') {
+                    $result = $store->readCampaignBookingFamily($id, (string)($input['owner'] ?? ''));
                 } elseif ($action === 'change_campaign_booking' && array_key_exists('change', $input)) {
                     $result = $input['change'] === null
                         ? $store->claimCampaignBookingCheck($id)

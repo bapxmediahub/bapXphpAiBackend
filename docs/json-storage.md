@@ -130,3 +130,10 @@ Campaign bookings are business records in MySQL. The `campaign_bookings`
 collection retains the approved INR amount, page revision, checkout mode and
 selected download descriptors. A verified receipt is stored on the same record.
 The protected file bytes are retained separately under their immutable IDs.
+The original booking owns a bounded ordered list of replacement IDs; each
+replacement retains its own receipt and provider reference, and records its
+original and preceding booking IDs. Creation and reconciliation serialize on
+the original booking row. Legacy standalone records require no migration;
+they acquire the new metadata only when used. A signed paid notice remains
+recorded until capture is verified. Terminal proof is generation-bound and
+short-lived; no customer or provider payment body is stored for this check.
