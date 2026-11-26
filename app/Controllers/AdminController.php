@@ -891,7 +891,7 @@ final class AdminController extends BaseController {
         $instructions = $modelTools->instructionPrompt() . "\n"
             . "Answer in plain language.\n"
             . "Use the current date in India provided as today in reference_data.\n"
-            . "You decide what knowledge, instructions and capabilities to retrieve. Use tool_search and read_runtime_skill as needed, inspect results, then formulate the answer. Use the matching read-only tool before making any claim about store records or metrics. "
+            . "You decide what knowledge, instructions and capabilities to retrieve. All eligible business tools are already advertised. Use them directly; tool_search is optional metadata discovery. Read runtime skills when detailed guidance is needed, inspect results, then formulate the answer. Use the matching read-only tool before making any claim about store records or metrics. "
             . "For an owner help question or /help topic, read the authorized operator guide. For /capabilities, describe the current authorized capabilities. "
             . "Tools cover orders, products, coupons, sales, GST, support tickets, store counts and published articles. "
             . "Use only the identifiers the owner supplied. For date-based questions use the requested period, "

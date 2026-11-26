@@ -260,12 +260,12 @@ flowchart TB
   E["Enterprise: authenticated owner and CSRF"] --> Scope
   Scope["Save pending actor-owned turn; request budgets"] --> K["Owned dialogue and actor metadata; no preselected answer"]
   K --> I["Instruction RAG: role constitution, shared guidance and skill metadata"]
-  I --> T["Tool RAG: role-filtered catalogue and discoverable declarations"]
+  I --> T["Tool RAG: all eligible declarations in the small role-filtered catalogue"]
   T --> M["Model interprets question and decides retrieval, tools and response"]
   M --> Q{"Declared tool request?"}
-  Q -->|yes| Gate["RuntimeAgentToolRegistry: check role, active declaration and arguments"]
+  Q -->|yes| Gate["RuntimeAgentToolRegistry: check role, advertised declaration and arguments"]
   Gate -->|read_runtime_skill| Skill["Allowed .bapX document and actual hash"]
-  Gate -->|tool_search| Discover["Up to 4 matches per search; maximum 8 active business tools"]
+  Gate -->|tool_search| Discover["Optional metadata search; up to 4 results; no permission change"]
   Gate -->|business call| Business["Knowledge RAG: selected scoped records or published document excerpts"]
   Business --> Facts[("MySQL via DatabaseService / approved Markdown")]
   Facts --> Result["Actual result or safe failure; scoped guidance"]
@@ -281,7 +281,7 @@ flowchart TB
 |---|---|---|
 | Knowledge | `AgentContextService`, `PublicKnowledgeService`, `BlogService`, scoped tool results and owned JSON history | General authorized MD/JSON excerpt search and flexible schema-aware queries are not yet implemented |
 | Instruction | `AgentInstructionService` loads the role constitution and shared contract. The current eligible tools select the fixed skills available on demand or with related tools. | Authorized external MCP instruction projection remains incomplete |
-| Tool | `RuntimeAgentToolRegistry` filters by actor and the public Shop and Blog gates, ranks the remaining metadata, and refreshes declarations between inference rounds. | Actual provider availability and task resolution need live evidence |
+| Tool | `RuntimeAgentToolRegistry` filters by actor and public Shop/Blog gates, advertises every eligible function, and offers optional metadata search. | Actual provider availability and task resolution need live evidence |
 
 The two meta-tools, `read_runtime_skill` and `tool_search`, are model-adapter
 operations, not public MCP tools. Business execution continues through the

@@ -106,12 +106,11 @@ $tests['explicit help advertises the owner guide in the first model request only
     $owner = ['role'=>'admin'];
     foreach (['/help', "/HELP\tblog-publishing"] as $question) {
         $registry = new \App\Services\RuntimeAgentToolRegistry('admin', $owner, new \App\Services\EnterpriseToolRegistry(), $question);
-        assertSame(['operator_guide','read_runtime_skill','tool_search'], array_column($registry->declarations(), 'name'),
-            'Explicit help must advertise the owner guide without unrelated initial declarations');
+        assertTrue($registry->has('operator_guide'), 'Explicit help must advertise the owner guide immediately');
         assertSame([], $registry->activity(), 'Advertising the guide cannot execute or read it');
     }
     $other = new \App\Services\RuntimeAgentToolRegistry('admin', $owner, new \App\Services\EnterpriseToolRegistry(), '/helper blog-publishing');
-    assertTrue(!$other->has('operator_guide'), 'Only the whole command selects the initial guide capability');
+    assertTrue($other->has('operator_guide'), 'Natural-language help must also have direct guide access');
     foreach ([null, ['role'=>'customer','email'=>'fixture@example.invalid']] as $actor) {
         $registry = new \App\Services\RuntimeAgentToolRegistry('support', $actor, new \App\Services\SupportToolRegistry($actor), '/help blog-publishing');
         assertTrue(!$registry->has('operator_guide'), 'Support cannot invoke the owner guide');
@@ -206,19 +205,46 @@ $tests['runtime discovery and skill activation follow published module gates'] =
     }
 };
 
-$tests['tool discovery activates bounded relevant tools and never broadens the actor role'] = static function (): void {
-    $guest=new \App\Services\RuntimeAgentToolRegistry('support',null,new \App\Services\SupportToolRegistry(null),'');
-    assertSame(['read_runtime_skill','tool_search'],array_column($guest->declarations(),'name'),'Empty query starts with discovery tools only');
-    assertTrue(isset($guest->run('public_catalogue_summary',[])['error']),'Undiscovered business tool cannot run through the model');
-    assertSame([], $guest->run('tool_search',['query'=>'zzzxq-no-such-capability'])['matches'],'Unknown query never loads arbitrary tools');
-    assertSame([], $guest->run('tool_search',['query'=>'own_ticket_status'])['matches'],'Exact private identifier is unavailable to a guest');
-    assertSame([], $guest->run('tool_search',['query'=>'commerce_report'])['matches'],'Exact owner identifier is unavailable to Support');
-    $found=$guest->run('tool_search',['query'=>'public_catalogue_summary']);
-    $guest=new \App\Services\SupportToolRegistry(null);
-    assertSame(['error'=>'Invalid arguments'],$guest->run('public_catalogue_summary',['reference'=>'aaaaaaaaaaaaaaaa']),
-        'Store-wide totals cannot consume a private order reference');
-    assertSame(['error'=>'Not permitted'],$guest->run('own_order_status',['reference'=>'aaaaaaaaaaaaaaaa']),
-        'A guest cannot read order-scoped totals');
+$tests['all small role-filtered registries are callable directly; metadata search never changes permissions'] = static function (): void {
+    $actor=['role'=>'customer','sub'=>'fixture-customer','email'=>'fixture@example.invalid'];
+    $settings = new ReflectionProperty(SettingsService::class, 'cache');
+    $previous = $settings->getValue();
+    try {
+        $settings->setValue(null, []);
+        $profiles = [
+            ['support',null, new \App\Services\SupportToolRegistry(null)],
+            ['support',$actor, new \App\Services\SupportToolRegistry($actor)],
+            ['admin',['role'=>'admin'],new \App\Services\EnterpriseToolRegistry()],
+        ];
+        foreach ($profiles as [$surface,$user,$business]) {
+            $policy=$surface==='admin'?\App\Services\AgentCapabilityPolicy::ENTERPRISE:\App\Services\AgentCapabilityPolicy::SUPPORT;
+            // The first request is the entire eligible set, independent of
+            // language, phrasing, previous references, or an activation cap.
+            $expected=array_values(array_filter(array_column($business->declarations(),'name'),
+                static fn($name)=>\App\Services\AgentCapabilityPolicy::allows($policy,$name,$user)));
+            foreach (['','Do you ship to Erode?','How many of my tickets are open?',
+                'என்னுடைய ஆர்டர் எங்கே?','What about the second one?','/help blog-publishing'] as $question) {
+                $registry=new \App\Services\RuntimeAgentToolRegistry($surface,$user,$business,$question);
+                $first=array_column($registry->declarations(),'name');
+                assertSame($expected,array_values(array_diff($first,['read_runtime_skill','tool_search'])), 'Every eligible tool available on first round');
+                assertTrue(count($first)<20, 'Current small catalogue stays below the measured soft tool-count guide');
+                assertSame([], $registry->activity(), 'Advertising tools does not execute business reads');
+                foreach($expected as $name) {
+                    $match=$registry->run('tool_search',['query'=>$name]);
+                    assertSame($name,$match['matches'][0]['name']??null,'Exact eligible identifier remains discoverable');
+                    assertSame(false,$match['activation_limit_reached'],'No exhausted authorization budget');
+                }
+                assertSame($first,array_column($registry->declarations(),'name'),'Search never changes callable permissions');
+            }
+        }
+        $guest=new \App\Services\RuntimeAgentToolRegistry('support',null,new \App\Services\SupportToolRegistry(null));
+        assertSame([], $guest->run('tool_search',['query'=>'zzzxq-no-such-capability'])['matches'],'Unknown query never loads arbitrary tools');
+        foreach (['own_order_status','own_ticket_status','commerce_report','operator_guide'] as $private) {
+            assertSame([], $guest->run('tool_search',['query'=>$private])['matches'],'Exact private identifier unavailable to guest');
+            assertTrue(isset($guest->run($private,[])['error']),'Execution still fails closed');
+        }
+        assertSame('Shipping is calculated at checkout.',$guest->run('public_policy',['key'=>'shipping_cost'])['value'],'Direct lookup works without discovery');
+    } finally { $settings->setValue(null,$previous); }
 };
 
 $tests['current published catalogue total claims need matching same-turn evidence'] = static function (): void {
@@ -250,7 +276,7 @@ $tests['ordinary support questions cannot bypass inference'] = static function (
     assertTrue(!str_contains($admin,'->guideAnswer(')&&!str_contains($admin,"agentRun('admin', 'local'"),'Enterprise chat cannot produce a local assistant reply');
     $registry=new \App\Services\RuntimeAgentToolRegistry('support',null,new \App\Services\SupportToolRegistry(null),'');
     assertTrue(!str_contains($registry->instructionPrompt(),'- own_order_status:')&&!str_contains($registry->instructionPrompt(),'- order_count:'),'Guest capability metadata is scoped');
-    assertTrue(str_contains($registry->instructionPrompt(),'- read_published_article:'),'Published knowledge is discoverable even without lexical matches');
+    assertTrue($registry->has('read_published_article'),'Published knowledge is discoverable even without lexical matches');
     assertTrue(!$registry->has('own_order_status')&&!$registry->has('own_ticket_status'),'Guest private lookups unavailable');
 };
 

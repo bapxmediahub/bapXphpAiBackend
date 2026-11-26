@@ -150,7 +150,7 @@ if (PHP_SAPI === 'cli-server') {
         $last = end($messages);
         $result = $last ? $toolResult($last) : [];
         $previous = $messages[$count-2]['tool_calls'][0] ?? [];
-        if ($count === 1 && $names === ['read_runtime_skill','tool_search']) {
+        if ($count === 1 && in_array('public_policy',$names,true) && in_array('tool_search',$names,true)) {
             $respond(null, [$makeCall('fixture-discovery', 'tool_search', ['query'=>'public_policy'])]);
         } elseif ($count === 3 && in_array('public_policy', $names, true)
             && ($previous['id'] ?? null) === 'fixture-discovery' && ($last['tool_call_id'] ?? null) === 'fixture-discovery'

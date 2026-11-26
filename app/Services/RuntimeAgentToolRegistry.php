@@ -16,9 +16,6 @@ final class RuntimeAgentToolRegistry
     private array $products = [];
     private array $loadedSkills = [];
     private array $available = [];
-    private array $active = [];
-    private const MAX_ACTIVE = 8;
-    private const MAX_INITIAL = 3;
 
     public function __construct(private string $surface,private ?array $actor,private AgentToolRegistry|SupportToolRegistry $business,string $question='') {
         if(($surface==='support')!==($business instanceof SupportToolRegistry))
@@ -37,15 +34,9 @@ final class RuntimeAgentToolRegistry
         }
         $this->bundle = AgentInstructionService::modelBundle($surface, $actor, array_keys($this->available));
         $this->catalog = $this->bundle['skills'];
-        if ($surface === 'admin' && preg_match('~^\s*/help(?:\s|$)~i', $question) === 1) {
-            // The model chooses the topic and writes the answer. Offer the canonical
-            // guide up front so an explicit help command needs no discovery round.
-            $this->enable('operator_guide');
-        } else {
-            foreach ($this->rank(mb_substr($question, 0, 256), self::MAX_INITIAL) as $name) {
-                $this->enable($name);
-            }
-        }
+        // The current registries are small (13 Support / 14 Enterprise).
+        // Authorize every declaration once; the model, not lexical ranking,
+        // selects the business operation. Skill bodies still load on demand.
     }
 
     private function discoverableModules(): array {
@@ -59,20 +50,18 @@ final class RuntimeAgentToolRegistry
 
     public function instructionPrompt(): string {
         AgentTraceService::observeInstructionManifest($this->bundle['manifest']);
-        // The model sees a compact role-filtered catalogue even if lexical seeding
-        // misses a paraphrase or another language. Only active declarations execute.
-        $catalogue="\n\nAuthorized business capability catalogue (call advertised functions directly; use tool_search only for capabilities not yet advertised):\n";
-        foreach($this->available as $name=>$tool)$catalogue.='- '.$name.': '.$tool['description']."\n";
-        return $this->bundle['text'] . $catalogue;
+        // The wire declarations already contain the authoritative descriptions.
+        // Do not duplicate the entire tool catalogue in the instruction prompt.
+        return $this->bundle['text'] . "\n\nUse the authorized business capability catalogue provided in the function declarations. All currently eligible business functions are callable directly. Tool search is optional metadata discovery, not a prerequisite for execution.";
     }
 
     public function declarations(): array {
-        $tools=array_values(array_intersect_key($this->available,$this->active));
+        $tools=array_values($this->available);
         if ($this->catalog !== []) {
             $tools[]=['name'=>'read_runtime_skill','description'=>'Load detailed operating instructions for an available runtime skill by its catalogue identifier. No business data lookup and no file path.',
                 'parameters'=>['type'=>'object','properties'=>['skill'=>['type'=>'string','enum'=>array_keys($this->catalog)]],'required'=>['skill']]];
         }
-        $tools[]=['name'=>'tool_search','description'=>'Discover relevant authorized business capabilities by a short query or exact tool identifier. Returns metadata and enables matches from the next model round, not business records. Do not call a newly discovered function in the same batch.',
+        $tools[]=['name'=>'tool_search','description'=>'Optionally search metadata for authorized business capabilities by a short query or exact tool identifier. Every eligible function is already advertised and callable. This returns descriptions, not business records.',
             'parameters'=>['type'=>'object','properties'=>['query'=>['type'=>'string','minLength'=>1,'maxLength'=>160],'limit'=>['type'=>'integer','minimum'=>1,'maximum'=>4]],'required'=>['query'],'additionalProperties'=>false]];
         return $tools;
     }
@@ -99,24 +88,15 @@ final class RuntimeAgentToolRegistry
         return array_slice(array_keys($scores),0,$limit);
     }
 
-    private function enable(string $name): bool {
-        if(isset($this->active[$name]))return true;
-        if(!isset($this->available[$name])||count($this->active)>=self::MAX_ACTIVE)return false;
-        $span=AgentTraceService::startSpan('retrieval','tool_activation:'.$name);
-        $this->active[$name]=true;
-        AgentTraceService::endSpan($span,'complete',['result_count'=>1]);
-        return true;
-    }
-
     private function search(array $args): array {
         $query=$args['query']??null;$limit=$args['limit']??3;
         if(array_diff(array_keys($args),['query','limit'])||!is_string($query)||trim($query)===''||mb_strlen($query)>160||!is_int($limit)||$limit<1||$limit>4)return ['error'=>'Invalid tool search.'];
         $span=AgentTraceService::startSpan('retrieval','tool_search');$matches=[];
         foreach($this->rank($query,$limit) as $name){
-            if($this->enable($name))$matches[]=['name'=>$name,'description'=>$this->available[$name]['description']];
+            $matches[]=['name'=>$name,'description'=>$this->available[$name]['description']];
         }
         AgentTraceService::endSpan($span,'complete',['result_count'=>count($matches)]);
-        return ['matches'=>$matches,'activation_limit_reached'=>count($this->active)>=self::MAX_ACTIVE];
+        return ['matches'=>$matches,'activation_limit_reached'=>false];
     }
 
 
