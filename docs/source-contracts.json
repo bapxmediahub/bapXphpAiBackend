@@ -3,19 +3,19 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "a2789258c44b5bfdb7385256d0652b1220043d5555266f29c850198758fa211c",
-            "references_sha256": "a6e26a5652b6c579797bb27aa3047ebe22a9e6b0edc19f9a758dac83d4c8d337",
-            "review_note": "Reviewed actual provider-only draft results, failure and manual outcomes, attempt evidence, retained direct tool access and history isolation."
+            "source_sha256": "dd41bbc8e6ecca257da359d315d39e94a62802947399a4338fdf21d3fc5d651d",
+            "references_sha256": "362927e7bf2d6ea315efde424804dda08742aab5d8dc1439c7b56a871451816e",
+            "review_note": "Reviewed original correlated exchange, new request-local accepted read evidence, one same-connection alternate inference, actual trace phase and 120 controller/transport regressions."
         },
         "auth": {
             "source_sha256": "c34a5b34bc904f36cda184c26113f91e2cf36afa2b506217d1f74e22e9e0cefd",
-            "references_sha256": "903e3e5315de0b2948547710174edb672a2f847f03c39042bd4918f280bf9346",
-            "review_note": "Reviewed role checks, private account and auth contracts; existing role and module filters remain authoritative."
+            "references_sha256": "7fd7d87a436748a3ef9c4ac04d0e79b2bfef59a79f653a002cf05af59df6ce04",
+            "review_note": "Reviewed actor-owned registry and credential-scoped recovery, no alternate connection or change to authentication or account scopes."
         },
         "commerce": {
             "source_sha256": "81b1644c7e6216baa5ba42a9f5a78a484a354d21d01c387ab86816e13d513239",
-            "references_sha256": "c99f9ba1e87eb638a5a20d4b3e75de4c4dfdd984a1d0f91970b4ace71cf038d5",
-            "review_note": "Reviewed read-only commerce schemas and report scope; no changes to order, tax, stock or payment calculations."
+            "references_sha256": "d9f73e2c07e32909b155b7fe136216e0aca5094a5e58eeec7d7b83ef99f99319",
+            "review_note": "Reviewed read-only report and catalogue tools; no commerce writes, tax or stock logic altered, actual report scope preserved."
         },
         "content": {
             "source_sha256": "2642ef5e51f740f766884a84365cb1b6848758c82ba383901bd842a69f822543",
@@ -24,8 +24,8 @@
         },
         "foundation": {
             "source_sha256": "1e9d9fc6153d788b466077f857a34bfcb3230ca97a509a56497edef0ccc49f54",
-            "references_sha256": "648e2b4644030680b53ce9f14cdebddeb3567dafd4a97a71178bd89b0d254238",
-            "review_note": "Reviewed MySQL private recovery namespace and existing remote bridge, schema compatibility, actor isolation and unchanged Markdown/canonical storage; no new runtime."
+            "references_sha256": "a2f45f72c07d79756151601bc2547a814a56e08a60d853e0c42d5b33bc892221",
+            "review_note": "Reviewed request-local evidence bounds, no new runtime, storage or raw evidence persistence; shared deadline and trace budgets unchanged."
         },
         "google-tags": {
             "source_sha256": "239140bbf84afe1d759b8fba20f012147c59202640638ffb270bd0820fdbe5b5",
@@ -34,8 +34,8 @@
         },
         "http-errors": {
             "source_sha256": "0f920c297cfc4e216a87be02a35c20827cc254dd6934ba24a1fa9135520a0560",
-            "references_sha256": "bcf8d8c711ef293ec8ab1feaa72c18542802600d3c6c473fd988639c7f2bac60",
-            "review_note": "Reviewed runtime failure and response integrity; rejected tool errors remain explicit and provider/HTTP status paths unchanged."
+            "references_sha256": "b2a485eca027262f58130080df144e1a4d84b0541f1c681ca29edeae2b697b83",
+            "review_note": "Reviewed recovery only for recoverable transport, quota and hold failures; failed alternate remains explicit error, malformed/denied responses are not replayed."
         },
         "interface": {
             "source_sha256": "cbed539110a97d0d50288e1abf4272f7d98fa2ea8818ae1f99d9bf620b8ea92c",
@@ -44,8 +44,8 @@
         },
         "mail": {
             "source_sha256": "3e515e62031c1609b7cbe61f269e97900ceb6a5d3db5d5f4b90d64d2eb240ef8",
-            "references_sha256": "fe274ff81fb95e67114618c86edd6e2d0343bc420937f4d2e5f9a081420ce3d0",
-            "review_note": "Reviewed owner editor recovery fields and explicit save; no subscriber-mail flag autosaved or queue delivery mutation."
+            "references_sha256": "f55d00e8a94c81806bd8ad3c99334154db4a91bb299be7e13d5696d523c6d806",
+            "review_note": "Reviewed shared AiClient behavior; mail drafting/text-only calls and transactional mail queue remain unaffected, no send action retried."
         },
         "mcp-clients": {
             "source_sha256": "2567e2792ed1acb0c80ae14605c2ac550abb824197b404fc2da99e97e1507d8e",
@@ -58,19 +58,19 @@
             "review_note": "Reviewed the owner UI skill changes against authenticated media navigation, route declarations, and Media Library behavior. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
         },
         "operator-help": {
-            "source_sha256": "40a66ad14deb960af2ed6e5329aaf990ceb7e4d22ffacda158ee95fdf108fe68",
+            "source_sha256": "125f9739dc68b84838c450bb442f0a9b30dcbdda3a290982b9bd5ddda8302588",
             "references_sha256": "4e2591fafd1e772fb73b53865320e18914867c5d36d31f01f3406f58dcc80b4f",
-            "review_note": "Reviewed both editor templates and their declared shared partial; JSON recovery endpoint remains owner-only and actual HTTP tests pass."
+            "review_note": "Reviewed native owner and Support guidance; one bounded read synthesis preserves actual tool results and existing scope; no new editor or admin action."
         },
         "public-mcp": {
             "source_sha256": "16885ac8b5f31d7e7f4734b227e46c4dcce33001b2d019e251fd2891730ae4c7",
-            "references_sha256": "484d487f4eca600ce7c80e1129f70a3092e9ede2d3d26180e5c9dd7f33fb5e5a",
-            "review_note": "Reviewed new JSON route and shared partial declarations; no public MCP method or private editor exposure."
+            "references_sha256": "8f28106af1d8ed34363188d4e56dc2cd7ba9a20c70dd97ab625eb7ab175e69c0",
+            "review_note": "Reviewed same-model continuation and alternate text-only synthesis; no new public MCP schemas or grants, private tool evidence stays on original configured connection."
         },
         "remote-commerce": {
             "source_sha256": "36453f48ddac7bd4ca99650d9fc9e666ef154f793405ca890c5eeb51205b5e51",
-            "references_sha256": "8fb7dde77626744439e3fb3b700ea61c4928b4f4dfe10aaa8f63f18f4ee8107a",
-            "review_note": "Reviewed shared database and remote bridge changes restricted to owner recovery namespace, existing checkout and campaign receipt operations unchanged."
+            "references_sha256": "2b86f582c6a2dcf874fc8cc5b24650fe91ee1a08df3d37a318f69331d9c96b2f",
+            "review_note": "Reviewed existing tool declarations and recovery allowlist; no cart/checkout mutation or new provider credential boundary, proposal tools excluded."
         },
         "sales-channels": {
             "source_sha256": "9ab05dee5b52c721721e1aa2028472c7c41ee0e2a3b030bacc6a567dbd58e6eb",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed settings loader exclusion of private ed rows; existing public product feed and channel settings untouched."
         },
         "workflow": {
-            "source_sha256": "b0a651b36d0f4fde60bd9aadc480cedcff8746bddf7c9a9d466470d2f3bc54ff",
+            "source_sha256": "4a08ec80a4863ff493f96afaede6473f36023060f26d246c39d3bbb1ef8b1845",
             "references_sha256": "14c2c675da06f0e52ce81e374d38de55ffbbc5cbdffb344aa94a62f7ec668e68",
-            "review_note": "Corrected actual shared view include edges and database settings dependency; regenerated maps and all five project-map tests passed."
+            "review_note": "Reviewed REA behavioral contract and provider documentation, existing hosted tests extended with recovery cases, generated maps and review receipts preserved."
         }
     }
 }

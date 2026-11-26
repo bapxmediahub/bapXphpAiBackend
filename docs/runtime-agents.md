@@ -240,7 +240,24 @@ The custom connection sends only Chat Completions message fields. PHP adds the
 assistant's function calls with their original IDs and argument strings, then
 appends one JSON-encoded `role: "tool"` result with the matching `tool_call_id`
 for each call. Built-in provider continuation fields belong to the active
-connection and stay in memory for the current request. The owner can configure
+connection and stay in memory for the current request.
+
+If a live tool continuation fails with a recoverable transport, capacity or
+model-specific hold, the original wire exchange still stops. A distinct
+request-local final-synthesis recovery can use one explicitly configured
+alternate model on the exact same provider endpoint and credential. This is
+not a tool-call continuation: it reconstructs the original authorized dialogue
+and adds the actual completed read observations as reference data, with no
+tool declarations, provider-private signatures, reasoning, or replayed
+assistant/tool messages. The runtime registry explicitly allowlists eligible
+read-only operations. Every call must have returned successfully, at least one
+business read is required, and evidence is limited to 16 results / 128 KiB.
+Proposal tools, errors, unknown operations, diagnostics, daily/zero quota,
+invalid model responses and credential rejection do not qualify. A held
+alternate, another credential/endpoint or an exhausted budget cannot be used.
+Only one observed recovery transfer is permitted; a failed recovery remains
+an explicit error. The result still goes through normal answer validation and
+presentation. No raw evidence is persisted for this purpose. The owner can configure
 direct OpenAI or another compatible service through the existing custom HTTPS
 URL, key and model fields. See [custom connection configuration](pages/integrations.md#configure-the-optional-custom-connection).
 

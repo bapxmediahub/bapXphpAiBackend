@@ -76,6 +76,46 @@ if(PHP_SAPI==='cli-server'){
     if($scenario==='quota'){http_response_code(429);header('Retry-After: 60');echo '{}';return;}
     if($scenario==='long_retry'){http_response_code(503);header('Retry-After: 60');echo '{}';return;}
     if($scenario==='schema_error'){http_response_code(400);echo '{}';return;}
+    if (in_array($scenario,['synthesis_support','synthesis_owner'],true)) {
+        $ownerRecovery=$scenario==='synthesis_owner';
+        $name=$ownerRecovery?'order_count':'public_policy';
+        $args=$ownerRecovery?['period'=>'all_time']:['key'=>'shipping_cost'];
+        $messages=$r['messages'];
+        $question=$ownerRecovery?'How many orders in total?':'What is the delivery charge?';
+        $reference=json_decode($messages[1]['content']??'',true);
+        $system=$messages[0]['content']??'';
+        if (!$google || ($messages[0]['role']??null)!=='system' || ($messages[1]['role']??null)!=='user'
+            || ($reference['question']??null)!==$question
+            || !str_contains($system,$ownerRecovery?'Enterprise Agent runtime constitution':'Support Agent runtime constitution')) {
+            $fail('Recovery did not retain the original controller context');return;
+        }
+        $checkResult=static fn(array $result):bool=>$ownerRecovery
+            ? ($result['count']??null)===0 && ($result['from']??null)==='0001-01-01'
+            : ($result['value']??null)==='Shipping is calculated at checkout.';
+        if ($r['model']==='gemma-4-26b-a4b-it') {
+            $evidence=$reference['reference_data']['completed_read_evidence']??[];
+            if (count($messages)!==2 || isset($r['tools']) || isset($r['tool_choice'])
+                || count($evidence)!==1 || ($evidence[0]['name']??null)!==$name
+                || ($evidence[0]['arguments']??null)!==$args || !$checkResult($evidence[0]['result']??[])
+                || str_contains($wire,'fixture-google-signature') || str_contains($wire,'recovery-call')) {
+                $fail('Recovery replayed or lost the actual read evidence');return;
+            }
+            $answer=$ownerRecovery?'There are 0 dated order records across all statuses.':'Shipping is calculated at checkout.';
+            echo json_encode(['model'=>$r['model'],'choices'=>[['message'=>['role'=>'assistant','content'=>'<final_answer>'.$answer.'</final_answer>'],'finish_reason'=>'stop']]],JSON_THROW_ON_ERROR);return;
+        }
+        if (count($messages)===2 && in_array($name,array_column(array_column($r['tools']??[],'function'),'name'),true)) {
+            $call=['id'=>'recovery-call','type'=>'function','function'=>['name'=>$name,'arguments'=>json_encode((object)$args)],
+                'extra_content'=>['google'=>['thought_signature'=>'fixture-google-signature-recovery']]];
+            echo json_encode(['choices'=>[['message'=>['role'=>'assistant','content'=>null,'tool_calls'=>[$call]],'finish_reason'=>'tool_calls']]],JSON_THROW_ON_ERROR);return;
+        }
+        $result=json_decode($messages[3]['content']??'',true);
+        if (count($messages)!==4 || ($messages[3]['tool_call_id']??null)!=='recovery-call'
+            || ($messages[2]['tool_calls'][0]['extra_content']['google']['thought_signature']??null)!=='fixture-google-signature-recovery'
+            || !$checkResult($result??[])) {
+            $fail('Original tool continuation lost correlation');return;
+        }
+        http_response_code(429);header('Retry-After: 60');echo '{}';return;
+    }
     $tools = $r['tools'] ?? [];
     if ($tools === [] || array_column($tools, 'type') !== array_fill(0, count($tools), 'function')) {
         $fail('Tool declarations must use the Chat Completions function envelope');
@@ -465,6 +505,8 @@ try{
         in_array($case[0], ['guest','capability','direct_delivery_charge','direct_order_total'], true)));
     $profiles = [
         'google' => [...$standard, ...$chatCompletionBoundaries,
+            ['synthesis_support','support','guest','What is the delivery charge?','public_policy'],
+            ['synthesis_owner','admin','admin','How many orders in total?','order_count'],
             ['draft_blog','admin','admin','/create-blog Fixture article',null],
             ['oversized_signature','support','guest','What is the delivery charge?',null]],
         'google_fallback' => $textAndTools,
@@ -551,7 +593,7 @@ try{
         ], true);
         $routerChangedModel = in_array($scenario, ['router_changed_tool','router_changed_answer'], true);
         $expected=$invalidChatCompletion||$routerChangedModel||in_array($scenario,['outage','duplicate','truncated','unfinished','quota','long_retry','schema_error','catalogue_stale','catalogue_wrong','catalogue_locked'],true)?'error':'model';
-        $rounds=match($scenario){'mixed','owner_multi_scope'=>3,'denied'=>2,'unfinished','transient_continuation','catalogue_fallback'=>5,
+        $rounds=match($scenario){'mixed','owner_multi_scope','synthesis_support','synthesis_owner'=>3,'denied'=>2,'unfinished','transient_continuation','catalogue_fallback'=>5,
             'transient_start','slash_help','direct_shop_total','direct_delivery_charge','direct_order_total','router_changed_tool','router_changed_answer'=>2,
             'outage'=>6,default=>$tool!==null?4:1};
         if($exit!==0||($turn['outcome']??null)!==$expected||count($turn['model_attempts']??[])!==$rounds||($turn['turn_id']??null)!==($response['turn_id']??null)){
@@ -582,6 +624,15 @@ try{
         if ($scenario === 'catalogue_fallback') {
             $providers = [$provider, ...array_fill(0, $rounds - 1, 'google')];
             $models = [$model, ...array_fill(0, $rounds - 1, 'gemma-4-31b-it')];
+        } elseif (str_starts_with($scenario,'synthesis_')) {
+            $models[2]='gemma-4-26b-a4b-it';
+            if (($result['status']??null)!==200 || count($turn['tools']??[])!==1
+                || array_column($attempts,'http_status')!==[200,429,200]
+                || array_column($attempts,'inference_phase')!==['initial','continuation','synthesis_recovery']) {
+                throw new RuntimeException('Recovery failed controller response, exact tool count or observed phase');
+            }
+            if ($scenario==='synthesis_owner' && ($turn['report_context']['tool']??null)!=='order_count')
+                throw new RuntimeException('Recovery lost the actual owner report scope');
         } elseif ($protocol === 'openrouter') {
             $models = ['openrouter/free', ...array_fill(0, $rounds - 1, OPENROUTER_FREE_MODEL)];
         }

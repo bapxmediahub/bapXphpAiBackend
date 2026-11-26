@@ -189,6 +189,18 @@ final class RuntimeAgentToolRegistry
         return $result;
     }
 
+    /** Explicit reviewed read-only allowlist; future tools default to no recovery.
+     * A proposal/form or unknown outcome is not a completed read. */
+    public function permitsReadSynthesis(string $name): bool {
+        return $this->has($name) && in_array($name, [
+            'tool_search','read_runtime_skill','public_catalog','public_policy','get_public_contact',
+            'list_public_services','own_ticket_status','public_catalogue_summary','public_best_sellers',
+            'search_articles','public_product_details','own_order_status','own_cart','read_published_article',
+            'find_order','product_status','sales_summary','commerce_report','gst_register_summary',
+            'support_enquiries','store_count','operator_guide','coupon_status','order_count',
+        ], true);
+    }
+
     public function activity(): array { return $this->surface==='admin'?$this->business->activity():$this->activity; }
     public function result(string $tool): ?array { return $this->results[$tool]??null; }
     public function retrieval(): array { return $this->retrieval; }

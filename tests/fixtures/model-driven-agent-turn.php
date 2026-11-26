@@ -53,6 +53,7 @@ namespace App\Services {
             ];
             $profile = getenv('BAPX_FIXTURE_PROTOCOL');
             $google = $connection('google', $profile === 'google_fallback' ? self::FALLBACK_MODEL : self::PRIMARY_MODEL, $bases['google']);
+            if ($profile === 'google' && preg_match('~/synthesis_(?:support|owner)$~D',fixtureEndpoint())) $google['models']=self::GOOGLE_MODELS;
             if ($profile === 'google' || $profile === 'google_fallback') return [$google];
             if ($profile === 'openrouter') return [$connection('openrouter', self::OPENROUTER_MODEL, $bases['openrouter'])];
             $model = match ($profile) {
