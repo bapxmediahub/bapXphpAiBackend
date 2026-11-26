@@ -74,7 +74,7 @@ jobs:
       - name: Exercise the owner composer, installed admin app and public header editing in Chrome
         run: |
           npm install --prefix "$RUNNER_TEMP/agent-browser" --no-audit --no-fund --ignore-scripts playwright@1.62.1 @modelcontextprotocol/client@2.4.0 @modelcontextprotocol/ext-apps@2.0.4
-          NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/agent-history-browser.cjs tests/admin-pwa-browser.cjs tests/header-menu-browser.cjs tests/mobile-cart-restore-browser.cjs tests/a2ui-public-browser.cjs tests/enterprise-capabilities-browser.cjs tests/openrouter-integrations-browser.cjs tests/home-full-card-browser.cjs tests/homepage-release-browser.cjs tests/google-pagespeed-browser.cjs tests/media-metadata-browser.cjs tests/page-draft-browser.cjs tests/blog-inference-browser.cjs tests/editor-server-recovery-browser.cjs tests/shipping-preview-browser.cjs tests/contact-admission-browser.cjs
+          NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/agent-history-browser.cjs tests/admin-pwa-browser.cjs tests/header-menu-browser.cjs tests/mobile-cart-restore-browser.cjs tests/a2ui-public-browser.cjs tests/enterprise-capabilities-browser.cjs tests/openrouter-integrations-browser.cjs tests/home-full-card-browser.cjs tests/homepage-release-browser.cjs tests/google-pagespeed-browser.cjs tests/media-metadata-browser.cjs tests/page-draft-browser.cjs tests/blog-inference-browser.cjs tests/editor-server-recovery-browser.cjs tests/shipping-preview-browser.cjs tests/shipping-policy-browser.cjs tests/contact-admission-browser.cjs
       - name: Exercise reusable About layout and live-link contracts
         run: NODE_PATH="$RUNNER_TEMP/agent-browser/node_modules" CHROMIUM_PATH="$(command -v google-chrome)" node --test tests/about-release-browser.cjs tests/site-profile-browser.cjs
       - name: Exercise campaign page editing, preview, and enquiry feedback in Chromium
@@ -138,6 +138,8 @@ jobs:
         run: php tests/campaign-booking.php --mysql
       - name: Verify owner-scoped editor recovery CAS against the isolated database
         run: php tests/editor-draft.php --mysql
+      - name: Verify revisioned shipping draft storage against the isolated database
+        run: php tests/shipping-policy.php --mysql
       - name: Test concurrent private JSON conversation appends
         run: php tests/agent-concurrency.php
       - name: Test concurrent structured answer review in private JSON
@@ -249,3 +251,5 @@ jobs:
         run: php tests/campaign-booking.php --mysql
       - name: Verify owner-scoped editor recovery CAS against the isolated database
         run: php tests/editor-draft.php --mysql
+      - name: Verify revisioned shipping draft storage against the isolated database
+        run: php tests/shipping-policy.php --mysql

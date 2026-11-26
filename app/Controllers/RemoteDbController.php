@@ -156,6 +156,14 @@ final class RemoteDbController {
                 echo json_encode(['success'=>true, 'result'=>$result], JSON_THROW_ON_ERROR);
                 return;
             }
+            if ($collection === 'settings' && $action === 'save_shipping_draft') {
+                if (!is_array($input['zones']??null) || !is_string($input['expected']??null)) {
+                    throw new \InvalidArgumentException('Shipping zones and expected revision are required.');
+                }
+                $saved=$store->saveShippingDraft($input['zones'],$input['expected']);
+                echo json_encode(['success'=>true,'saved'=>$saved],JSON_THROW_ON_ERROR);
+                return;
+            }
             if ($collection === 'settings' && $action === 'save_header_menu') {
                 if (!is_array($input['items'] ?? null) || !is_int($input['revision'] ?? null)) {
                     throw new \InvalidArgumentException('Menu items and revision are required.');

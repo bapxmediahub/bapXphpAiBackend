@@ -14,18 +14,18 @@
         },
         "commerce": {
             "source_sha256": "56c2354c15a4b4af4a9698bc2a65f237fdebccff02d9e6b80183b30ec9559d2a",
-            "references_sha256": "1fa8fb3454d9d51e211e141c08d963101f47dcb7ffeaf12d501cb2de2fce9d51",
-            "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
+            "references_sha256": "d5d7f2089f3c29e19982883271159adea14b9bedbc4f2e300da35d74584cea82",
+            "review_note": "Reviewed validated ordered proposal, row transaction, exact decimal amounts and stale rejection. Existing active settings, checkout and issued orders unchanged."
         },
         "content": {
-            "source_sha256": "7bc0e3afdd5a80dcbe48b999af092c2609cc94d7eb44da9efa39f7494402254d",
+            "source_sha256": "0feee066974550247ef6080d120b56fe51c95471c9e81cfd5448c9b3597397ae",
             "references_sha256": "b51bf13ae52f94e391eab038ee358b9f4d1135bd567aed8c50033b4412a19f12",
-            "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
+            "review_note": "Reviewed shared settings and database changes: scoped shipping revision comparison; canonical pages, campaign and blog recovery unchanged."
         },
         "foundation": {
-            "source_sha256": "0e9c368c5cbc2a11037c4227724cab4196df01f1e6afe1071152611c7a195e0d",
+            "source_sha256": "f723f63b1e7a7644e86799b3f8f18fde64e26eea828b0823fbb97f93205c3239",
             "references_sha256": "fbfb24aa19302e8b09b0fbe1cd05458c331795045fa3b256990b1a0574e103e5",
-            "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
+            "review_note": "Reviewed existing canonical settings JSON storage and authenticated bridge; no new database table, runtime or dependency. Actual hosted database test remains required."
         },
         "google-tags": {
             "source_sha256": "239140bbf84afe1d759b8fba20f012147c59202640638ffb270bd0820fdbe5b5",
@@ -38,14 +38,14 @@
             "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
         },
         "interface": {
-            "source_sha256": "fde92d57feff59ec7f1f72e8014984b35a75f2c0d48ddbdbc2b159ff8288b250",
+            "source_sha256": "8f81364e6025266236ac80f12895f1606262edbee8ae39686f2688107cdc731a",
             "references_sha256": "eef7e0667f963f48e68350ec36a1e015e0f195d2cda5c0868aeb3e87ccfa0f62",
-            "review_note": "Reviewed native checkout request omits shopper amount and uses authoritative response; existing mobile product and purchase guidance preserved."
+            "review_note": "Reviewed actual desktop/mobile owner save, reload, preview and stale/invalid form behavior. No new activation control or customer-side charge claim."
         },
         "mail": {
-            "source_sha256": "d6701ee87e38200539b4d91602756009396ba9564e7e9dec371c048502dcf3ac",
+            "source_sha256": "183a3321ee8f8da52599df9f52ef3ed4877d08a81954f9330b90f2d07bd2af1f",
             "references_sha256": "18b4092f26b698eef0a8027f266cbd6e58d9377f6f8a8b5719be0a0e5cd724c2",
-            "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
+            "review_note": "Reviewed AdminController diff: shipping proposal and preview only, no mail queue or delivery change."
         },
         "mcp-clients": {
             "source_sha256": "2567e2792ed1acb0c80ae14605c2ac550abb824197b404fc2da99e97e1507d8e",
@@ -58,29 +58,29 @@
             "review_note": "Reviewed the owner UI skill changes against authenticated media navigation, route declarations, and Media Library behavior. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
         },
         "operator-help": {
-            "source_sha256": "5b20bbbe5d6ab50deccf314927b7eec24df8841974594553c966fa604ba6e6d7",
-            "references_sha256": "a1d740de3a88f050bdc402955b7eaca59edb27f5169edb7ebd652f1ed20dcf09",
-            "review_note": "Reconciled current merchant owner preview and editor recovery with checkout payment correction; no owner guide mutation beyond actual payment behavior."
+            "source_sha256": "5d15a0d35cf4bb7ac271fa431f3224f79d751aeece2a90e1c5bd27c445732874",
+            "references_sha256": "849572d2c8f8934a251f30fbe74bc3ae5e5e8f08dbf17a5579f4d2dfcc07b4bb",
+            "review_note": "Reviewed owner shipping proposal help, actual save and reload route, stale and invalid failure; no customer fee activation."
         },
         "public-mcp": {
-            "source_sha256": "41c1243435ecb682c9f3f12859ce7f6d060fa5c933144e2e08f49d7747feda07",
+            "source_sha256": "ddd574f91ff690956cd74d17c97531c6fc94d69b4c683f14297989c26314c284",
             "references_sha256": "68f79ed443df0cba4c7aa1bf073c7d7afd53cab5b9447fb5aef1628fb4743345",
-            "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
+            "review_note": "Reviewed owner-only save route and authenticated internal settings operation. No public MCP tool or shipping quote capability added."
         },
         "remote-commerce": {
-            "source_sha256": "8fe91464d93957e4520172523d3f258b2abcebc0d110bbd94bde2700a1bdca3a",
-            "references_sha256": "30d51b4bee8d26efc0fd2ab3034f6d58f007c4e95cd807f00146d5ab4291cf3d",
-            "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
+            "source_sha256": "d2b17beb7a77f3d823ee457bbb9cdf1a42a2d543c6b30d571b2ea87aa7147997",
+            "references_sha256": "f19ebd71287b550a376011d6529dac8a4712a9a823a5bf3ae7423d8557a827aa",
+            "review_note": "Reviewed new shipping draft field and database settings CAS. Existing remote checkout cart, quote, tax and payment contracts are unchanged; shippingPaise remains zero."
         },
         "sales-channels": {
-            "source_sha256": "0012f20cbd5531b10a54baf77e4070710c02f926dae38c826cc657cf1939ec07",
+            "source_sha256": "41708bd68d61562fe23c5f42bca8c17ae6bb2c939c970f8533b989d5023d5465",
             "references_sha256": "f2d81de1cbac07c6783060e22cc859e0ec6e86c66f50c9d7d2ec590b11ec5c8a",
-            "review_note": "Reviewed actual Woo core and Google plugin source, current Google v1 ProductInput and processed product contracts, offline projection and read-only country-specific diagnostics; browser and 47 checks pass."
+            "review_note": "Reviewed SettingsService draft methods; no change to Merchant feed, Google API or YouTube link status. Draft is not a live shipping rate."
         },
         "workflow": {
-            "source_sha256": "02c3dff134bf6ec7d18c2b97b57daa6d209dc635115bb3843df5a227f9d0f354",
+            "source_sha256": "469c31d8a13489b53999c0401eed27052699ff6182560dce2fdb059cae754e1e",
             "references_sha256": "ce296268f8e6ab4a20955480efe5431f31112561643d61298121d265ee480280",
-            "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
+            "review_note": "Reviewed registered save route, regenerated maps, native skills, P23 source evidence, isolated portable fixture and hosted MySQL/MariaDB/Chromium gates."
         }
     }
 }

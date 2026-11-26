@@ -1,6 +1,6 @@
 <section class="admin-card" aria-labelledby="shipping-preview-title">
-    <h1 id="shipping-preview-title">Shipping zone preview</h1>
-    <p>Test a proposed delivery rule with a hypothetical subtotal. These rules are not saved and do not change storefront, agent checkout, GST or payment totals.</p>
+    <h1 id="shipping-preview-title">Shipping zone draft</h1>
+    <p>Save an ordered proposal and test it against a hypothetical subtotal. Saving a draft never activates rates or changes storefront, agent checkout, GST or payment totals.</p>
     <p><a href="/admin/settings#settings-shipping">Existing shipping settings</a></p>
     <?php if (!empty($error)): ?><p role="alert"><?= e($error) ?></p><?php endif; ?>
     <?php if (isset($quote)): ?>
@@ -16,6 +16,10 @@
     <?php endif; ?>
     <form class="admin-form" method="post" action="/admin/shipping/preview">
         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+        <?php if (isset($draftRevision)): ?>
+            <input type="hidden" name="draft_revision" value="<?= e($draftRevision) ?>">
+            <p><?= $draftRevision==='0'?'No saved zone draft yet.':'Draft revision loaded. Checkout charges are unchanged.' ?></p>
+        <?php endif; ?>
         <h2>Ordered zones</h2>
         <p>First matching zone wins. Leave unused zones blank. A blank PIN list covers the entire selected state. Use commas between six-digit PINs or 2–5 digit prefixes ending in *.</p>
         <?php for ($i=0;$i<\App\Services\ShippingService::MAX_ZONES;$i++): $z=$form['zones'][$i]??[]; ?>
@@ -42,6 +46,13 @@
             <label>Delivery PIN<input name="pin" inputmode="numeric" maxlength="6" pattern="[1-9][0-9]{5}" value="<?= e($form['pin']??'') ?>" required></label>
             <label>Hypothetical item subtotal (₹)<input name="subtotal" inputmode="decimal" maxlength="10" value="<?= e($form['subtotal']??'') ?>" required></label>
         </div>
-        <button class="btn btn-primary" type="submit">Preview shipping fee</button>
+        <div class="admin-card__actions">
+            <button class="btn btn-primary" type="submit">Preview shipping fee</button>
+            <?php if (isset($draftRevision)): ?>
+            <button class="btn btn-outline" type="submit" formaction="/admin/shipping/save-draft" formnovalidate>Save shipping draft</button>
+            <?php else: ?>
+            <a class="btn btn-outline" href="/admin/shipping">Reopen saved draft</a>
+            <?php endif; ?>
+        </div>
     </form>
 </section>

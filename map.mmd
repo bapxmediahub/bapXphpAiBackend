@@ -14,8 +14,8 @@ flowchart LR
     legend_limits["No execution, autoload or dynamic reachability proof; gaps are inspection candidates"]:::arch
   end
 
-  subgraph ARCH["Architecture Overview — 189 routes, 20 controllers, 94 services, 77 views, 0 data files, 32 tools"]
-    arch_routes["> Routes: 189 (Public + Auth + Payment + Admin + Support)"]:::arch
+  subgraph ARCH["Architecture Overview — 190 routes, 20 controllers, 94 services, 77 views, 0 data files, 32 tools"]
+    arch_routes["> Routes: 190 (Public + Auth + Payment + Admin + Support)"]:::arch
     arch_ctrl["> Controllers: 20"]:::arch
     arch_svc["> Services: 94"]:::arch
     arch_views["> Views: 77"]:::arch
@@ -163,6 +163,7 @@ flowchart LR
     route_post_admin_orders_id_tax_review["POST /admin/orders/{id}/tax-review — Admin — correct paid order state and issue reviewed invoice"]:::route
     route_get_admin_shipping["GET /admin/shipping — Admin — shipping settings"]:::route
     route_post_admin_shipping_preview["POST /admin/shipping/preview"]:::route
+    route_post_admin_shipping_save_draft["POST /admin/shipping/save-draft"]:::route
     route_get_admin_astrologers["GET /admin/astrologers — Retired admin profile URL — redirects to dashboard"]:::route
     route_get_admin_appointments["GET /admin/appointments — Admin — session list"]:::route
     route_get_admin_consultation_analytics["GET /admin/consultation-analytics — Admin — consultation metrics"]:::route
@@ -964,6 +965,13 @@ flowchart LR
   controller_admincontroller -. declared service .-> service_shippingservice
   controller_admincontroller -. declared service .-> service_authservice
   controller_admincontroller -. declared related view .-> view_admin_shipping
+  route_post_admin_shipping_save_draft -- registered handler --> controller_admincontroller
+  controller_admincontroller -. declared service .-> service_shippingservice
+  controller_admincontroller -. declared service .-> service_settingsservice
+  controller_admincontroller -. declared service .-> service_databaseservice
+  controller_admincontroller -. declared service .-> service_auditlogservice
+  controller_admincontroller -. declared service .-> service_authservice
+  controller_admincontroller -. declared related view .-> view_admin_shipping
   route_get_admin_astrologers -- registered handler --> controller_admincontroller
   controller_admincontroller -. declared service .-> service_authservice
   controller_admincontroller -. declared related view .-> view_admin_dashboard
@@ -1726,6 +1734,7 @@ flowchart LR
   service_databaseservice -. static reference .-> service_remotecheckoutservice
   service_databaseservice -. static reference .-> service_remotecheckoutstateservice
   service_databaseservice -. static reference .-> service_settingsservice
+  service_databaseservice -. static reference .-> service_shippingservice
   service_databaseservice -. static reference .-> service_sitetelemetryservice
   service_databaseservice -. static reference .-> service_supportticketservice
   service_docsmapservice -. static reference .-> service_projectmapservice
@@ -1842,6 +1851,7 @@ flowchart LR
   service_settingsservice -. source new .-> service_authoredpageservice
   service_settingsservice -. source new .-> service_databaseservice
   service_settingsservice -. static reference .-> service_authoredpageservice
+  service_settingsservice -. static reference .-> service_shippingservice
   service_settingsservice -. static reference .-> service_taxservice
   service_shippingservice -. static reference .-> service_taxservice
   service_siteinsightsservice -. static reference .-> service_storestatsservice
