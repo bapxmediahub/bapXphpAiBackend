@@ -153,8 +153,8 @@
             "finding": "Native browser fallback, owner-scoped server recovery, up to three CAS versions, stale download and explicit canonical save are implemented in the candidate. HTTP and desktop/mobile fixture regressions pass. WordPress timestamped edit-presence lease and production acceptance remain incomplete; isolated DB race checks added to hosted CI.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Compared WP 7.1.4 autosave, post-author revision and edit-presence source with actual native HTTP, browser fallback, CAS and explicit save; preserve partial presence lease and live boundary.",
-                "source_sha256": "c7d42bed4031e37bb92fa979b721441ba07b49af555898dd122b736db691132f"
+                "reason": "Reviewed recurring hosted fixture worker JSON decode failure; capture sanitized worker exit and SQLSTATE/vendor diagnostics before decoding, retain both concurrent CAS assertions and all actual runtime code unchanged. Root cause not yet established.",
+                "source_sha256": "14db6e98359dde12d60095e34ca107b2ab599d112aeba1e1d9c34900431b3134"
             },
             "production_evidence": []
         },

@@ -15,7 +15,21 @@ if (($argv[1]??'')==='--worker') {
     $db=new DatabaseService(true);
     if ($db->connection()->query('SELECT DATABASE()')->fetchColumn()!=='sps_order_test') throw new RuntimeException('Refusing nonfixture database.');
     echo "ready\n";flush();check(trim((string)fgets(STDIN))==='go','Worker barrier');
-    echo json_encode($db->editorDraftOperation(...$args),JSON_THROW_ON_ERROR);exit;
+    try {
+        echo json_encode($db->editorDraftOperation(...$args),JSON_THROW_ON_ERROR);
+        exit(0);
+    } catch (Throwable $error) {
+        // This process only accesses a disposable fixture database. Preserve
+        // useful bounded diagnostics without printing SQL, data or credentials.
+        $diagnostic = ['class'=>$error::class,'file'=>basename($error->getFile()),'line'=>$error->getLine()];
+        if ($error instanceof PDOException) {
+            $state=$error->errorInfo[0]??null;$vendor=$error->errorInfo[1]??null;
+            if (is_string($state)&&preg_match('/^[A-Z0-9]{5}$/D',$state)) $diagnostic['sqlstate']=$state;
+            if (is_int($vendor)) $diagnostic['vendor_code']=$vendor;
+        }
+        fwrite(STDERR,'[editor-worker] '.json_encode($diagnostic,JSON_THROW_ON_ERROR)."\n");
+        exit(1);
+    }
 }
 $a=EditorDraftService::owner(['role'=>'admin','sub'=>'owner-fixture-a']);
 $b=EditorDraftService::owner(['role'=>'admin','sub'=>'owner-fixture-b']);
@@ -63,11 +77,40 @@ try {
         }
         foreach($children as [, $pipes]) check(trim((string)fgets($pipes[1]))==='ready','Worker ready');
         foreach($children as [, $pipes]) {fwrite($pipes[0],"go\n");fclose($pipes[0]);}
-        $out=[];
-        foreach($children as [$child,$pipes]) {
-            $out[]=json_decode(stream_get_contents($pipes[1]),true,flags:JSON_THROW_ON_ERROR);
-            fclose($pipes[1]);fclose($pipes[2]);check(proc_close($child)===0,'Worker exited');
+        $out=[];$failed=false;
+        foreach($children as $index=>[$child,$pipes]) {
+            $raw=stream_get_contents($pipes[1]);$stderr=stream_get_contents($pipes[2]);
+            fclose($pipes[1]);fclose($pipes[2]);$exit=proc_close($child);
+            if($exit!==0||$stderr!==''||!is_string($raw)){
+                $failed=true;
+                $diagnostic=['worker'=>$index,'exit'=>$exit,'stdout_bytes'=>is_string($raw)?strlen($raw):0,'stderr_bytes'=>is_string($stderr)?strlen($stderr):0];
+                foreach(explode("\n",(string)$stderr) as $line){
+                    if(preg_match('/^\[editor-worker\] (\{.*\})$/D',$line,$matches)){
+                        $record=json_decode($matches[1],true);
+                        if(is_array($record)){
+                            $diagnostic['exception']=array_intersect_key($record,array_flip(['class','file','line','sqlstate','vendor_code']));
+                        }
+                    }elseif(preg_match('/^\[cli failure\] [A-Za-z0-9_\\\\]+ at [A-Za-z0-9_.-]+:[0-9]+$/D',$line)){
+                        $diagnostic['bootstrap_failure']=$line;
+                    }
+                }
+                fwrite(STDERR,'Editor recovery fixture worker failed: '.json_encode($diagnostic,JSON_THROW_ON_ERROR)."\n");
+                continue;
+            }
+            try{$result=json_decode($raw,true,flags:JSON_THROW_ON_ERROR);}
+            catch(JsonException){
+                $failed=true;
+                fwrite(STDERR,'Editor recovery fixture worker '.$index.' returned invalid JSON ('.strlen($raw)." bytes).\n");
+                continue;
+            }
+            if(!is_array($result)||!in_array($result['outcome']??null,['saved','conflict'],true)){
+                $failed=true;
+                fwrite(STDERR,'Editor recovery fixture worker '.$index." returned an unexpected outcome.\n");
+                continue;
+            }
+            $out[]=$result;
         }
+        check(!$failed&&count($out)===2,'Both workers must complete with valid observed outcomes');
         return $out;
     };
     $out=$race($token);$states=array_column($out,'outcome');sort($states);
