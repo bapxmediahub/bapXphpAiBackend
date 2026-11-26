@@ -73,6 +73,8 @@ set -euo pipefail
 #   bapXphp media:reconcile [--apply] — check legacy media metadata against MySQL
 #   bapXphp merchant:check [--json|--schema] — inspect current Google product data without publishing
 #   bapXphp merchant:feed           — write the public Google RSS feed to stdout
+#   bapXphp merchant:inputs --language <code> --feed-label <label> — preview Merchant API v1 product input JSON
+#   bapXphp merchant:diagnose --account <id> --data-source <id> --language <code> --feed-label <label> --country <code> — read authorized source and YouTube item status
 #   bapXphp mail:process [--scheduled-test-only] — process due mail
 #   bapXphp images:optimize         — convert/resize images to WebP
 #   bapXphp product:images <source> [--dry-run|--assets-only|--database-only]
@@ -679,7 +681,7 @@ cmd_ci() {
     deployment-revision public-knowledge catalogue-comparison public-product-selection \
     public-agent-discovery public-mcp remote-cart remote-checkout verified-order \
     public-mcp-shopping public-mcp-checkout public-a2ui agent-presentation-scope \
-    enterprise-commerce documentation-review; do
+    enterprise-commerce merchant-api documentation-review; do
     echo "── fixture: $fixture ──"
     php "$ROOT/tests/$fixture.php" 2>&1 || { failed=1; warn "PORTABLE FIXTURE FAILED: $fixture"; }
   done
@@ -2233,7 +2235,7 @@ main() {
       shift; cmd_runtime_check "$@" ;;
     media:reconcile)
       shift; require_php; php "$ROOT/cli/reconcile-media.php" "$@" ;;
-    merchant:check|merchant:feed)
+    merchant:check|merchant:feed|merchant:inputs|merchant:diagnose)
       local merchant_action="${1#merchant:}"; shift
       require_php; php "$ROOT/cli/merchant.php" "$merchant_action" "$@" ;;
     mail:process|mail-process)

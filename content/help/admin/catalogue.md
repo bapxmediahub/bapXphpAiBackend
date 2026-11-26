@@ -38,3 +38,10 @@ Open **Commerce → Google & YouTube** to review the existing catalogue and its 
 Add the feed URL as a scheduled product-file source in your business's Merchant Center account after verifying the domain and setting country, language, shipping and returns. Read Google's item diagnostics after the fetch; an XML file is not proof of account connection or product approval. Missing brand/identifiers and unsuitable images need real information, not invented values.
 
 YouTube Shopping is another step. Direct custom-store onboarding is for eligible, invited creators; other connections use YouTube's supported retailers/platforms. Confirm channel access and linking before promising product tags. The website does not automatically activate YouTube Shopping or register an account on your behalf. Analytics and Search Console reporting are separate from this product feed.
+
+For YouTube Shopping, open Commerce → Google & YouTube. The existing XML
+feed and Merchant API product-input JSON download use the same public catalogue.
+Enter the actual data-source language and label. A preview is not a Google
+upload, item approval or linked channel. Review the real Google account and
+each channel separately; no website endpoint can substitute for partner
+authorization.
