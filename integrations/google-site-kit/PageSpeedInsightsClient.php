@@ -18,7 +18,16 @@ final class PageSpeedInsightsClient
     private const API = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed';
     private const MAX_RESPONSE_BYTES = 3 * 1024 * 1024;
 
-    public function __construct(private ?\Closure $transport = null) {}
+    public function __construct(private ?\Closure $transport = null, private string $apiKey = '')
+    {
+        if ($apiKey !== '' && !self::validKey($apiKey))
+            throw new DomainException('Configure a valid dedicated PageSpeed API key.');
+    }
+
+    public static function validKey(string $key): bool
+    {
+        return preg_match('/^[A-Za-z0-9_-]{16,128}$/D',$key) === 1;
+    }
 
     public function analyze(string $siteUrl, string $strategy): array
     {
@@ -41,13 +50,17 @@ final class PageSpeedInsightsClient
         $url = self::API.'?'.http_build_query([
             'url'=>$origin.'/', 'strategy'=>$strategy, 'category'=>'performance',
         ], '', '&', PHP_QUERY_RFC3986);
+        $headers=['Accept: application/json'];
+        // Dedicated Google Cloud key is sent only to the fixed Google endpoint.
+        // Never include it in the URL, result, exception, browser or report cache.
+        if ($this->apiKey !== '') $headers[]='X-Goog-Api-Key: '.$this->apiKey;
         if ($this->transport !== null) {
-            [$status,$body] = ($this->transport)($url);
+            [$status,$body] = ($this->transport)($url,$headers);
         } else {
-            [$status,$body] = $this->fetch($url);
+            [$status,$body] = $this->fetch($url,$headers);
         }
-        if ($status === 429) throw new DomainException('PageSpeed quota reached. Try again later.');
-        if ($status === 403) throw new DomainException('Google denied PageSpeed access or its API quota is unavailable.');
+        if ($status === 429) throw new DomainException('PageSpeed quota reached. Try again later.',429);
+        if (in_array($status,[401,403],true)) throw new DomainException('Google denied PageSpeed access or its API quota is unavailable.',$status);
         if ($status < 200 || $status >= 300 || !is_string($body)) {
             throw new DomainException('PageSpeed could not analyze the site. Try again later.');
         }
@@ -123,7 +136,7 @@ final class PageSpeedInsightsClient
     }
 
     /** A fixed Google endpoint is the only network destination, with no redirects. */
-    private function fetch(string $url): array
+    private function fetch(string $url,array $headers): array
     {
         if (!function_exists('curl_init')) throw new DomainException('PageSpeed transport is unavailable.');
         $curl = curl_init($url);
@@ -134,7 +147,7 @@ final class PageSpeedInsightsClient
             CURLOPT_CONNECTTIMEOUT=>3,
             CURLOPT_TIMEOUT=>12,
             CURLOPT_FOLLOWLOCATION=>false,
-            CURLOPT_HTTPHEADER=>['Accept: application/json'],
+            CURLOPT_HTTPHEADER=>$headers,
             CURLOPT_WRITEFUNCTION=>static function ($curl,string $chunk) use (&$body): int {
                 if (strlen($body)+strlen($chunk) > self::MAX_RESPONSE_BYTES) return 0;
                 $body .= $chunk;

@@ -445,6 +445,7 @@ flowchart LR
     integration_googlesitekitclient["GoogleSiteKitClient"]:::code
     integration_metapixelclient["MetaPixelClient"]:::code
     integration_pagespeedinsightsclient["PageSpeedInsightsClient"]:::code
+    integration_pagespeedreportcache["PageSpeedReportCache"]:::code
     integration_paymentlinkcreationrejected["PaymentLinkCreationRejected"]:::code
     integration_razorpayclient["RazorpayClient"]:::code
     integration_stripeclient["StripeClient"]:::code
@@ -1515,8 +1516,11 @@ flowchart LR
   controller_adminmcpclientcontroller -. source new .-> service_mcpclientservice
   controller_adminmcpclientcontroller -- extends --> controller_basecontroller
   controller_adminpagespeedcontroller -. source new .-> integration_pagespeedinsightsclient
+  controller_adminpagespeedcontroller -. source new .-> integration_pagespeedreportcache
   controller_adminpagespeedcontroller -. source new .-> service_authservice
+  controller_adminpagespeedcontroller -. source new .-> service_secretservice
   controller_adminpagespeedcontroller -- extends --> controller_basecontroller
+  controller_adminpagespeedcontroller -. static reference .-> integration_pagespeedreportcache
   controller_adminpagespeedcontroller -. static reference .-> service_publicsiteurlservice
   controller_apicontroller -. source new .-> service_categoryservice
   controller_apicontroller -. source new .-> service_deploymentrevisionservice
@@ -1842,6 +1846,7 @@ flowchart LR
   service_runtimeagenttoolregistry -. static reference .-> service_publicknowledgeservice
   service_runtimehealthservice -. source new .-> service_databaseservice
   service_secretservice -. source new .-> service_databaseservice
+  service_secretservice -. static reference .-> integration_pagespeedinsightsclient
   service_secretservice -. static reference .-> service_mcpclientservice
   service_seoservice -. source new .-> service_productservice
   service_seoservice -. source new .-> service_settingsservice

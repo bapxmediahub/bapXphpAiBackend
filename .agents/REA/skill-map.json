@@ -1734,7 +1734,10 @@
                 "app/Services/AiClient.php",
                 "app/Services/MerchantFeedService.php",
                 "app/Services/SeoService.php",
-                "app/Services/MerchantApiService.php"
+                "app/Services/MerchantApiService.php",
+                "integrations/google-site-kit/PageSpeedReportCache.php",
+                "app/Services/SecretService.php",
+                "views/admin/integrations.php"
             ],
             "acceptance_tests": [
                 "tests/google-pagespeed.php",
@@ -1742,7 +1745,8 @@
                 "tests/ai-provider-transport.php",
                 "tests/gst-unit-browser.cjs",
                 "docs/google-sales-channels.md",
-                "tests/merchant-api.php"
+                "tests/merchant-api.php",
+                "tests/google-reporting-storage.php"
             ],
             "upstream_references": [
                 "references/measurement.md",
@@ -1752,8 +1756,8 @@
             ],
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed actual saved 43-item feed projection and bounded official Merchant read paths; per-country destination status, quota and incomplete pagination kept distinct; no invented approval or attribution.",
-                "sha256": "cc8c384b1b1edbd8dfd16a4e19d5a3365b81d11daafd2c397c3b572726ce6dc2"
+                "reason": "Reviewed actual Site Kit PageSpeed module and dedicated key guidance, bounded shared cache claim, previous-success timestamp and failure separation, quota stop and tests. No real Google score fabricated.",
+                "sha256": "6f8028b2f5ac93621bf1fdc5a3e1dff4f3c71d4d9decfc0738ffe257dd1e37be"
             }
         },
         {

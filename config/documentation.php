@@ -17,7 +17,7 @@ $rules = [
   'dependencies'=>['api/index.php','app/bootstrap.php','app/Services/ProjectMapService.php','app/Services/PublicKnowledgeService.php','app/Services/PublicA2uiService.php','assets/a2ui-public-renderer.js','assets/css/a2ui-public.css'],
   'references'=>['docs/public-mcp.md','docs/remote-commerce.md','docs/pages/shop.md','docs/a2ui.md','.agents/skills/backend-php-mysql/SKILL.md']],
 
- 'google-tags'=>['sources'=>['integrations/google-site-kit/*','app/Controllers/AdminGoogleReportingController.php','views/admin/google-reporting.php','tests/google-reporting.php'],
+ 'google-tags'=>['sources'=>['integrations/google-site-kit/*','app/Controllers/AdminGoogleReportingController.php','app/Controllers/AdminPageSpeedController.php','views/admin/google-reporting.php','views/admin/google-pagespeed.php','tests/google-reporting.php'],
   'dependencies'=>['views/layouts/app.php','views/admin/dashboard.php','views/admin/integrations.php','app/Services/SecretService.php'],
   'references'=>['docs/pages/integrations.md','content/help/admin/settings.md','.agents/skills/frontend-php/SKILL.md']],
 

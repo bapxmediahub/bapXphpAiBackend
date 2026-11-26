@@ -9,22 +9,23 @@
             <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
             <button class="btn btn-primary" type="submit" <?= $cooldown ? 'disabled' : '' ?>>Analyze mobile and desktop</button>
         </form>
-        <?php if ($cooldown): ?><p role="status">A recent report is available below. Another request is allowed after ten minutes to respect provider quotas.</p><?php endif; ?>
-        <p>PageSpeed results are requested only when you press Analyze. Google may rate-limit reports. Missing field data is displayed as unavailable, not as zero.</p>
+        <?php if ($cooldown): ?><p role="status">A recent attempt has claimed the shared site cooldown. Another request is allowed after ten minutes to respect provider quotas.</p><?php endif; ?>
+        <p>PageSpeed results are requested only when you press Analyze. Google may rate-limit reports. Missing field data is displayed as unavailable, not as zero. A dedicated PageSpeed API key can be configured in Integrations; it is never sent to the browser.</p>
     <?php endif; ?>
     <p><a href="/admin/google-reporting">Google Analytics and Search Console</a></p>
 </section>
 
 <?php if (is_array($record)): ?>
 <section class="admin-card google-pagespeed" aria-labelledby="google-pagespeed-results">
-    <h2 id="google-pagespeed-results">Last PageSpeed report</h2>
+    <h2 id="google-pagespeed-results">Latest PageSpeed attempt</h2>
+    <?php if (!empty($record['running'])): ?><p role="status">A report attempt was claimed; the result has not been confirmed yet.</p><?php endif; ?>
     <p>Requested <time datetime="<?= e(date(DATE_ATOM,$record['at'])) ?>"><?= e(date('d M Y, h:i A',$record['at'])) ?> IST</time>. The report is a point-in-time measurement; it does not establish Google Search ranking or continuous uptime.</p>
     <div class="google-pagespeed__results">
     <?php foreach (($record['results'] ?? []) as $result): ?>
         <?php if (!is_array($result)) continue; ?>
         <section class="google-pagespeed__result" aria-label="<?= e(ucfirst((string)($result['strategy'] ?? 'Unknown'))) ?> performance">
             <h3><?= e(ucfirst((string)($result['strategy'] ?? 'Unknown'))) ?></h3>
-            <?php if (($result['status'] ?? '') === 'unavailable'): ?>
+            <?php if (in_array($result['status'] ?? '', ['unavailable','not_attempted'], true)): ?>
                 <p role="status"><?= e((string)($result['message'] ?? 'PageSpeed is unavailable.')) ?></p>
             <?php else: ?>
                 <p class="google-pagespeed__score">
@@ -62,5 +63,28 @@
         </section>
     <?php endforeach; ?>
     </div>
+</section>
+<?php endif; ?>
+
+<?php
+$previous=[];
+foreach (($record['last_good']??[]) as $strategy=>$entry) {
+    if ($entry['at']!==($record['at']??null)) $previous[$strategy]=$entry;
+}
+?>
+<?php if ($previous!==[]): ?>
+<section class="admin-card google-pagespeed" aria-label="Previous successful PageSpeed reports">
+    <h2>Previous successful measurements</h2>
+    <p>Historical results, not a successful measurement from the latest attempt.</p>
+    <dl>
+    <?php foreach ($previous as $strategy=>$entry): ?>
+        <dt><?= e(ucfirst($strategy)) ?> · <time datetime="<?= e(date(DATE_ATOM,$entry['at'])) ?>"><?= e(date('d M Y, h:i A',$entry['at'])) ?> IST</time></dt>
+        <dd><?= (int)$entry['report']['performance_score'] ?>/100 performance
+            <?php foreach (($entry['report']['lab']??[]) as $metric): ?>
+                <br><?= e((string)$metric['name']) ?>: <?= $metric['display']===null?'Unavailable':e((string)$metric['display']) ?>
+            <?php endforeach; ?>
+        </dd>
+    <?php endforeach; ?>
+    </dl>
 </section>
 <?php endif; ?>

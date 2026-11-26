@@ -1291,8 +1291,8 @@
             "finding": "Separate owner callback implemented; live redirect mismatch and absent grant, preserve customer sign-in.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
-                "source_sha256": "cb9a917b5d17ce6eb8b92376c7fc8553061a970fb96a10735e6d066bbd423c86"
+                "reason": "Reviewed dedicated PageSpeed credential validation and storage test; existing reporting OAuth grant, property discovery and sign-in unchanged.",
+                "source_sha256": "8a7683d8ab1549f3f30c5fcbcfb303a9d2cfc68773224a0761ad14745906bb67"
             },
             "production_evidence": []
         },
@@ -1356,8 +1356,8 @@
             "finding": "Validated tag and independent configuration projection exist; verify live configured tag with owner permission.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Only the existing footer credit changed in the shared layout; verified tag settings, head projection and provider script boundaries are unchanged.",
-                "source_sha256": "7aff2f70c4631ba547df202fec3f822784a3aa6c2e1d75a6aacadc76c279079e"
+                "reason": "Reviewed owner integration UI adds dedicated PageSpeed key mode only; existing Analytics, Ads tag and verification rendering unchanged.",
+                "source_sha256": "5b2aff8ccea986752c8e019de54b4463df0c9afcc4f4e7f7260bd3d7aefdcc39"
             },
             "production_evidence": []
         },
@@ -1378,17 +1378,22 @@
             "local_sources": [
                 "app/Controllers/AdminPageSpeedController.php",
                 "integrations/google-site-kit/PageSpeedInsightsClient.php",
-                "views/admin/google-pagespeed.php"
+                "views/admin/google-pagespeed.php",
+                "integrations/google-site-kit/PageSpeedReportCache.php",
+                "app/Services/SecretService.php",
+                "views/admin/integrations.php"
             ],
             "acceptance_evidence": [
                 "tests/google-pagespeed.php",
-                "tests/google-pagespeed-browser.cjs"
+                "tests/google-pagespeed-browser.cjs",
+                "tests/google-reporting-storage.php",
+                "docs/pages/integrations.md"
             ],
-            "finding": "Explicit mobile/desktop requests and honest errors exist; real provider quota-free result and recovery remain.",
+            "finding": "Native explicit mobile/desktop PageSpeed and truthful errors exist. Candidate #358 follow-up adds shared atomic deployment-local cooldown, bounded dated prior-success retention, quota/access stop before another strategy, optional separately encrypted server-only API key. Actual pinned Site Kit shareable datapoint/strategy/reference URL source inspected; portable cache/header and desktop/mobile historical rendering fixtures passed. Dedicated key and real successful Google reports remain unverified; no new billing or credential reuse.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
-                "source_sha256": "ef745eca64cbefa1d6b0b92ae659d4ce5f813042cdcf2ffcbb5fb71923b8a1c5"
+                "reason": "Read pinned Site Kit shareable PageSpeed strategy/reference URL datapoint, current official key guidance. Verified private shared cooldown, key header isolation, retained previous observations, skipped second quota request, independent origin/expiry and desktop/mobile view. Hosted encrypted storage and actual provider acceptance outstanding.",
+                "source_sha256": "4aa4c4b355f4ba50d23771ecf606c3f9ee9e7006546486fb0174ef155546c991"
             },
             "production_evidence": []
         },
@@ -1416,8 +1421,8 @@
             "finding": "Native tag projection is not container selection or consent management.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
-                "source_sha256": "773d4016bbc292e6e6f1f797ec5f2f987031ab64496d5de83fa28147e4d11460"
+                "reason": "Reviewed new PageSpeed-only configuration; no GTM container selection or consent implementation.",
+                "source_sha256": "d04d5e8b351b73eb72ef36f21b89f1189673054284ecf755063ef65183506343"
             },
             "production_evidence": []
         },
@@ -1449,8 +1454,8 @@
             "finding": "No verified authorized AdSense/Ads metrics workflow; separate account scope, no billing actions.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
-                "source_sha256": "0508516ad28224f5741a6c161238002d645c85a45deca3cdaf5efaed19ff27eb"
+                "reason": "Reviewed new PageSpeed-only key; existing Ads/AdSense authorization and reporting remain unimplemented.",
+                "source_sha256": "3b4b68ae93eb923b4df43cd58409e75ceb384be536acbdd604a4c824b683365a"
             },
             "production_evidence": []
         },
@@ -1508,8 +1513,8 @@
             "finding": "No verified native onboarding and authorization workflow; scope optional business need before implementation.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
-                "source_sha256": "773d4016bbc292e6e6f1f797ec5f2f987031ab64496d5de83fa28147e4d11460"
+                "reason": "Reviewed separate PageSpeed key and owner form; no Reader Revenue Manager or Tag Gateway onboarding added.",
+                "source_sha256": "d04d5e8b351b73eb72ef36f21b89f1189673054284ecf755063ef65183506343"
             },
             "production_evidence": []
         },
@@ -1899,8 +1904,8 @@
             "finding": "Saved independent Google/compatible/OpenRouter endpoint/model/key plan; real enabled fallback credentials must be accepted.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
-                "source_sha256": "3a6ff1ea5a2c8d7f45f55c4535e6bd74036f1335bb2abcfe09e8229394508b7f"
+                "reason": "Reviewed SecretService dedicated PageSpeed key input and independent mode; existing AI keys, model plan and credential isolation retained.",
+                "source_sha256": "6203645f899f3e24842a624e555a0126e1aea33c5fb89cb12679dfea8e26e2f7"
             },
             "production_evidence": []
         },

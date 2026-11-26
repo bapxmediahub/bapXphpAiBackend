@@ -69,6 +69,18 @@ country-specific YOUTUBE_SHOPPING statuses; never count affiliate, another
 source or an unobserved offer as approval. No customer/order attribution
 or channel link is inferred.
 
+For SK04, the pinned Site Kit PageSpeed module defines a shareable datapoint
+and validates mobile/desktop strategy against the reference site URL. The
+native adapter uses a fixed Google endpoint, an atomic deployment-private
+request claim shared by owner sessions, and dated bounded last-success
+projections. Keep the latest failed/unfinished attempt separate from older
+observations; do not retry a second strategy after provider quota/access
+rejection. Optional dedicated API key uses the existing encrypted integration
+store or explicit environment configuration and a server-only header, never
+an AI key or existing reporting grant. Test quota/error/unknown states,
+origin isolation, cache expiry and credential redaction before a real report.
+Google's planned CrUX field-data removal must not become fabricated metrics.
+
 ## Evidence handoff
 Record the upstream entrypoint/callee, authoritative state, permissions, normal/failure/concurrent transitions and the intentional native deviation in the linked GitHub issue. Record actual test commands and results, update affected REA rows, regenerate the report and run the existing CI gate. Distinguish static reading, synthetic fixture execution and live acceptance. Read unknown source bodies before implementing; no file count or test name proves parity.
 

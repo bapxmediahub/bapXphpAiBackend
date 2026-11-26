@@ -767,7 +767,15 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminPageSpeedController.php",
-            "line": 58
+            "line": 49
+        },
+        {
+            "from": "controller:AdminPageSpeedController",
+            "to": "integration:PageSpeedReportCache",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminPageSpeedController.php",
+            "line": 29
         },
         {
             "from": "controller:AdminPageSpeedController",
@@ -775,7 +783,15 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminPageSpeedController.php",
-            "line": 22
+            "line": 20
+        },
+        {
+            "from": "controller:AdminPageSpeedController",
+            "to": "service:SecretService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminPageSpeedController.php",
+            "line": 45
         },
         {
             "from": "controller:AdminPageSpeedController",
@@ -787,11 +803,19 @@
         },
         {
             "from": "controller:AdminPageSpeedController",
-            "to": "service:PublicSiteUrlService",
+            "to": "integration:PageSpeedReportCache",
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminPageSpeedController.php",
             "line": 30
+        },
+        {
+            "from": "controller:AdminPageSpeedController",
+            "to": "service:PublicSiteUrlService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminPageSpeedController.php",
+            "line": 28
         },
         {
             "from": "controller:ApiController",
@@ -1631,7 +1655,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "integrations/google-site-kit/PageSpeedInsightsClient.php",
-            "line": 29
+            "line": 38
         },
         {
             "from": "integration:RazorpayClient",
@@ -3384,6 +3408,14 @@
             "provenance": "source_token",
             "source": "app/Services/SecretService.php",
             "line": 19
+        },
+        {
+            "from": "service:SecretService",
+            "to": "integration:PageSpeedInsightsClient",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/SecretService.php",
+            "line": 73
         },
         {
             "from": "service:SecretService",
@@ -6630,6 +6662,7 @@
         "GoogleSiteKitClient",
         "MetaPixelClient",
         "PageSpeedInsightsClient",
+        "PageSpeedReportCache",
         "PaymentLinkCreationRejected",
         "RazorpayClient",
         "StripeClient"
