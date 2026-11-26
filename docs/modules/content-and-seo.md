@@ -274,7 +274,11 @@ the owner-only `POST /admin/editor-draft` endpoint for server recovery. The
 record identity is scoped to the signed-in owner, editor kind and original
 address (or new-item editor). Each acknowledged snapshot is bound to the
 canonical revision opened by the editor, with a separate random CAS token.
-The existing MySQL settings table stores private `ed:<digest>` records with
+The existing MySQL settings table stores private `ed:<digest>` records.
+The canonical 36-character key fits the actual production primary key and
+matches historically truncated recovery rows. Existing full-width rows retain
+their history; ambiguous dual-width records are refused, not merged or deleted.
+An insert is acknowledged only after the exact stored key is observed. Records have
 up to three versions and a 2.5 MB encoded recovery-history bound. Ordinary
 configuration reads exclude that namespace. Canonical articles remain
 Markdown; pages remain revision-checked `pg:<slug>` rows.

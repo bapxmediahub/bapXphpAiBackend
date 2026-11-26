@@ -142,7 +142,13 @@ short-lived; no customer or provider payment body is stored for this check.
 
 The existing hosted MySQL settings table reserves `ed:<digest>` for owner-scoped
 article/page recovery, separate from public settings and the `pg:` page namespace.
-The digest binds owner identity, editor kind and original target. Recovery history
+The digest binds owner identity, editor kind and original target. The canonical
+key is `ed:` plus the first 33 hexadecimal digest characters (36 characters),
+matching the deployed settings primary key. Existing truncated keys already
+match this identity; existing full-width legacy keys remain readable and
+mutable only by their exact token. If both widths exist, recovery fails closed.
+A new insert must be observable under its expected key before it is acknowledged.
+No database schema change or silent history merge is required. Recovery history
 is limited to three versions and bounded encoded size. Compare-and-swap uses a
 separate opaque token; stale writes/discards cannot replace newer versions.
 Recovery uses a strict insert and explicit duplicate conflict, and a bounded
