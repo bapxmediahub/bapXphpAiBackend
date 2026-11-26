@@ -432,16 +432,18 @@
             "local_sources": [
                 "app/Services/SettingsService.php",
                 "app/Services/SiteProfileService.php",
-                "views/admin/settings.php"
+                "views/admin/settings.php",
+                "views/layouts/app.php"
             ],
             "acceptance_evidence": [
-                "tests/site-profile-browser.cjs"
+                "tests/site-profile-browser.cjs",
+                "tests/homepage-release-browser.cjs"
             ],
-            "finding": "Branding and module controls exist; verify independent settings saves with production owner.",
+            "finding": "Branding and module controls exist; owner-approved studio credit restored without layout changes, exact rendered text/link tested at desktop/mobile and without JS; independent settings saves still require full production owner acceptance.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
-                "source_sha256": "a228e897e8e1eb44801212fd14ed2940976629362e51f240d63d1dd7e50635c4"
+                "reason": "Reviewed owner-approved credit against exact #456 diff, Design contract and red-before/green-after real homepage browser tests; keep scoped branding and settings acceptance unchanged.",
+                "source_sha256": "fbe9ac129e868a1ce468fba319902e6ffcd5e3ada5a351d89b70f354640d8377"
             },
             "production_evidence": []
         },
@@ -1309,8 +1311,8 @@
             "finding": "Validated tag and independent configuration projection exist; verify live configured tag with owner permission.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
-                "source_sha256": "0ec2ff6aa6a5a72a8a9e4b0eeb9d1808be47b91b8c4257d567e5df856ea3749f"
+                "reason": "Only the existing footer credit changed in the shared layout; verified tag settings, head projection and provider script boundaries are unchanged.",
+                "source_sha256": "7aff2f70c4631ba547df202fec3f822784a3aa6c2e1d75a6aacadc76c279079e"
             },
             "production_evidence": []
         },

@@ -28,7 +28,9 @@ description: Use when editing public, account, shop, consultant, temple, cart, c
   the captured receipt only and check the correct version with the same browser.
 - Use the shared public site profile for the header, footer, About and Contact.
   Test absent contact methods, app metadata and module-off URLs in an
-  independent synthetic deployment as well as the reference layout.
+  independent synthetic deployment as well as the reference layout. Preserve
+  the exact owner-approved studio credit, including the heart and @ handle,
+  specified in Design.md; layout changes must not rewrite brand copy.
 - Search results keep the query in a labelled native form with grouped results
   and a clear empty state. At 375px, check long queries, command examples in public
   documents, and the focusable invoice table. Tab to the order review rating
