@@ -16,6 +16,8 @@ final class CampaignBookingController
         $expected = $_SESSION['csrf_token'] ?? '';
         $owner = CampaignPaymentService::browserOwner($_SESSION);
         $revision = $_POST['revision'] ?? null;
+        $freshFrom = $_POST['fresh_from'] ?? null;
+        $freshConfirm = $_POST['confirm_fresh'] ?? null;
         if (!AuthoredPageService::validSlug($slug)) {
             $this->show($slug, null, 404);
             return;
@@ -28,10 +30,16 @@ final class CampaignBookingController
             $this->show($slug, null, 409, 'This campaign changed. Review the current booking before paying.');
             return;
         }
+        if (($freshFrom !== null || $freshConfirm !== null)
+            && (!is_string($freshFrom) || !CampaignPaymentService::validId($freshFrom) || $freshConfirm !== '1')) {
+            $this->show($slug, null, 422, 'Confirm the separate new booking payment from its status page.');
+            return;
+        }
         session_write_close();
         try {
             $booking = $this->payments->start($slug, $revision, $owner,
-                static fn() => RateLimiter::consumeCampaignBooking((string)($_SERVER['REMOTE_ADDR'] ?? 'unknown')));
+                static fn() => RateLimiter::consumeCampaignBooking((string)($_SERVER['REMOTE_ADDR'] ?? 'unknown')),
+                $freshFrom);
         } catch (\Throwable) {
             $this->show($slug, null, 503, 'Booking status could not be confirmed. Reopen the campaign to check this booking.');
             return;
@@ -52,13 +60,20 @@ final class CampaignBookingController
     {
         $this->privateResponse();
         $owner = CampaignPaymentService::browserOwner($_SESSION);
+        $csrf = $_SESSION['csrf_token'] ??= bin2hex(random_bytes(16));
         session_write_close();
-        $booking = $this->payments->owned($id, $owner);
-        if ($booking === null || $booking['slug'] !== $slug) {
-            $this->show($slug, null, 404);
-            return;
+        try {
+            $booking = $this->payments->owned($id, $owner);
+            if ($booking === null || $booking['slug'] !== $slug) {
+                $this->show($slug, null, 404);
+                return;
+            }
+            $booking = $this->payments->reconcile($booking);
+            $family = $this->payments->familyFor($booking);
+            $this->show($slug, $family['requested'], family: $family, csrf: $csrf);
+        } catch (\Throwable) {
+            $this->show($slug, null, 503, 'Booking status could not be confirmed. Check this receipt again before paying.');
         }
-        $this->show($slug, $this->payments->reconcile($booking));
     }
 
     public function download(string $slug, string $id, string $file): void
@@ -83,10 +98,10 @@ final class CampaignBookingController
         header('Cache-Control: private, no-store, max-age=0');
         header('Referrer-Policy: no-referrer');
         header('X-Robots-Tag: noindex, nofollow, noarchive');
-        header("Content-Security-Policy: default-src 'none'; style-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'");
+        header("Content-Security-Policy: default-src 'none'; style-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'");
     }
 
-    private function show(string $slug, ?array $booking, int $status = 200, string $error = 'This booking is unavailable.'): void
+    private function show(string $slug, ?array $booking, int $status = 200, string $error = 'This booking is unavailable.', ?array $family = null, string $csrf = ''): void
     {
         http_response_code($status);
         header('Content-Type: text/html; charset=utf-8');

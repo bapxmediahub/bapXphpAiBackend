@@ -319,6 +319,30 @@ payment-window deadline hides the external payment link but does not prove
 provider expiry or cancellation. The booking receipt distinguishes these
 provider-confirmed terminal states from a still-unconfirmed outcome, preserves
 the status recheck, and releases downloads only after captured evidence.
+
+A customer can explicitly start a separate attempt from the current closed
+receipt, with its CSRF token and exact published revision. The provider must
+confirm expiry or cancellation, zero paid amount, no captured payment list,
+and (if it has an order) an empty, complete order-payment collection. Even
+a failed payment record blocks replacement because late authorization is possible.
+[Standard link status](https://razorpay.com/docs/api/payments/payment-links/fetch-id-standard) ·
+[Order payments](https://razorpay.com/docs/api/orders/fetch-payments) ·
+[Late authorization](https://razorpay.com/learn/payment-timeout/).
+
+The database locks the published page, original booking and successors in
+that order. Each replacement has a separate deterministic ID and provider
+reference; the same confirmation replays the existing attempt. A family has
+at most ten attempts on the same revision and mode. Terminal proof is usable
+for 30 seconds; an in-flight or failed recheck invalidates it. Reconciliation
+generations prevent older non-capture observations from overwriting newer ones.
+A signed paid notification records a hold before attempting REST verification.
+An older unresolved receipt blocks new handoff; a verified capture on any
+receipt prevents further creation and hides other payment links on status
+pages. If two externally opened links later settle, both immutable receipts
+remain accessible and the customer is directed to the business for review.
+This does not revoke an external URL already opened, cancel a provider link,
+or automatically refund money. No payment is made by the acceptance fixtures.
+
 Product checkout references continue to use
 `checkout_attempts` and the shared verified-order writer.
 See [Authored pages](modules/content-and-seo.md#authored-pages).

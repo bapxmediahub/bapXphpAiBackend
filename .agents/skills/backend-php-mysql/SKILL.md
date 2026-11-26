@@ -256,11 +256,18 @@ Use the database-host campaign booking transaction to read the published page
 revision and freeze the approved integer INR paise, gateway mode, and enabled
 file descriptors. The first durable booking reservation owns provider creation.
 Recover an ambiguous provider response by reference.
-Retry only a verified pre-creation rejection through the owner-bound start POST.
-Under the database lock preserve the snapshot and increment the creation
-attempt before any provider POST. Ignore older provider results. The shared Razorpay
-webhook verifies its mode-specific signature before checking the provider API.
-Apply captured receipts and frozen paid files in one booking transition.
-Verify that signed duplicates, delayed expiration, and wrong amounts cannot
-overwrite a receipt or create a shop order. Use deterministic provider fixtures
-and the disposable MySQL job.
+Retry a verified pre-creation rejection on the same reference through the
+owner-bound start POST. A separate reference requires explicit customer
+confirmation and fresh provider-terminal zero-payment evidence (including an
+empty order-payment collection when an order exists). A failed payment can
+later be authorized and is not clean evidence. Lock the page, root receipt and
+bounded successor list for reservation; all family reads and changes serialize
+on the root before successors. Preserve approved snapshots and increment
+creation and reconciliation generations before provider work. The shared
+Razorpay webhook verifies its mode-specific signature before marking a paid
+notice and checking the provider API. Unresolved older receipts suspend
+handoff; a verified capture stops new family creation. Preserve every verified
+receipt and paid file even if two external links settle, with explicit business
+review and no automatic refund. Verify invalid confirmation, duplicate starts,
+delayed expiry, capture and incorrect amounts in deterministic provider
+fixtures, Chromium and the disposable MySQL job.
