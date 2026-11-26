@@ -18,14 +18,14 @@
             "review_note": "Reviewed native product schema and metadata validator, exact shared price, stock and owner form, existing checkout and issued tax unchanged."
         },
         "content": {
-            "source_sha256": "df716574d278497fb26eab84230c8563105ba5271d0aa5bb0fbdd80189559a1d",
+            "source_sha256": "dc3ac0e51e32f76955733e4ee86e94505f3ebc67156ebd1c6efe99a8259cf803",
             "references_sha256": "bb87a962c5e570bc772f172d9d7956af475f5118e4cc9aeb2b16c875313ccb4d",
-            "review_note": "Reviewed public product metadata/SEO changes and real product landing, no editorial publication behavior changed."
+            "review_note": "Reviewed JSON preview and owner help; canonical product metadata and editorial save behavior unchanged."
         },
         "foundation": {
-            "source_sha256": "bd1636a6fe6c04157eb4d8d88c8c0ef592b622705268ec226964960246e5d69a",
+            "source_sha256": "434f7f67bf59a113434fd9f362b968f66b67adce94a88fac01833b2aead134c4",
             "references_sha256": "a2f45f72c07d79756151601bc2547a814a56e08a60d853e0c42d5b33bc892221",
-            "review_note": "Reviewed optional JSON fields in existing hosted MySQL catalogue and existing PHP UI; no new runtime, dependency, OAuth credential or data store."
+            "review_note": "Reviewed no new runtime dependency or data store; ephemeral authorized token only in developer environment, fixed host GET and bounded response/pages."
         },
         "google-tags": {
             "source_sha256": "239140bbf84afe1d759b8fba20f012147c59202640638ffb270bd0820fdbe5b5",
@@ -43,14 +43,14 @@
             "review_note": "Reviewed actual desktop/mobile/no-JS product landing and owner editor, compact title and factual purchase guidance preserve existing buttons and footer."
         },
         "mail": {
-            "source_sha256": "cb099c4b966b3212aeda987f30f63206bfd9d8d685c828e2c6b3b5468d2bd30f",
+            "source_sha256": "d6701ee87e38200539b4d91602756009396ba9564e7e9dec371c048502dcf3ac",
             "references_sha256": "f55d00e8a94c81806bd8ad3c99334154db4a91bb299be7e13d5696d523c6d806",
-            "review_note": "Reviewed shared controller changes restricted to product validation; no mail or queue changes."
+            "review_note": "Reviewed shared AdminController change restricted to read-only catalogue preview; mail and publication unchanged."
         },
         "mcp-clients": {
             "source_sha256": "2567e2792ed1acb0c80ae14605c2ac550abb824197b404fc2da99e97e1507d8e",
-            "references_sha256": "d53c35e5619515b0fc525390c35584fcf6cf692077eaab6495b3a41ce146fb75",
-            "review_note": "Reconciled shared CLI guide against current main; public and owner STDIO grant behavior unchanged, no new MCP tool."
+            "references_sha256": "f0a3d7f76e09e94dabdf02a042962976825b6f2991e782675f074f52ac2d67f0",
+            "review_note": "Reviewed project map and new CLI-only fixed Google read adapter; existing MCP client registration and grants unchanged."
         },
         "media": {
             "source_sha256": "edc32a5a9f73cf7f2954eac135a2eaed1394089034bac24ea835af48c4d9600e",
@@ -58,14 +58,14 @@
             "review_note": "Reviewed the owner UI skill changes against authenticated media navigation, route declarations, and Media Library behavior. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
         },
         "operator-help": {
-            "source_sha256": "d09a8f1afa3849a6bba41623bbdaf4ea2887df8d05ee3044f7137aa41d0c6d99",
-            "references_sha256": "4e2591fafd1e772fb73b53865320e18914867c5d36d31f01f3406f58dcc80b4f",
-            "review_note": "Reviewed owner merchant editor, existing Google and YouTube readiness screen, accurate channel eligibility and actual validated owner fields."
+            "source_sha256": "5c4b9c4d54abd60a878468b056d266d27ea8b2c601186d6096fca51f92197446",
+            "references_sha256": "a1d740de3a88f050bdc402955b7eaca59edb27f5169edb7ebd652f1ed20dcf09",
+            "review_note": "Reviewed authenticated owner Merchant download and help, no Google write or link claims."
         },
         "public-mcp": {
-            "source_sha256": "16885ac8b5f31d7e7f4734b227e46c4dcce33001b2d019e251fd2891730ae4c7",
+            "source_sha256": "41c1243435ecb682c9f3f12859ce7f6d060fa5c933144e2e08f49d7747feda07",
             "references_sha256": "8f28106af1d8ed34363188d4e56dc2cd7ba9a20c70dd97ab625eb7ab175e69c0",
-            "review_note": "Reviewed same-model continuation and alternate text-only synthesis; no new public MCP schemas or grants, private tool evidence stays on original configured connection."
+            "review_note": "Reviewed owner-only preview route and developer-only diagnostics; no new public capability, Woo endpoint or credential disclosure."
         },
         "remote-commerce": {
             "source_sha256": "7048ab7c971345079fa09aaae244ba461686c0b21b4c4b857de09cda84257da4",
@@ -73,14 +73,14 @@
             "review_note": "Reviewed product/offer presentation and schema changes; remote checkout, gateway and authoritative totals unchanged."
         },
         "sales-channels": {
-            "source_sha256": "2bc0b017ce4a0ccca5c110ef40fcdcdefc3f45578ad09cff84fcbbe193d6a59b",
-            "references_sha256": "7f28b1ba2c9491423fca2c4fd0026b0932b2b33438179f2734c1d907368d40fd",
-            "review_note": "Reviewed pinned Google for WooCommerce connection source, actual public merchant feed, owner-only metadata, shared product structured data and separate multi-channel account gates."
+            "source_sha256": "0012f20cbd5531b10a54baf77e4070710c02f926dae38c826cc657cf1939ec07",
+            "references_sha256": "f2d81de1cbac07c6783060e22cc859e0ec6e86c66f50c9d7d2ec590b11ec5c8a",
+            "review_note": "Reviewed actual Woo core and Google plugin source, current Google v1 ProductInput and processed product contracts, offline projection and read-only country-specific diagnostics; browser and 47 checks pass."
         },
         "workflow": {
-            "source_sha256": "a1c0fcc27ed0ee0996595b2b2091495133c26929389bca1d9149ee3b47de652b",
+            "source_sha256": "84086dd547ef13e1796c336de1acabaa8e68b228c16f9214165449ae0fb518bd",
             "references_sha256": "ce296268f8e6ab4a20955480efe5431f31112561643d61298121d265ee480280",
-            "review_note": "Reviewed explicit MC01 scope addition, pinned static source and two adapted skill receipts; new denominator is one additional partial obligation, no artificial promotion."
+            "review_note": "Reviewed native adapter, portable fixture, CLI routing, exact source provenance and mapped skill receipts; no scope inflation or partner identity imitation."
         }
     }
 }

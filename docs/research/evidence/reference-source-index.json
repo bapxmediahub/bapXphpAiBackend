@@ -199,7 +199,7 @@
       "origin": "woocommerce.11.3.0.zip",
       "revision": "d9eb1e46df8309eb37b6f7f3fba51480f2a9a00e7feb10b1487592fde39accc6",
       "license": "GPL-3.0 (archive readme)",
-      "scope": "Selected static source; no upstream execution; supplementary selected shipping/checkout source classes",
+      "scope": "Selected static source; no upstream execution; supplementary selected shipping/checkout source classes; supplementary actual WooCommerce core/public catalogue and authorized partner connection/Mapi source inspection",
       "rea": {
         "version": "6.8.0",
         "authority": "historical-reference",
@@ -568,6 +568,36 @@
           "path": "includes/shipping/free-shipping/class-wc-shipping-free-shipping.php",
           "sha256": "8371a7f5a4d9f460f1243e64c6ed7a88df2c7b02825114161bf7b95e5c632712",
           "bytes": 8007
+        },
+        {
+          "path": "includes/class-wc-auth.php",
+          "sha256": "e221f049571734e421f6db9942358ae8343f0bf80b0b3e4c178d0f1d253de66f",
+          "bytes": 14664
+        },
+        {
+          "path": "includes/class-wc-rest-authentication.php",
+          "sha256": "5d1670d7fa4d52792e88ebae0251290d64ce9cbcdbaf6d5882769cc76cf03f24",
+          "bytes": 31086
+        },
+        {
+          "path": "includes/rest-api/Controllers/Version3/class-wc-rest-products-controller.php",
+          "sha256": "3732fbb43d3d9d0adf61653b3ee32c82e6584d20f57619237dbd7ae86e5b7d33",
+          "bytes": 76484
+        },
+        {
+          "path": "src/StoreApi/Routes/V1/Products.php",
+          "sha256": "f78993b187713ed6db5219af80db20f9189d1c306f92e3e2e0b97977889c9cad",
+          "bytes": 15536
+        },
+        {
+          "path": "src/StoreApi/Schemas/V1/ProductSchema.php",
+          "sha256": "44553088fcb3b576769bb5532ec93ea68e6732b5be532f56f31ae0d2165a4795",
+          "bytes": 38311
+        },
+        {
+          "path": "src/StoreApi/Utilities/ProductQuery.php",
+          "sha256": "6aff71bd164d0e3084bd84a238edb00e21ca8223d3a4885dca07ebe4d760106c",
+          "bytes": 26440
         }
       ],
       "supplementary_shipping_rea": {
@@ -575,6 +605,13 @@
         "inventory_state": "partial",
         "root_sha256": "d428db88a7474d7e6d7844b7ab71b2ee6bd90fa5e4e046b0fcd559d28aa9bd27",
         "artifact_sha256": "c07b4439216a4e3cacdbdc73d57a1e5a80efa031cb2fa2296bed7c70b62eb5e7",
+        "parse_failure_count": 0
+      },
+      "supplementary_youtube_core_rea": {
+        "authority": "historical-reference",
+        "inventory_state": "partial",
+        "root_sha256": "f11b0afd48bb3bd27e28b7a8263a95b29942055113f7304b758f7ecbb79ca459",
+        "artifact_sha256": "48141fb6f01ae085afc841df41fef6ba17a0fc45a4ca31d18feb744efd73ec3e",
         "parse_failure_count": 0
       }
     },
@@ -1743,7 +1780,7 @@
       "origin": "https://github.com/woocommerce/google-listings-and-ads",
       "revision": "e4c389ba652d10d427c4595edfd67d93d9320e48",
       "license": "GPL-3.0 (LICENSE at pinned commit)",
-      "scope": "Selected static YouTube linking and Merchant API client/owner UI/test sources; not an authorized partner service or runtime execution",
+      "scope": "Selected static YouTube linking and Merchant API client/owner UI/test sources; not an authorized partner service or runtime execution; supplementary Jetpack authentication, middleware and Merchant API input/source/product services",
       "rea": {
         "version": "6.8.0",
         "authority": "historical-reference",
@@ -1807,8 +1844,45 @@
           "path": "tests/Unit/API/YouTube/ConnectionTest.php",
           "sha256": "6cd9f03a862c2cb8758dd78e600f888d583ba6e1eb08a30789b08fc9abc1e1b2",
           "bytes": 11628
+        },
+        {
+          "path": "src/API/Google/Mapi/Services/MapiDataSourcesService.php",
+          "sha256": "457c41f7464ae2da68272d61508129d2a0b5b4aca453396ff5af88b0bc47c96c",
+          "bytes": 40361
+        },
+        {
+          "path": "src/API/Google/Mapi/Services/MapiProductInputsService.php",
+          "sha256": "c5a130bac853d693234f5642f98f645500d44ef04272db8e98ee4157a16b22aa",
+          "bytes": 20876
+        },
+        {
+          "path": "src/API/Google/Mapi/Services/MapiProductsService.php",
+          "sha256": "9aeb634a09210654c0805a09de9c1979ef96b536e23b7d215774787ad2faeae6",
+          "bytes": 5272
+        },
+        {
+          "path": "src/API/Google/Middleware.php",
+          "sha256": "b5172172b0fab167dff9f2f375ae6ca54f25a6b469547bf73a6a35921324ab89",
+          "bytes": 23231
+        },
+        {
+          "path": "src/API/Site/Controllers/Jetpack/AccountController.php",
+          "sha256": "35cc4119c7523d207d76ac923f9875d6bb4ef36d22c2b20a69bb51c5761bbd1c",
+          "bytes": 8328
+        },
+        {
+          "path": "src/Internal/DependencyManagement/GoogleServiceProvider.php",
+          "sha256": "de48eac8099494338a6a61b195b4870c9333b44b905c6fc20e80678b2c0e4b42",
+          "bytes": 27229
         }
-      ]
+      ],
+      "supplementary_partner_auth_rea": {
+        "authority": "historical-reference",
+        "inventory_state": "partial",
+        "root_sha256": "914acdd41829bc7dbcf456bf78d80495c21189f05b5eda9aff6f5e999d0106c5",
+        "artifact_sha256": "722deb4e0f67529083a02fadcc8b4ebf90f85a28a1daa3c0af33e57413c600f8",
+        "parse_failure_count": 0
+      }
     }
   ],
   "historical_artifacts": [

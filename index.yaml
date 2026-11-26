@@ -46,8 +46,8 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 541
-  relationships: 496
+  concepts: 542
+  relationships: 497
   by_type:
     blog: 16
     controller: 20
@@ -57,7 +57,7 @@ summary:
     route: 189
     runtime_instruction: 6
     schema: 25
-    service: 93
+    service: 94
     skill: 34
 concepts:
   - id: "blog:benefits-of-rudraksha"
@@ -2762,6 +2762,7 @@ concepts:
     controller: "AdminController@googleMerchant"
     services:
       - "MerchantFeedService"
+      - "MerchantApiService"
       - "ProductService"
       - "SettingsService"
       - "AuthService"
@@ -6159,6 +6160,14 @@ concepts:
     tags:
       - "code"
       - "service"
+  - id: "service:MerchantApiService"
+    type: "service"
+    title: "MerchantApiService"
+    description: "Service: MerchantApiService"
+    resource: "app/Services/MerchantApiService.php"
+    tags:
+      - "code"
+      - "service"
   - id: "service:MerchantFeedService"
     type: "service"
     title: "MerchantFeedService"
@@ -6862,6 +6871,9 @@ relationships:
     relation: "declared_service"
   - from: "controller:AdminController"
     to: "service:MediaService"
+    relation: "declared_service"
+  - from: "controller:AdminController"
+    to: "service:MerchantApiService"
     relation: "declared_service"
   - from: "controller:AdminController"
     to: "service:MerchantFeedService"

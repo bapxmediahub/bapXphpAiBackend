@@ -137,3 +137,11 @@ for automatic exposure to runtime agents or MCP clients.
 Inspect the active public tool schemas with `./bapXphp mcp:tools`. Use `./bapXphp mcp:policy tracking` for published tracking guidance. Both commands use the same guest capabilities as `mcp:stdio`. See `docs/pages/shop.md` for supported inputs, results and the local client trust boundary.
 
 A grant issued under Admin → Integrations → Manage local MCP clients adds only `paid_sales_summary` to trusted STDIO discovery. Inject `BAPX_MCP_CLIENT_TOKEN` through the launcher’s secret manager. The public convenience commands stay guest-scoped. The owner grant, bounds and per-request authorization checks are exercised against disposable MySQL by `node --test tests/mcp-client-access.test.cjs`.
+
+Merchant API: use `merchant:inputs --language <code> --feed-label <label>`
+for a no-network typed preview and `merchant:diagnose` for read-only authorized
+data-source/product status. Use only an ephemeral operator environment token,
+never print/store it or broaden the existing reporting OAuth scope. Distinguish
+Google destination and item status from a verified channel link. Do not
+imitate WooCommerce/Jetpack identity or introduce unobserved compatibility
+endpoints.

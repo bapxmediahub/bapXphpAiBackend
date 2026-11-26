@@ -1728,14 +1728,16 @@
                 "integrations/google-site-kit/PageSpeedInsightsClient.php",
                 "app/Services/AiClient.php",
                 "app/Services/MerchantFeedService.php",
-                "app/Services/SeoService.php"
+                "app/Services/SeoService.php",
+                "app/Services/MerchantApiService.php"
             ],
             "acceptance_tests": [
                 "tests/google-pagespeed.php",
                 "tests/google-pagespeed-browser.cjs",
                 "tests/ai-provider-transport.php",
                 "tests/gst-unit-browser.cjs",
-                "docs/google-sales-channels.md"
+                "docs/google-sales-channels.md",
+                "tests/merchant-api.php"
             ],
             "upstream_references": [
                 "references/measurement.md",
@@ -1745,8 +1747,8 @@
             ],
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed actual 43-item feed and Chromium baseline, pinned Google for WooCommerce separate link and Merchant API contract; no fabricated approval, channel analytics or customer join.",
-                "sha256": "52d13f84d1dd8229cf827c64a5652baadb962392f983b3af6eb46a7a937095d9"
+                "reason": "Reviewed actual saved 43-item feed projection and bounded official Merchant read paths; per-country destination status, quota and incomplete pagination kept distinct; no invented approval or attribution.",
+                "sha256": "cc8c384b1b1edbd8dfd16a4e19d5a3365b81d11daafd2c397c3b572726ce6dc2"
             }
         },
         {
@@ -1852,7 +1854,8 @@
                 "app/Services/CampaignDownloadService.php",
                 "app/Services/ProductImportService.php",
                 "app/Services/MerchantFeedService.php",
-                "app/Services/SeoService.php"
+                "app/Services/SeoService.php",
+                "app/Services/MerchantApiService.php"
             ],
             "acceptance_tests": [
                 "tests/shipping-preview-browser.cjs",
@@ -1863,7 +1866,8 @@
                 "tests/campaign-booking.php",
                 "docs/modules/catalog.md",
                 "tests/gst-unit-browser.cjs",
-                "docs/google-sales-channels.md"
+                "docs/google-sales-channels.md",
+                "tests/merchant-api.php"
             ],
             "upstream_references": [
                 "references/audit-precondition.md",
@@ -1873,8 +1877,8 @@
             ],
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed native owner-only identity fields and shared product data projection, pinned approved partner link boundary and multiple-channel acceptance; no WordPress runtime or spoofed platform.",
-                "sha256": "f448242448a5a1e1c9c00cde673691209995e0ad1284dc7e7389fe229e5e92d2"
+                "reason": "Reviewed actual Woo source and Google ProductInput, selected account/source diagnostics and bounded preview-only group/channel attributes; no fake Woo identity or unsupported public route.",
+                "sha256": "12a4b2a670d4f4f76786ed0754e1aaece83cc88beda4431b2c7ff3c60896bbcd"
             }
         },
         {

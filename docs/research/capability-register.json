@@ -255,8 +255,8 @@
             "finding": "Product reviews exist; blog-comment moderation lifecycle not established.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed shared owner controller diff; only product metadata validation added, moderation and review behavior unchanged.",
-                "source_sha256": "a46ebe040f92d7ff4ef39c25321c559f97791b12f11a96da655b03a78ea21da2"
+                "reason": "Reviewed shared owner controller diff; only authenticated no-store Merchant preview added, reviews and moderation unchanged.",
+                "source_sha256": "827cbdcab3ec58e6991ba13da5b6e392d816bbbf1a0d683e74718f614a04d4e8"
             },
             "production_evidence": []
         },
@@ -347,8 +347,8 @@
             "finding": "Native filters/pagination exist; verify consistent bulk-action safety across every owner list.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed shared admin controller product edit validation and existing list pagination; no list or bulk-action change.",
-                "source_sha256": "03902ce83f8b9201a6996c4f399d0b09d5d47c77f80298d02ce862f1c052932a"
+                "reason": "Reviewed owner Merchant data preview and route mapping; existing product lists, filters and bulk operations unchanged.",
+                "source_sha256": "90f699e4097f3cc6c2355fd8094a1621ffd51fe8aee6eb16e45ebbe73d730403"
             },
             "production_evidence": []
         },
@@ -756,8 +756,8 @@
             "finding": "CSV parse/import exists; full validated resumable import/export and reconciliation remain.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed native metadata validation and feed projection; CSV import/export completeness remains partial, channel onboarding tracked separately under MC01.",
-                "source_sha256": "42c7f12ad1b979e6af76e0897c4e4dfddfad483ed02ce8f82bb4e2ba052834fa"
+                "reason": "Reviewed shared existing feed data and typed Merchant API projection; no import changes or claim of resumable API synchronization.",
+                "source_sha256": "0a4e3ec1079aded0719e66874d8206015b378f69af4e4e52eb82b2195fd358ad"
             },
             "production_evidence": []
         },
@@ -875,8 +875,8 @@
             "finding": "Frozen issued invoice/tax state evidence exists; authenticated register and statutory reconciliation remain.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed extended Chromium owner and public product fixture, retained existing issued invoice and GST assertions; tax scope unchanged.",
-                "source_sha256": "0ae3c008aeb47a4709c934bddee4d08fb3c155ec6f03ef86a41d87694c314a7b"
+                "reason": "Reviewed existing GST browser regression extended with read-only Merchant download; frozen tax, invoice and checkout records unchanged.",
+                "source_sha256": "17ed9122e36c46cdb618d40dd44f38bdcf3263905fc1629263270123ec46062d"
             },
             "production_evidence": []
         },
@@ -2037,8 +2037,8 @@
             "finding": "Previous real Enterprise tool-to-answer and editorial draft passed. On deployed #518 Support trace 0a43c85083302228: one completed public_policy read, 429 continuation, one same-connection synthesis 503, final HTTP503 and no A2UI. Live recovery dispatch/no replay verified, successful both-agent answer acceptance remains partial.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed actual model-driven controller regression with additional owner-only identity validation; no new live provider answer claim.",
-                "source_sha256": "ddf2cb96b930f6141985b17f972a16f59c0bf09bd4c01d0325df44b097fb1317"
+                "reason": "Reviewed shared owner controller route for merchant data only; no model transport or live inference status changed.",
+                "source_sha256": "15333eb8feec98fc2973656ec0022291a8c7589ad8ec346b36d0b01037e24307"
             },
             "production_evidence": [
                 {
@@ -2088,8 +2088,8 @@
             "finding": "Provider-only editorial generation and protected unpublished form implemented. Live authenticated Enterprise blog draft succeeded at deployed 17aa4c6 (trace 3fa837cf031c2d26; provider fallback, unpublished/create-only, no Save). Standalone editor and product generation live acceptance remain separate.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed AgentDraftService hints exclude actual brand, GTIN, MPN, condition and identifier status from AI generation; explicit owner edit required.",
-                "source_sha256": "eeb6c4a2144070c2d574871747eeccf683f7ce0f3c6ca210b90e180e254da585"
+                "reason": "Reviewed authenticated catalogue preview and unchanged owner-only identity draft boundaries; no editorial generation changes.",
+                "source_sha256": "c7bea6195cea772a044fb4f09ed8aa5f7905b3819d941ec30a2139cfb3e55fd2"
             },
             "production_evidence": [
                 {
@@ -2529,7 +2529,8 @@
             "issues": [
                 522,
                 277,
-                356
+                356,
+                524
             ],
             "references": [
                 {
@@ -2543,6 +2544,42 @@
                 {
                     "source": "google-for-woocommerce",
                     "path": "src/API/Google/Mapi/MerchantApiClient.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/class-wc-auth.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/class-wc-rest-authentication.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "src/StoreApi/Routes/V1/Products.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "src/StoreApi/Schemas/V1/ProductSchema.php"
+                },
+                {
+                    "source": "google-for-woocommerce",
+                    "path": "src/Internal/DependencyManagement/GoogleServiceProvider.php"
+                },
+                {
+                    "source": "google-for-woocommerce",
+                    "path": "src/API/Site/Controllers/Jetpack/AccountController.php"
+                },
+                {
+                    "source": "google-for-woocommerce",
+                    "path": "src/API/Google/Mapi/Services/MapiProductInputsService.php"
+                },
+                {
+                    "source": "google-for-woocommerce",
+                    "path": "src/API/Google/Mapi/Services/MapiDataSourcesService.php"
+                },
+                {
+                    "source": "google-for-woocommerce",
+                    "path": "src/API/Google/Mapi/Services/MapiProductsService.php"
                 }
             ],
             "local_sources": [
@@ -2554,21 +2591,32 @@
                 "views/admin/product-form.php",
                 "views/admin/google-merchant.php",
                 "views/public/product.php",
-                "assets/css/band.css"
+                "assets/css/band.css",
+                "app/Services/MerchantApiService.php",
+                "cli/merchant.php"
             ],
             "acceptance_evidence": [
                 "tests/run.php",
                 "tests/gst-unit-browser.cjs",
                 "tests/model-driven-agents.php",
-                "docs/google-sales-channels.md"
+                "docs/google-sales-channels.md",
+                "tests/merchant-api.php"
             ],
-            "finding": "Existing native scheduled-fetch RSS exports 43 live items; all lacked brand, GTIN, MPN and condition in the audited baseline. Candidate adds owner-validated metadata and shared product/offer projection, clearer purchase guidance and multi-channel onboarding instructions. Google account, product approval, direct creator invitation/partner eligibility, Merchant API sync and each channel link remain unverified; no WooCommerce impersonation.",
+            "finding": "Deployed #523 at ffb6505: 43 distinct public offers retained, actual sampled price matched XML/JSON-LD/display, improved desktop/mobile purchase guidance. Candidate #524 adds native exact typed Merchant API v1 ProductInput preview and bounded read-only source/product YouTube destination diagnostics with authorized ephemeral token; optional explicit partner attributes offline only. WooCommerce core REST keys/public Store API are separate from Google extension registered WordPress.com/Jetpack partner proxy. Google developer registration, actual approved products, channel IDs/authorization, store-link acceptance and automatic synchronization remain unverified.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed 333 PHP regressions, 120 actual model/controller fixture scenarios and Chromium owner metadata, RSS/JSON-LD/visible price and desktop/mobile/no-JS product landing; no Google approval or channel link claimed.",
-                "source_sha256": "f92277ce21cc0173a4c6fc5ce8f0aa42f2204e80b715a24b8f75efe5422f53fd"
+                "reason": "Reviewed actual WC ZIP REST/Store API classes, Google extension signed partner connection/Mapi classes, 47 native API fixture checks, actual owner browser download, guest denial and offline projection of 43 live feed items. Google authorization and links remain unverified.",
+                "source_sha256": "a9e0903b08d59c33f3dd8d0c66a8962d6bacd0fb5044816bec1f85ca893956dc"
             },
-            "production_evidence": []
+            "production_evidence": [
+                {
+                    "deployed_sha": "ffb65050b8348f38357688d829772d2a8fe8b392",
+                    "date": "2026-11-26",
+                    "url": "https://github.com/bapxmediahub/bapXphpAiBackend/issues/522#issuecomment-7198156727",
+                    "scope": "43 distinct live feed items retained; sampled real product price and stock match XML and JSON-LD; desktop/mobile title and purchase guidance verified; no Google approval or channel link",
+                    "source_sha256": "f92277ce21cc0173a4c6fc5ce8f0aa42f2204e80b715a24b8f75efe5422f53fd"
+                }
+            ]
         }
     ]
 }

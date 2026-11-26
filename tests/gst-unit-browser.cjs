@@ -250,12 +250,31 @@ test('owner edits GST units, issued invoices and merchant product identity in Ch
     const xml=await feed.text();
     assert.match(xml,/<g:gtin>012345678905<\/g:gtin>/);
     assert.match(xml,/<g:price>105\.00 INR<\/g:price>/);
+    // Read-only download uses the same owner session and actual feed projection.
+    await page.goto(origin+'/admin/google-merchant');
+    const previewForm=page.getByRole('form',{name:'Merchant API product input preview'});
+    await previewForm.getByLabel('Content language').fill('en');
+    await previewForm.getByLabel('Merchant feed label').fill('IN');
+    const [download]=await Promise.all([page.waitForEvent('download'),previewForm.getByRole('button',{name:'Download product input JSON'}).click()]);
+    const preview=JSON.parse(await readFile(await download.path(),'utf8'));
+    assert.equal(preview.external_effects,false);
+    assert.equal(preview.youtube_channel_link,'unverified');
+    assert.equal(preview.productInputs[0].productAttributes.price.amountMicros,'105000000');
+    assert.equal(preview.productInputs[0].productAttributes.gtins[0],'012345678905');
+    assert.equal(Object.hasOwn(preview.productInputs[0],'customAttributes'),false);
+    const bad=await page.request.get(origin+'/admin/google-merchant?format=product-inputs&language=EN&feed_label=IN');
+    assert.equal(bad.status(),422);
+
     const noScript=await browser.newContext({javaScriptEnabled:false,viewport:{width:375,height:812}});
     await noScript.route('https://**/*',route=>route.abort());
     const fallback=await noScript.newPage();
     await fallback.goto(landing);
     assert.equal(await fallback.getByRole('button',{name:'Add to Cart',exact:true}).count(),1);
     assert.equal(await fallback.locator('.product-buy a[href="/terms"]').count(),1);
+    const denied=await noScript.request.get(origin+'/admin/google-merchant?format=product-inputs&language=en&feed_label=IN',{maxRedirects:0});
+    assert.equal(denied.status(),302,'Guest cannot download owner preview');
+    assert.match(denied.headers().location,/\/login/);
+
     await noScript.close();
 
 
