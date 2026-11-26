@@ -4,28 +4,28 @@
     "reviews": {
         "agents": {
             "source_sha256": "b4df00f4a124fde6cb668d105c5174970e9e90865eabeee0ecfc20834743c436",
-            "references_sha256": "362927e7bf2d6ea315efde424804dda08742aab5d8dc1439c7b56a871451816e",
-            "review_note": "Reviewed actual AgentDraftService owner-only metadata restrictions and 120 controller fixtures; no model-manufactured product identifiers."
+            "references_sha256": "3ec1b054aff080dca232841d9864f9c05f2a70d1255445584907432063f8ac33",
+            "review_note": "Reviewed backend skill and shared storage diff; no agent tool replay, model or conversation persistence change."
         },
         "auth": {
             "source_sha256": "c34a5b34bc904f36cda184c26113f91e2cf36afa2b506217d1f74e22e9e0cefd",
-            "references_sha256": "7fd7d87a436748a3ef9c4ac04d0e79b2bfef59a79f653a002cf05af59df6ce04",
-            "review_note": "Reviewed actor-owned registry and credential-scoped recovery, no alternate connection or change to authentication or account scopes."
+            "references_sha256": "c8306c57b610c933cc62d7599118cd249f0028557929a31fcf78e407974d0946",
+            "review_note": "Reviewed unchanged actor/session/CSRF boundaries; new recovery retries stay on original owner/item identity and expected token."
         },
         "commerce": {
             "source_sha256": "81b1644c7e6216baa5ba42a9f5a78a484a354d21d01c387ab86816e13d513239",
-            "references_sha256": "b0039afc61ee7ceb1401190a964cc5cf989d9c79ddb914c87dacb29635b659ca",
-            "review_note": "Reviewed native product schema and metadata validator, exact shared price, stock and owner form, existing checkout and issued tax unchanged."
+            "references_sha256": "532315cb3e3be9bb177146c78033112f74bcfc00bd7f3a9dcbc1b6e06acc4608",
+            "review_note": "Reviewed shared database service; recovery retry not applied to cart, checkout, payment or order operations."
         },
         "content": {
-            "source_sha256": "dc3ac0e51e32f76955733e4ee86e94505f3ebc67156ebd1c6efe99a8259cf803",
-            "references_sha256": "bb87a962c5e570bc772f172d9d7956af475f5118e4cc9aeb2b16c875313ccb4d",
-            "review_note": "Reviewed JSON preview and owner help; canonical product metadata and editorial save behavior unchanged."
+            "source_sha256": "b45da45a1b157b983bb95283f1e1384ad07a4a2613648b18533fbd00f5231b50",
+            "references_sha256": "bfc615b1bcb7cc9ede6d72e578afb1664fb1cc451d676bcf6f82393d9feaafa8",
+            "review_note": "Reviewed actual hosted deadlock diagnostic, strict insert and original-token retry, deterministic policy and isolated HTTP pass; canonical content save/publication unchanged."
         },
         "foundation": {
-            "source_sha256": "434f7f67bf59a113434fd9f362b968f66b67adce94a88fac01833b2aead134c4",
-            "references_sha256": "a2f45f72c07d79756151601bc2547a814a56e08a60d853e0c42d5b33bc892221",
-            "review_note": "Reviewed no new runtime dependency or data store; ephemeral authorized token only in developer environment, fixed host GET and bounded response/pages."
+            "source_sha256": "b2311467ddfc85ab384a5a06953c281207a9773352bcf113e6e840c21ac65b42",
+            "references_sha256": "227fb28de8ad34b1862ec76eeddfd80a087a06de2ad33929524bd219c4e47048",
+            "review_note": "Reviewed direct autocommit requirement, bounded confirmed rollback retry and unchanged MySQL schema/runtime; no new dependency or outer transaction replay."
         },
         "google-tags": {
             "source_sha256": "239140bbf84afe1d759b8fba20f012147c59202640638ffb270bd0820fdbe5b5",
@@ -34,8 +34,8 @@
         },
         "http-errors": {
             "source_sha256": "0f920c297cfc4e216a87be02a35c20827cc254dd6934ba24a1fa9135520a0560",
-            "references_sha256": "b2a485eca027262f58130080df144e1a4d84b0541f1c681ca29edeae2b697b83",
-            "review_note": "Reviewed recovery only for recoverable transport, quota and hold failures; failed alternate remains explicit error, malformed/denied responses are not replayed."
+            "references_sha256": "336dc6e5120452560ddda73586730c89d991c7f1388223dc7c244637df7ec704",
+            "review_note": "Reviewed private editor failure semantics: confirmed rolled-back autocommit deadlock retried only within bounded CAS; unknown or exhausted failure remains explicit, browser copy preserved."
         },
         "interface": {
             "source_sha256": "cfce6b1688022d87402445e1c34cba693bc00a28329223d74195f8991757f84a",
@@ -44,8 +44,8 @@
         },
         "mail": {
             "source_sha256": "d6701ee87e38200539b4d91602756009396ba9564e7e9dec371c048502dcf3ac",
-            "references_sha256": "f55d00e8a94c81806bd8ad3c99334154db4a91bb299be7e13d5696d523c6d806",
-            "review_note": "Reviewed shared AdminController change restricted to read-only catalogue preview; mail and publication unchanged."
+            "references_sha256": "f350ff4d468dce168821dee1631891fd78c23070e7a88004c5d13e9fdc5cebcd",
+            "review_note": "Reviewed editor-only autocommit recovery; mail queue, claims and delivery unchanged."
         },
         "mcp-clients": {
             "source_sha256": "2567e2792ed1acb0c80ae14605c2ac550abb824197b404fc2da99e97e1507d8e",
@@ -64,13 +64,13 @@
         },
         "public-mcp": {
             "source_sha256": "41c1243435ecb682c9f3f12859ce7f6d060fa5c933144e2e08f49d7747feda07",
-            "references_sha256": "8f28106af1d8ed34363188d4e56dc2cd7ba9a20c70dd97ab625eb7ab175e69c0",
-            "review_note": "Reviewed owner-only preview route and developer-only diagnostics; no new public capability, Woo endpoint or credential disclosure."
+            "references_sha256": "187074328e2d8cef855181cd4bd4b39c760ec09de1d93862ea23531c5b7f18f7",
+            "review_note": "Reviewed editor-only storage retry and unchanged route authorization; no public capability or private data projection added."
         },
         "remote-commerce": {
-            "source_sha256": "7048ab7c971345079fa09aaae244ba461686c0b21b4c4b857de09cda84257da4",
-            "references_sha256": "9dc3816f0760245bc7ea74e45984030994ff6b0e6f881e918c0a88ef61684b1c",
-            "review_note": "Reviewed product/offer presentation and schema changes; remote checkout, gateway and authoritative totals unchanged."
+            "source_sha256": "91bf7a42aa9b6af692ccbafe217dc1b2b5ae3f2e4e771e71f2c0a71193fe7bf4",
+            "references_sha256": "aa6614e7c90895d5c1515fa46c5afa244da7c83502587a5ed55af881e04cb970",
+            "review_note": "Reviewed shared DatabaseService diff: only private editor recovery path changed; existing remote mutation protocol, payment and checkout behavior unchanged."
         },
         "sales-channels": {
             "source_sha256": "0012f20cbd5531b10a54baf77e4070710c02f926dae38c826cc657cf1939ec07",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed actual Woo core and Google plugin source, current Google v1 ProductInput and processed product contracts, offline projection and read-only country-specific diagnostics; browser and 47 checks pass."
         },
         "workflow": {
-            "source_sha256": "84086dd547ef13e1796c336de1acabaa8e68b228c16f9214165449ae0fb518bd",
+            "source_sha256": "e448093ee3d6979ea5d70db440c9b7225ee9a864e6c3a4bd577d5253708c3348",
             "references_sha256": "ce296268f8e6ab4a20955480efe5431f31112561643d61298121d265ee480280",
-            "review_note": "Reviewed native adapter, portable fixture, CLI routing, exact source provenance and mapped skill receipts; no scope inflation or partner identity imitation."
+            "review_note": "Reviewed actual database rollback evidence, preserved fixture stderr diagnostics, twelve repeated initial-race tests, mapped guides and generated architecture contracts."
         }
     }
 }

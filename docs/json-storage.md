@@ -144,7 +144,11 @@ The existing hosted MySQL settings table reserves `ed:<digest>` for owner-scoped
 article/page recovery, separate from public settings and the `pg:` page namespace.
 The digest binds owner identity, editor kind and original target. Recovery history
 is limited to three versions and bounded encoded size. Compare-and-swap uses a
-separate opaque token; stale writes/discards cannot replace newer versions. Only
+separate opaque token; stale writes/discards cannot replace newer versions.
+Recovery uses a strict insert and explicit duplicate conflict, and a bounded
+retry only after a confirmed deadlock rollback of its own autocommit operation.
+It rechecks the original token against the actual current row; no blind upsert,
+transport retry or replay of another business transaction. Only
 explicit canonical saves affect the Markdown article or page record. The
 acknowledged recovery token can be discarded after a successful save without
 deleting a concurrent newer draft. No upload bytes, publication flags, secrets

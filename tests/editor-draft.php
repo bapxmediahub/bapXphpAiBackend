@@ -15,7 +15,21 @@ if (($argv[1]??'')==='--worker') {
     $db=new DatabaseService(true);
     if ($db->connection()->query('SELECT DATABASE()')->fetchColumn()!=='sps_order_test') throw new RuntimeException('Refusing nonfixture database.');
     echo "ready\n";flush();check(trim((string)fgets(STDIN))==='go','Worker barrier');
-    echo json_encode($db->editorDraftOperation(...$args),JSON_THROW_ON_ERROR);exit;
+    try {
+        echo json_encode($db->editorDraftOperation(...$args),JSON_THROW_ON_ERROR);
+        exit(0);
+    } catch (Throwable $error) {
+        // This process only accesses a disposable fixture database. Preserve
+        // useful bounded diagnostics without printing SQL, data or credentials.
+        $diagnostic = ['class'=>$error::class,'file'=>basename($error->getFile()),'line'=>$error->getLine()];
+        if ($error instanceof PDOException) {
+            $state=$error->errorInfo[0]??null;$vendor=$error->errorInfo[1]??null;
+            if (is_string($state)&&preg_match('/^[A-Z0-9]{5}$/D',$state)) $diagnostic['sqlstate']=$state;
+            if (is_int($vendor)) $diagnostic['vendor_code']=$vendor;
+        }
+        fwrite(STDERR,'[editor-worker] '.json_encode($diagnostic,JSON_THROW_ON_ERROR)."\n");
+        exit(1);
+    }
 }
 $a=EditorDraftService::owner(['role'=>'admin','sub'=>'owner-fixture-a']);
 $b=EditorDraftService::owner(['role'=>'admin','sub'=>'owner-fixture-b']);
@@ -44,7 +58,26 @@ $largeB=EditorDraftService::next($a,'blog',$slug,str_repeat('a',64),$large,$larg
 check(strlen(json_encode($largeB,JSON_THROW_ON_ERROR))<=2500000
     && $largeB['versions'][0]['values']===$large,'Bound actual encoded bytes; latest Unicode copy intact');
 
-if (!$mysql) {echo "Editor recovery validation, identity and history PASS\n";exit;}
+// Deterministically test the policy even when the real race does not deadlock.
+$failure=static function(string $state,int $code):PDOException {
+    $error=new PDOException('Synthetic fixture failure');
+    $error->errorInfo=[$state,$code,'Synthetic fixture failure'];
+    return $error;
+};
+$attempts=0;$conflict=['outcome'=>'conflict','draft'=>['token'=>'winning-token']];
+$result=EditorDraftService::retryDeadlock(static function() use(&$attempts,$failure,$conflict):array {
+    if (++$attempts===1)throw $failure('40001',1213);
+    return $conflict;
+});
+check($attempts===2&&$result===$conflict,'Confirmed rollback re-observes the competing winner');
+foreach([['40001',1213,3],['HY000',1205,1],['HY000',2006,1],['23000',1062,1],['40001',9999,1]] as [$state,$code,$limit]){
+    $attempts=0;$original=$failure($state,$code);$caught=null;
+    try {EditorDraftService::retryDeadlock(static function() use(&$attempts,$original):array {
+        ++$attempts;throw $original;
+    });}catch(PDOException $error){$caught=$error;}
+    check($caught===$original&&$attempts===$limit,'Only confirmed rollback is retried with a strict bound');
+}
+if (!$mysql) {echo "Editor recovery validation, identity, history and bounded deadlock policy PASS\n";exit;}
 $db=new DatabaseService(true);$pdo=$db->connection();
 check($pdo->query('SELECT DATABASE()')->fetchColumn()==='sps_order_test','Only fixture DB');
 $pdo->exec("CREATE TABLE IF NOT EXISTS settings (id VARCHAR(64) PRIMARY KEY,_data JSON NOT NULL,_owner VARCHAR(255),_status VARCHAR(64),_created_at VARCHAR(40),_updated_at VARCHAR(40)) ENGINE=InnoDB");
@@ -63,11 +96,40 @@ try {
         }
         foreach($children as [, $pipes]) check(trim((string)fgets($pipes[1]))==='ready','Worker ready');
         foreach($children as [, $pipes]) {fwrite($pipes[0],"go\n");fclose($pipes[0]);}
-        $out=[];
-        foreach($children as [$child,$pipes]) {
-            $out[]=json_decode(stream_get_contents($pipes[1]),true,flags:JSON_THROW_ON_ERROR);
-            fclose($pipes[1]);fclose($pipes[2]);check(proc_close($child)===0,'Worker exited');
+        $out=[];$failed=false;
+        foreach($children as $index=>[$child,$pipes]) {
+            $raw=stream_get_contents($pipes[1]);$stderr=stream_get_contents($pipes[2]);
+            fclose($pipes[1]);fclose($pipes[2]);$exit=proc_close($child);
+            if($exit!==0||$stderr!==''||!is_string($raw)){
+                $failed=true;
+                $diagnostic=['worker'=>$index,'exit'=>$exit,'stdout_bytes'=>is_string($raw)?strlen($raw):0,'stderr_bytes'=>is_string($stderr)?strlen($stderr):0];
+                foreach(explode("\n",(string)$stderr) as $line){
+                    if(preg_match('/^\[editor-worker\] (\{.*\})$/D',$line,$matches)){
+                        $record=json_decode($matches[1],true);
+                        if(is_array($record)){
+                            $diagnostic['exception']=array_intersect_key($record,array_flip(['class','file','line','sqlstate','vendor_code']));
+                        }
+                    }elseif(preg_match('/^\[cli failure\] [A-Za-z0-9_\\\\]+ at [A-Za-z0-9_.-]+:[0-9]+$/D',$line)){
+                        $diagnostic['bootstrap_failure']=$line;
+                    }
+                }
+                fwrite(STDERR,'Editor recovery fixture worker failed: '.json_encode($diagnostic,JSON_THROW_ON_ERROR)."\n");
+                continue;
+            }
+            try{$result=json_decode($raw,true,flags:JSON_THROW_ON_ERROR);}
+            catch(JsonException){
+                $failed=true;
+                fwrite(STDERR,'Editor recovery fixture worker '.$index.' returned invalid JSON ('.strlen($raw)." bytes).\n");
+                continue;
+            }
+            if(!is_array($result)||!in_array($result['outcome']??null,['saved','conflict'],true)){
+                $failed=true;
+                fwrite(STDERR,'Editor recovery fixture worker '.$index." returned an unexpected outcome.\n");
+                continue;
+            }
+            $out[]=$result;
         }
+        check(!$failed&&count($out)===2,'Both workers must complete with valid observed outcomes');
         return $out;
     };
     $out=$race($token);$states=array_column($out,'outcome');sort($states);
@@ -81,9 +143,23 @@ try {
     check(!isset((new SettingsService($db))->public()['editor_recovery']),'Private recovery cannot become public settings');
     check($db->editorDraftOperation($a,'page',$slug,'discard',$latest['token'])['outcome']==='discarded','Matching discard clears only own copy');
     check($db->editorDraftOperation($a,'page',$slug,'read')['draft']===null && $db->editorDraftOperation($b,'page',$slug,'read')['draft']!==null,'Discard isolation');
-    $out=$race('');$states=array_column($out,'outcome');sort($states);
-    check($states===['conflict','saved'],'Concurrent initial insert has one winner');
-    echo "Editor recovery MySQL CAS, simultaneous writes, role and namespace isolation PASS\n";
+    for ($round=0;$round<12;$round++) {
+        $out=$race('');$states=array_column($out,'outcome');sort($states);
+        check($states===['conflict','saved'],'Concurrent initial insert has one winner');
+        $latest=$db->editorDraftOperation($a,'page',$slug,'read')['draft'];
+        $winner=array_values(array_filter($out,static fn($result)=>$result['outcome']==='saved'))[0]['draft'];
+        check($latest===$winner&&count($latest['versions'])===1,'Only the winning initial copy persisted');
+        check($db->editorDraftOperation($a,'page',$slug,'discard',$latest['token'])['outcome']==='discarded','Clear only the exact fixture winner before next race');
+    }
+    $pdo->beginTransaction();
+    try {
+        $denied=false;
+        try {$db->editorDraftOperation($a,'page',$slug,'write','',$rev,$v);}
+        catch (LogicException) {$denied=true;}
+        check($denied&&$pdo->inTransaction(),'Refuse ambient transaction without rollback or write');
+    }finally {$pdo->rollBack();}
+    check($db->editorDraftOperation($a,'page',$slug,'read')['draft']===null,'Ambient write did not create recovery');
+    echo "Editor recovery MySQL CAS, 12 simultaneous initial insert races, role and namespace isolation PASS\n";
 } finally {
     $delete=$pdo->prepare('DELETE FROM settings WHERE id=?');
     foreach($keys as $key) $delete->execute([$key]);
