@@ -3,7 +3,16 @@ use App\Services\{CampaignPaymentService, RazorpayPaymentLinkService};
 
 $captured = ($booking['status'] ?? null) === 'captured';
 $deadlinePassed = $booking !== null && $booking['payment_expires_at'] <= time();
-$payable = !$deadlinePassed && ($booking['status'] ?? null) === 'pending' && RazorpayPaymentLinkService::validUrl($booking['provider_url'] ?? null);
+$currentId = $family['current']['id'] ?? null;
+$isCurrent = $booking !== null && $currentId === $booking['id'];
+$capturedRows = $family['captured'] ?? [];
+$blockedIds = $family['blocked_ids'] ?? [];
+$blocked = ($family['blocked'] ?? true) === true;
+$payable = $isCurrent && !$blocked && $capturedRows === [] && !$deadlinePassed
+    && ($booking['status'] ?? null) === 'pending' && RazorpayPaymentLinkService::validUrl($booking['provider_url'] ?? null);
+$canReplace = $isCurrent && !$blocked && $capturedRows === [] && ($family['can_replace'] ?? false) === true
+    && is_string($csrf ?? null) && $csrf !== '';
+$receiptPath = static fn(string $id): string => $pagePath.'/booking/'.rawurlencode($id);
 ?>
 <!doctype html>
 <html lang="en">
@@ -35,6 +44,27 @@ $payable = !$deadlinePassed && ($booking['status'] ?? null) === 'pending' && Raz
                             <?php endforeach; ?>
                         </ul>
                     <?php endif; ?>
+                    <?php if (count($capturedRows) > 1): ?>
+                        <p role="alert">More than one confirmed payment exists for this booking. Do not pay again. Contact the business to review the payments.</p>
+                        <ul class="campaign-booking__downloads">
+                            <?php foreach ($capturedRows as $other): if ($other['id'] === $booking['id']) continue; ?>
+                                <li><a href="<?= e($receiptPath($other['id'])) ?>">Open other confirmed receipt</a></li>
+                            <?php endforeach; ?>
+                        </ul>
+                    <?php endif; ?>
+                <?php elseif ($capturedRows): ?>
+                    <p role="alert">A payment for this booking has already been confirmed. Do not pay again.</p>
+                    <?php foreach ($capturedRows as $confirmed): ?>
+                        <p><a href="<?= e($receiptPath($confirmed['id'])) ?>">Open confirmed booking receipt</a></p>
+                    <?php endforeach; ?>
+                <?php elseif ($blocked): ?>
+                    <p role="alert">Payment evidence for this booking requires confirmation. Do not start another payment.</p>
+                    <?php foreach ($blockedIds as $blockedId): if ($blockedId === $booking['id']) continue; ?>
+                        <p><a href="<?= e($receiptPath($blockedId)) ?>">Check related payment receipt</a></p>
+                    <?php endforeach; ?>
+                <?php elseif (!$isCurrent): ?>
+                    <p>This is an earlier booking receipt. Check the current booking before paying.</p>
+                    <p><a href="<?= e($receiptPath($currentId)) ?>">Open current booking</a></p>
                 <?php elseif ($payable): ?>
                     <p>Complete payment on Razorpay, then return here to check your booking.</p>
                     <p><a class="btn btn-primary" href="<?= e($booking['provider_url']) ?>" target="_blank" rel="noopener noreferrer">Open Razorpay in a new tab</a></p>
@@ -49,7 +79,22 @@ $payable = !$deadlinePassed && ($booking['status'] ?? null) === 'pending' && Raz
                 <?php else: ?>
                     <p>The payment provider has not confirmed this booking. Check its status again before paying.</p>
                 <?php endif; ?>
-                <?php if (!$captured && $booking['status'] !== 'retryable'): ?><p><a href="<?= e($bookingPath) ?>">Check payment status</a></p><?php endif; ?>
+                <?php if ($canReplace): ?>
+                    <p>The provider confirmed this link is closed with no captured or outstanding payment evidence. A separate booking payment will preserve this receipt.</p>
+                    <form method="post" action="<?= e($pagePath.'/booking') ?>">
+                        <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
+                        <input type="hidden" name="revision" value="<?= e($booking['revision']) ?>">
+                        <input type="hidden" name="fresh_from" value="<?= e($booking['id']) ?>">
+                        <button class="btn btn-primary" type="submit" name="confirm_fresh" value="1">Start a new booking payment</button>
+                    </form>
+                <?php elseif ($isCurrent && !$blocked && $capturedRows === [] && in_array($booking['status'], ['expired','cancelled'], true)): ?>
+                    <?php if (($family['limit_reached'] ?? false) === true): ?>
+                        <p>The booking attempt limit has been reached. Contact the business before starting another payment.</p>
+                    <?php else: ?>
+                        <p>Check payment status to verify whether a new booking is available.</p>
+                    <?php endif; ?>
+                <?php endif; ?>
+                <?php if (!$captured && ($booking['status'] !== 'retryable' || $blocked)): ?><p><a href="<?= e($bookingPath) ?>">Check payment status</a></p><?php endif; ?>
             <?php endif; ?>
             <p><a href="<?= e($pagePath) ?>">Return to campaign page</a></p>
         </section>

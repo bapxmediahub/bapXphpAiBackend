@@ -57,6 +57,19 @@ if (PHP_SAPI === 'cli-server') {
         exit;
     }
     if (($input['collection'] ?? null) === 'campaign_bookings') {
+        if ($input['action'] === 'read_campaign_booking_family') {
+            require_once __DIR__.'/../app/Services/CampaignPaymentService.php';
+            $booking = $fixture['bookings'][$input['id']] ?? null;
+            $result = null;
+            if ($booking !== null && hash_equals($booking['owner_hash'], (string)($input['owner'] ?? ''))) {
+                $root = $fixture['bookings'][$booking['family_id'] ?? $booking['id']];
+                $rows = \App\Services\CampaignPaymentService::familyRows($root,
+                    static fn(string $id): ?array => $fixture['bookings'][$id] ?? null);
+                $result = \App\Services\CampaignPaymentService::familyState($rows, time()) + ['requested'=>$booking];
+            }
+            echo json_encode(['success'=>true, 'result'=>$result], JSON_THROW_ON_ERROR);
+            exit;
+        }
         if ($input['action'] === 'begin_campaign_booking') {
             $page = $fixture['pages']['pg:'.$input['slug']];
             $outcome = $input['revision'] === $page['revision'] ? 'unavailable' : 'stale';
@@ -382,6 +395,41 @@ try {
         && str_contains($headers, "frame-ancestors 'none'") && $request($paidPath, null, $customer)[0] === 404,
         'Owner pending status stays private and does not grant files');
 
+    $check($request($startPath, ['fresh_from'=>$bookingId] + $buy, $customer)[0] === 422,
+        'An explicit replacement confirmation is required');
+    $check($request($startPath, ['fresh_from'=>str_repeat('f',32), 'confirm_fresh'=>'1'] + $buy, $customer)[0] === 409,
+        'An unrelated receipt cannot authorize a replacement');
+    $booking['status'] = 'expired';
+    $booking['terminal_clear'] = true;
+    $booking['terminal_checked_at'] = time();
+    $booking['provider_link_id'] = 'plink_synthetic';
+    $stateData['bookings'][$bookingId] = $booking;
+    $write($stateData);
+    [$status,$expired] = $request($bookingPath, null, $customer);
+    $check($status === 200 && str_contains($expired, 'name="fresh_from" value="'.$bookingId.'"')
+        && str_contains($expired, 'Start a new booking payment'), 'Fresh terminal evidence offers an explicit replacement');
+    $check($request($startPath, ['fresh_from'=>$bookingId, 'confirm_fresh'=>'1'] + $buy, $customer)[0] === 503
+        && $read()['booking_start']['freshFrom'] === $bookingId,
+        'Confirmed replacement reaches the scoped reservation but fails closed without provider credentials');
+
+    // Simulate the database returning a previously reserved successor. Repeating
+    // the old confirmation must return this receipt without another reservation.
+    $stateData = $read();
+    $replacementId = substr(hash_hmac('sha256', 'booking-replacement:'.$bookingId.':'.$bookingId, $owner), 0, 32);
+    $replacementPath = $startPath.'/'.$replacementId;
+    $booking['replacement_ids'] = [$replacementId];
+    $stateData['bookings'][$bookingId] = $booking;
+    $successor = array_replace($booking, ['id'=>$replacementId, 'family_id'=>$bookingId,
+        'previous_id'=>$bookingId, 'status'=>'pending', 'reference_id'=>'book_'.$replacementId,
+        'provider_link_id'=>'plink_successor', 'provider_url'=>'https://rzp.io/rzp/successor']);
+    unset($successor['replacement_ids'], $successor['terminal_checked_at'], $successor['terminal_clear']);
+    $stateData['bookings'][$replacementId] = $successor;
+    $write($stateData);
+    [$status,,$headers] = $request($startPath, ['fresh_from'=>$bookingId, 'confirm_fresh'=>'1'] + $buy, $customer);
+    $check($status === 303 && str_contains($headers, 'Location: '.$replacementPath),
+        'Repeated replacement confirmation redirects to the existing successor');
+    $check($request($replacementPath)[0] === 404, 'Another browser cannot read the successor');
+
     $booking['status'] = 'captured';
     $booking['receipt'] = ['id'=>'book_'.$bookingId];
     $stateData['bookings'][$bookingId] = $booking;
@@ -392,6 +440,10 @@ try {
     [$status,$confirmed] = $request($bookingPath, null, $customer);
     $check($status === 200 && str_contains($confirmed, 'Payment confirmed') && str_contains($confirmed, $paidPath),
         'The originating browser can retrieve its frozen captured receipt after withdrawal');
+    [$status,$held] = $request($replacementPath, null, $customer);
+    $check($status === 200 && str_contains($held, 'A payment for this booking has already been confirmed')
+        && !str_contains($held, 'https://rzp.io/rzp/successor') && !str_contains($held, 'Start a new booking payment'),
+        'Captured earlier receipt suppresses successor payment handoff');
     [$status,$bytes,$headers] = $request($paidPath, null, $customer);
     $check($status === 200 && $bytes === 'Notes' && str_contains($headers, 'Content-Disposition: attachment')
         && str_contains($headers, 'Cache-Control: private, no-store'),

@@ -13,6 +13,8 @@ const csrf = 'synthetic-booking-csrf';
 const pagePath = '/pages/private-workshop';
 const bookingId = 'a'.repeat(32);
 const bookingPath = pagePath + '/booking/' + bookingId;
+const replacementId = 'c'.repeat(32);
+const replacementPath = pagePath + '/booking/' + replacementId;
 const file = {id:'f'.repeat(32),name:'Workshop guide.txt',mime:'text/plain',bytes:8};
 
 function renderPhp(kind, data) {
@@ -53,7 +55,26 @@ async function fixture() {
         status:'published',revision:'b'.repeat(32)};
     let bookingStatus = 'pending';
     let deadlineOffset = 1800;
+    let terminalClear = false;
+    let held = false;
+    let replacementStatus = null;
     let submits = 0;
+    let replacements = 0;
+    const bookingRecord = (id, status, deadline) => ({
+        id, revision:page.revision, title:page.title,mode:'test',amount_paise:page.campaign_payment.amount_paise,
+        status, payment_expires_at:Math.floor(Date.now()/1000)+deadline,
+        provider_url:'https://rzp.io/rzp/no-network-fixture',
+        ...(status==='captured' ? {receipt:{id:'book_'+id}} : {}), fulfillment:[file],
+    });
+    const familyState = () => {
+        const first = bookingRecord(bookingId,bookingStatus,deadlineOffset);
+        const rows = replacementStatus ? [first,bookingRecord(replacementId,replacementStatus,1800)] : [first];
+        return {
+            rows, current:rows.at(-1), captured:rows.filter(r=>r.status==='captured'),
+            blocked:held, blocked_ids:held?[bookingId]:[],
+            can_replace:!held && !replacementStatus && terminalClear && ['expired','cancelled'].includes(bookingStatus),
+        };
+    };
     const server = createServer(async (request, response) => {
         function send(status, body, headers = {}) {
             response.writeHead(status, {'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store',...headers});
@@ -92,17 +113,27 @@ async function fixture() {
             if (pathname === pagePath) return send(200,document(renderPhp('public',{page})));
             if (pathname === pagePath+'/booking') {
                 assert.equal(data.get('revision'),page.revision);
-                assert.deepEqual(Array.from(data.keys()).sort(),['_csrf','revision']);
                 submits++;
-                return send(303,'',{Location:bookingPath});
+                if (data.has('fresh_from')) {
+                    assert.deepEqual(Array.from(data.keys()).sort(),['_csrf','confirm_fresh','fresh_from','revision']);
+                    assert.equal(data.get('fresh_from'),bookingId);
+                    assert.equal(data.get('confirm_fresh'),'1');
+                    if (familyState().can_replace) { replacementStatus='pending'; replacements++; }
+                } else assert.deepEqual(Array.from(data.keys()).sort(),['_csrf','revision']);
+                const family = familyState();
+                const selected = family.captured[0] || family.current;
+                return send(303,'',{Location:pagePath+'/booking/'+selected.id});
             }
-            if (pathname === bookingPath) {
-                const booking = {title:page.title,mode:'test',amount_paise:page.campaign_payment.amount_paise,
-                    status:bookingStatus, payment_expires_at:Math.floor(Date.now()/1000)+deadlineOffset,
-                    provider_url:'https://rzp.io/rzp/no-network-fixture', receipt:{id:'book_'+bookingId},fulfillment:[file]};
-                return send(200,renderPhp('status',{booking}));
+            if ([bookingPath,replacementPath].includes(pathname)) {
+                const family = familyState();
+                const booking = family.rows.find(r=>pathname===pagePath+'/booking/'+r.id);
+                if (!booking) return send(404,'Not found');
+                return send(200,renderPhp('status',{booking,family,bookingPath:pathname}),{
+                    'Content-Security-Policy':"default-src 'none'; style-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'"
+                });
             }
-            if (pathname === bookingPath+'/downloads/'+file.id && bookingStatus === 'captured') {
+            if ((pathname === bookingPath+'/downloads/'+file.id && bookingStatus === 'captured')
+                || (pathname === replacementPath+'/downloads/'+file.id && replacementStatus === 'captured')) {
                 return send(200,'fixture\n',{'Content-Type':'text/plain','Content-Disposition':'attachment; filename="Workshop guide.txt"'});
             }
             return send(404,'Not found');
@@ -118,8 +149,12 @@ async function fixture() {
         passDeadline(status) { bookingStatus = status; deadlineOffset = -60; },
         cancel() { bookingStatus = 'cancelled'; },
         expire() { bookingStatus = 'expired'; },
-        confirm() { bookingStatus = 'captured'; },
+        clearTerminal() { terminalClear=true; },
+        holdOld() { held=true; },
+        confirm() { bookingStatus = 'captured'; held=false; },
+        confirmReplacement() { replacementStatus='captured'; },
         count() { return submits; },
+        replacementCount() { return replacements; },
     };
 }
 
@@ -187,8 +222,31 @@ for (const width of [1280,375]) test('Campaign payment editor and booking status
         await page.reload();
         assert.equal(await page.getByText('This payment link has expired.',{exact:false}).isVisible(),true);
         assert.equal(await page.getByRole('link',{name:'Open Razorpay in a new tab'}).count(),0);
+        assert.equal(await page.getByRole('button',{name:'Start a new booking payment'}).count(),0);
+        app.clearTerminal();
+        await page.reload();
+        const fresh = page.getByRole('button',{name:'Start a new booking payment'});
+        assert.equal(await fresh.isVisible(),true);
+        await fits();
+        await fresh.press('Enter');
+        await page.waitForURL(app.origin+replacementPath);
+        assert.equal(app.replacementCount(),1);
+        assert.equal(await page.getByRole('link',{name:'Open Razorpay in a new tab'}).isVisible(),true);
+        assert.equal(await page.getByText('₹79.50 INR').isVisible(),true);
+        await page.goto(app.origin+bookingPath);
+        assert.equal(await page.getByRole('link',{name:'Open Razorpay in a new tab'}).count(),0);
+        assert.equal(await page.getByRole('button',{name:'Start a new booking payment'}).count(),0);
+        await page.getByRole('link',{name:'Open current booking'}).press('Enter');
+        await page.waitForURL(app.origin+replacementPath);
+        app.holdOld();
+        await page.reload();
+        assert.equal(await page.getByText('Payment evidence for this booking requires confirmation.',{exact:false}).isVisible(),true);
+        assert.equal(await page.getByRole('link',{name:'Open Razorpay in a new tab'}).count(),0);
+        assert.equal(await page.getByRole('link',{name:'Check related payment receipt'}).getAttribute('href'),bookingPath);
         app.confirm();
         await page.getByRole('link',{name:'Check payment status'}).press('Enter');
+        assert.equal(await page.getByRole('link',{name:'Open Razorpay in a new tab'}).count(),0);
+        await page.getByRole('link',{name:'Open confirmed booking receipt'}).press('Enter');
         await page.getByRole('heading',{name:'Payment confirmed'}).waitFor();
         assert.equal(await page.getByRole('link',{name:'Open Razorpay in a new tab'}).count(),0);
         await fits();
@@ -197,6 +255,14 @@ for (const width of [1280,375]) test('Campaign payment editor and booking status
         const response = await context.request.get(app.origin + await download.getAttribute('href'));
         assert.equal(await response.text(),'fixture\n');
         assert.equal(response.headers()['content-disposition'],'attachment; filename="Workshop guide.txt"');
+        app.confirmReplacement();
+        await page.reload();
+        assert.equal(await page.getByText('More than one confirmed payment exists for this booking.',{exact:false}).isVisible(),true);
+        await page.getByRole('link',{name:'Open other confirmed receipt'}).press('Enter');
+        await page.waitForURL(app.origin+replacementPath);
+        assert.equal(await page.getByRole('link',{name:file.name}).getAttribute('href'),replacementPath+'/downloads/'+file.id);
+        assert.equal(await page.getByRole('link',{name:'Open Razorpay in a new tab'}).count(),0);
+        await fits();
         await context.close();
     } finally {
         await browser.close();

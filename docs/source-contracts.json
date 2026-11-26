@@ -4,28 +4,28 @@
     "reviews": {
         "agents": {
             "source_sha256": "7625f54a0943ff9da4f8b0f7b59de92614f66b50fe627843364131648dfb9de2",
-            "references_sha256": "9cc581aefba4afdc73e6c3cb57aac55c51e5b7749c7b0e25289873ae03df314e",
-            "review_note": "Reviewed controller context, accepted report storage, legacy dated evidence and model-led follow-up against observability and runtime contracts."
+            "references_sha256": "f3e58e8b3e678aea8a20811dd22deb055bc2af0d5037b91e49ea7686f9c06d21",
+            "review_note": "Reviewed runtime tool policy and database changes; campaign receipts remain outside agent context, no new capability or instruction exposure."
         },
         "auth": {
             "source_sha256": "c34a5b34bc904f36cda184c26113f91e2cf36afa2b506217d1f74e22e9e0cefd",
-            "references_sha256": "41e3a8b4e89cfa4973dfc3e206cc95ca04c80e1bbf5f35cf50ec021985c3f2e9",
-            "review_note": "Reviewed guest, customer and owner tool and conversation boundaries with the shared backend guidance. Article reads enforce the public publication and module checks in both authenticated and guest turns."
+            "references_sha256": "f6826a2570d0be60c9719d50225b9e9465ac47783d0e6b514a82682f4855034b",
+            "review_note": "Reviewed current browser actor hash derived from session sub, CSRF and ownership checks; existing authentication/role flows unchanged."
         },
         "commerce": {
             "source_sha256": "81b1644c7e6216baa5ba42a9f5a78a484a354d21d01c387ab86816e13d513239",
-            "references_sha256": "633fa1f406763eac89a44364dfdcc71e22ba07c844862971c64b0c599bcdafa3",
-            "review_note": "Reviewed GST code master, immutable snapshots and reconciliation docs against TaxService, register and recovery implementation; existing tax amounts and column order preserved."
+            "references_sha256": "3df385772e7c40ddf9672f548b7d452a8923c40a74c856014f53bd5f3359374b",
+            "review_note": "Reviewed shared persistence and verified order/GST invariants; new family operations confined to campaign_bookings, no shop payment/order/refund/invoice mutation."
         },
         "content": {
-            "source_sha256": "a07727b889cf1590216716fc14f613fcfba1b3fa76e3cc49ddce0c6fe3b032e7",
-            "references_sha256": "40b3710dec9dc6e35df054fe7128c76310f2fd0e6f1e44c34d33bab628352b77",
-            "review_note": "Shared AdminController changes are confined to owner report context; blog, publishing, content routes and storage boundary unchanged."
+            "source_sha256": "784aa801f91623e66203cd3deeadb82d253f3013f28781110198d3d2537e559f",
+            "references_sha256": "1bfb97b404d442826e8298afa290e9ee3551eedeaa80a101d83ed759567aac10",
+            "review_note": "Reviewed published authored revision and immutable file grants; explicit replacement requires same revision/amount/mode/files, preserves old receipts and updated authored page/storage documentation."
         },
         "foundation": {
-            "source_sha256": "f36e3bc89b2f6567edee6f19fa710b330ea2282530bdfbae6b57fb0a046bb971",
-            "references_sha256": "ab8280bb52a12774a146db46d004b3ce31f11071370c2203171f6f5d2ece1412",
-            "review_note": "Reviewed private JSON storage, deployment preservation and actor isolation; optional ambiguity metadata needs no new table or migration."
+            "source_sha256": "a97abb0c19875106afd94987648ab6441a37cd8e4b1ca81a63101355fa3a36b2",
+            "references_sha256": "9baf139e9dce717d5d498560f5c551129e3452f64b86ac079221e165c2ae9922",
+            "review_note": "Reviewed optional JSON metadata in existing MySQL collection and root-first transaction locking; no new table, dependency or cross-client exposure. Updated storage documentation."
         },
         "google-tags": {
             "source_sha256": "ee67bf3e50c0de63820bd128a2c2df6f29571d0df37e7e3f22bd910948554f0e",
@@ -34,8 +34,8 @@
         },
         "http-errors": {
             "source_sha256": "0f920c297cfc4e216a87be02a35c20827cc254dd6934ba24a1fa9135520a0560",
-            "references_sha256": "bb1efdf69eefdabbb242f58bda9aeaba721f2ba0e018a16bb1cb9615159af3a8",
-            "review_note": "Compared article trace redaction with the private response guard, Chat Completions provider failures and labelled Support reference. A failed turn reports a bounded application trace identifier."
+            "references_sha256": "e7fd73ff63ad58393f5901d78a12aba9781a0cd580a33f95ff33732b4fd81a89",
+            "review_note": "Reviewed status failure and ambiguous transport recovery: failed reads clear terminal proof; invalid CSRF/confirmation cannot start provider work; errors reveal no provider bodies."
         },
         "interface": {
             "source_sha256": "74ac131a1196c7ca6704c1a23680333838870118a36866d719e97ed57005d2ec",
@@ -44,8 +44,8 @@
         },
         "mail": {
             "source_sha256": "8538698489a17f7660b70e5514eebfde8f16cb43efbd5e878a63a496f356ef1b",
-            "references_sha256": "fff258ed8121b5ab72cd0adf60dcdcd8d1a414afc1e94332c6498de85371b0da",
-            "review_note": "Shared AdminController changed only owner agent context/record arguments; mail actions and email setup unchanged."
+            "references_sha256": "58634213b205d45a2d59fd6cf7b99efcfd5890e4f7cbc1e8d35f1c7db342e5f6",
+            "review_note": "Reviewed shared database operations and email workflow; campaign receipt remains independent of order confirmation and mail queue; no new messages or replay."
         },
         "mcp-clients": {
             "source_sha256": "2567e2792ed1acb0c80ae14605c2ac550abb824197b404fc2da99e97e1507d8e",
@@ -58,19 +58,19 @@
             "review_note": "Reviewed the owner UI skill changes against authenticated media navigation, route declarations, and Media Library behavior. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
         },
         "operator-help": {
-            "source_sha256": "a2cdb0592d019269dc4ef0671fca82f8966401ba284ef6928df94478be868a01",
+            "source_sha256": "34c2ae996af7f999999388c0889e8fe973b556e6ef9d8d8abe8a38ea50eec02a",
             "references_sha256": "e563e22b4c63d35757ec425fd5cb161af8535352e7e3e1d9f753faa9ab072166",
-            "review_note": "Checked the Enterprise owner chat guide against the persisted ambiguity boundary; other operator routes and help unchanged."
+            "review_note": "Reviewed owner guides and authored page payment configuration; replacement is a customer receipt action, not a new owner form or admin mutation."
         },
         "public-mcp": {
             "source_sha256": "e45e0b33143554284f2733f661c71751693e3b31b37ee47efb90a766e46c6bba",
-            "references_sha256": "8481003c3ddbcda60a88b00bd94c6db173c16c6c5ff2565c78de4822c2ef6bb5",
-            "review_note": "Cross-checked revised remote commerce receipt guidance against public MCP; no protocol or operation change."
+            "references_sha256": "7447a35eacfce86af9b04d312bb16639786f8366829d2cf7177901279263296a",
+            "review_note": "Reviewed existing anonymous shop checkout and public enquiry boundaries; authored campaign receipt action remains browser and actor bound, no MCP declarations or shop checkout behavior changed."
         },
         "remote-commerce": {
-            "source_sha256": "3f52960c311d7885f80421ea1e43afc89ffc57360a5510628735b499f45f42f0",
-            "references_sha256": "e07dabc1dfb591efd31a1990275413f85c6159f93704ff5aff35ed1b76964abf",
-            "review_note": "Reviewed checkout/verified order/remote tax-review persistence and schema: frozen code derived from existing state, unchanged payable amounts and idempotency, no new mutation route."
+            "source_sha256": "d7f17dc773cd47a72b919c8d03702c8b27ab02a4a47034117b01e16e8a18fe88",
+            "references_sha256": "c69f6cbd1d80ec6c1fcd32f8464fd5201c3b95e734fe1e19f42b33b14a56e1ce",
+            "review_note": "Reviewed exact provider terminal and order-payment contracts, durable family reservation, recheck generations, immutable captures and duplicate/late settlement; updated remote commerce contract."
         },
         "sales-channels": {
             "source_sha256": "5133aad1b8eb87f5ca305e4e42ec0acbcb1d279b6d5b773b0a8ce6f6f5003647",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed SettingsService canonical patch semantics and sales channel guides; deriving supplier tax code touches no channel settings, feed or product behavior."
         },
         "workflow": {
-            "source_sha256": "db465530e3fdb0326d704ac698843b20afeb4734f574f21e81c0c3dde33a25f1",
+            "source_sha256": "21bcae735e4f29dae1d555ee32216b2e32735eea789c64ee30ac2e4aaa63314f",
             "references_sha256": "e02da7c441df6fad273bb71dd829c2564589fc319753a291036c415e8b8494ca",
-            "review_note": "Reviewed validation workflow and development release gates; forward job is separate and runs the same pinned test dependencies with explicit native version assertion."
+            "review_note": "Reviewed backend skill update and current release/deployment contract: explicit proof, database serialization, deterministic tests, no live charges and no new infrastructure."
         }
     }
 }
