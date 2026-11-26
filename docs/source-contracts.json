@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "a8d41b56cf70c9864ef577536ecaf74cd323152315a911a02ee400ebf394e757",
-            "references_sha256": "3eb29e94c9dd79b7f3dc4d3762193f106558df5e7edd6e2c1397d93217916c4d",
-            "review_note": "Compared the agent guides and loopback fixtures with both controller role scopes, exact-slug article passages, the bounded evidence fields, and Chat Completions call correlation and model continuation."
+            "source_sha256": "f2bd16e998cbad7c8e146490054010293840a46b0608dacaa1ce00b4b9227dfd",
+            "references_sha256": "cd622f5bf32c5ea4bc6223a8f9e62283ba79d7d3757ae4f9c85d21d1d04a9bdb",
+            "review_note": "Checked version 3 owner report observations and their evaluation spans against the observability guide. Both agent controllers retain the documented shared Chat Completions evidence and published passage provenance, and saved version 2 receipts retain their original results."
         },
         "auth": {
             "source_sha256": "c34a5b34bc904f36cda184c26113f91e2cf36afa2b506217d1f74e22e9e0cefd",
@@ -58,9 +58,9 @@
             "review_note": "Checked retained campaign file descriptors and protected streaming against Media Library behavior. Booking authorization is scoped to the frozen private manifest."
         },
         "operator-help": {
-            "source_sha256": "5f18e687d24bd4bd0bd0d4ce583fa5c85118796fc84641545cbfff35da22c41c",
+            "source_sha256": "96328e76952912d6c655aaed3990e9b010a5bc5ce581ca63c65425413ad742ca",
             "references_sha256": "290f76393a7f1ff5ba583e3da9f3ac9d8b3f6580c1cdee7db531e981e2e1d99f",
-            "review_note": "Compared the enterprise and monitoring guides with topic-targeted article evidence in each PHP agent. The stored source ID, digests and optional section position remain distinct from the labelled Support failure reference."
+            "review_note": "Reviewed the Enterprise Agent and Agent Monitoring guides against the authorized conversation export and staff assessment screens. Report observations and published passage evidence remain available in the saved turn alongside its guardrails and original evaluation."
         },
         "public-mcp": {
             "source_sha256": "98bb406d5d51bf64265612bd379b5e7970909522482d79649e2f7eaf9ca97835",

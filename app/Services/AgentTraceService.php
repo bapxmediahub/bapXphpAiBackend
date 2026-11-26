@@ -456,6 +456,9 @@ final class AgentTraceService
             $span['ended_at']=self::now();
             $span['duration_ms']=max(0,round((hrtime(true)-(self::$clocks[$id]??hrtime(true)))/1_000_000,3));
             $span['status']=$status;
+            if ($span['type'] === 'evaluation' && is_bool($attributes['owner_report_lookup_observed'] ?? null)) {
+                $span['owner_report_lookup_observed'] = $attributes['owner_report_lookup_observed'];
+            }
             foreach(['http_status','result_count','characters','version'] as $key) {
                 if(isset($attributes[$key]) && is_int($attributes[$key]))$span[$key]=max(0,$attributes[$key]);
             }
@@ -560,11 +563,12 @@ final class AgentTraceService
                 'duration_ms'=>max(0,(int)round((float)($attempt['total_ms']??0))),
             ] + self::attemptTimings($attempt);
         }
+        $reportObserved = $evaluation['observations']['owner_report_lookup_observed'] ?? null;
         $spans[]=[
             'span_id'=>bin2hex(random_bytes(8)), 'parent_span_id'=>$traceId,
             'type'=>'evaluation', 'version'=>(int)($evaluation['version']??0),
             'status'=>!empty($evaluation['passed'])?'pass':'needs_review',
-        ];
+        ] + (is_bool($reportObserved) ? ['owner_report_lookup_observed'=>$reportObserved] : []);
         $spans[]=[
             'span_id'=>bin2hex(random_bytes(8)), 'parent_span_id'=>$traceId,
             'type'=>'response', 'route'=>in_array($outcome,['local','model','fallback','private_account','draft','error','answered'],true)?$outcome:'other',
