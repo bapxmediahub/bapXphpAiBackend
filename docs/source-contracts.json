@@ -18,9 +18,9 @@
             "review_note": "Compared the shared evidence guidance with order and payment contracts and the separate storefront counts. The article path reads published Markdown and retains only the approved source metadata in its trace."
         },
         "content": {
-            "source_sha256": "6f6aee47caea344734b1f2662269fbcebf1615d4f4ecabe1a79e2a7818206e24",
+            "source_sha256": "23f40b9ce0b264c7be62addfb41826a49c3cdf77931a4144e20f6a7cc564b1b9",
             "references_sha256": "40b3710dec9dc6e35df054fe7128c76310f2fd0e6f1e44c34d33bab628352b77",
-            "review_note": "Compared local published Markdown and scoped passage reads with the exact article route and generated knowledge index. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
+            "review_note": "Reviewed authored page status UI with existing capture, download and retry contracts; no publication, payment or storage mutation change."
         },
         "foundation": {
             "source_sha256": "cbe9cc784939b451fccbd4e1c1447ca82630f101f52d5dfc0a2336e91c825864",
@@ -64,13 +64,13 @@
         },
         "public-mcp": {
             "source_sha256": "e45e0b33143554284f2733f661c71751693e3b31b37ee47efb90a766e46c6bba",
-            "references_sha256": "d06c98bd47f7604ad0a0529c3673bc10c92cbb8608c2027af4a5df5d379fcb67",
-            "review_note": "Compared the existing public response contracts and article publication scope with the exact generated route and resource identities. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
+            "references_sha256": "8481003c3ddbcda60a88b00bd94c6db173c16c6c5ff2565c78de4822c2ef6bb5",
+            "review_note": "Cross-checked revised remote commerce receipt guidance against public MCP; no protocol or operation change."
         },
         "remote-commerce": {
             "source_sha256": "28a3c2d025729100fe529cb5d1d05d3bd967ca18d4f29f99bb27505419d09e56",
-            "references_sha256": "b0106f13d7b5f63eef0f5325c846a3e8298ae7a2e74bce2494eff5045ee72772",
-            "review_note": "Reconciled main Chrome 160 forward test and business group rollback: credential-free read contracts and checkout unaffected; reviewed both WebMCP sections and commerce fixtures."
+            "references_sha256": "e07dabc1dfb591efd31a1990275413f85c6159f93704ff5aff35ed1b76964abf",
+            "review_note": "Reconciled reviewed Chrome 160 native metadata and business group lifecycle with the receipt-only payment deadline wording; provider confirmation and existing checkout contracts unchanged."
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",

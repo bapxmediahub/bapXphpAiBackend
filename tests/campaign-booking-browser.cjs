@@ -52,6 +52,7 @@ async function fixture() {
     let page = {id:'pg:private-workshop',slug:'private-workshop',title:'Workshop booking',content:'## Visit and learn',
         status:'published',revision:'b'.repeat(32)};
     let bookingStatus = 'pending';
+    let deadlineOffset = 1800;
     let submits = 0;
     const server = createServer(async (request, response) => {
         function send(status, body, headers = {}) {
@@ -97,7 +98,7 @@ async function fixture() {
             }
             if (pathname === bookingPath) {
                 const booking = {title:page.title,mode:'test',amount_paise:page.campaign_payment.amount_paise,
-                    status:bookingStatus, payment_expires_at:Math.floor(Date.now()/1000)+1800,
+                    status:bookingStatus, payment_expires_at:Math.floor(Date.now()/1000)+deadlineOffset,
                     provider_url:'https://rzp.io/rzp/no-network-fixture', receipt:{id:'book_'+bookingId},fulfillment:[file]};
                 return send(200,renderPhp('status',{booking}));
             }
@@ -114,6 +115,8 @@ async function fixture() {
     return {
         server, origin:'http://127.0.0.1:'+server.address().port,
         reject() { bookingStatus = 'retryable'; },
+        passDeadline(status) { bookingStatus = status; deadlineOffset = -60; },
+        cancel() { bookingStatus = 'cancelled'; },
         expire() { bookingStatus = 'expired'; },
         confirm() { bookingStatus = 'captured'; },
         count() { return submits; },
@@ -165,6 +168,21 @@ for (const width of [1280,375]) test('Campaign payment editor and booking status
         await page.getByRole('button',{name:'Review booking payment'}).press('Enter');
         await page.waitForURL(app.origin+bookingPath);
         assert.equal(app.count(),2);
+        for (const status of ['pending','uncertain','preparing']) {
+            app.passDeadline(status);
+            await page.reload();
+            assert.equal(await page.getByText('The payment window has ended, but the provider has not confirmed the outcome.',{exact:false}).isVisible(),true);
+            assert.equal(await page.getByText('This payment link has expired.',{exact:false}).count(),0);
+            assert.equal(await page.getByRole('link',{name:'Open Razorpay in a new tab'}).count(),0);
+            assert.equal(await page.getByRole('link',{name:'Check payment status'}).isVisible(),true);
+            assert.equal(await page.getByRole('link',{name:file.name}).count(),0);
+            await fits();
+        }
+        app.cancel();
+        await page.reload();
+        assert.equal(await page.getByText('The provider confirmed that this payment link was cancelled.',{exact:false}).isVisible(),true);
+        assert.equal(await page.getByRole('link',{name:'Check payment status'}).isVisible(),true);
+        assert.equal(await page.getByRole('link',{name:'Open Razorpay in a new tab'}).count(),0);
         app.expire();
         await page.reload();
         assert.equal(await page.getByText('This payment link has expired.',{exact:false}).isVisible(),true);

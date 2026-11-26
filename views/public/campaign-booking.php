@@ -2,8 +2,8 @@
 use App\Services\{CampaignPaymentService, RazorpayPaymentLinkService};
 
 $captured = ($booking['status'] ?? null) === 'captured';
-$expired = $booking !== null && ($booking['payment_expires_at'] <= time() || in_array($booking['status'], ['expired','cancelled'], true));
-$payable = !$expired && ($booking['status'] ?? null) === 'pending' && RazorpayPaymentLinkService::validUrl($booking['provider_url'] ?? null);
+$deadlinePassed = $booking !== null && $booking['payment_expires_at'] <= time();
+$payable = !$deadlinePassed && ($booking['status'] ?? null) === 'pending' && RazorpayPaymentLinkService::validUrl($booking['provider_url'] ?? null);
 ?>
 <!doctype html>
 <html lang="en">
@@ -40,8 +40,12 @@ $payable = !$expired && ($booking['status'] ?? null) === 'pending' && RazorpayPa
                     <p><a class="btn btn-primary" href="<?= e($booking['provider_url']) ?>" target="_blank" rel="noopener noreferrer">Open Razorpay in a new tab</a></p>
                 <?php elseif ($booking['status'] === 'retryable'): ?>
                     <p>Payment setup is temporarily unavailable. Return to the campaign page to retry this booking.</p>
-                <?php elseif ($expired): ?>
+                <?php elseif ($booking['status'] === 'expired'): ?>
                     <p>This payment link has expired. If you already paid, check here for confirmation.</p>
+                <?php elseif ($booking['status'] === 'cancelled'): ?>
+                    <p>The provider confirmed that this payment link was cancelled. If you already paid, check here for confirmation.</p>
+                <?php elseif ($deadlinePassed): ?>
+                    <p>The payment window has ended, but the provider has not confirmed the outcome. Do not start another payment until the status is confirmed.</p>
                 <?php else: ?>
                     <p>The payment provider has not confirmed this booking. Check its status again before paying.</p>
                 <?php endif; ?>
