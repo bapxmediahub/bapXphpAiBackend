@@ -40,6 +40,10 @@ Generated files point to original sources. Do not hand-edit them.
 
 ## REA research and review operations
 
+- [Current REA capability coverage](research/capability-progress.md) — generated scoped percentages, with separate implementation and production acceptance.
+- [REA engineering workflow](research/rea-engineering-workflow.md) — source-pinned reference adaptation and mandatory review/update gate.
+- [Versioned source evidence](research/evidence/reference-source-index.json) — archive hashes, upstream revisions and selected-file inventories.
+
 - [REA agent and commerce gap analysis](research/2026-11-15-rea-agent-commerce-gaps.md) — source-pinned findings, not implementation claims
 - [REA evidence manifest](research/2026-11-15-rea-evidence.json) — selected source commits, hashes and coverage limitations
 - [AI review workflow](engineering/ai-review-workflow.md) — current-head receipts, draft settings and quota/credential prerequisites

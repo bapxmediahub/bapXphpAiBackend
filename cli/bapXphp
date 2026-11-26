@@ -684,6 +684,9 @@ cmd_ci() {
     php "$ROOT/tests/$fixture.php" 2>&1 || { failed=1; warn "PORTABLE FIXTURE FAILED: $fixture"; }
   done
 
+  echo "── rea-capabilities:check ──"
+  php "$ROOT/cli/rea-capabilities.php" --check 2>&1 || { failed=1; warn "REA CAPABILITY REVIEW REQUIRED"; }
+
   echo "── agent-contracts:check ──"
   php "$ROOT/cli/agent-contracts.php" --check 2>&1 || { failed=1; warn "AGENT TOOL DOCUMENTATION STALE"; }
 
@@ -720,6 +723,7 @@ cmd_check() { cmd_ci; }
 
 cmd_update() {
   require_php
+  php "$ROOT/cli/rea-capabilities.php" --render
   php "$ROOT/cli/agent-contracts.php"
   php "$ROOT/cli/generate-project-map.php"
   php "$ROOT/cli/generate-docs-map.php" "$ROOT" "$ROOT/docs/map.mmd"

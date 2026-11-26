@@ -46,12 +46,12 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 514
-  relationships: 480
+  concepts: 516
+  relationships: 482
   by_type:
     blog: 16
     controller: 19
-    doc: 55
+    doc: 57
     image: 89
     operator_guide: 12
     route: 188
@@ -500,6 +500,15 @@ concepts:
       - "module"
     filename: "booking.md"
     header_image: ""
+  - id: "doc:capability-progress"
+    type: "doc"
+    title: "REA native capability completion register"
+    description: "Generated scope-based implementation and production acceptance coverage; not a task backlog."
+    resource: "docs/research/capability-progress.md"
+    tags:
+      - "docs"
+    filename: "capability-progress.md"
+    header_image: ""
   - id: "doc:catalog"
     type: "doc"
     title: "Catalog Module"
@@ -750,6 +759,15 @@ concepts:
     tags:
       - "docs"
     filename: "rea-agent-commerce-gap-audit.md"
+    header_image: ""
+  - id: "doc:rea-engineering-workflow"
+    type: "doc"
+    title: "REA source-to-capability engineering workflow"
+    description: "Versioned native feature obligations, review gates, evidence-based percentages and agent engineering contracts."
+    resource: "docs/research/rea-engineering-workflow.md"
+    tags:
+      - "docs"
+    filename: "rea-engineering-workflow.md"
     header_image: ""
   - id: "doc:remote-commerce"
     type: "doc"
@@ -7029,6 +7047,12 @@ relationships:
     relation: "references"
   - from: "doc:rea-agent-commerce-gap-audit"
     to: "doc:ai-review-workflow"
+    relation: "references"
+  - from: "doc:rea-engineering-workflow"
+    to: "doc:2026-11-15-rea-agent-commerce-gaps"
+    relation: "references"
+  - from: "doc:rea-engineering-workflow"
+    to: "doc:capability-progress"
     relation: "references"
   - from: "doc:remote-commerce"
     to: "doc:gst-commerce"

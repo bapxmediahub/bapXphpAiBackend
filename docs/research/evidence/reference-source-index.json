@@ -1,0 +1,1724 @@
+{
+  "schema_version": 1,
+  "audit_date": "2026-11-26",
+  "sources": [
+    {
+      "id": "wordpress",
+      "origin": "wordpress-7.1.4.zip",
+      "revision": "a147146c159362778ecbbbfb07bb20ddf4e85b130f971c824e656a8f938c5f87",
+      "license": "GPL-2.0-or-later",
+      "scope": "Selected static source; no upstream execution",
+      "rea": {
+        "version": "6.8.0",
+        "authority": "historical-reference",
+        "inventory_state": "partial",
+        "root_sha256": "45f25a110d87045f14cd436dd05e019749e307b29c2b42f27ba57cea057d04b0",
+        "artifact_sha256": "5b402b5603d7beb30e5848f141008dae4b4875f5ab6d24780e8e58b37dd13f51",
+        "parse_failure_count": 0
+      },
+      "files": [
+        {
+          "path": "license.txt",
+          "sha256": "49e97f629ce763abb2f8f1f13da74cb5a8a9a72a0e72a7477d1540c98cef5141",
+          "bytes": 19903
+        },
+        {
+          "path": "wp-admin/includes/class-wp-list-table.php",
+          "sha256": "3ecd133fcf8fa4f0dc0a0834ca4675ee8ee05b1616078530afd5044424f32676",
+          "bytes": 54873
+        },
+        {
+          "path": "wp-admin/includes/class-wp-site-health.php",
+          "sha256": "d7517a0ddaa8b59b15265febafc6545357ab53e3f982c50c8296b37484af654d",
+          "bytes": 131168
+        },
+        {
+          "path": "wp-admin/includes/export.php",
+          "sha256": "1cd94583390885b9324bd5fde38da21af60603c85b64d4b0b6a878fcb1615bba",
+          "bytes": 26478
+        },
+        {
+          "path": "wp-admin/includes/image-edit.php",
+          "sha256": "fa15826c86f1500f35fd925b68ae8f99454b0ce1d202c99a3af510948ef294e9",
+          "bytes": 44147
+        },
+        {
+          "path": "wp-admin/includes/post.php",
+          "sha256": "86e825dbf107fc03f8ddb30141f25dbaac17b0526f6681d8b0d186a2bfaab1de",
+          "bytes": 82838
+        },
+        {
+          "path": "wp-admin/includes/privacy-tools.php",
+          "sha256": "950cdf02239392ea6067cfb8cdcca033a51d64e882c99cb9cdd41ff4f28423cd",
+          "bytes": 33732
+        },
+        {
+          "path": "wp-admin/includes/schema.php",
+          "sha256": "a446ddd76ce401fc8173bfee4e79a98f8c3567ed3ba7560c2f167ca85e6976b0",
+          "bytes": 45583
+        },
+        {
+          "path": "wp-admin/menu.php",
+          "sha256": "10dfad8b7ccab04c0af2e269c203c0a0a76c30438ee7b695dd97fb0f74a4cb3b",
+          "bytes": 18134
+        },
+        {
+          "path": "wp-admin/nav-menus.php",
+          "sha256": "0eaea073868305594d0e0378da73130b26236d31caf0383ad11a6afb10f11d02",
+          "bytes": 50199
+        },
+        {
+          "path": "wp-admin/network/sites.php",
+          "sha256": "3cf00b8c1202275f47c1b0a1195f4145e6d4c9a864502b23ed3d5a3c3f846979",
+          "bytes": 14588
+        },
+        {
+          "path": "wp-admin/options-discussion.php",
+          "sha256": "1fa70fd14d3120c229c26154f405090f687dc382ecf77f7a53043b9ead361118",
+          "bytes": 16403
+        },
+        {
+          "path": "wp-admin/options-general.php",
+          "sha256": "0ac15c8b3bc66d1497b611324a5ed613cd3202dbb69001acb1ba79fe5f854377",
+          "bytes": 22855
+        },
+        {
+          "path": "wp-admin/options-media.php",
+          "sha256": "de32e2e973ac65fe8650a940ec9c09d8f516db7530b2463efa503c42840d5ee7",
+          "bytes": 6640
+        },
+        {
+          "path": "wp-admin/options-permalink.php",
+          "sha256": "194e35380c9c404abdfed4e850a7492dfdb78ffe9698550e638cbcfe287d7945",
+          "bytes": 22491
+        },
+        {
+          "path": "wp-admin/options-privacy.php",
+          "sha256": "6aaa2e7e0c86dde9219bce5b8359cd26da546ed716cb6f044c705f240ee7b189",
+          "bytes": 10704
+        },
+        {
+          "path": "wp-admin/options-reading.php",
+          "sha256": "5c85d05f28e1c42a15cb06480dc0550224f50e1dd845fee9d8afb7e27c4a42df",
+          "bytes": 10198
+        },
+        {
+          "path": "wp-admin/options-writing.php",
+          "sha256": "8cfde70a462950f169da068bc1cabead1521330346b041aebff30222283744b6",
+          "bytes": 9404
+        },
+        {
+          "path": "wp-admin/options.php",
+          "sha256": "be1c998d13f04a61cb3b27a9d2614ca2e22d0a65da06b893e977f7fe6e92ab8f",
+          "bytes": 14266
+        },
+        {
+          "path": "wp-admin/site-editor.php",
+          "sha256": "52e337c1a1496388e8d37ca3efb9dc8fffbdee0f1468cab36ab550679b1f42e5",
+          "bytes": 12483
+        },
+        {
+          "path": "wp-includes/abilities-api.php",
+          "sha256": "6990a2bb316a412b9d8e71398c0f5478821aab158f6b1034cd7ebbf31687874e",
+          "bytes": 32800
+        },
+        {
+          "path": "wp-includes/abilities-api/class-wp-abilities-registry.php",
+          "sha256": "37f5bb4ad1fc7c5e13503c20ffdfbc1052d6989c46ff008adc3cf28b9b3bfd60",
+          "bytes": 12846
+        },
+        {
+          "path": "wp-includes/abilities-api/class-wp-ability.php",
+          "sha256": "0c0aa1db27f284cb9942865e6fbed0610178439430e2ac9a9f6a7dd209df049e",
+          "bytes": 33653
+        },
+        {
+          "path": "wp-includes/abilities.php",
+          "sha256": "8b49d259e1015e3b8e54e3c5dde3a49d418e6b8cc34757f2428c6d53896f8075",
+          "bytes": 11797
+        },
+        {
+          "path": "wp-includes/capabilities.php",
+          "sha256": "f5aaf3dd6a3c669f244fd6f01ad3a906556afd55941b443f1e9b34f65bb08573",
+          "bytes": 43584
+        },
+        {
+          "path": "wp-includes/class-wp-application-passwords.php",
+          "sha256": "266e15ec38652acaee5e3fd6103fc1275d2d6ea5c54f8926c1c4ddf688559658",
+          "bytes": 17099
+        },
+        {
+          "path": "wp-includes/cron.php",
+          "sha256": "dc27910a1ad004eb2aaabc19352246cc0b9e601bf2da870e141646fd9dd95591",
+          "bytes": 46266
+        },
+        {
+          "path": "wp-includes/rest-api/endpoints/class-wp-rest-abilities-v1-list-controller.php",
+          "sha256": "0b4dc26d32048268de00dbd27d816e2a319f11f4d243aee7d8b208c95aeef4d5",
+          "bytes": 12809
+        },
+        {
+          "path": "wp-includes/rest-api/endpoints/class-wp-rest-abilities-v1-run-controller.php",
+          "sha256": "e343c9b7f598d4280baea9731364170cb2c01b3437371fa9b6c9ec8a10a415c1",
+          "bytes": 11642
+        },
+        {
+          "path": "wp-includes/rest-api/endpoints/class-wp-rest-autosaves-controller.php",
+          "sha256": "4460e2aef083398870c980915319ebb45748ad93d0a748b7b0d941a0cc78e830",
+          "bytes": 15508
+        },
+        {
+          "path": "wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php",
+          "sha256": "ac06af313d150b4442eced4655142337552c56caf4dedbd5a88d34d4abae4338",
+          "bytes": 104810
+        },
+        {
+          "path": "wp-includes/rest-api/endpoints/class-wp-rest-revisions-controller.php",
+          "sha256": "c32f43d6bd5f89c7d434390658d9f60a8f5148603ac5afaf87ac054afe274f9e",
+          "bytes": 30780
+        },
+        {
+          "path": "wp-includes/rest-api/endpoints/class-wp-rest-settings-controller.php",
+          "sha256": "4a1b63ab7502acf264e485ddf66ba8de4b85d9562676037c1c6584c18a8de632",
+          "bytes": 10330
+        },
+        {
+          "path": "wp-includes/revision.php",
+          "sha256": "1dc942d5eb3d9cee81b6c705a6fd52917c4ce5e5f509ece5ad6f748e345f8647",
+          "bytes": 31241
+        },
+        {
+          "path": "wp-includes/version.php",
+          "sha256": "7163a7bfaf1fbac5024c0382931f17f9993076e15ff245e93254f009e0e34cc5",
+          "bytes": 1103
+        }
+      ]
+    },
+    {
+      "id": "woocommerce",
+      "origin": "woocommerce.11.3.0.zip",
+      "revision": "d9eb1e46df8309eb37b6f7f3fba51480f2a9a00e7feb10b1487592fde39accc6",
+      "license": "GPL-3.0 (archive readme)",
+      "scope": "Selected static source; no upstream execution",
+      "rea": {
+        "version": "6.8.0",
+        "authority": "historical-reference",
+        "inventory_state": "partial",
+        "root_sha256": "3c04339262874776daa88878ff9b0fa20795aad214a173fc124febfcd4796931",
+        "artifact_sha256": "a4a3f9b3922f6f336a6b7ce2b07f435a35cc4a067610d0fe8566b3e0946a82d4",
+        "parse_failure_count": 0
+      },
+      "files": [
+        {
+          "path": "includes/admin/class-wc-admin-api-keys.php",
+          "sha256": "dba47eedf0ad45d1537ef81afefe28ea7ab3cea338543b477d7b9e2e5c934fd1",
+          "bytes": 8553
+        },
+        {
+          "path": "includes/admin/class-wc-admin-exporters.php",
+          "sha256": "8661746024e0939aac32c9bed0fbb26e98f3e07d31a8f4833ec5b3a840f55eb9",
+          "bytes": 8144
+        },
+        {
+          "path": "includes/admin/class-wc-admin-importers.php",
+          "sha256": "59b682785b9dbe21ac36e3f05b9bd2daec137cd55ef37e827e36e9179a8e3d04",
+          "bytes": 8650
+        },
+        {
+          "path": "includes/admin/class-wc-admin-menus.php",
+          "sha256": "fcccb0471e244970f0acd159eefb790c67cb3b935cd2c73379409ae0ae118ce6",
+          "bytes": 25644
+        },
+        {
+          "path": "includes/admin/class-wc-admin-status.php",
+          "sha256": "e87e93c49fe546eb170e89d5a5157ed2463b949bbb6ef31a01f7586982c8ff32",
+          "bytes": 15459
+        },
+        {
+          "path": "includes/admin/class-wc-admin-webhooks.php",
+          "sha256": "45df15aa152347edd6eef09cf9fd8fda28d0694710bf0b527593275079df2986",
+          "bytes": 12430
+        },
+        {
+          "path": "includes/admin/settings/class-wc-settings-accounts.php",
+          "sha256": "19f17b5dbe61c7a25631fbc516bfc0b2262c1f48df671486074ac19e17629cf3",
+          "bytes": 17834
+        },
+        {
+          "path": "includes/admin/settings/class-wc-settings-advanced.php",
+          "sha256": "f368d0e6e2db95531f76428d3993f6b8297432dd69a613384d16818373d7f1af",
+          "bytes": 21290
+        },
+        {
+          "path": "includes/admin/settings/class-wc-settings-checkout.php",
+          "sha256": "63e937f55e3b9069c5b98b6bbf477327f079593143f85e5063d1c4ecc6f20c91",
+          "bytes": 271
+        },
+        {
+          "path": "includes/admin/settings/class-wc-settings-emails.php",
+          "sha256": "5b8a5d1c028a0ba64dfbfe1a6ed47dcf8572e48d0322d56a93b802a00522c673",
+          "bytes": 39810
+        },
+        {
+          "path": "includes/admin/settings/class-wc-settings-general.php",
+          "sha256": "af94c9c9e3c63b0d4383e9e610d8beceb16997cf09729c24de7483ec2899f55c",
+          "bytes": 16554
+        },
+        {
+          "path": "includes/admin/settings/class-wc-settings-integrations.php",
+          "sha256": "99514ce4dc1e2c4473fdc725fa82d875842784052e9f908aad401e7e08ac37a8",
+          "bytes": 2255
+        },
+        {
+          "path": "includes/admin/settings/class-wc-settings-page.php",
+          "sha256": "0fbce8ea06f09d6313155c5932e2034c48996e1489c9bc89b52028435992b9ff",
+          "bytes": 17036
+        },
+        {
+          "path": "includes/admin/settings/class-wc-settings-payment-gateways.php",
+          "sha256": "3676d87cc3d094ad1b48d410675a541eea4f82b1c3d8eff5a538c405672639d7",
+          "bytes": 15418
+        },
+        {
+          "path": "includes/admin/settings/class-wc-settings-point-of-sale.php",
+          "sha256": "d5212fd523f39322c6e598ed329215afc52a3e057c610af38076a14c1139dfc7",
+          "bytes": 2777
+        },
+        {
+          "path": "includes/admin/settings/class-wc-settings-products.php",
+          "sha256": "a48a626b4adca7e6b9210e726ee92498e80ddcb6daaefddc2c6268235c164a17",
+          "bytes": 18864
+        },
+        {
+          "path": "includes/admin/settings/class-wc-settings-shipping.php",
+          "sha256": "a1cb43cd7db160def426ae8ed4e5fe8a7cb8a2b44d4d544bf3bd94db8617fb50",
+          "bytes": 17754
+        },
+        {
+          "path": "includes/admin/settings/class-wc-settings-site-visibility.php",
+          "sha256": "1538bde8544381e4155f495c4d9c7521fe05b14e96c720f365e984f623b2486f",
+          "bytes": 879
+        },
+        {
+          "path": "includes/admin/settings/class-wc-settings-tax.php",
+          "sha256": "042d09da093d29461aab5f9b31f240d291cb8e0d00fd6c2f2812b78962455881",
+          "bytes": 14220
+        },
+        {
+          "path": "includes/class-wc-cart-session.php",
+          "sha256": "d9296a5bd9f62c73a2ac6585c8467b77d6a34b6a7fdd9ff8d0a74eba11c50639",
+          "bytes": 28065
+        },
+        {
+          "path": "includes/class-wc-comments.php",
+          "sha256": "999daa321cbfb1a6ca54473ead8857dbac226dcb91c918fc5bb5cdd5b91ea3f0",
+          "bytes": 24966
+        },
+        {
+          "path": "includes/class-wc-coupon.php",
+          "sha256": "a2d3c76b0251c3da75c1cc9f3e52a59fba4b033e173bc9f98dc987337cfa31c5",
+          "bytes": 49775
+        },
+        {
+          "path": "includes/class-wc-customer.php",
+          "sha256": "e3d0187fa5f8a1ad9eb9a75c149256672f5f0b69a372e587f180d4173f1631cc",
+          "bytes": 35102
+        },
+        {
+          "path": "includes/class-wc-download-handler.php",
+          "sha256": "2be981d42d1d91690fe38d03efa02af1818a9dda45ed7a4a1ae11f6a57c56006",
+          "bytes": 44655
+        },
+        {
+          "path": "includes/class-wc-emails.php",
+          "sha256": "743f4a18e526f15524c603589cd9a83175b3e702f1488074f62ca3be2391eaab",
+          "bytes": 41347
+        },
+        {
+          "path": "includes/class-wc-order-refund.php",
+          "sha256": "e0a1a32fcef3c29d59a80ce8dade89694b087806f894af6d16f121bed569b0f5",
+          "bytes": 7233
+        },
+        {
+          "path": "includes/class-wc-order.php",
+          "sha256": "a0ecf898ed85e7260e75fd557c8db139a9a4da6c8f6aebbd154b03e4518f5e79",
+          "bytes": 80539
+        },
+        {
+          "path": "includes/class-wc-product-download.php",
+          "sha256": "cc2bb2dca3bb6cfad92c91b71b5bed2fed5286a9b3595dae824e879f562b6c48",
+          "bytes": 14748
+        },
+        {
+          "path": "includes/class-wc-product-external.php",
+          "sha256": "737c38f9013573ccaaab6add00679e6ef6c937846817a375a675986efb9e391f",
+          "bytes": 5104
+        },
+        {
+          "path": "includes/class-wc-product-grouped.php",
+          "sha256": "84dca4db871ee0fa72f4ee5c071f9e573fda297c05ef874ca5945232be64a664",
+          "bytes": 7042
+        },
+        {
+          "path": "includes/class-wc-product-variable.php",
+          "sha256": "950e24d08e08a58a9b1416936c1de0ef8c9d44d159ee5d752423edf23c53e0a0",
+          "bytes": 27646
+        },
+        {
+          "path": "includes/class-wc-product-variation.php",
+          "sha256": "44a9e5cbca92229816a605980378059a29ad69addc203a1611dfefebc525874f",
+          "bytes": 23779
+        },
+        {
+          "path": "includes/class-wc-session-handler.php",
+          "sha256": "93020272fe06b6e24624c4288d915b00a3fbc3447e3a324b7d200840c47f059b",
+          "bytes": 25110
+        },
+        {
+          "path": "includes/class-wc-shipping-zone.php",
+          "sha256": "2df31b48ca297396e7bda1e8fbcb7cec53a4efcde32a8a83d33ba2be0ced25d5",
+          "bytes": 13392
+        },
+        {
+          "path": "includes/class-wc-tax.php",
+          "sha256": "de18a75a96ac9045a9e3e52d3ebc5a110bbdf470fe9615a33b3fe090d1617a39",
+          "bytes": 40859
+        },
+        {
+          "path": "includes/class-wc-webhook.php",
+          "sha256": "69178a522d18147c04891d3a1185c6caeaaa2d9ad929ee66d448ff0cffe2f9d0",
+          "bytes": 34579
+        },
+        {
+          "path": "license.txt",
+          "sha256": "03fdcdce033d6d7c061234e447195bf50fdaf3724708eb712dd4d90a6279ba12",
+          "bytes": 36318
+        },
+        {
+          "path": "src/Abilities/AbilityDefinition.php",
+          "sha256": "a703fb94d2808065d27be73b91d1d927704ee0ce7f7c0010e86b75256f28b067",
+          "bytes": 592
+        },
+        {
+          "path": "src/Admin/API/Reports/Categories/Controller.php",
+          "sha256": "e5ae995e0dcad4f76dbad86062da42cda844e4b0de277bccfa44853cbc8b5d2c",
+          "bytes": 8880
+        },
+        {
+          "path": "src/Admin/API/Reports/Coupons/Controller.php",
+          "sha256": "be31ed7ac15971d9246a1b7aa27e2a068e99c8e473ee32cb1cc43b47e7c12ffa",
+          "bytes": 8181
+        },
+        {
+          "path": "src/Admin/API/Reports/Customers/Controller.php",
+          "sha256": "9e353d03acc599895510a44209964372a878de4df4ebb39747ec303ab0eda78d",
+          "bytes": 32244
+        },
+        {
+          "path": "src/Admin/API/Reports/Downloads/Controller.php",
+          "sha256": "8668f7f7d8bfe5e132a6771d3b6b1ff0af25731625616fa6c75c61c9a6050a0d",
+          "bytes": 12024
+        },
+        {
+          "path": "src/Admin/API/Reports/Export/Controller.php",
+          "sha256": "3876f218076336c9d6c567d3245af5c5fb66a5ebb329853e1ae94c2d1126b5a5",
+          "bytes": 8292
+        },
+        {
+          "path": "src/Admin/API/Reports/Import/Controller.php",
+          "sha256": "c444c2fe7ce82458c562d5574a832d4953e7ef15ac48719bc4edf010cfd1394c",
+          "bytes": 8776
+        },
+        {
+          "path": "src/Admin/API/Reports/Orders/Controller.php",
+          "sha256": "f6e922c0bb202af96a8b2c4796fc4e2a90ef017562a739272aeac8a3129b2fa7",
+          "bytes": 20250
+        },
+        {
+          "path": "src/Admin/API/Reports/PerformanceIndicators/Controller.php",
+          "sha256": "3406dc2dbcb2f5ffd72243bb450901332e015805d37e25a6629870b230b70c9c",
+          "bytes": 19766
+        },
+        {
+          "path": "src/Admin/API/Reports/Products/Controller.php",
+          "sha256": "fe7911c94310dff2c22073e96acb85986e4325eb9124c550321a20cdb6d7fca8",
+          "bytes": 12047
+        },
+        {
+          "path": "src/Admin/API/Reports/Stock/Controller.php",
+          "sha256": "563476f68b5163aac4accc7936efcd5230d8c4dbc3c1ee1d4841c2364ba1bf3d",
+          "bytes": 17258
+        },
+        {
+          "path": "src/Admin/API/Reports/Taxes/Controller.php",
+          "sha256": "ddba99ed7a5704534d864dda74385c234cce52c543f20fffd25561db93b6b5ba",
+          "bytes": 11602
+        },
+        {
+          "path": "src/Admin/API/Reports/Variations/Controller.php",
+          "sha256": "b3eb45cbbe2df260795a749b985506af398b0cec424a50b5f7306343c65451d8",
+          "bytes": 14689
+        },
+        {
+          "path": "src/Checkout/Helpers/ReserveStock.php",
+          "sha256": "edd6e6be2c8f482355e43f230689f3138bec764016e31395217f63ae4c4b5b20",
+          "bytes": 17668
+        },
+        {
+          "path": "src/Internal/Abilities/AbilitiesLoader.php",
+          "sha256": "96915cbec525b27e887e97db2b84089a141f4fa89643773dd8de8e73a654186c",
+          "bytes": 9772
+        },
+        {
+          "path": "src/Internal/Abilities/AbilitiesRegistry.php",
+          "sha256": "24ef590b0d9eebcc4b7c23bebb179f5543d292cb449efb0417fbbb94e133a5c3",
+          "bytes": 910
+        },
+        {
+          "path": "src/Internal/Abilities/Domain/AbstractDomainAbility.php",
+          "sha256": "6860578b1acea269b726902af24c3842335573592ffd4035f13d0be10d6bdf51",
+          "bytes": 392
+        },
+        {
+          "path": "src/Internal/Abilities/Domain/OrderAddNote.php",
+          "sha256": "86e50dbb34303f4cf7777710cd07371a90fc9746dc164065f21dc7c6a33f1683",
+          "bytes": 3416
+        },
+        {
+          "path": "src/Internal/Abilities/Domain/OrderNotesQuery.php",
+          "sha256": "1261e8fadd79572692f8db5edada5480475ca2f6af5b9a50bf0232e8b16ae61a",
+          "bytes": 3707
+        },
+        {
+          "path": "src/Internal/Abilities/Domain/OrderUpdateStatus.php",
+          "sha256": "50bc3b70e117f846924eef0f4472df896a0eea4392132cec5c558e9e53f35e75",
+          "bytes": 4526
+        },
+        {
+          "path": "src/Internal/Abilities/Domain/OrdersQuery.php",
+          "sha256": "4407c6e12fbd2eb1d13312a486849c545213346e34091a3c73447fad73b6714b",
+          "bytes": 13600
+        },
+        {
+          "path": "src/Internal/Abilities/Domain/ProductCreate.php",
+          "sha256": "7d74c0b38d0837b56d34b96b8dd59b19a14901bc5e62c6bebbe138c0dc9ca10c",
+          "bytes": 4041
+        },
+        {
+          "path": "src/Internal/Abilities/Domain/ProductDelete.php",
+          "sha256": "5d9929b424db545a3a48d433f5a362dd198697b3b2e929028a451ce17802b0ca",
+          "bytes": 4275
+        },
+        {
+          "path": "src/Internal/Abilities/Domain/ProductUpdate.php",
+          "sha256": "de50d053cbe9cf0c9ed0591871e636780eef16a3f4b5b0fe1e45d6c106531477",
+          "bytes": 5677
+        },
+        {
+          "path": "src/Internal/Abilities/Domain/ProductsQuery.php",
+          "sha256": "702abc9cfa2dec877cbf07032bf1f7dcfe2a3258aa3dd42fef67174977cd0657",
+          "bytes": 6528
+        },
+        {
+          "path": "src/Internal/DataStores/Orders/OrdersTableDataStore.php",
+          "sha256": "e31ff5d107609434a97f8d386d313e8bac0e28f8c98e2444a4a4dda8073792bf",
+          "bytes": 129045
+        },
+        {
+          "path": "src/Internal/MCP/MCPAdapterProvider.php",
+          "sha256": "bd2ebca58c811ac0b9b86159c608b05094ffc8d5f48c816e2c7d41e64f732d9e",
+          "bytes": 1947
+        },
+        {
+          "path": "src/Internal/MCP/McpEndpointRemoval.php",
+          "sha256": "3474ca541bcec9052f98b03ee1c0e086ec0da6c4ea61a94c728fa84aa33d85ab",
+          "bytes": 10427
+        },
+        {
+          "path": "src/Internal/Orders/OrderAttributionController.php",
+          "sha256": "0d450d009d25042372fa8cf333d721696c3f945a73e9a99e3816f90b045bc44c",
+          "bytes": 16949
+        },
+        {
+          "path": "woocommerce.php",
+          "sha256": "5a3d1c31d8add1106d100323f4ba1038be2c7bd52e93285d76b3c9ac29658803",
+          "bytes": 2401
+        }
+      ]
+    },
+    {
+      "id": "wordpress-mcp",
+      "origin": "https://github.com/WordPress/mcp-adapter",
+      "revision": "f778ba25c166ddfbb17dba2a349f7e23e9008614",
+      "license": "GPL-2.0-or-later",
+      "scope": "Selected static source; no upstream execution",
+      "rea": {
+        "version": "6.8.0",
+        "authority": "historical-reference",
+        "inventory_state": "partial",
+        "root_sha256": "6334251f77bd6eb58bab1d62c1c8d6cc2c570794df242fda22db479086995508",
+        "artifact_sha256": "2534d92649e2244f58410710e58c7dccaedf6033b5c604cb64e0ff163ccc8081",
+        "parse_failure_count": 0
+      },
+      "files": [
+        {
+          "path": "includes/Abilities/AbilityNameSuggester.php",
+          "sha256": "c8d8fce48f9502624f1fb51fd21ab166199fea8285b4782bbcdf1c75846127cb",
+          "bytes": 7717
+        },
+        {
+          "path": "includes/Abilities/DiscoverAbilitiesAbility.php",
+          "sha256": "0c4de588848b3e386626ca7a9c3b5916aaf9724fccfad18585da15cee546af49",
+          "bytes": 4698
+        },
+        {
+          "path": "includes/Abilities/ExecuteAbilityAbility.php",
+          "sha256": "52dea643c13d24450286003fc833b828f69e1ce1b8a65e0c79453ac006393dd3",
+          "bytes": 7396
+        },
+        {
+          "path": "includes/Abilities/GetAbilityInfoAbility.php",
+          "sha256": "52033ca3ca5dd72da65daf66ee2c910a9b0cb4d868afbe5357432d4b2d5034d0",
+          "bytes": 5991
+        },
+        {
+          "path": "includes/Abilities/McpAbilityExposure.php",
+          "sha256": "df7b7dc39a0519ff9dcc21764c45dc1e472ba75eea0c76959333a6ca6766d0d7",
+          "bytes": 1941
+        },
+        {
+          "path": "includes/Abilities/McpAbilityHelperTrait.php",
+          "sha256": "72e6198f3768dd4924c9cccef1a9a99204ab53e97db3aaa179a7330b7dbc3300",
+          "bytes": 4031
+        },
+        {
+          "path": "includes/Autoloader.php",
+          "sha256": "4f9d9f549e951018f03e6b1d8d780250e057a29e56210af3774fb9bb15f4e8a1",
+          "bytes": 4978
+        },
+        {
+          "path": "includes/Cli/McpCommand.php",
+          "sha256": "aac020b4e06a24214602dc259f8a25f634f265a4e05a777a06bc9774c4ea811f",
+          "bytes": 5313
+        },
+        {
+          "path": "includes/Cli/StdioServerBridge.php",
+          "sha256": "311bd6f20a2bbe2571fa374b692ddaf177c53b9557518724b687850828b7b644",
+          "bytes": 6150
+        },
+        {
+          "path": "includes/Core/McpAdapter.php",
+          "sha256": "1e20553c7874cda293322f5ed6e3182bb09c18fad7ef6295f8feaf88f8a3e9c7",
+          "bytes": 12731
+        },
+        {
+          "path": "includes/Core/McpComponentRegistry.php",
+          "sha256": "6461cabd43e8d9c03b88d2689486cf6e790d4bb47bae2fe3a6fd9da72c06d2c9",
+          "bytes": 21719
+        },
+        {
+          "path": "includes/Core/McpRequestContext.php",
+          "sha256": "d9344a18419db1a9bdb69951bf06a7c4094791d8a142a7f6ea6b67e5d67772f2",
+          "bytes": 4985
+        },
+        {
+          "path": "includes/Core/McpServer.php",
+          "sha256": "d4287d82fa58fa601c802d1033f6c94f92f62c3e536348fe79558a7ea030faaf",
+          "bytes": 14113
+        },
+        {
+          "path": "includes/Core/McpTransportFactory.php",
+          "sha256": "b9579036f6b8b39342cb3cbbe18d66c96a18d3483b4e3af1ef90baf2a41896f8",
+          "bytes": 4013
+        },
+        {
+          "path": "includes/Core/McpVersionNegotiator.php",
+          "sha256": "46fbf823c825c0c9fb5cb8f5033bd925ee7926eaf072679ddca98c4613d27c44",
+          "bytes": 5191
+        },
+        {
+          "path": "includes/Domain/Contracts/McpComponentInterface.php",
+          "sha256": "126d3d3ca53501e72bbaf832ef4f1067c5e6425c00310d9a9a92f82ca80741f6",
+          "bytes": 3022
+        },
+        {
+          "path": "includes/Domain/Prompts/Contracts/McpPromptBuilderInterface.php",
+          "sha256": "515c73c17d07f0e132e20823a11e83d4acc5bc8cfec487a939105006ecf85338",
+          "bytes": 1547
+        },
+        {
+          "path": "includes/Domain/Prompts/McpPrompt.php",
+          "sha256": "bd723c3dcbbc4be1aafab298295d3ecaa2a80af5d15fc38c7470ee9a88eb9573",
+          "bytes": 11094
+        },
+        {
+          "path": "includes/Domain/Prompts/McpPromptBuilder.php",
+          "sha256": "da9fa4ca3ce79818c1ab10d0d85a69409ce3ff5a0e1a3468a0ea86634abf12f3",
+          "bytes": 8571
+        },
+        {
+          "path": "includes/Domain/Prompts/RegisterAbilityAsMcpPrompt.php",
+          "sha256": "6f336fcc79c20a6f0967ca28b50524a0878b25e3eb6a77c7130e3ae1d0372bc5",
+          "bytes": 10723
+        },
+        {
+          "path": "includes/Domain/Resources/McpResource.php",
+          "sha256": "2f5872ea5a1e6917b8bd3d2224ee8e95de46617d9f8f41cc72870074e2a5dc5a",
+          "bytes": 9376
+        },
+        {
+          "path": "includes/Domain/Resources/RegisterAbilityAsMcpResource.php",
+          "sha256": "c47cbf67514ba54f0201937846d82f9167115ba2a3d55052670f7ad36e32e96e",
+          "bytes": 11477
+        },
+        {
+          "path": "includes/Domain/Tools/McpInputRequired.php",
+          "sha256": "90cc358acae55a2c2e602bad0d5caca69300bbe9f176cb6aff839f4a2db5708b",
+          "bytes": 1463
+        },
+        {
+          "path": "includes/Domain/Tools/McpTool.php",
+          "sha256": "56be1e8fdacd15765b7ac69219b27cc57e123b18b7be3623efc9da57f0d27bb6",
+          "bytes": 14909
+        },
+        {
+          "path": "includes/Domain/Tools/McpToolCallContext.php",
+          "sha256": "1e2108d87a7894227f3cb0a4022a96adccf6763eef7620c19418718ee0abd266",
+          "bytes": 3533
+        },
+        {
+          "path": "includes/Domain/Tools/RegisterAbilityAsMcpTool.php",
+          "sha256": "7343f925ba937a61b9df515218861336993e9d23432f572d8728171cf484213c",
+          "bytes": 6478
+        },
+        {
+          "path": "includes/Domain/Utils/AbilityArgumentNormalizer.php",
+          "sha256": "ae8c9fcdec9eee095a433700106080a5653d6fedab61a8e99d8cd94e36410328",
+          "bytes": 4471
+        },
+        {
+          "path": "includes/Domain/Utils/AbilityPermissionChecker.php",
+          "sha256": "8cb7c02abd18a6f3a214151fd3b19e4fac2910cba493f285e1276f91d42282b2",
+          "bytes": 1135
+        },
+        {
+          "path": "includes/Domain/Utils/ContentBlockHelper.php",
+          "sha256": "6d3d5ae1f91cfb500cdf3d2ea99c1c04ea1e8595d7bbf4d8998ac554a2cd6380",
+          "bytes": 4266
+        },
+        {
+          "path": "includes/Domain/Utils/McpAbilityMeta.php",
+          "sha256": "c5fa7dabc82ae5d98541f4a503771d297d13f0036acd3dba6cf5d561c6f874b3",
+          "bytes": 1420
+        },
+        {
+          "path": "includes/Domain/Utils/McpAnnotationMapper.php",
+          "sha256": "7dcb2e53ee95e77d634e24b08b5070cf305352ac096e5961109629b08ca17c6d",
+          "bytes": 4597
+        },
+        {
+          "path": "includes/Domain/Utils/McpNameSanitizer.php",
+          "sha256": "33e98ecdb6f14016ea25b2217300480348eca7ce666ca5acdb1bded16a1bca02",
+          "bytes": 2989
+        },
+        {
+          "path": "includes/Domain/Utils/McpValidator.php",
+          "sha256": "45f04b51d1ab26cc86e711da22aaecee79d12401768d511e8b248436afe71d98",
+          "bytes": 5908
+        },
+        {
+          "path": "includes/Domain/Utils/RevisionProjectionTrait.php",
+          "sha256": "5b9ee994c31055257ede5fb2b05f9250a8e723a927ab04b8abc0df8018cb0b01",
+          "bytes": 3763
+        },
+        {
+          "path": "includes/Domain/Utils/SchemaTransformer.php",
+          "sha256": "eba29a2fb8906557cbd8004e8503e1bced0cbfd4343e2274f5824d2fd1f78cb4",
+          "bytes": 4046
+        },
+        {
+          "path": "includes/Domain/Utils/ThrowableGuardTrait.php",
+          "sha256": "d1ab46276aa25983a76bd68c347b1b694d2ba6a47c3961ef1669b742ea531b12",
+          "bytes": 1154
+        },
+        {
+          "path": "includes/Handlers/HandlerHelperTrait.php",
+          "sha256": "b7b33de98350a72acf205906595457bdfc9268562d4a7bba1afe7e0a459537c3",
+          "bytes": 2508
+        },
+        {
+          "path": "includes/Handlers/Initialize/InitializeHandler.php",
+          "sha256": "5e99b811fd7546f56e67647504fa643d10099d106ba34fb95d3ee9e167d7cbfe",
+          "bytes": 2548
+        },
+        {
+          "path": "includes/Handlers/Prompts/PromptsHandler.php",
+          "sha256": "08eeeae23438bc43955735730abec9b45c2d91231c341d55c7b07336a95310a9",
+          "bytes": 9447
+        },
+        {
+          "path": "includes/Handlers/Resources/ResourcesHandler.php",
+          "sha256": "dafde9eb1dfbf4973d0e9bd7f5381d97f5eee97973985139e4e369beeba3ee21",
+          "bytes": 11048
+        },
+        {
+          "path": "includes/Handlers/System/SystemHandler.php",
+          "sha256": "87a26b73c6da9c505a5843a1cf0e87e29c597ee8097a2c355b6b38b2f0e7a201",
+          "bytes": 713
+        },
+        {
+          "path": "includes/Handlers/Tools/ToolsHandler.php",
+          "sha256": "bea3f568f01adb4ca0df5eb892c0abacfc77f6fe796fd77554064b3b9c7de697",
+          "bytes": 15256
+        },
+        {
+          "path": "includes/Infrastructure/ErrorHandling/Contracts/McpErrorHandlerInterface.php",
+          "sha256": "cccf961c652f8d68d60e65860f32a0c91e4c84f2ffc2a662cb6bd9e25b320f12",
+          "bytes": 759
+        },
+        {
+          "path": "includes/Infrastructure/ErrorHandling/ErrorLogMcpErrorHandler.php",
+          "sha256": "790ddc781ef0bb122913fbfaf54de504a862e5d17789bd5482bc1c1efc31b277",
+          "bytes": 1110
+        },
+        {
+          "path": "includes/Infrastructure/ErrorHandling/McpErrorFactory.php",
+          "sha256": "6f3636190381ff9d1810fe79d9495ca347937b001e0265f7710be2e557b3e920",
+          "bytes": 13629
+        },
+        {
+          "path": "includes/Infrastructure/ErrorHandling/NullMcpErrorHandler.php",
+          "sha256": "68a0ade031644d532f38385d88c61bd3ef931e89e541104a8f3dde798e485964",
+          "bytes": 878
+        },
+        {
+          "path": "includes/Infrastructure/Observability/ConsoleObservabilityHandler.php",
+          "sha256": "a7801be9802b87c7d7141144be0f51cfbfa8adc3abe6f536bbf8b7aa4f8c8521",
+          "bytes": 1626
+        },
+        {
+          "path": "includes/Infrastructure/Observability/Contracts/McpObservabilityHandlerInterface.php",
+          "sha256": "7f5c73d9e132d2adcc05915ee1a44f7be83496ad45f473aafb6e3f22331b8363",
+          "bytes": 945
+        },
+        {
+          "path": "includes/Infrastructure/Observability/ErrorLogMcpObservabilityHandler.php",
+          "sha256": "3aa48d6bb7d23e77541f620504da229c4a2e9f0da88430cbb8e6ff5bf2ef47b2",
+          "bytes": 2096
+        },
+        {
+          "path": "includes/Infrastructure/Observability/FailureReason.php",
+          "sha256": "59e78cf51bc2de80f57953945a71efe0309feefce725b92180edd236e8782d30",
+          "bytes": 5847
+        },
+        {
+          "path": "includes/Infrastructure/Observability/McpObservabilityHelperTrait.php",
+          "sha256": "9ee1479e3cbcf711abe8f71fd9192f6181c791cbe1071835fa482fca9de2446f",
+          "bytes": 5960
+        },
+        {
+          "path": "includes/Infrastructure/Observability/NullMcpObservabilityHandler.php",
+          "sha256": "cde7fa44796f06293cb488235d868ed1891a6c5e2c931323e9c0d7447e4ecbde",
+          "bytes": 1050
+        },
+        {
+          "path": "includes/Plugin.php",
+          "sha256": "16b5065c7149bb33b18d0d133d1c4e7b27ab25a1c43a4214ca54ec2c720e8301",
+          "bytes": 2071
+        },
+        {
+          "path": "includes/Servers/DefaultServerFactory.php",
+          "sha256": "3b562a64af3019180d36c5f2ab2d6afb85332fd122204861524f50388d7c7553",
+          "bytes": 5907
+        },
+        {
+          "path": "includes/Transport/Contracts/McpRestTransportInterface.php",
+          "sha256": "6e17145cd78428213966ab92bd3c15825b6d844d30f5285186216b5afa89a9f6",
+          "bytes": 1056
+        },
+        {
+          "path": "includes/Transport/Contracts/McpTransportInterface.php",
+          "sha256": "54d3ac6b86a14bab2bce608867e759d50d9d4d1380f530b1120c14449a49821a",
+          "bytes": 996
+        },
+        {
+          "path": "includes/Transport/HttpTransport.php",
+          "sha256": "12c4b340bc88db9be23dbaee92e7db8d17599873ca4f11b4adef9a4871ea74a3",
+          "bytes": 5486
+        },
+        {
+          "path": "includes/Transport/Infrastructure/HttpRequestContext.php",
+          "sha256": "388c63ef0f8c9fbe3131a52978fe2710fcf9a375fec381e50865effc70d64b64",
+          "bytes": 2675
+        },
+        {
+          "path": "includes/Transport/Infrastructure/HttpRequestHandler.php",
+          "sha256": "1edad6a7ba4ec13b0b057a1d7c675122b600f365035a7ff450ff5abab9b27f8f",
+          "bytes": 8004
+        },
+        {
+          "path": "includes/Transport/Infrastructure/HttpSessionValidator.php",
+          "sha256": "e85453dbb5d1f90e8fbf15a32ec27b6ddd6af5fd18349d168461d12554945772",
+          "bytes": 7135
+        },
+        {
+          "path": "includes/Transport/Infrastructure/JsonRpcRequestDecoder.php",
+          "sha256": "7a9af11564f3bf1e84224b68ed3365c6fe96a182c3864c77cf6a50d8cd96b7c5",
+          "bytes": 6294
+        },
+        {
+          "path": "includes/Transport/Infrastructure/McpTransportContext.php",
+          "sha256": "92c30179c5b4156a6004c175538c6a42ae9fcd9a2268f52b4695754bd91b2982",
+          "bytes": 6437
+        },
+        {
+          "path": "includes/Transport/Infrastructure/McpTransportHelperTrait.php",
+          "sha256": "db5fa331749baab9f7b6adc2854df761a941334dc212ca8dc96efd8395f73b6a",
+          "bytes": 1041
+        },
+        {
+          "path": "includes/Transport/Infrastructure/McpWireOrchestrator.php",
+          "sha256": "9dc2a6178a881a745960c13fe9b381f154305b96181a439cddde761b880286db",
+          "bytes": 44269
+        },
+        {
+          "path": "includes/Transport/Infrastructure/RequestRouter.php",
+          "sha256": "a4f1b49ac452c1843a4fe1eb8b86c9f7dde3a73b91a558e63fef43cce5a072c2",
+          "bytes": 19858
+        },
+        {
+          "path": "includes/Transport/Infrastructure/SessionManager.php",
+          "sha256": "2650166288e635f4045b034b2de86711e3f4d82afd5a0384a04f0fb817da6670",
+          "bytes": 20369
+        }
+      ]
+    },
+    {
+      "id": "a2ui",
+      "origin": "https://github.com/a2ui-project/a2ui",
+      "revision": "36725eee042da90c526f469f94246f96e16fdc35",
+      "license": "Apache-2.0",
+      "scope": "Selected static source; no upstream execution",
+      "rea": {
+        "version": "6.8.0",
+        "authority": "historical-reference",
+        "inventory_state": "partial",
+        "root_sha256": "8425e88c27ecef56c6b7b1bcad287e461a4c0830220cbc138bd2d0171437e110",
+        "artifact_sha256": "a25c58d76e470cc238c44c2c090c3d7994fbdbc8a2bd68cc96f96d5ce461ba60",
+        "parse_failure_count": 0
+      },
+      "files": [
+        {
+          "path": "specification/v1_0/README.md",
+          "sha256": "4cb70dd5cb53e2e0c931a40faee249c3ef7c62d606cfb898e3762edb902494b6",
+          "bytes": 1251
+        },
+        {
+          "path": "specification/v1_0/docs/a2ui_custom_functions.md",
+          "sha256": "bf5f5dbbdc4f103cfc3e52fa37610ca4218276d70d1258b3d83c0b9bb4594347",
+          "bytes": 4454
+        },
+        {
+          "path": "specification/v1_0/docs/a2ui_protocol.md",
+          "sha256": "50ce0de21a807456500aeda94532e85254954b0ab2f8ebafac92ef81266d6bd6",
+          "bytes": 107848
+        },
+        {
+          "path": "specification/v1_0/docs/evolution_guide.md",
+          "sha256": "fb8ad5be1846578a234be189e37b5a22f5fdef0e284a83c3b6f858fec1e40fe2",
+          "bytes": 28877
+        },
+        {
+          "path": "specification/v1_0/docs/sdks_spec.md",
+          "sha256": "0026e8bffe623e4af6e7dedc292f361a3b6ad866516e115512a53f38650b5898",
+          "bytes": 4318
+        },
+        {
+          "path": "specification/v1_0/extensions/a2a/docs/a2ui_extension_specification.md",
+          "sha256": "20edcde54f549942d673e988a2c4843f1965df974c1e2ee4db02b036c8fcd13c",
+          "bytes": 10026
+        },
+        {
+          "path": "specification/v1_0/json/agent_capabilities.json",
+          "sha256": "6a4282dfb26af95a73d960572a31b91c5d5c89d1f9e54cbb8d24c599afcbc3a2",
+          "bytes": 1260
+        },
+        {
+          "path": "specification/v1_0/json/agent_to_renderer.json",
+          "sha256": "2f575f783fdda0e4d175fe5d331661655e4a4901613262322792dae7e823761d",
+          "bytes": 8968
+        },
+        {
+          "path": "specification/v1_0/json/agent_to_renderer_list.json",
+          "sha256": "3d3fef882fe5cc22932d3a91713defaeeb329126200954c06bf9f2c56df51c56",
+          "bytes": 368
+        },
+        {
+          "path": "specification/v1_0/json/agent_to_renderer_list_wrapper.json",
+          "sha256": "e306af2521e731db673415115d55b3d0e66453945c071e34298b4cb1dff88014",
+          "bytes": 549
+        },
+        {
+          "path": "specification/v1_0/json/catalog_definition.json",
+          "sha256": "836a48b2deb7ae76c3b68cb4e79c2faa24cba36d4d5396474894796797364d44",
+          "bytes": 9997
+        },
+        {
+          "path": "specification/v1_0/json/common_types.json",
+          "sha256": "c4e78305be1de73eecb37f8179ba169730250611703683af291b18135a6430dc",
+          "bytes": 13111
+        },
+        {
+          "path": "specification/v1_0/json/renderer_capabilities.json",
+          "sha256": "3ebd2889764d892df16d034643ecd9e3a3fc02f298fa05577b95d9e287e703de",
+          "bytes": 1349
+        },
+        {
+          "path": "specification/v1_0/json/renderer_data_model.json",
+          "sha256": "16f7d6a9aa31fed6fd3a1deb924db14a759ff6514bfe386a0dca8c48389cdbc8",
+          "bytes": 803
+        },
+        {
+          "path": "specification/v1_0/json/renderer_to_agent.json",
+          "sha256": "58ecde02101f0f37566b5e238dc6ef6af628c3ff312fce0e17ab7670b7215465",
+          "bytes": 5653
+        },
+        {
+          "path": "specification/v1_0/json/renderer_to_agent_list.json",
+          "sha256": "98899d7d16222207af3bfd9aab12aa7b8f68dc8b5267dcf76d867236235ec5d8",
+          "bytes": 368
+        },
+        {
+          "path": "specification/v1_0/json/renderer_to_agent_list_wrapper.json",
+          "sha256": "a0dbcaf2340def4485c287c19888aa81041ddee75e5717129457d4a39fbcc593",
+          "bytes": 549
+        },
+        {
+          "path": "specification/v1_0/json/sample.json",
+          "sha256": "7df58a955dfcd5241bfd5631df8fd291eb02d66f2f9a12304d5395517d64202f",
+          "bytes": 753
+        },
+        {
+          "path": "specification/v1_0/test/README.md",
+          "sha256": "7ce26a551ac4326a30f600c160f4ad547d6b2501a60cd26b9edd18fb772efda0",
+          "bytes": 1095
+        },
+        {
+          "path": "specification/v1_0/test/cases/agent_capabilities.json",
+          "sha256": "9154ec096b868e627a00df2ef9178a261a06b9ec1c1776a2120abba46c60de31",
+          "bytes": 823
+        },
+        {
+          "path": "specification/v1_0/test/cases/button_checks.json",
+          "sha256": "1fafaab78eaca43beab1c2b5193a6378dc0c5098b37b2f4b5145867e7ccc752d",
+          "bytes": 8097
+        },
+        {
+          "path": "specification/v1_0/test/cases/call_agent_function_message.json",
+          "sha256": "dc752cda346a64cfd48bdeb850c954721132e94b39e61f4ddc303482ee463573",
+          "bytes": 1945
+        },
+        {
+          "path": "specification/v1_0/test/cases/call_function_message.json",
+          "sha256": "9854d2b3c75638f228d398cd77ff1fd4a837889dedb2ce333818569bc36e9fba",
+          "bytes": 3727
+        },
+        {
+          "path": "specification/v1_0/test/cases/catalog_schema_relaxation.json",
+          "sha256": "071692c76e2c21e8b11bdd4208b95a7896ec46359a5e7a7ec6c767a7eb2170be",
+          "bytes": 8083
+        },
+        {
+          "path": "specification/v1_0/test/cases/checkable_components.json",
+          "sha256": "ac34b896ba215368a528d6ca37adaae19795dcbf872bb0b33e2df0348bd667d2",
+          "bytes": 15012
+        },
+        {
+          "path": "specification/v1_0/test/cases/composition_constraints.json",
+          "sha256": "469ede847664c349d2801ae19e09a5f417b53f96c4a165804e8c4a8b5b7b05a4",
+          "bytes": 2542
+        },
+        {
+          "path": "specification/v1_0/test/cases/contact_form_example.jsonl",
+          "sha256": "3aebbac244c539bfd2c2c80ef657e215a86bd6338f793996766c5b52b9165e04",
+          "bytes": 4031
+        },
+        {
+          "path": "specification/v1_0/test/cases/contact_form_example_test.json",
+          "sha256": "212c4ba0d21b7747c91470749b70df5d21e21bbaec638d287c50b0c3d550da82",
+          "bytes": 4359
+        },
+        {
+          "path": "specification/v1_0/test/cases/dynamic_value_validation.json",
+          "sha256": "7b6ebaae9257c66b624cc5c79312f88154bd3c8b2b1e8af512556fc6a58ad065",
+          "bytes": 5719
+        },
+        {
+          "path": "specification/v1_0/test/cases/function_catalog_validation.json",
+          "sha256": "aa340b56e0aa97e941b52d7f06ed558d0eef8a60588899bee2db5b6f0d75b51b",
+          "bytes": 31858
+        },
+        {
+          "path": "specification/v1_0/test/cases/function_definitions.json",
+          "sha256": "c19223bf12c88bbd46eeb53d3298f235611265146e74b4b4422ba86284e9f288",
+          "bytes": 6462
+        },
+        {
+          "path": "specification/v1_0/test/cases/function_response.json",
+          "sha256": "d3784912a406e5626530583d5a1698b1ec265e33bc3d6965df5933710c99131d",
+          "bytes": 3182
+        },
+        {
+          "path": "specification/v1_0/test/cases/icon_checks.json",
+          "sha256": "1c26b1f353212fec66e9482c0f9a17db9051edf19f63237bc29fc829dbe3d58f",
+          "bytes": 2937
+        },
+        {
+          "path": "specification/v1_0/test/cases/initial_state_validation.json",
+          "sha256": "5f5daeaf0dafeafc1d6f1fb54905256d5b85f9a8205488461f7b9a5383323e1e",
+          "bytes": 11122
+        },
+        {
+          "path": "specification/v1_0/test/cases/renderer_messages.json",
+          "sha256": "a5947e13e6b9fd99a33d5c8e4dd1410aa11bc2b0df4e29d9df22a074a54365ac",
+          "bytes": 4599
+        },
+        {
+          "path": "specification/v1_0/test/cases/tabs_checks.json",
+          "sha256": "390e42fab63f9c2918f094177b32d88c2d50661d71737abe77a03969618f451b",
+          "bytes": 1072
+        },
+        {
+          "path": "specification/v1_0/test/cases/text_variants.json",
+          "sha256": "c104f9ffd0ea02225d247ee50fd77f2b9b00eeb9c297e69a82d297237f39bf80",
+          "bytes": 1345
+        },
+        {
+          "path": "specification/v1_0/test/package.json",
+          "sha256": "88af2f8e4d2ac6a1617231a5f9c482c788642e1cd62cf7199f60417807a210d5",
+          "bytes": 587
+        },
+        {
+          "path": "specification/v1_0/test/run_tests.py",
+          "sha256": "55ef512eee9cc3c9034ebfd3c730adcff3ede7538affdce2bc696c36da79f260",
+          "bytes": 27787
+        },
+        {
+          "path": "specification/v1_0/test/testing_catalog.json",
+          "sha256": "12a5f4dc96b7973596035f92ab5af2d6cd6be1045d32a71a72e55426a4d54807",
+          "bytes": 2241
+        }
+      ]
+    },
+    {
+      "id": "deepseek",
+      "origin": "https://github.com/deepseek-ai/deepseek-harness",
+      "revision": "39163dd30f703a79079e2d2446545cff3c453738",
+      "license": "MIT",
+      "scope": "Selected static source; no upstream execution",
+      "rea": {
+        "version": "6.8.0",
+        "authority": "historical-reference",
+        "inventory_state": "partial",
+        "root_sha256": "e0f8b363c6c2ae8e865dbd9256e46e68df8314e8a6b159c658a6dfdbd7377037",
+        "artifact_sha256": "faf60e203fc3c0fcb382b84da758352be39511034cc94321ef06c9995bde6f76",
+        "parse_failure_count": 0
+      },
+      "files": [
+        {
+          "path": "LICENSE",
+          "sha256": "ebb4f09972aee8608be255debaf78451a68e95c290f55c240dec2ecfa16ea6be",
+          "bytes": 1065
+        },
+        {
+          "path": "docs/subsystems/core.md",
+          "sha256": "6d13ab30d5a86e560cadfdf488dfbb302be90676680b205b49d5497c197375f1",
+          "bytes": 60686
+        },
+        {
+          "path": "docs/subsystems/session-telemetry.md",
+          "sha256": "455dc79903517067ee2bc0a8cf5689fa8fa400fb7bd8cbd204224ff539ac5a16",
+          "bytes": 12823
+        },
+        {
+          "path": "packages/core/agent-loop/src/agent.ts",
+          "sha256": "6fa6bd4c0ab2aaea988b92a3fd079fa38271f4b8065ec325a6ab09ec93eb13c8",
+          "bytes": 31225
+        },
+        {
+          "path": "packages/core/agent-loop/src/assistant-stream.ts",
+          "sha256": "5c0d81f97ab4896a80ff34332449245c7323c858c300033674bb938a37ce1223",
+          "bytes": 4334
+        },
+        {
+          "path": "packages/core/agent-loop/src/inbox.ts",
+          "sha256": "336e10096a4899cdbef71e68da6896c5ed84c17a95c56729d17b8ba607bac1ca",
+          "bytes": 8873
+        },
+        {
+          "path": "packages/core/session/src/repair.ts",
+          "sha256": "c2835c920aba203c709e44686e55f43bb4d357ea59cfef3561c371b8ff115540",
+          "bytes": 9428
+        },
+        {
+          "path": "packages/core/session/src/seq-ranges.ts",
+          "sha256": "9f746691995926cb17d3dd19da04871f2355be40c798ed5a8256659e6bf14559",
+          "bytes": 2908
+        },
+        {
+          "path": "packages/core/session/src/tool-history.ts",
+          "sha256": "53ae6aebe5ebe9b1eb782f008315db33ff637611093e40fa3529ec3019b56683",
+          "bytes": 3762
+        },
+        {
+          "path": "packages/session/session-telemetry/src/coordinator.ts",
+          "sha256": "95b54c800069ec144f66af8acaae30e07805d784abd4e21e22d584b68feae4ae",
+          "bytes": 12947
+        }
+      ]
+    },
+    {
+      "id": "sitekit",
+      "origin": "google-site-kit.1.192.0.zip",
+      "revision": "da9c8424b90fc700b09484c20a13aaa3e4ea75edd05a175bf100c6484daee064",
+      "license": "Apache-2.0",
+      "scope": "selected static PHP references only; unexecuted; partial historical graph; supplementary exact module class inventory on 2026-11-26",
+      "rea": {
+        "version": "6.8.0",
+        "authority": "historical-reference",
+        "inventory_state": "partial",
+        "root_sha256": "fe13c6630145b760c00578ca87366d7157aed99275dadab716582f2bda312811",
+        "artifact_sha256": "747c0cbde61a1a0db670011edc3abba4b81be75d3c071e70bf402a8062933c06",
+        "parse_failure_count": 0
+      },
+      "files": [
+        {
+          "path": "google-site-kit.php",
+          "sha256": "e57deb67b7e024ed4028ab615d330c3943d38feb5c0eaf2de92aa7c0f0bcca52",
+          "bytes": 3903
+        },
+        {
+          "path": "includes/Core/Authentication/Authentication.php",
+          "sha256": "7e43f01ac467ca67180dc296a555a01e647aab4f7feec8f5d2d182984a9fe0e1",
+          "bytes": 41736
+        },
+        {
+          "path": "includes/Core/Authentication/Connected_Proxy_URL.php",
+          "sha256": "8fd46d33e94b1cd375f412b966ebb9cb04fb848834b7cedd81aab77986870bd8",
+          "bytes": 2151
+        },
+        {
+          "path": "includes/Core/Authentication/Credentials.php",
+          "sha256": "2fbeace4f5102314053b71bf43043d500e45a51ee4debf7a9c44e7209b6c4b25",
+          "bytes": 4008
+        },
+        {
+          "path": "includes/Core/Authentication/Disconnected_Reason.php",
+          "sha256": "a35a5ed70f974098c6f783401b74e0fd99aeaac9bef5782c740d2b8acf94dbbc",
+          "bytes": 1051
+        },
+        {
+          "path": "includes/Core/Authentication/Google_Proxy.php",
+          "sha256": "a344acbf19ce6e588efa3a0328ee943a9672779a455706a427a28dd43682b198",
+          "bytes": 25949
+        },
+        {
+          "path": "includes/Core/Authentication/Has_Connected_Admins.php",
+          "sha256": "1865a163cfd3d1aee3f2d45c13f7aaf241ddc63ddf9d9f11432b6f5fe5144b17",
+          "bytes": 3378
+        },
+        {
+          "path": "includes/Core/Authentication/Has_Multiple_Admins.php",
+          "sha256": "8634695f43d50343ba6ede221b7f7f41fa809426297fb4214dcb29f536697f47",
+          "bytes": 6603
+        },
+        {
+          "path": "includes/Core/Authentication/Initial_Version.php",
+          "sha256": "f0801d6889708f2d6f47746e98160b0b655862ff20ec6c6151c4b0edbd53423d",
+          "bytes": 633
+        },
+        {
+          "path": "includes/Core/Authentication/Profile.php",
+          "sha256": "d222d72a6b64e567fcd3788b23ba3ade7112e9e027292a9864770d378d6950d6",
+          "bytes": 1669
+        },
+        {
+          "path": "includes/Core/Authentication/REST_Authentication_Controller.php",
+          "sha256": "d29863ee977781c1b2fcf60c7f409839aad3f11e05e11518f1e9289a2cb15b88",
+          "bytes": 5042
+        },
+        {
+          "path": "includes/Core/Authentication/Setup.php",
+          "sha256": "4f8f58a7aa2cf0232f427d6a1e03205e4280a825afbd931c109662a94a275d4b",
+          "bytes": 14037
+        },
+        {
+          "path": "includes/Core/Authentication/Token.php",
+          "sha256": "56cb4a15c39108ad5b64e62286c92f41fa1a3fbc95baba373396432dfee3540f",
+          "bytes": 3872
+        },
+        {
+          "path": "includes/Core/Authentication/Verification_Evidence.php",
+          "sha256": "a93128fe1f4e80b11ad42e7cb0d12bfa5135166bbb95b9b092b39246f8851616",
+          "bytes": 2151
+        },
+        {
+          "path": "includes/Core/Authentication/Verification_File.php",
+          "sha256": "5dac01efae674129620469428407788789c35d3cd9c7d278ae71ff2f57c8cdd0",
+          "bytes": 1252
+        },
+        {
+          "path": "includes/Core/Authentication/Verification_Meta.php",
+          "sha256": "e1614e630fd7d178494793d4cd9163a35def6ad167ffe14c8b9d78e9acd70bf0",
+          "bytes": 624
+        },
+        {
+          "path": "includes/Core/Authentication/Verification.php",
+          "sha256": "57cc145a6d04ea7056e54a8c2915c4dae95c45404277e920e689a5855445ea94",
+          "bytes": 1560
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Batch_Error_Notifier.php",
+          "sha256": "71448bed4a84dce1cd050aac2106b14c4f638fe4aaf2228f05491d00ea5de2d1",
+          "bytes": 9507
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Content_Map.php",
+          "sha256": "54401320de1e58f73d9f03c8e580dec8bcf5018be8d7b5e714a880f22b1ff63b",
+          "bytes": 13197
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Cron_Health_Check.php",
+          "sha256": "50205d407cd1693028c86e13f303350185fc79ccea9f265ecb8ec9a216bfd80b",
+          "bytes": 7041
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Eligible_Subscribers_Query.php",
+          "sha256": "dcb938cc58755ad7059a7ee05ef5aca371ecb625fb69ccd8670a4ecc7cd05fda",
+          "bytes": 11217
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Email_Assets.php",
+          "sha256": "3848a64328f4869a9b763ea13506674350a73149d837a4b24b1e4a0b751d91e5",
+          "bytes": 2452
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Email_Log_Batch_Query.php",
+          "sha256": "e0d2a7c4993d9f5c996adab39340fea30ba15f1103c7354e31fede5d7c2fab5b",
+          "bytes": 13248
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Email_Log_Cleanup.php",
+          "sha256": "d0be1d8a3592304d1bcc513bc5ed3abe531b775f0bd9472a31b317b821fa9c40",
+          "bytes": 3419
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Email_Log.php",
+          "sha256": "c9a940deff6b6c3457e36b87deed739dd17e6cda756c4fcac9c70d4e28a384cf",
+          "bytes": 15391
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Email_Log_Processor.php",
+          "sha256": "3aa91a467f911448d194d734dec383fb2c390b419a9a1b27bb468f447a9ee0e6",
+          "bytes": 9568
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Email_Notice_Golink_Handler.php",
+          "sha256": "fafe12b607ed0dbc3cd5db879c1ce76143dde0a53e6753e4a49c4152a2090976",
+          "bytes": 3616
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Email_Notices.php",
+          "sha256": "9c65eae5f2fe1455f36edfdb1229fd2918f5a9ff7eebf255031ecea8b3a4c36e",
+          "bytes": 9104
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Email_Report_Data_Section_Part.php",
+          "sha256": "2212b30626eeb4588bb0344592b777722d17000c7ed96d0832ae260b7054a8b7",
+          "bytes": 11849
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Email_Reporting_Data_Requests.php",
+          "sha256": "55a48bee26c911bd176cc3766a75996c097cb75851495d1352dca526b758c03a",
+          "bytes": 18744
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Email_Reporting_Golink_Handler.php",
+          "sha256": "52d34f7a17ffe8060a3e5bd5ae282dfa58e8effb6c61b111af7236d9cfc11d17",
+          "bytes": 1044
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Email_Reporting.php",
+          "sha256": "5deb47f4e60e54f71f440bfb1356547ba62ef7413c5e5e3756225ce7d2a26164",
+          "bytes": 10921
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Email_Reporting_Pointer.php",
+          "sha256": "f7156f583e44f520f207496d18d23491bb3b17452941984e59329698d2406f33",
+          "bytes": 6115
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Email_Reporting_Scheduler.php",
+          "sha256": "0993332c3c49fccd6e9b461b526129cda244d589f1ad91cc77ef4b1ee6620af4",
+          "bytes": 12019
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Email_Reporting_Settings.php",
+          "sha256": "84e56c3f96143dbd4d99a14e7915d7d1380429edfc4effa52fadf9abee138775",
+          "bytes": 1585
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Email_Reporting_Site_Health.php",
+          "sha256": "01769c5ea484aef155d8f658fb0c0adabe9dd709a7b827d320d9153c11f8f687",
+          "bytes": 5772
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Email_Report_Payload_Processor.php",
+          "sha256": "8b59e342cf28682c5db7951db38026c506b53ad14d30fd7f5082348ec80604c4",
+          "bytes": 11635
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Email_Report_Section_Builder.php",
+          "sha256": "b95b16415757488fea2672e151c2da96d1aeae90a8ce8815e0b0c8f4076c049e",
+          "bytes": 12824
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Email_Report_Sender.php",
+          "sha256": "2fa96676c31ac181b35ef1a93a3b4b62132f328921bafe14e0abb07b9d503da6",
+          "bytes": 4234
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Email_Template_Formatter.php",
+          "sha256": "d574a9b271a9fbb2680168fe55cf3a767d98fcf641e4b4924e0073c23336e704",
+          "bytes": 20171
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Email_Template_Renderer_Factory.php",
+          "sha256": "9c54beade6c346a898d63267db27e27ba3842ff54056ea96c76a5ec0b71f40c7",
+          "bytes": 1513
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Email_Template_Renderer.php",
+          "sha256": "869ee984ba79823db99efd39013e9c1f6b41e47eed604f1f08f6bed7b1b22dde",
+          "bytes": 5842
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Fallback_Task.php",
+          "sha256": "913f64c03a7d0671e17fdefe6187b828ee649895f211eee2f5c3b68d691cdb64",
+          "bytes": 3486
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Frequency_Planner.php",
+          "sha256": "0898028b8f588f2b63b2b3c11c207068c935c780da1cd2b79b9f81db8f447bd6",
+          "bytes": 4946
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Initiator_Task.php",
+          "sha256": "b368aa8feb1f2e78d81b426e1b282f855d8366632967a1946bbca91cbbf35c26",
+          "bytes": 7910
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Max_Execution_Limiter.php",
+          "sha256": "9276303ca5d0535423d09177d1f83e4def278d175ba6cd95271689b503915604",
+          "bytes": 2204
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Monitor_Task.php",
+          "sha256": "3c88b2c4a389315f2c687eb51879dcc8a90a3b6246e738c3ad04a40431fbed63",
+          "bytes": 1831
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Plain_Text_Formatter.php",
+          "sha256": "3ca59be70d1acb8e715480ae29e6d1524501eba5f22382fd8ee5cfda47df87e3",
+          "bytes": 14693
+        },
+        {
+          "path": "includes/Core/Email_Reporting/REST_Email_Reporting_Controller.php",
+          "sha256": "b591c87caf30365725b9de64af9a05392723515ce69c19e1eb69427570590808",
+          "bytes": 21283
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Sections_Map.php",
+          "sha256": "145c812fdfedfab8ba830d4f8751574c272559f7daea6c145d5891c2892af2f1",
+          "bytes": 11351
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Subscribed_Users_Query.php",
+          "sha256": "45b30e91177e4ca574510b8b578f6779d305cac0030169ee1e685e98498cf0d1",
+          "bytes": 13578
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Subscription_Confirmation_Task.php",
+          "sha256": "ffa2108eedce9b86a2e4c503b0acdf79bcdc855ac382df057914fbe80590faae",
+          "bytes": 3755
+        },
+        {
+          "path": "includes/Core/Email_Reporting/User_Role_Trait.php",
+          "sha256": "4c4f32e0624ae206a29bc3e92e6dc8143cc3b870db7e84b5c988d2a8e0db4829",
+          "bytes": 1861
+        },
+        {
+          "path": "includes/Core/Email_Reporting/Worker_Task.php",
+          "sha256": "9d388b0552afe46a4db9621df51bb7512c5105a5297075b919d5555f20a7e0b8",
+          "bytes": 10778
+        },
+        {
+          "path": "includes/Core/Modules/Datapoint.php",
+          "sha256": "cff939bda4830283502fe5f44b623f02d826cc78201ecae4092bc656efbcbe13",
+          "bytes": 2773
+        },
+        {
+          "path": "includes/Core/Modules/Disconnected_Modules.php",
+          "sha256": "258adc862b0497433c4c456c90b48d667d015b3fcfae81756d9e7cfca611face",
+          "bytes": 1906
+        },
+        {
+          "path": "includes/Core/Modules/Executable_Datapoint.php",
+          "sha256": "979e0e2308e27879cde55679641a332a38ed5382c91daa2f50050d9fdf702ee5",
+          "bytes": 1288
+        },
+        {
+          "path": "includes/Core/Modules/Module.php",
+          "sha256": "d80e68119fbffe7f6b61d0504eec8212d24d99cbf9b84156dc3a2fc4e1b33aa5",
+          "bytes": 29836
+        },
+        {
+          "path": "includes/Core/Modules/Module_Registry.php",
+          "sha256": "368f092f1749c28442164f23470bba72f42dcc927ec3711615945468809d11c9",
+          "bytes": 1675
+        },
+        {
+          "path": "includes/Core/Modules/Module_Settings.php",
+          "sha256": "b899cf53cdabb6a4943f14355e04e8f3a15974fda4376915c7e0d4ed65761be4",
+          "bytes": 2001
+        },
+        {
+          "path": "includes/Core/Modules/Module_Sharing_Settings.php",
+          "sha256": "bce9468643821fd4050888f6a453cfdf52c45347307e1fd503c6747669bc9073",
+          "bytes": 6923
+        },
+        {
+          "path": "includes/Core/Modules/Modules.php",
+          "sha256": "d60f1d9a0c6b58295a1df2b5af7ee0c1fd59e4d2f781cd9fd848dd74e9e53b6e",
+          "bytes": 29145
+        },
+        {
+          "path": "includes/Core/Modules/Module_With_Activation.php",
+          "sha256": "2bda113f3c4c23a191d0516ea7a8f2e5bcffc9a6b26299301cdade9b5b2f2c9c",
+          "bytes": 569
+        },
+        {
+          "path": "includes/Core/Modules/Module_With_Assets.php",
+          "sha256": "0f80fecc933fcfa8931e5a1b90eac165b6590f1f1daf3387cd1c4c45daeddaae",
+          "bytes": 944
+        },
+        {
+          "path": "includes/Core/Modules/Module_With_Assets_Trait.php",
+          "sha256": "c4fef51e2309e75407f20822d03abb65f85c680497ea54ecda254100a1ac0066",
+          "bytes": 1783
+        },
+        {
+          "path": "includes/Core/Modules/Module_With_Data_Available_State.php",
+          "sha256": "4fafcac0c4cf7e49b6a69104a704df0bd22537332760ea33a72055c26892475f",
+          "bytes": 1030
+        },
+        {
+          "path": "includes/Core/Modules/Module_With_Data_Available_State_Trait.php",
+          "sha256": "23f653269301c6d11f54fa32615a432bccc72417200569df445585916e231b34",
+          "bytes": 1551
+        },
+        {
+          "path": "includes/Core/Modules/Module_With_Deactivation.php",
+          "sha256": "cf7afb094e07e3abdb9a44a46a5abeb1d5ee3df7ec002e4b12f446a1cf086d61",
+          "bytes": 579
+        },
+        {
+          "path": "includes/Core/Modules/Module_With_Debug_Fields.php",
+          "sha256": "8e9b1207d0ff4dd60869d4a10fc39c8af573818cc808f6280857ebc678db363d",
+          "bytes": 680
+        },
+        {
+          "path": "includes/Core/Modules/Module_With_Inline_Data.php",
+          "sha256": "2958a43a365438b168a179201b4ed8dfd160a1bbe9074e919c2558ee5c76cc6f",
+          "bytes": 735
+        },
+        {
+          "path": "includes/Core/Modules/Module_With_Owner.php",
+          "sha256": "2e6001451b4754930ba1848a218538e2a636a4352a4d577884e67f315ed44715",
+          "bytes": 823
+        },
+        {
+          "path": "includes/Core/Modules/Module_With_Owner_Trait.php",
+          "sha256": "05603f2a4b9c0a3f13b974eddac6d64d19f1ac1f70d49ee81ab484a046ac7a62",
+          "bytes": 1770
+        },
+        {
+          "path": "includes/Core/Modules/Module_With_Persistent_Registration.php",
+          "sha256": "07fe616aa66e9987356c2d9bc479c6a3ce11ba562fdee2b79b52e7cabfa50be6",
+          "bytes": 645
+        },
+        {
+          "path": "includes/Core/Modules/Module_With_Scopes.php",
+          "sha256": "7f8f73025325e061b2ff8fdd78de891ac403406748987be8dedc560d65931e1b",
+          "bytes": 621
+        },
+        {
+          "path": "includes/Core/Modules/Module_With_Scopes_Trait.php",
+          "sha256": "7c0035520c70365ad4598ab2e28587290bc3ce941e5cce65ba712895a30588d8",
+          "bytes": 722
+        },
+        {
+          "path": "includes/Core/Modules/Module_With_Service_Entity.php",
+          "sha256": "3bc3015ad2d27de1c2ce32be3994b9490dc5cec39ebc0500554bda6a1457d30d",
+          "bytes": 801
+        },
+        {
+          "path": "includes/Core/Modules/Module_With_Settings.php",
+          "sha256": "09a9e8e268a51be7dcc2cf10e46b198df3b86a550482dd718a47cb05572f679c",
+          "bytes": 534
+        },
+        {
+          "path": "includes/Core/Modules/Module_With_Settings_Trait.php",
+          "sha256": "3a33c0d73ff3b8878ed5d3b14c4e9529fff0b8d20f0f198acd2a820cc3c74931",
+          "bytes": 1153
+        },
+        {
+          "path": "includes/Core/Modules/Module_With_Tag.php",
+          "sha256": "f9bef6d4c5a8985ef850214b0f3006e7e20d97c7abd2b7b9dad59ec530d36b1c",
+          "bytes": 940
+        },
+        {
+          "path": "includes/Core/Modules/Module_With_Tag_Trait.php",
+          "sha256": "5ed4c17e2f93c9285c9d44796703b1a36b0458b691517f766ab96bb7995a0b10",
+          "bytes": 2175
+        },
+        {
+          "path": "includes/Core/Modules/Permission_Aware_Datapoint.php",
+          "sha256": "496db108973d11c772fad348858f45e5fd1d728f22d11628ed2bf77a0b9590ae",
+          "bytes": 1059
+        },
+        {
+          "path": "includes/Core/Modules/REST_Dashboard_Sharing_Controller.php",
+          "sha256": "08c48e1041e00009b45dd75311c91839caca4640d075dcaeed0260150a7efe92",
+          "bytes": 3642
+        },
+        {
+          "path": "includes/Core/Modules/REST_Modules_Controller.php",
+          "sha256": "bbd6138aff6c671262c36b68395edf7b30d25b9b29f9569643e64243f0d7edac",
+          "bytes": 31511
+        },
+        {
+          "path": "includes/Core/Modules/Schema_Aware_Datapoint.php",
+          "sha256": "363f954355f8370471f7c5edd7ced163185f4c172443290f458b90aaf3a8e785",
+          "bytes": 1205
+        },
+        {
+          "path": "includes/Core/Modules/Shareable_Datapoint.php",
+          "sha256": "3a9902d3d19c456091977ad5fef3d66423604a6e96e2fd417b86ad905785f758",
+          "bytes": 745
+        },
+        {
+          "path": "includes/Core/Permissions/Permissions.php",
+          "sha256": "c17582ecdbeadeee2b44d2f64555b8345068db1d19099a236b0e66f211650812",
+          "bytes": 25443
+        },
+        {
+          "path": "includes/Core/REST_API/Data_Request.php",
+          "sha256": "6ca4bbbd50e63fdf27aada57e59385831ae605f059107c09e74716b9a30b0aeb",
+          "bytes": 3423
+        },
+        {
+          "path": "includes/Core/REST_API/REST_Route.php",
+          "sha256": "9bd03719880be6cbab0c6022b6646cce164548c5172f259bcd6020dba86f69bf",
+          "bytes": 4936
+        },
+        {
+          "path": "includes/Core/REST_API/REST_Routes.php",
+          "sha256": "1e89a8541f1797f800357829d212a394bad0da7f11166e4acf487e3eb40f68e6",
+          "bytes": 2754
+        },
+        {
+          "path": "includes/Core/Storage/Cache.php",
+          "sha256": "98098838937de21de6cebab339d292767974d132c14685335e304b792adcf4e7",
+          "bytes": 3403
+        },
+        {
+          "path": "includes/Modules/AdSense.php",
+          "sha256": "0480fd5abf004e6403f55b64b7d891b16b73b81d200513e48ca734acecce8124",
+          "bytes": 25114
+        },
+        {
+          "path": "includes/Modules/Ads.php",
+          "sha256": "b2dce6e25b7c01dc7525fdf6e89355650f2be3fa6ff8461e4335c377b99c56c4",
+          "bytes": 13218
+        },
+        {
+          "path": "includes/Modules/Analytics_4.php",
+          "sha256": "2f54d78f918d2fc10c7feb566612a669c3f422f25eaf549ee4d95bb1fa75167f",
+          "bytes": 74065
+        },
+        {
+          "path": "includes/Modules/PageSpeed_Insights.php",
+          "sha256": "19319acebd09b179ac60fab0aad19d433690e5cbad79435e77faacc564020182",
+          "bytes": 6623
+        },
+        {
+          "path": "includes/Modules/Reader_Revenue_Manager.php",
+          "sha256": "213436dd9f15de0c5d4260049408a04c07ebbaa7a5bbf1f02588e9663a9b67af",
+          "bytes": 30267
+        },
+        {
+          "path": "includes/Modules/Search_Console.php",
+          "sha256": "190858df52349991f6c3c888437225593d582bff86bff89d0f0c0a0b88412425",
+          "bytes": 18145
+        },
+        {
+          "path": "includes/Modules/Tag_Manager.php",
+          "sha256": "2953b089023852b2fc30299d8832147f5c5c4404e38d09104d0ba70e09b6dd66",
+          "bytes": 21453
+        }
+      ],
+      "supplementary_rea": {
+        "authority": "historical-reference",
+        "inventory_state": "partial",
+        "root_sha256": "95f3ef41b8b47118cb6faece309241adc75bbaa16fd3390058480f97be060341",
+        "artifact_sha256": "61273e8a8930c38315fae9adbf9095986dc95e7d5f6cdfbed6adbaa190e46463",
+        "parse_failure_count": 0
+      }
+    },
+    {
+      "id": "chat-completions",
+      "origin": "https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create",
+      "revision": "documentation reviewed 2026-11-26",
+      "license": "documentation reference only",
+      "scope": "OpenAI Chat Completions wire contract, function calling and provider-specific extensions; no source import or inference claim",
+      "links": [
+        "https://developers.openai.com/api/docs/guides/function-calling",
+        "https://ai.google.dev/gemini-api/docs/openai",
+        "https://api-docs.deepseek.com/guides/thinking_mode/",
+        "https://openrouter.ai/docs/guides/features/tool-calling"
+      ]
+    },
+    {
+      "id": "webmcp",
+      "origin": "https://developer.chrome.com/docs/ai/webmcp/updates",
+      "revision": "Chrome 160 compatibility contract reviewed 2026-11-26",
+      "license": "documentation reference only",
+      "scope": "Native browser Tool interface and invocation compatibility; not MCP HTTP transport"
+    }
+  ],
+  "historical_artifacts": [
+    {
+      "path": "wordpress-woocommerce-20261116.json",
+      "sha256": "18259d6569bdf6cceea65796b7f64930e1182f5f0867cc90b1fb8bd83195aef6",
+      "original_sha256": "5840de40c8b27581d5f59d58792dc535b729e4cadf5c0a8f1194e19603e2f0eb",
+      "transform": "Replace absolute archive paths with filenames; retain all 39 historical findings and hashes"
+    }
+  ],
+  "sitekit_js": {
+    "evidence_id": "ev_b18dfa099ad76e6d6bce7b94094afa63752a662156a8dcab56e18e5a32dd9fda",
+    "artifact_sha256": "7e6f952ec7f351b68203623f4e409ac4be1ae61d61e18f1ce5bfb9e3a5fd69a7",
+    "scope": "Selected static PageSpeed JS; not runtime evidence",
+    "parent_evidence_id": "ev_77ff57f9b298ac73dfde97e0e49949c4c5b0461d734710b0ba8063c8702b47c5"
+  }
+}
