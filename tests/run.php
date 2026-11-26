@@ -5715,7 +5715,7 @@ $tests['checkout captures and preserves a validated delivery state'] = function 
     assertTrue(str_contains($checkout, "['name', 'email', 'phone', 'address', 'city', 'pincode', 'state']"), 'Browser validation includes delivery state');
     assertTrue(str_contains($checkout, "state: form.querySelector('[name=\"state\"]')"), 'Payment request includes delivery state');
     $commerce = file_get_contents(app_path('app/Controllers/CommerceController.php'));
-    assertTrue(str_contains($commerce, 'TaxService::normaliseState') && substr_count($commerce, "'shipping_state' => \$shippingState") === 2, 'Both payment gateways store the same canonical delivery state');
+    assertTrue(str_contains($commerce, 'TaxService::normaliseState') && substr_count($commerce, "'shipping_state' => \$shippingState") === 1 && substr_count($commerce, "\$_SESSION['pending_order'] = \$pending + [") === 2, 'Both payment gateways store the same canonical delivery state');
     $addresses = file_get_contents(app_path('app/Services/AddressService.php'));
     assertTrue(str_contains($addresses, "'state' => \$state"), 'Saved addresses preserve validated state');
 };

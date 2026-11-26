@@ -1886,8 +1886,8 @@
             ],
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed P23 source-derived ordered rule normalization, app_settings revisioned draft transaction and actual isolated owner browser acceptance. No customer charge activation; authoritative cart, tax and gateway acceptance remain required.",
-                "sha256": "3e8e2ebea78df92adcf86e387b6d6878a83153597fde75007642861f0820c40f"
+                "reason": "Reconciled deployed P23 owner proposal and checkout tax/coupon projection. No activation or paid shipping; actual gateway fixtures prove both browser paths.",
+                "sha256": "1f48b15a761d711e9892f76778b34854e5f7f49871694b6702e59d3c35c65695"
             }
         },
         {

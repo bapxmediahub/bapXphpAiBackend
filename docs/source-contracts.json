@@ -13,9 +13,9 @@
             "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
         },
         "commerce": {
-            "source_sha256": "56c2354c15a4b4af4a9698bc2a65f237fdebccff02d9e6b80183b30ec9559d2a",
-            "references_sha256": "d5d7f2089f3c29e19982883271159adea14b9bedbc4f2e300da35d74584cea82",
-            "review_note": "Reviewed validated ordered proposal, row transaction, exact decimal amounts and stale rejection. Existing active settings, checkout and issued orders unchanged."
+            "source_sha256": "982980f41e5f696533d985019693fcb70f8db63b80b97a03059f9799c619eab8",
+            "references_sha256": "f32d1fe5f7800b2ada153f4ac6a88248f9c98b7379b5e63fd2502d17962615fb",
+            "review_note": "Reviewed merged P23 draft and both gateway pending evidence; actual isolated tests preserve confirmed invoice facts, no live charges."
         },
         "content": {
             "source_sha256": "0feee066974550247ef6080d120b56fe51c95471c9e81cfd5448c9b3597397ae",
@@ -58,19 +58,19 @@
             "review_note": "Reviewed the owner UI skill changes against authenticated media navigation, route declarations, and Media Library behavior. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
         },
         "operator-help": {
-            "source_sha256": "5d15a0d35cf4bb7ac271fa431f3224f79d751aeece2a90e1c5bd27c445732874",
+            "source_sha256": "da4e3b5fc4eae444ebd83d68e222f281a0e25e9154625f7c1727f8e11bd3e831",
             "references_sha256": "849572d2c8f8934a251f30fbe74bc3ae5e5e8f08dbf17a5579f4d2dfcc07b4bb",
-            "review_note": "Reviewed owner shipping proposal help, actual save and reload route, stale and invalid failure; no customer fee activation."
+            "review_note": "Reviewed reconciled shipping draft help and shared both-provider checkout tax/coupon inputs; no activation."
         },
         "public-mcp": {
             "source_sha256": "ddd574f91ff690956cd74d17c97531c6fc94d69b4c683f14297989c26314c284",
-            "references_sha256": "68f79ed443df0cba4c7aa1bf073c7d7afd53cab5b9447fb5aef1628fb4743345",
-            "review_note": "Reviewed owner-only save route and authenticated internal settings operation. No public MCP tool or shipping quote capability added."
+            "references_sha256": "18b90cbbc442ae32810c0e9545032e61e157fb1b25157e654ec6f2bf143aebaa",
+            "review_note": "Reviewed RemoteCheckoutService refactor against unchanged public capability contract and existing zero shipping."
         },
         "remote-commerce": {
-            "source_sha256": "d2b17beb7a77f3d823ee457bbb9cdf1a42a2d543c6b30d571b2ea87aa7147997",
-            "references_sha256": "f19ebd71287b550a376011d6529dac8a4712a9a823a5bf3ae7423d8557a827aa",
-            "review_note": "Reviewed new shipping draft field and database settings CAS. Existing remote checkout cart, quote, tax and payment contracts are unchanged; shippingPaise remains zero."
+            "source_sha256": "54a9839758b00ed463b4364420ea6c38eb87adad2c3c0e32bc098d14d6107794",
+            "references_sha256": "edeac3ebc35d24a1e4db973f2380b59f0e640e0659d44281571233881c8f5ea4",
+            "review_note": "Reviewed actual shared remote tax projection and server-only browser gateway amount, preserving zero shipping until activation."
         },
         "sales-channels": {
             "source_sha256": "41708bd68d61562fe23c5f42bca8c17ae6bb2c939c970f8533b989d5023d5465",

@@ -193,18 +193,62 @@ final class CommerceController extends BaseController {
                 $this->jsonResponse(['error' => e($item['name']) . ' is currently unavailable.'], 400);
             }
         }
-        $pendingItems = array_map(static fn(array $item): array => [
-            'slug' => $item['slug'], 'name' => $item['name'], 'qty' => $item['qty'], 'line_total' => $item['line_total'],
-        ] + TaxService::reportingUnit($item['product']), $items);
         (new \App\Services\SiteTelemetryService())->record('checkout_initiated');
         $shippingState = TaxService::normaliseState((string)($_POST['state'] ?? ''));
         if ($shippingState === null) {
             $this->jsonResponse(['error' => 'Select a valid delivery state before payment.'], 422);
         }
-        $supplierSettings = (new SettingsService())->public();
-        if (TaxService::normaliseState((string)($supplierSettings['gst_state'] ?? 'Tamil Nadu')) === null) {
+        // Freeze invoice inputs before either gateway can create a checkout.
+        try {
+            $supplierSettings = TaxService::checkoutSettings((new SettingsService())->public(true));
+        } catch (\Throwable) {
             $this->jsonResponse(['error' => 'Checkout is temporarily unavailable. Please contact the store.'], 503);
         }
+        if (TaxService::normaliseState($supplierSettings['gst_state']) === null) {
+            $this->jsonResponse(['error' => 'Checkout is temporarily unavailable. Please contact the store.'], 503);
+        }
+        // Every coupon rule lives in CouponService. This used to check only whether the
+        // code was active, so a posted promo code never expired and had no spend or
+        // usage limit; and the percentage branch compared rupees against a percentage,
+        // paying 25% off a ₹2000 cart as ₹25. A refusal is now told to the shopper
+        // rather than silently applying no discount and charging full price.
+        $discount = 0.0;
+        $couponCode = trim($_POST['coupon_code'] ?? '');
+        if ($couponCode !== '') {
+            try {
+                $applied = (new \App\Services\CouponService($store))->apply(
+                    $couponCode,
+                    (float)$this->cartTotal($items),
+                    (string)($_SESSION['user']['email'] ?? ($_POST['email'] ?? ''))
+                );
+                $discount = $applied['discount'];
+            } catch (\InvalidArgumentException $e) {
+                $this->jsonResponse(['error' => $e->getMessage()], 422);
+            }
+        }
+        // Only the current server-resolved cart and validated coupon may set a charge.
+        // A zero-payable cart has no supported payment flow; never substitute POST data.
+        $discountPaise = (int)round($discount * 100);
+        $amount = (int)round($this->cartTotal($items) * 100) - $discountPaise;
+        if ($amount < 100) {
+            $this->jsonResponse(['error' => 'The payable cart total must be at least ₹1 to start payment.'], 400);
+        }
+        $pendingItems = TaxService::checkoutItems($items,$supplierSettings);
+        $pending = [
+            'total' => $amount / 100,
+            'items' => $pendingItems,
+            'tax_settings' => $supplierSettings,
+            'coupon_code' => $couponCode,
+            'discount' => $discountPaise / 100,
+            'customer_email' => $_SESSION['user']['email'] ?? ($_POST['email'] ?? 'guest'),
+            'customer_name' => trim((string)($_POST['name'] ?? ($_SESSION['user']['name'] ?? ''))),
+            'customer_phone' => $phone,
+            'shipping_address' => trim((string)($_POST['address'] ?? '')),
+            'shipping_city' => trim((string)($_POST['city'] ?? '')),
+            'shipping_pincode' => trim((string)($_POST['pincode'] ?? '')),
+            'shipping_state' => $shippingState,
+            'customer_gstin' => trim((string)($_POST['customer_gstin'] ?? '')),
+        ];
         $paymentMethod = trim($_POST['payment_method'] ?? 'razorpay');
         if (!empty($_SESSION['user']['email']) && !empty($_POST['save_address']) && trim((string)($_POST['address_name'] ?? '')) !== '') {
             (new \App\Services\AddressService())->save($_SESSION['user']['email'], $_POST);
@@ -213,10 +257,9 @@ final class CommerceController extends BaseController {
             if (empty($secrets['stripe_secret_key'])) {
                 $this->jsonResponse(['error' => 'Stripe payment gateway is not configured.'], 401);
             }
-            $cartTotal = $this->cartTotal($items);
             $lineItems = [[
                 'name' => 'Sri Panchami Spiritual Order',
-                'amount' => (int)round($cartTotal * 100),
+                'amount' => $amount,
                 'quantity' => 1,
             ]];
             $successUrl = rtrim((string)($_ENV['APP_URL'] ?? 'https://' . ($_SERVER['HTTP_HOST'] ?? 'localhost')), '/') . '/payment/stripe/return?session_id={CHECKOUT_SESSION_ID}';
@@ -233,21 +276,9 @@ final class CommerceController extends BaseController {
             // checkout left a permanent "Pending" row in the admin with a real total
             // against a customer who never paid.
             $orderId = bin2hex(random_bytes(8));
-            $_SESSION['pending_order'] = [
+            $_SESSION['pending_order'] = $pending + [
                 'id' => $orderId,
-                'total' => $cartTotal,
-                'customer_email' => $_SESSION['user']['email'] ?? ($_POST['email'] ?? 'guest'),
-                'customer_name' => trim((string)($_POST['name'] ?? ($_SESSION['user']['name'] ?? ''))),
-                'customer_phone' => $phone,
-                'shipping_address' => trim((string)($_POST['address'] ?? '')),
-                'shipping_city' => trim((string)($_POST['city'] ?? '')),
-                'shipping_pincode' => trim((string)($_POST['pincode'] ?? '')),
-                'shipping_state' => $shippingState,
-                'customer_gstin' => trim((string)($_POST['customer_gstin'] ?? '')),
-                'items' => $pendingItems,
                 'stripe_session_id' => $stripeSession['id'] ?? '',
-                'coupon_code' => '',
-                'discount' => 0,
             ];
             $this->jsonResponse([
                 'stripe_url' => $stripeSession['url'] ?? '',
@@ -258,31 +289,6 @@ final class CommerceController extends BaseController {
         if (!(new SecretService())->razorpayReadyForCurrentHost($secrets)) {
             $this->jsonResponse(['error' => 'Razorpay ' . ($secrets['razorpay_mode'] ?? 'selected') . ' mode is not configured yet.'], 401);
         }
-        // Every coupon rule lives in CouponService. This used to check only whether the
-        // code was active, so a posted promo code never expired and had no spend or
-        // usage limit; and the percentage branch compared rupees against a percentage,
-        // paying 25% off a ₹2000 cart as ₹25. A refusal is now told to the shopper
-        // rather than silently applying no discount and charging full price.
-        $discount = 0;
-        $couponCode = trim($_POST['coupon_code'] ?? '');
-        if ($couponCode !== '') {
-            try {
-                $applied = (new \App\Services\CouponService($store))->apply(
-                    $couponCode,
-                    (float)$this->cartTotal($items),
-                    (string)($_SESSION['user']['email'] ?? ($_POST['email'] ?? ''))
-                );
-                $discount = $applied['discount'];
-            } catch (\InvalidArgumentException $e) {
-                $this->jsonResponse(['error' => $e->getMessage()], 422);
-            }
-        }
-        // Only the current server-resolved cart and validated coupon may set a charge.
-        // A zero-payable cart has no supported payment flow; never substitute POST data.
-        $amount = (int)round(max(0, $this->cartTotal($items) - $discount) * 100);
-        if ($amount < 100) {
-            $this->jsonResponse(['error' => 'The payable cart total must be at least ₹1 to start payment.'], 400);
-        }
         $receipt = 'order_' . bin2hex(random_bytes(5));
         try {
             $order = (new RazorpayClient($secrets['razorpay_key_id'], $secrets['razorpay_key_secret']))->createOrder($amount, $receipt);
@@ -290,20 +296,8 @@ final class CommerceController extends BaseController {
             $status = $exception->getCode() === 401 ? 401 : 500;
             $this->jsonResponse(['error' => $exception->getMessage()], $status);
         }
-        $_SESSION['pending_order'] = [
+        $_SESSION['pending_order'] = $pending + [
             'razorpay_order_id' => $order['id'] ?? '',
-            'total' => $amount / 100,
-            'items' => $pendingItems,
-            'coupon_code' => $couponCode,
-            'discount' => $discount,
-            'customer_email' => $_SESSION['user']['email'] ?? ($_POST['email'] ?? 'guest'),
-            'customer_name' => trim((string)($_POST['name'] ?? ($_SESSION['user']['name'] ?? ''))),
-            'customer_phone' => $phone,
-            'shipping_address' => trim((string)($_POST['address'] ?? '')),
-            'shipping_city' => trim((string)($_POST['city'] ?? '')),
-            'shipping_pincode' => trim((string)($_POST['pincode'] ?? '')),
-            'shipping_state' => $shippingState,
-            'customer_gstin' => trim((string)($_POST['customer_gstin'] ?? '')),
         ];
         $this->jsonResponse([
             'id' => $order['id'] ?? '',

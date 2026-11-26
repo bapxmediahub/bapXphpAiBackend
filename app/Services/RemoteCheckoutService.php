@@ -177,11 +177,7 @@ final class RemoteCheckoutService
     private function taxSettings():array
     {
         $all=$this->settings!==null?($this->settings)():(new SettingsService($this->store))->public();
-        // Freeze the same actual defaults used by TaxService, with numeric rates.
-        $result=['gst_state'=>(string)($all['gst_state']??'Tamil Nadu'),
-            'default_gst_rate'=>TaxService::rateFor([],$all),'default_hsn_code'=>TaxService::hsnFor([],$all)];
-        foreach(['gst_legal_name','gst_trade_name','gstin','gst_address','gst_state_code'] as $key)$result[$key]=(string)($all[$key]??'');
-        return $result;
+        return TaxService::checkoutSettings($all);
     }
 
     private function secretValues():array { return $this->secrets!==null?($this->secrets)():(new SecretService($this->store))->all(); }
@@ -240,13 +236,7 @@ final class RemoteCheckoutService
         }
         $resolved=(new CartService($this->products))->resolve($record['lines']);
         if(count($resolved)!==count($record['lines']))throw new RemoteCartException('quote_changed','A selected product changed. Review the current cart.',409);
-        $settings=$this->taxSettings();$items=[];
-        foreach($resolved as $line) {
-            $items[]=['slug'=>$line['slug'],'name'=>$line['name'],'qty'=>$line['qty'],
-                'unit_price'=>$line['unit_price'],'line_total'=>$line['line_total'],
-                'gst_rate'=>TaxService::rateFor($line['product'],$settings),'hsn_code'=>TaxService::hsnFor($line['product'],$settings)]
-                + TaxService::reportingUnit($line['product']);
-        }
+        $settings=$this->taxSettings();$items=TaxService::checkoutItems($resolved,$settings);
         $itemsPaise=(int)round(CartService::total($resolved)*100);$discount=0.0;
         if($coupon!=='') {
             try{$discount=(new CouponService($this->store))->apply($coupon,$itemsPaise/100,$delivery['email']??'',new \DateTimeImmutable('@'.$now))['discount'];}

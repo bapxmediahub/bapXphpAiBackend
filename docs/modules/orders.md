@@ -54,7 +54,9 @@ still requires authoritative current cart/address quotes, revision-bound totals,
 GST and frozen invoice allocation, gateway verification and acceptance across
 both checkout paths before the owner can activate any saved proposal.
 
-Browser Razorpay order creation uses only the server-computed cart less the
-validated coupon. A non-payable cart or total below the gateway minimum is
+Browser Razorpay and Stripe order creation use the same server-computed
+cart less the validated coupon and the same frozen supplier/item tax
+projection as remote checkout. Both gateways retain the actual discount,
+pending-order evidence and original invoice inputs until verified capture. A non-payable cart or total below the gateway minimum is
 rejected before payment setup; client-posted amounts never substitute for the
 server total. Free-order fulfillment is a separate unsupported workflow.
