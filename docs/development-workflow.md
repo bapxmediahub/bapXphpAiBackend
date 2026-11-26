@@ -188,10 +188,10 @@ No malformed fixture is written into the application checkout. The direct
 parser-status precheck fails if an interpreter wrapper prints syntax errors
 but returns zero; that environment cannot substitute for native PHP acceptance.
 
-## Storefront search release gate
+## Portable PHP release gates
 
 `./bapXphp ci` runs `php tests/storefront-search.php` after the main PHP
-test suite. GitHub also runs the same fixture directly. The fixture drives the
+test suite. The hosted validation job uses the same CLI gate. The fixture drives the
 native search route and checks mixed product, article and temple pagination,
 public visibility, Shop and Blog settings, malformed queries and the failure
 path when module settings are unavailable. It uses disposable Markdown and a
@@ -201,6 +201,18 @@ A failed fixture prints `STOREFRONT SEARCH FAILED`, leaves independent gates
 running and makes the final CI status nonzero. The CLI regression in
 `tests/cli-lint.test.cjs` exercises that failure with a valid PHP stand-in
 that returns a nonzero exit status.
+
+The same command explicitly runs the portable PHP fixtures for contact admission,
+campaign booking and HTTP forms, media deletion, deployment revision, public
+knowledge/discovery, remote carts and checkout, verified orders, MCP and A2UI
+scope, owner commerce evidence, and documentation review. Each uses synthetic
+records, temporary storage or isolated loopback transport. A missing or failing
+fixture prints its name, fails the overall command and does not skip later
+independent validation. Hosted CI invokes this shared gate once rather than
+maintaining a second PHP-only list. Browser/SDK, provider transport and real
+disposable MySQL tests remain explicit additional hosted gates; a local green
+result alone is not their acceptance.
+
 
 ## Source-to-documentation review gate
 

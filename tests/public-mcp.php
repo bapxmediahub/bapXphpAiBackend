@@ -3,6 +3,9 @@ declare(strict_types=1);
 use App\Services\{PublicMcpService,PublicKnowledgeService,PublicA2uiService};
 if (PHP_SAPI!=='cli') { http_response_code(404); exit; }
 putenv('BAPX_TEST_MODE=1');
+// The CLI may have inherited a deployment origin before this fixture starts.
+// Database configuration reads PHP's environment snapshots before getenv().
+$_SERVER['APP_URL'] = $_ENV['APP_URL'] = 'https://example.test';
 putenv('APP_URL=https://example.test');
 require dirname(__DIR__).'/app/bootstrap.php';
 set_exception_handler(static function(Throwable $error):void {

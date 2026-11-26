@@ -47,40 +47,10 @@ jobs:
         run: node --test tests/cli-lint.test.cjs
       - name: Validate reviewer metadata safety and deduplication
         run: node --test tests/review-automation.test.cjs
-      - name: Verify atomic contact admission and flood containment
-        run: php tests/contact-admission.php
-      - name: Verify campaign booking with deterministic gateway and payment replay
-        run: php tests/campaign-booking.php
-      - name: Verify published campaign form HTTP and remote mutation contracts
-        run: php tests/campaign-form-http.php
-      - name: Verify guarded deletion and stale upload history
-        run: php tests/media-delete-integration.php
+      - name: Validate PHP, portable fixtures, maps and routes
+        run: ./bapXphp ci
       - name: Verify current checkout SHA and safe failure on untrusted references
-        run: |
-          php tests/deployment-revision.php
-          node --test tests/deployment-revision.test.cjs tests/live-browser-revision.test.cjs
-      - name: Validate mixed storefront search results and module visibility
-        run: php tests/storefront-search.php
-      - name: Gate published public knowledge and hidden Markdown isolation
-        run: |
-          php tests/public-knowledge.php
-          php tests/catalogue-comparison.php
-          php tests/public-product-selection.php
-          php tests/public-agent-discovery.php
-      - name: Gate public MCP modern and legacy profiles and data isolation
-        run: |
-          php tests/public-mcp.php
-          php tests/remote-cart.php
-          php tests/remote-checkout.php
-          php tests/verified-order.php
-          php tests/public-mcp-shopping.php
-          php tests/public-mcp-checkout.php
-      - name: Gate A2UI v1.0 published data, role isolation and safe actions
-        run: |
-          php tests/public-a2ui.php
-          php tests/agent-presentation-scope.php
-      - name: Gate owner commerce reports and saved evidence isolation
-        run: php tests/enterprise-commerce.php
+        run: node --test tests/deployment-revision.test.cjs tests/live-browser-revision.test.cjs
       - name: Verify browser knowledge tool registration, paging and private-path rejection
         run: node --test tests/public-knowledge-webmcp.test.cjs tests/public-products-webmcp.test.cjs tests/public-business-webmcp.test.cjs tests/public-knowledge-api.test.cjs
       - name: Validate bounded WebMCP CDP discovery and invocation correlation
@@ -136,17 +106,6 @@ jobs:
         run: node --test tests/catalogue-mcp.test.cjs
       - name: Validate progressive motion policy and native-scroll bounds
         run: node --test tests/site-motion.test.cjs
-      - name: Test documentation drift and issue-tracker boundaries
-        run: php tests/documentation-review.php
-      - name: Validate code, tests, maps, and routes
-        run: ./bapXphp ci
-
-
-
-
-
-
-
       - name: Exercise provider transport, bounded failover and tool call continuation on loopback
         run: |
           php tests/ai-provider-transport.php

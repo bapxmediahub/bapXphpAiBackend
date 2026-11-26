@@ -92,7 +92,7 @@ credentials, secret values or customer records.
 For lint/CI changes, run `node --test tests/cli-lint.test.cjs` with native PHP.
 It copies the actual CLI launchers into a temporary miniature project and uses
 real parser failures, paths with spaces and multiple malformed files. It also
-checks that a failing storefront search stage fails CI while later stages run.
+checks that failing storefront search and portable PHP fixtures fail CI while later stages run. Missing fixtures also fail. The explicit portable PHP suite is shared by local and hosted CI; browser/SDK, model transport and real MySQL jobs remain additional hosted gates.
 The miniature project uses valid PHP stand-ins for CI stages outside these assertions. The application
 checkout and business data are untouched. A PHP wrapper that reports syntax
 errors but exits zero cannot establish parser-status acceptance; the fixture
