@@ -30,6 +30,8 @@ description: Use when editing README, docs, project-map docs, or agent-facing in
 ## Testing
 
 `./bapXphp update` to regenerate maps, then `./bapXphp ci`. Map validation alone is not enough: for each affected map path, open the real route, controller, service and rendered page.
+Cross-check method and path pairs across both indexes. Inspect gap candidates
+in the source before changing a declaration, generator, or handler.
 
 For generator changes, run `php tests/project-map.php` as well. Its pure fixtures
 exercise real callers, import aliases, misleading strings/comments, dynamic and

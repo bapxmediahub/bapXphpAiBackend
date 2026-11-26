@@ -107,6 +107,10 @@ $tests['project map source evidence includes the actual native answer presenter'
     $scan=ProjectMapService::scan();
     assertTrue(!isset($scan['gaps']['unwired_services']),'A limited scan must not label missing references as proven unwired code');
     assertTrue(!in_array('AgentAnswerPresentationService',$scan['gaps']['unreferenced_services'],true),'The real presenter is referenced by both native controllers');
+    $bootstrap = (string)file_get_contents(app_path('app/bootstrap.php'));
+    assertTrue(str_contains($bootstrap, 'RequestFailureService::register(')
+        && !in_array('RequestFailureService', $scan['gaps']['unreferenced_services'], true),
+        'The registered bootstrap service must not be reported as unreferenced');
     foreach(['SupportController','AdminController'] as $controller) {
         $matches=array_values(array_filter($scan['source_relationships'],static fn(array $edge):bool=>
             $edge['from']==='controller:'.$controller&&$edge['to']==='service:AgentAnswerPresentationService'&&$edge['relation']==='constructs'));
@@ -116,6 +120,28 @@ $tests['project map source evidence includes the actual native answer presenter'
     }
     assertSame($scan,ProjectMapService::scan(),'The same source tree produces deterministic inventory and evidence');
     assertSame(ProjectMapService::renderSystematicMermaid(),ProjectMapService::renderSystematicMermaid(),'Repeated map generation is deterministic');
+};
+
+$tests['the knowledge index keeps every exact registered route identity'] = static function(): void {
+    $routeKeys = static function (array $routes): array {
+        $keys = array_map(static fn(array $route): string => $route['method'].' '.$route['path'], $routes);
+        sort($keys, SORT_STRING);
+        return $keys;
+    };
+    $graph = (new KnowledgeGraphService())->build();
+    $routes = array_filter($graph['concepts'], static fn(array $concept): bool => $concept['type'] === 'route');
+    assertSame($routeKeys(ProjectMapService::registry()['routes']), $routeKeys($routes),
+        'Each method/path pair must appear without alias collisions');
+    assertSame('AdminController@legacyDashboard', $routes['route:get__admin']['controller'],
+        'The legacy path keeps its redirect handler and existing ID');
+    assertSame('AdminController@dashboard', $routes['route:get__admin_']['controller'],
+        'The trailing-slash path retains the dashboard handler');
+
+    $map = ProjectMapService::renderSystematicMermaid();
+    assertTrue(str_contains($map, 'GET /admin — Legacy owner dashboard redirect to /admin/')
+        && str_contains($map, 'GET /admin/ — Admin dashboard for commerce analytics and operations'),
+        'The code graph renders both exact path descriptions');
+    assertTrue(str_contains($map, 'no declared AuditLogService'), 'The audit gap reports a declaration check');
 };
 
 $tests['project knowledge preserves declared JSON response and relationship provenance'] = static function():void {

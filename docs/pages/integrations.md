@@ -1,7 +1,7 @@
 ---
 type: doc
 title: Integrations
-description: Route /admin/integrations - configure Razorpay, Stripe, Google OAuth, SMTP, Meta Pixel, native Google tag settings, Support Bot, and SEO defaults.
+description: Configure payments, Google OAuth and site tags, SMTP, and the Chat Completions connections shared by Support and Enterprise.
 category: page
 ---
 # Admin Integrations
@@ -10,7 +10,8 @@ Route: `/admin/integrations`
 
 Controller: `AdminController@integrations`
 
-Purpose: configure Razorpay (test/live), Stripe, Google OAuth, SMTP, Meta Pixel, native Google tag settings, Support Bot, and SEO defaults.
+Use this page to configure Razorpay (test and live), Stripe, Google OAuth, SMTP,
+Meta Pixel, Google site tags, and the AI connections for Support and Enterprise.
 
 ## AI provider connections and model order
 
@@ -25,24 +26,25 @@ The protocol is shared across providers and keeps the model choice in Admin.
 | OpenRouter | `https://openrouter.ai/api/v1` | `openrouter/free` when enabled |
 | Custom OpenAI-compatible connection | Owner-configured HTTPS URL | Owner-configured model IDs |
 
-Google has per-model enable switches, and both built-in model lists are
-editable. The preferred eligible connection runs first, followed by the
-other eligible connection and then OpenRouter. The default preference is
-Google. OpenRouter starts disabled. Specific OpenRouter model IDs may incur
-charges. The synchronous fallback loop makes up to three attempts per model
-for a recoverable failure and can return to the first eligible model for one
-more cycle within the shared deadline. After a tool exchange starts, recovery
-retries the continuation on that connection. [Google compatibility](https://aistudio.google.com/docs/openai) ·
+The model lists are editable, and Google also has per-model enable switches.
+Choose Google or the custom connection as the preferred provider. The preferred
+eligible connection runs first, followed by the other eligible connection and
+then OpenRouter. Google is the default preference. OpenRouter starts disabled.
+Specific OpenRouter model IDs may incur charges. The synchronous fallback loop
+makes up to three attempts per model for a recoverable failure and can return to
+the first eligible model for one more cycle within the shared deadline. After a
+tool exchange starts, recovery retries the continuation on that connection. [Google compatibility](https://aistudio.google.com/docs/openai) ·
 [Hosted Gemma model IDs](https://gemma.ai/deployment/gemini-api/#supported-models) ·
 [OpenRouter Free](https://openrouter.ai/openrouter/free) ·
 [OpenRouter error handling](https://openrouter.ai/docs/api_reference/errors-and-debugging).
 
-API-key inputs stay blank and show a short saved-key suffix outside the field.
-Blank inputs preserve saved keys, and masked values are rejected. Use a
-standard OpenRouter inference key for its connection. A changed custom
-endpoint needs its own key. Credentials stay in the encrypted `app_secrets`
-MySQL record. PHP validates model-selected tool arguments and authorization
-before executing a call.
+API-key inputs stay blank. Saved-key status appears outside each field and may
+include a short suffix. Leave an input blank to keep its saved key when the
+endpoint stays the same. A changed custom endpoint needs its own key. Use a
+standard OpenRouter inference key for its connection. The application rejects
+masked values and stores credentials in the encrypted `app_secrets` MySQL
+record. PHP validates model-selected tool arguments and authorization before
+executing a call.
 
 ## Configure the optional custom connection
 
@@ -57,8 +59,9 @@ before executing a call.
 3. For endpoint-only routing, disable **Enable Google models** and
    **Enable OpenRouter Free**. Save the AI provider settings. Both agents then
    use the custom connection, including Enterprise draft generation.
-4. Select the exact connection and model in **Test AI connection**. Run the
-   text test and the tool test before relying on that model for either agent.
+4. Select the exact connection and model under **Test the AI connection**.
+   Run **Text response** and **Tool round trip** before relying on that model
+   for either agent.
 
 Set **Chat Completions token limit field** to match the endpoint. **Automatic**
 uses `max_completion_tokens` for direct OpenAI and `max_tokens` for existing
@@ -83,8 +86,8 @@ and provider response bodies. [OpenAI API error codes](https://developers.openai
 
 Run the same tests locally with `./bapXphp ai:probe text` or
 `./bapXphp ai:probe tools`, optionally followed by a quoted `provider|model`
-selector. Verify both modes separately for each enabled Gemma ID, for
-`openrouter|openrouter/free` when configured, and for each enabled custom model.
+selector. Verify both modes separately for every enabled, configured target in
+the selector, including `openrouter|openrouter/free` when configured.
 Then exercise both agents with an authorized lookup on the deployed release.
 Loopback tests verify request and continuation handling. Live probes establish
 which exact models complete both modes with the deployment's provider access.
@@ -95,7 +98,7 @@ which exact models complete both modes with the deployment's provider access.
 - Local JSON files are not runtime secret storage. They may only be used for an explicitly requested one-time import.
 - Never put secrets in committed files. Hosting environment variables are emergency fallback inputs for critical integrations only.
 
-## Editable Fields
+## Other editable fields
 
 | Field | Environment variable (fallback) |
 |---|---|
@@ -107,7 +110,6 @@ which exact models complete both modes with the deployment's provider access.
 | Google Analytics ID | `GOOGLE_ANALYTICS_ID` |
 | Google Ads ID | `GOOGLE_ADS_ID` |
 | Google Site Verification | `GOOGLE_SITE_VERIFICATION` |
-| Support Bot API Key / Model | — |
 | SMTP Host, Port, Encryption, Username, Password | — |
 
 Key checks: API setup links are visible, secrets are stored outside normal catalog JSON, and Google Calendar/Meet is not requested.

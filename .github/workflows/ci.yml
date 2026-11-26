@@ -43,7 +43,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Verify CLI PHP lint failures reach directory scans and CI
+      - name: Verify PHP lint and generated artifact validation in the CLI
         run: node --test tests/cli-lint.test.cjs
       - name: Validate reviewer metadata safety and deduplication
         run: node --test tests/review-automation.test.cjs

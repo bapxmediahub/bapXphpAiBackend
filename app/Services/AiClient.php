@@ -106,7 +106,8 @@ final class AiClient
      * The loop is bounded. A model that keeps calling tools would otherwise hold the
      * request open until PHP's time limit, and the owner would watch a spinner.
      *
-     * Each provider uses its own tool message format and the same tool registry.
+     * Every connection uses Chat Completions function calls and tool result
+     * messages. Provider-specific continuation fields stay on the active connection.
      */
     public function completeWithTools(
         string|AgentModelTurn $prompt,

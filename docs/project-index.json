@@ -1999,7 +1999,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AiClient.php",
-            "line": 517
+            "line": 518
         },
         {
             "from": "service:AiClient",
@@ -2007,7 +2007,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AiClient.php",
-            "line": 626
+            "line": 627
         },
         {
             "from": "service:AiClient",
@@ -2015,7 +2015,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/AiClient.php",
-            "line": 345
+            "line": 346
         },
         {
             "from": "service:AppointmentService",
@@ -6434,8 +6434,7 @@
         "navigation_without_get_route": [],
         "unwired_controllers": [],
         "unreferenced_services": [
-            "AstrologerService",
-            "RequestFailureService"
+            "AstrologerService"
         ],
         "unwired_views": [],
         "admin_mutations_without_audit": [

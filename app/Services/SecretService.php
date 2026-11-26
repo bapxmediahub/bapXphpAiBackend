@@ -32,11 +32,9 @@ final class SecretService {
     /**
      * Merges into the stored secrets rather than replacing them.
      *
-     * The Integrations form does not contain every secret — razorpay_key_id,
-     * razorpay_key_secret, ai_api_key, and the model settings are
-     * all absent from it. Replacing the whole blob with the posted fields silently
-     * destroyed those, so saving SMTP settings wiped the live payment keys and the AI
-     * key. Only keys actually present in the submission are changed.
+     * The full Integrations form and scoped AI actions submit different subsets.
+     * Merge the submitted fields into the current record so omitted payment
+     * settings and blank credential replacement fields preserve their saved values.
      */
     public function save(array $values): void {
         $db = $this->store ?? new DatabaseService();

@@ -29,7 +29,7 @@ set -euo pipefail
 #   bapXphp lint [path]             — PHP syntax check (php -l)
 #   bapXphp ci                      — non-mutating validation: lint → test → storefront search → maps → smoke
 #   bapXphp check                   — alias for bapXphp ci
-#   bapXphp update                  — regenerate and validate both project maps
+#   bapXphp update                  — regenerate maps, indexes, and agent tool contracts
 #   bapXphp serve                   — start dev server on 127.0.0.1:6020
 #   bapXphp smoke                   — run local smoke tests
 #   bapXphp runtime:check [--json] [--strict] — read-only PHP 8.3+/MySQL 8.4+ requirements
@@ -632,6 +632,32 @@ cmd_lint() {
   return 0
 }
 
+check_generated_artifact() (
+  local target="$1" generator="$2" label="$3" scratch generated
+  scratch="$(mktemp -d "${TMPDIR:-/tmp}/bapxphp-check.XXXXXX")" || return 1
+  generated="$scratch/output"
+  trap 'if [ -e "$generated" ]; then rm -- "$generated"; fi; rmdir -- "$scratch"' EXIT
+
+  if ! php "$ROOT/cli/$generator" "$ROOT" "$generated"; then
+    warn "$label generation failed ($generator)."
+    return 1
+  fi
+  if [ ! -f "$generated" ]; then
+    warn "$label generator did not produce an artifact ($generator)."
+    return 1
+  fi
+  if [ ! -f "$ROOT/$target" ]; then
+    warn "$label missing. Run bapXphp update and commit $target."
+    return 1
+  fi
+  if ! cmp -s "$ROOT/$target" "$generated"; then
+    warn "$label stale. Run bapXphp update and commit $target."
+    diff -u "$ROOT/$target" "$generated" | head -n 40 || true
+    return 1
+  fi
+  ok "$label is current"
+)
+
 cmd_ci() {
   require_php
   local failed=0
@@ -658,45 +684,13 @@ cmd_ci() {
   php "$ROOT/cli/validate-docs-map.php" "$ROOT" 2>&1 || { failed=1; warn "DOCS MAP VALIDATION FAILED"; }
 
   echo "── index:val (docs/project-index.json) ──"
-  php "$ROOT/cli/generate-project-index.php" "$ROOT" "$ROOT/.project-index.tmp.json" >/dev/null 2>&1
-  if [ -f "$ROOT/docs/project-index.json" ]; then
-    if ! diff -q "$ROOT/docs/project-index.json" "$ROOT/.project-index.tmp.json" >/dev/null 2>&1; then
-      warn "PROJECT INDEX STALE. Run bapXphp update and commit docs/project-index.json."
-      failed=1
-    else
-      ok "Project index is current"
-    fi
-  else
-    warn "PROJECT INDEX MISSING. Run bapXphp update."
-    failed=1
-  fi
-  rm -f "$ROOT/.project-index.tmp.json"
+  check_generated_artifact docs/project-index.json generate-project-index.php 'Project index' || failed=1
 
   echo "── knowledge:val (index.yaml) ──"
-  php "$ROOT/cli/generate-okf-bundle.php" "$ROOT" "$ROOT/.index.tmp.yaml" >/dev/null 2>&1
-  if [ -f "$ROOT/index.yaml" ] && diff -q "$ROOT/index.yaml" "$ROOT/.index.tmp.yaml" >/dev/null 2>&1; then
-    ok "Knowledge index is current"
-  else
-    warn "KNOWLEDGE INDEX STALE. Run bapXphp update and commit index.yaml."
-    diff -u "$ROOT/index.yaml" "$ROOT/.index.tmp.yaml" | head -40 || true
-    failed=1
-  fi
-  rm -f "$ROOT/.index.tmp.yaml"
+  check_generated_artifact index.yaml generate-okf-bundle.php 'Knowledge index' || failed=1
 
   echo "── codemap:val (root map.mmd) ──"
-  php "$ROOT/cli/generate-code-map.php" "$ROOT" "$ROOT/.map.mmd.tmp"
-  if [ -f "$ROOT/map.mmd" ]; then
-    if ! diff -q "$ROOT/map.mmd" "$ROOT/.map.mmd.tmp" >/dev/null 2>&1; then
-      warn "CODE MAP STALE. Run bapXphp codemap and commit map.mmd."
-      failed=1
-    else
-      ok "Code map is current"
-    fi
-  else
-    warn "map.mmd missing. Run bapXphp codemap."
-    failed=1
-  fi
-  rm -f "$ROOT/.map.mmd.tmp"
+  check_generated_artifact map.mmd generate-code-map.php 'Code map' || failed=1
 
   echo "── smoke ──"
   php "$ROOT/cli/smoke-local.php" 2>&1 || { failed=1; warn "SMOKE FAILED"; }
@@ -753,21 +747,10 @@ cmd_map_gen() {
 
 cmd_map_val() {
   require_php
-  php "$ROOT/cli/validate-project-map.php" 2>&1
-  php "$ROOT/cli/generate-code-map.php" "$ROOT" "$ROOT/.map.mmd.tmp" 2>&1
-  if [ -f "$ROOT/map.mmd" ]; then
-    if ! diff -q "$ROOT/map.mmd" "$ROOT/.map.mmd.tmp" >/dev/null 2>&1; then
-      warn "map.mmd STALE. Run bapXphp map:gen / codemap."
-      rm -f "$ROOT/.map.mmd.tmp"
-      return 1
-    fi
-    ok "map.mmd is current"
-  else
-    warn "map.mmd MISSING. Run bapXphp codemap."
-    rm -f "$ROOT/.map.mmd.tmp"
-    return 1
-  fi
-  rm -f "$ROOT/.map.mmd.tmp"
+  local failed=0
+  php "$ROOT/cli/validate-project-map.php" 2>&1 || failed=1
+  check_generated_artifact map.mmd generate-code-map.php map.mmd || failed=1
+  return "$failed"
 }
 
 # ── Skills ──────────────────────────────────────────────────────

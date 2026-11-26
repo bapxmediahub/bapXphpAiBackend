@@ -32,6 +32,7 @@ admin-editable values.
 ./bapXphp lint path/to/changed.php
 ./bapXphp test
 ./bapXphp update
+./bapXphp map:val
 ./bapXphp ci
 ./bapXphp index
 ./bapXphp docsmap
@@ -40,6 +41,10 @@ admin-editable values.
 
 `update` regenerates committed maps and indexes; `ci` checks drift. Never hand-edit
 generated maps or `index.yaml`.
+`map:val` reports both the root and systematic code maps in one run. CI also
+compares the documentation map and JSON and YAML indexes. Generator failures,
+missing outputs, and stale content are reported before application smoke
+results. Comparison files live in isolated temporary directories.
 
 `lint` accepts one file or directory, or scans the normal source roots when the
 path is omitted. An explicit path is forwarded to the handler; an invalid path,
@@ -97,6 +102,8 @@ fails explicitly in that environment rather than skipping the check.
 
 Update this skill when help, dispatch, an implementation file, or the binding
 contract changes. A help entry without an implementation is a gap, not a feature.
+Run `node --test tests/cli-lint.test.cjs` when changing CLI validation. It
+exercises generated-artifact failure reporting, cleanup, and concurrent checks.
 
 ## Agent offline test runner
 
