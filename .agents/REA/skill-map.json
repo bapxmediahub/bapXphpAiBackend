@@ -1280,8 +1280,8 @@
             ],
             "review": {
                 "date": "2026-11-26",
-                "reason": "Initial pinned skill adaptation: Block registration, serialized attributes, edit/save/render split, child composition and deprecation teach why editor schemas need stable versioned data. Native pages use bounded Markdown and typed page settings, not Gutenberg blocks. General reusable component hierarchy remains partial.",
-                "sha256": "79d36ebc40827e0e2bc138c73e0d8d04dea8a2218ead0ff8d92c7bd48dc330e2"
+                "reason": "Reviewed pinned WordPress autosave identity versus native CAS; actual MariaDB deadlock receipt, strict duplicate insert conflict, bounded rollback retry and explicit publication boundary retained.",
+                "sha256": "d8cae415549962d1e5679a2b79c8e1ebf8f2425b4b0b1e4a424e17cb95ae258b"
             }
         },
         {
@@ -1389,8 +1389,8 @@
             ],
             "review": {
                 "date": "2026-11-26",
-                "reason": "Initial pinned skill adaptation: Upstream server directives and scoped state/actions illustrate explicit state ownership and hydration. bapX has native JS, typed A2UI envelopes and fixed actions; general streaming surface/data updates are partial.",
-                "sha256": "00fd04b60e40689dab52dd7b9802d9c1e1ae4444fde0fe2cb7ee847e77a0e64d"
+                "reason": "Reviewed server recovery error/conflict semantics and browser fallback; confirmed rollback-only retry does not replay unknown results or replace concurrent user input.",
+                "sha256": "7f7c04623770ed1d95ba4ee2843dc2f89d4ac1fa4dd61d229ace46032f036bf0"
             }
         },
         {

@@ -283,7 +283,14 @@ The endpoint accepts only allowlisted editable text/settings fields, never
 publication status, subscriber mail, upload bytes or arbitrary metadata.
 It checks owner identity, CSRF, input bounds and the canonical revision.
 After a short edit debounce, server writes/discards compare the recovery
-token, so two browsers cannot silently overwrite one another. A changed
+token, so two browsers cannot silently overwrite one another. The
+direct recovery mutation owns one autocommit statement; duplicate insert
+means conflict and a fresh read of the winning record. Only a database-confirmed
+deadlock rollback (SQLSTATE 40001, vendor 1213) allows up to two short retries
+of the complete recovery CAS with the original expected token and a fresh read.
+An ambient transaction, lost transport or ambiguous failure is not retried.
+The controller still returns a conflict or explicit unavailable state, preserving
+the browser copy. Other business mutations and canonical saves are unchanged. A changed
 canonical revision disables restore but leaves the recovery downloadable.
 Current unsaved fields and prior server versions can be downloaded separately;
 restoring over a changed editor requires explicit confirmation. Failed server

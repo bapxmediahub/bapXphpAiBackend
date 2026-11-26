@@ -72,6 +72,14 @@ Existing test starting points (extend rather than claim these cover the entire n
 - `docs/modules/content-and-seo.md`
 - `tests/run.php`
 
+For native editor recovery, retain the original expected recovery token.
+After a database-confirmed deadlock rollback only, the owned autocommit CAS
+may re-read and retry at most twice; a winning concurrent insert becomes a
+conflict, not an upsert. Lost transport and ambient transactions must not be
+replayed. Test both actual MySQL/MariaDB worker outcomes and deterministic
+retry bounds. This is not an active WordPress edit-presence lease or a
+production recovery receipt.
+
 ## Evidence handoff
 Record the upstream entrypoint/callee, authoritative state, permissions, normal/failure/concurrent transitions and the intentional native deviation in the linked GitHub issue. Record actual test commands and results, update affected REA rows, regenerate the report and run the existing CI gate. Distinguish static reading, synthetic fixture execution and live acceptance. Read unknown source bodies before implementing; no file count or test name proves parity.
 

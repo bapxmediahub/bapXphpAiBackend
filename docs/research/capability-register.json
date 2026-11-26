@@ -115,7 +115,8 @@
             "status": "partial",
             "issues": [
                 359,
-                47
+                47,
+                526
             ],
             "references": [
                 {
@@ -150,11 +151,11 @@
                 "tests/campaign-form-http.php",
                 "docs/modules/content-and-seo.md"
             ],
-            "finding": "Native browser fallback, owner-scoped server recovery, up to three CAS versions, stale download and explicit canonical save are implemented in the candidate. HTTP and desktop/mobile fixture regressions pass. WordPress timestamped edit-presence lease and production acceptance remain incomplete; isolated DB race checks added to hosted CI.",
+            "finding": "Native browser fallback, owner-scoped server recovery, bounded three CAS versions, stale download and explicit canonical save exist. Hosted MariaDB #521 reported SQLSTATE 40001/vendor 1213 during initial recovery insert. Candidate #526 uses strict insert, duplicate conflict and at most two retries of the complete autocommit recovery CAS only after confirmed rollback. Deterministic policy and HTTP fixtures pass; repeated isolated database races and authorized production recovery remain outstanding. WordPress timestamped edit presence lease remains incomplete.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Compared WP 7.1.4 autosave, post-author revision and edit-presence source with actual native HTTP, browser fallback, CAS and explicit save; preserve partial presence lease and live boundary.",
-                "source_sha256": "c7d42bed4031e37bb92fa979b721441ba07b49af555898dd122b736db691132f"
+                "reason": "Reviewed MySQL validate failure with no worker exception and actual MariaDB 12-race pass. Test compared PHP object key insertion order; normalize only object keys, retain exact scalar types and list order and all CAS assertions. Added fixed assertion diagnostics; root cause of latest failure not independently confirmed until both engines pass.",
+                "source_sha256": "b90c8024ab9978c1abe2d2a7a322600496852d15a8a4f053410be043850e07cb"
             },
             "production_evidence": []
         },
@@ -515,8 +516,8 @@
             "finding": "Canonical metadata and slugs exist; managed redirect registry, conflict and lifecycle checks remain.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed shared resolved price, actual identity metadata and Product Offer JSON-LD; managed redirect gap remains.",
-                "source_sha256": "599eaa0dafd221c59fd05f10052df044e38abf32ca42d06d503927971ca7aa6d"
+                "reason": "Reviewed the content/SEO contract change for private recovery deadlock handling; canonical slugs, publication and SEO projections remain unchanged.",
+                "source_sha256": "799712a5e863a6356fd16cfd730c6950c0eaba9705ffb2b76290e32a5e8e70d6"
             },
             "production_evidence": []
         },
@@ -581,8 +582,8 @@
             "finding": "Configurable identity and native persistence exist; isolated installer/provisioning deferred.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed existing hosted MySQL settings model and isolated private owner namespace, no new runtime or cross-client provisioning claim.",
-                "source_sha256": "ea9e0572ab17775d22b74001360248eca19e2d334cbccdbce6372c40a90fadb5"
+                "reason": "Reviewed shared DatabaseService recovery-only CAS and storage contract; native hosting requirements and installation scope unchanged.",
+                "source_sha256": "3aa7b88ecb19241607fc1f39befde8331d80fd53736c23f17a077c2901cf941f"
             },
             "production_evidence": []
         },
