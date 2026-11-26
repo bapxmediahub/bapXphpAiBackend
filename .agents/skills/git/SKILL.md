@@ -84,3 +84,13 @@ record evidence before fixing, and keep unrelated bugs in separate issues/PRs.
 Create Ready-for-Review PRs with `Refs #N`; require exact-head CI and cross-reviewed
 documentation receipts. After merge, test the deployed flow and record evidence
 on that issue before closing it. See `docs/development-workflow.md`.
+
+## Continue through the next complete loop
+
+After a scoped release, refresh current main, issues and PR gates. If the next
+authorized action and acceptance are clear, implement and verify it in the same
+session; do not stop after narrating a plan or opening a PR. While checks run,
+work on an independent scope and return to the checks. At reporting time include
+completed loops, remaining gates, and the next concrete action; offer options
+only for a genuinely unresolved decision. Keep all existing release and
+authorization safeguards. See AGENTS.md and docs/development-workflow.md.

@@ -806,6 +806,26 @@
                 {
                     "source": "woocommerce",
                     "path": "includes/class-wc-shipping-zone.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/class-wc-shipping-zones.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/class-wc-cart-totals.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/class-wc-checkout.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/shipping/flat-rate/class-wc-shipping-flat-rate.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/shipping/free-shipping/class-wc-shipping-free-shipping.php"
                 }
             ],
             "local_sources": [
@@ -816,10 +836,10 @@
             "acceptance_evidence": [
                 "tests/shipping-preview-browser.cjs"
             ],
-            "finding": "Region rate preview exists; integrate verified quote into real checkout, taxes, refunds and orders.",
+            "finding": "Ordered native state/PIN flat/free dry-run exists; remote checkout still sets shippingPaise=0. Pinned zone matching, cart totals, checkout and flat/free methods extracted. Persist revisioned rules and integrate authoritative address/cart quote, GST, payment and immutable order/refund before owner enables charges.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "reason": "Reviewed pinned WooCommerce shipping zone, rate classes, cart totals and checkout REA extraction against native preview and actual zero shipping checkout. No charges enabled or completion claim.",
                 "source_sha256": "c6a3ba859e7ef8ad2643ca31c9973aec6953d73da5312b8f48509f34d6ca6cef"
             },
             "production_evidence": []
@@ -1953,10 +1973,10 @@
                 "tests/ai-provider-transport.php",
                 "tests/model-driven-agents.php"
             ],
-            "finding": "Existing bounded retry and credential/model holds retained. Candidate adds one fresh same-connection alternate synthesis over successful allowlisted reads after transient continuation failure; exact 429/503, no-replay, quota/credential/hold cases pass. Live rate-limit recovery remains unverified.",
+            "finding": "Merged and deployed #518: one bounded same-credential alternate synthesis after completed read-only evidence; live trace 0a43c85083302228 attempted recovery once, but alternate returned 503 after original 429. Provider reliability remains partial; do not add arbitrary retries.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed bounded retry and credential holds; one same-connection alternate synthesis attempt, 11 dedicated transport cases plus existing full suite passed.",
+                "reason": "Reviewed actual live #518 rate-limit and alternate 503 sequence; one bounded recovery transfer, no additional retries or provider configuration changes.",
                 "source_sha256": "b79a570e8d3b73a6711dc36e9648b26967bd90beb298311f41d4bff292f2ffa3"
             },
             "production_evidence": []
@@ -2014,10 +2034,10 @@
             "acceptance_evidence": [
                 "tests/model-driven-agents.php"
             ],
-            "finding": "Prior live Enterprise tool-to-answer passed; Support executed policy tool but rate-limited continuation. Candidate real Support and Enterprise controller fixtures now recover via one configured alternate text-only request (200,429,200), exactly one read and accepted A2UI. Live both-agent scope remains partial.",
+            "finding": "Previous real Enterprise tool-to-answer and editorial draft passed. On deployed #518 Support trace 0a43c85083302228: one completed public_policy read, 429 continuation, one same-connection synthesis 503, final HTTP503 and no A2UI. Live recovery dispatch/no replay verified, successful both-agent answer acceptance remains partial.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed actual Support and owner controller 200/429/200 sequences, one tool execution and normal final answer/A2UI; scripted provider fixture not live acceptance.",
+                "reason": "Reviewed live trace 0a43c85083302228 and exact deployed SHA, retained actual partial evidence and no accepted model answer claim.",
                 "source_sha256": "8e27bf8a5680834c637c3fd2b9bc7390a2e644d342e1d59783e6499e25ae8a21"
             },
             "production_evidence": [
@@ -2027,6 +2047,13 @@
                     "url": "https://github.com/bapxmediahub/bapXphpAiBackend/issues/496#issuecomment-7196002143",
                     "scope": "Enterprise real tool-to-answer pass, Support real tool then failed final continuation; partial only",
                     "source_sha256": "073d6c85fa36b4cc3864d75d3f8969d4fc9b575d36c6f0020ba50da8715dcf74"
+                },
+                {
+                    "deployed_sha": "167b01702d6b00ec7bdb2a10b1e5da5ba3201d95",
+                    "date": "2026-11-26",
+                    "url": "https://github.com/bapxmediahub/bapXphpAiBackend/issues/176#issuecomment-7197115171",
+                    "scope": "Live Support policy read executed once; original continuation 429 and single alternate synthesis 503; no accepted answer or A2UI",
+                    "source_sha256": "8e27bf8a5680834c637c3fd2b9bc7390a2e644d342e1d59783e6499e25ae8a21"
                 }
             ]
         },
@@ -2061,8 +2088,8 @@
             "finding": "Provider-only editorial generation and protected unpublished form implemented. Live authenticated Enterprise blog draft succeeded at deployed 17aa4c6 (trace 3fa837cf031c2d26; provider fallback, unpublished/create-only, no Save). Standalone editor and product generation live acceptance remain separate.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed actual provider draft generation and 120 controller regression cases; text-only editorial generation is ineligible for tool recovery and prior live evidence retained.",
-                "source_sha256": "d7169aa3c8688ca8fab2d3cc01c7fc7563d1aa012d953a16d83bcba5f4babfd6"
+                "reason": "Reconciled merged #518 inference changes with developer skill discovery tests; prior actual provider draft and unpublished review evidence retained.",
+                "source_sha256": "dd81d36adcd2c1deea838e256a5d6ce11be10c1804d3d68762660307810a806b"
             },
             "production_evidence": [
                 {
@@ -2197,10 +2224,10 @@
                 "tests/ai-provider-transport.php",
                 "tests/model-driven-agents.php"
             ],
-            "finding": "Interruption remains observable. Candidate adds in-request fresh synthesis from accepted read-only evidence without replay or provider-private metadata. General durable resumption and unknown-outcome repair remain partial.",
+            "finding": "Request-local same-connection read-evidence synthesis deployed in #518; live trace confirms one recovery transfer and no duplicated tool, although alternate failed. General cross-request durable resumption and unknown-outcome repair remain partial.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed pinned DeepSeek session repair distinction between recorded outcomes and unknown dispatch; request-local synthesis only over completed reads, durable resumption remains partial.",
+                "reason": "Reviewed live observed single tool and separate synthesis phase; no replay, cross-request recovery remains incomplete.",
                 "source_sha256": "0c32c030253a6d48a41ed7a98ee232729ed32af85e552cc2deab8c99c7d6ac92"
             },
             "production_evidence": []
@@ -2234,8 +2261,8 @@
             "finding": "Fixed role-specific .bapX instruction manifest and execution authorization; not developer harness exposure.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed retained role instruction and authorization tests, draft generation is authenticated and no public capability added.",
-                "source_sha256": "b1b27820007863ab7f9e1e6c7b743ebb8389b0cfa768b2e810a6fe71d8b2361b"
+                "reason": "Reviewed developer-only REA skill discovery and unchanged live instruction allowlist; no runtime prompt or capability exposure change.",
+                "source_sha256": "49bf631afefde5ef9f1620a24f2bfcdd62536b8e1295d2137b0f0932e90944c2"
             },
             "production_evidence": []
         },
@@ -2264,8 +2291,8 @@
             "finding": "Sanitized observed metadata, durations, usage and safe evidence; no exported private telemetry.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed sanitized inference phase projection and tests verifying no raw result, signature or call ID leaked in attempt records.",
-                "source_sha256": "3f6be24f01adf386ee297fe92a67e4d2fd510cc3b65921b7b8a52f6f99b59025"
+                "reason": "Reviewed merged #518 observed inference recovery phase and native skill index assertions; no new raw evidence persistence or projection.",
+                "source_sha256": "00e3abdadb649a75260703bfe07a6b8fe273354358f026016bc162d96db45aff"
             },
             "production_evidence": []
         },

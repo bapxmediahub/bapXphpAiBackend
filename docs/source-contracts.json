@@ -58,9 +58,9 @@
             "review_note": "Reviewed the owner UI skill changes against authenticated media navigation, route declarations, and Media Library behavior. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
         },
         "operator-help": {
-            "source_sha256": "125f9739dc68b84838c450bb442f0a9b30dcbdda3a290982b9bd5ddda8302588",
+            "source_sha256": "5be62f1d7254bd0b2c337b118c995ab63a9a0dea0c46205766ac1c7110cb9b2b",
             "references_sha256": "4e2591fafd1e772fb73b53865320e18914867c5d36d31f01f3406f58dcc80b4f",
-            "review_note": "Reviewed native owner and Support guidance; one bounded read synthesis preserves actual tool results and existing scope; no new editor or admin action."
+            "review_note": "Reviewed reconciled current-main read-evidence synthesis and developer-only skill index; live owner help authorization and runtime prompts unchanged."
         },
         "public-mcp": {
             "source_sha256": "16885ac8b5f31d7e7f4734b227e46c4dcce33001b2d019e251fd2891730ae4c7",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed settings loader exclusion of private ed rows; existing public product feed and channel settings untouched."
         },
         "workflow": {
-            "source_sha256": "4a08ec80a4863ff493f96afaede6473f36023060f26d246c39d3bbb1ef8b1845",
-            "references_sha256": "14c2c675da06f0e52ce81e374d38de55ffbbc5cbdffb344aa94a62f7ec668e68",
-            "review_note": "Reviewed REA behavioral contract and provider documentation, existing hosted tests extended with recovery cases, generated maps and review receipts preserved."
+            "source_sha256": "5af6a7178c3b319eb80141774e1309f7e282f66fcf6e42bd4560bea19ec58645",
+            "references_sha256": "ce296268f8e6ab4a20955480efe5431f31112561643d61298121d265ee480280",
+            "review_note": "Reviewed combined #518 and #519 source, continuous execution rules in AGENTS, git and REA skills and durable workflow; preserve exact-head gates, actual acceptance and explicit authorization boundaries."
         }
     }
 }

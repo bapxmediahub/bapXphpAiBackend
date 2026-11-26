@@ -250,6 +250,30 @@ exist and pass the same path/symlink checks as other reviewed sources.
 semantic documentation review. New files are covered by area patterns or the
 foundation area; missing references and forbidden issue-ledger paths fail CI.
 
+## Execute repeated complete engineering cycles
+
+Treat the issue/PR/release loop as a unit of engineering work, not a
+conversation turn. Follow the owner-approved scope and AGENTS.md:
+research and reproduce → implement → run local regressions → inspect
+exact-head CI and review evidence → authorized merge → exact deployed SHA
+and actual workflow acceptance → update issue and REA evidence. Do not close
+an issue merely because the patch merged.
+
+At the end of each cycle, refresh the release queue and choose the next
+actionable gap by production impact, prerequisites and evidence. If the next
+step is clear and authorized, execute it without waiting for another user
+prompt. If a gate is running, do independent scoped work and revisit the gate.
+Use isolated worktrees, preserve existing changes, and do not sacrifice
+verification for speed or volume.
+
+Narration is a checkpoint, not a reason to halt. Include the completed
+cycles and observed evidence, open gates and blockers, and the next action
+with a measurable acceptance condition. Only present competing next-step
+suggestions when a real ambiguity remains; identify the specific decision
+required. Report remaining work honestly when the session ends. Never promise
+background execution, invent an approval or undertake an unapproved production
+mutation to force a pass.
+
 ## Ready PR → merge → live test → close
 
 Open a Ready for Review PR using `Refs #ISSUE`, not a draft. Include exact test

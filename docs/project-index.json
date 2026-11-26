@@ -2519,7 +2519,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/DocsMapService.php",
-            "line": 152
+            "line": 153
         },
         {
             "from": "service:EditorDraftService",
@@ -2591,7 +2591,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/KnowledgeGraphService.php",
-            "line": 384
+            "line": 387
         },
         {
             "from": "service:MailQueueService",

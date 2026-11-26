@@ -40,6 +40,8 @@ Generated files point to original sources. Do not hand-edit them.
 
 ## REA research and review operations
 
+- [Official reference skill adaptations](../.agents/REA/README.md) — pinned WordPress/WooCommerce instructions, native reverse-engineering workflows and capability routing.
+
 - [Current REA capability coverage](research/capability-progress.md) — generated scoped percentages, with separate implementation and production acceptance.
 - [REA engineering workflow](research/rea-engineering-workflow.md) — source-pinned reference adaptation and mandatory review/update gate.
 - [Versioned source evidence](research/evidence/reference-source-index.json) — archive hashes, upstream revisions and selected-file inventories.

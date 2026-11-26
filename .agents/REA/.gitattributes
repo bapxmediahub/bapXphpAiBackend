@@ -1,0 +1,3 @@
+# Preserve byte-exact imported reference files, including upstream EOF spacing.
+# All native adaptation files retain the project's ordinary whitespace checks.
+upstream/** -text whitespace=-blank-at-eof
