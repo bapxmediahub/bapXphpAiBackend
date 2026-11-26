@@ -24,8 +24,8 @@
         },
         "foundation": {
             "source_sha256": "cbe9cc784939b451fccbd4e1c1447ca82630f101f52d5dfc0a2336e91c825864",
-            "references_sha256": "a46ae9db7aba58f69395e04483ddddfd2732e8a473440861ff35194cbab64dad",
-            "review_note": "Reviewed shared public projection and native WebMCP lifecycle; contact and services still use existing PHP GET routes and validation, registration failure only aborts group."
+            "references_sha256": "ab8280bb52a12774a146db46d004b3ce31f11071370c2203171f6f5d2ece1412",
+            "review_note": "Reviewed merged native Chrome 160 acceptance and rollback of incomplete business group against canonical schemas and public-only projection; preserve existing deployment and private boundaries."
         },
         "google-tags": {
             "source_sha256": "ee67bf3e50c0de63820bd128a2c2df6f29571d0df37e7e3f22bd910948554f0e",
@@ -40,7 +40,7 @@
         "interface": {
             "source_sha256": "cf5d389babfbae48dd6a69b2ed894b818fe72db4aa1ed246e8f813a1cebfab33",
             "references_sha256": "7593f0def754e85b99f97b22336cda86a8b0be70b70fadeae820f17b1cfae663",
-            "review_note": "Reviewed public tool availability, lifecycle and frontend skill; incomplete registration now fails closed without affecting contact form or unrelated browser modules."
+            "review_note": "Reviewed combined public browser discovery, readiness guard, native descriptor metadata and lifecycle; no human form or visual behavior changed."
         },
         "mail": {
             "source_sha256": "11a3b674d92d0714846359177499966c2f5ad2b1af5380a972280c64bb79b7b8",
@@ -69,8 +69,8 @@
         },
         "remote-commerce": {
             "source_sha256": "28a3c2d025729100fe529cb5d1d05d3bd967ca18d4f29f99bb27505419d09e56",
-            "references_sha256": "905af3a611b5ea5eeeaf5c1c7d19bcc63709309b6c2372568956bf50498cc362",
-            "review_note": "Reviewed contact/services group against public read, remote commerce and MCP contracts; no checkout registration or state mutation changes."
+            "references_sha256": "b0106f13d7b5f63eef0f5325c846a3e8298ae7a2e74bce2494eff5045ee72772",
+            "review_note": "Reconciled main Chrome 160 forward test and business group rollback: credential-free read contracts and checkout unaffected; reviewed both WebMCP sections and commerce fixtures."
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",
@@ -78,9 +78,9 @@
             "review_note": "Compared the CLI guide combining catalogue, storefront search, and generated artifact checks. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
         },
         "workflow": {
-            "source_sha256": "34127a2258781c2684ecd7ac64d3f66e56a31577dc17cb6ea62f11bab8670a11",
+            "source_sha256": "db465530e3fdb0326d704ac698843b20afeb4734f574f21e81c0c3dde33a25f1",
             "references_sha256": "e02da7c441df6fad273bb71dd829c2564589fc319753a291036c415e8b8494ca",
-            "review_note": "Compared the full local release gate, independent artifact scratch paths, malformed generation reporting and the focused map and CLI regressions. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
+            "review_note": "Reviewed validation workflow and development release gates; forward job is separate and runs the same pinned test dependencies with explicit native version assertion."
         }
     }
 }

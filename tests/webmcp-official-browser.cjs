@@ -139,6 +139,14 @@ async function main(){
       :['--no-sandbox','--disable-features=WebMCP,WebMCPTesting'],
   });
   try{
+    const parts=browser.version().split('.').map(Number);
+    assert.equal(parts.length,4,'Record an exact Chrome version');
+    assert.ok(parts.every(Number.isSafeInteger));
+    const atLeast=(major,build)=>parts[0]>major||(parts[0]===major&&parts[2]>=build);
+    const schemaAvailable=!native||atLeast(159,8140);
+    const nativeToolInterface=native&&atLeast(160,8173);
+    if(process.env.WEBMCP_REQUIRE_TOOL_INTERFACE==='1')assert.ok(nativeToolInterface,'Forward CI lane must exercise the native Tool interface');
+    console.log('Browser '+browser.version()+': outputSchema='+schemaAvailable+', native Tool interface='+nativeToolInterface);
     const page=await browser.newPage();
     const errors=[];page.on('pageerror',e=>errors.push(e.message));
     await page.goto('http://127.0.0.1:'+port+'/',{waitUntil:'load'});
@@ -147,14 +155,61 @@ async function main(){
     await waitForTools(page,5);
     const landing=await page.evaluate(async()=>{
       const list=await document.modelContext.getTools();
+      const metadata=list.map(t=>({name:t.name,title:t.title??null,description:t.description,
+        inputSchema:t.inputSchema??null,outputSchema:t.outputSchema??null,annotations:t.annotations??null}));
       const call=async(name,args={})=>JSON.parse(await document.modelContext.executeTool(list.find(t=>t.name===name),args));
-      return {names:list.map(t=>t.name).sort(),contact:await call('get_public_contact'),
+      return {metadata,names:list.map(t=>t.name).sort(),contact:await call('get_public_contact'),
         services:await call('list_public_services',{query:'temple',limit:1}),
         ui:await call('present_public_knowledge',{view:'products',limit:1}),
         scripts:[...document.scripts].map(s=>s.src)};
     });
     assert.deepEqual(landing.names,globalTools,'Landing page exposes the complete public tool set without a shop DOM');
     assert.deepEqual(landing.contact,contact);
+    for(const [name,contract] of Object.entries({
+      get_public_contact:schemas.contact,list_public_services:schemas.services,
+      present_public_knowledge:schemas.a2ui,search_public_articles:schemas.articles,search_public_products:schemas.products
+    })){
+      const tool=landing.metadata.find(t=>t.name===name);
+      assert.equal(typeof tool.description,'string');
+      assert.deepEqual(tool.inputSchema,contract.inputSchema,name+' inputSchema');
+      if(schemaAvailable)assert.deepEqual(tool.outputSchema,contract.outputSchema,name+' outputSchema');
+    }
+    if(nativeToolInterface){
+      // Synthetic, read-only tool: stale handles must not execute a later
+      // registration with the same name. Do not clone browser Tool objects.
+      const identity=await page.evaluate(async()=>{
+        const ctx=document.modelContext;
+        const name='test_registration_identity';
+        const first=new AbortController(), second=new AbortController();
+        const definition=value=>({name,description:'Synthetic read-only identity regression',
+          inputSchema:{type:'object'},outputSchema:{type:'object'},execute:()=>({value})});
+        const find=async()=> (await ctx.getTools()).find(t=>t.name===name);
+        try{
+          await ctx.registerTool(definition('first'),{signal:first.signal});
+          const old=await find();
+          if(!old)throw Error('Missing first registration');
+          const firstValue=JSON.parse(await ctx.executeTool(old,{})).value;
+          let cloneRejected=false;
+          try{structuredClone(old)}catch(e){cloneRejected=e.name==='DataCloneError'}
+          const descriptor={source:old.source===window,serialized:JSON.stringify(old),
+            keys:Object.keys({...old}),cloneRejected,firstValue};
+          first.abort();
+          // Registration removal can be asynchronous.
+          for(let i=0;i<100&&await find();i++)await new Promise(r=>setTimeout(r,10));
+          if(await find())throw Error('Registration did not disappear');
+          await ctx.registerTool(definition('second'),{signal:second.signal});
+          const current=await find();
+          if(!current)throw Error('Missing replacement registration');
+          let staleRejected=false;
+          try{await ctx.executeTool(old,{})}catch{staleRejected=true}
+          return {...descriptor,staleRejected,replacement:JSON.parse(await ctx.executeTool(current,{})).value};
+        }finally{first.abort();second.abort();}
+      });
+      assert.deepEqual(identity,{source:true,serialized:'{}',keys:[],cloneRejected:true,
+        firstValue:'first',staleRejected:true,replacement:'second'});
+      await waitForTools(page,5);
+      console.log('Chrome 160 Tool interface: explicit metadata, native identity, serialization and stale-handle rejection PASS');
+    }
     assert.deepEqual(landing.services,services);
     assert.equal(landing.ui.messages[0].version,'1.0');
     if(native){
@@ -217,7 +272,7 @@ async function main(){
     assert.deepEqual(result.backend.map(x=>x.products.length),[20,20,20,7]);
     assert.equal(result.backend[0].total,67,'Backend must page beyond the 45 visible DOM cards');
     assert.deepEqual(result.backend.map(x=>x.nextOffset),[20,40,60,null]);
-    if(!native)assert.deepEqual(result.backendSchema.required,['products','total','nextOffset']);
+    if(schemaAvailable)assert.deepEqual(result.backendSchema.required,['products','total','nextOffset']);
     assert.equal(result.knowledge.articles.length,1);
     assert.equal(result.knowledge.total,2);
     assert.equal(result.knowledge.nextOffset,1);
@@ -226,8 +281,8 @@ async function main(){
     assert.equal(result.skip.nextOffset,null);
     assert.equal(result.skip.total,45);
     // Chrome before 159 does not expose outputSchema; the returned data is still checked above.
-    if(!native){
-      assert.ok(result.schema,'Polyfill descriptor should include outputSchema');
+    if(schemaAvailable){
+      assert.ok(result.schema,'Supported descriptor should include outputSchema');
       assert.deepEqual(result.schema.required,['products','total','nextOffset']);
     }
     assert.deepEqual(errors,[],'No uncaught Chrome exceptions');
