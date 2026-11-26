@@ -58,6 +58,9 @@ const receipt = { razorpay_payment_id:'pay_fixture',razorpay_signature:'fixture-
 test('late verification network failure stays visible and retries the same payment without creating another', async () => {
     const page = fixture(attempt => { if (attempt === 1) throw Error('Network unavailable'); return ok(); });
     const gateway = await page.start();
+    assert.equal(gateway.options.amount,115,'The gateway receives the server-returned integer paise');
+    assert.equal(Object.hasOwn(page.calls.find(call => call.url === '/checkout/create-order').fields,'amount'),false,'Browser must not supply an authoritative amount');
+
     await assert.doesNotReject(gateway.options.handler(receipt));
     assert.equal(page.node('pay-failed').classList.contains('is-open'), true);
     assert.match(page.node('pay-failed-title').textContent, /needs checking/);

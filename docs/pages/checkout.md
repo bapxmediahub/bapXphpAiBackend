@@ -44,3 +44,11 @@ The browser cart resolver retains decimal INR amounts and shares the current
 product/offer policy with remote estimates. Displayed lines use those resolved
 amounts; both server and checkout gateway payloads round to integer paise rather
 than truncating floating-point multiplication.
+
+The browser Razorpay checkout derives its payable amount exclusively from the
+server-resolved cart and validated coupon. A total below ₹1 is rejected before
+the gateway is invoked; a fully discounted cart does not fall back to a posted
+amount or implicitly become a free-order workflow. Rejection preserves any
+existing pending-payment recovery and cart. The isolated controller regression
+in `tests/verified-order.php` exercises zero/full/partial discounts, the minimum
+amount and attempted client-supplied charges without contacting a gateway.

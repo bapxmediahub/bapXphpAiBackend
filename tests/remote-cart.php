@@ -66,7 +66,7 @@ try {
     };
     $cartHtml=$renderMoney('cart',$fractionalItems);$checkoutHtml=$renderMoney('checkout',$fractionalItems);
     cartCheck(str_contains($cartHtml,'data-unit-price="1.15"')&&str_contains($cartHtml,'data-line-total>₹1.15'),'Cart markup recomputed or truncated resolved unit/line prices.');
-    cartCheck(str_contains($checkoutHtml,"amount: '115'")&&str_contains($checkoutHtml,'checkout-item__price">₹1.15'),'Checkout markup truncated a fractional rupee gateway amount.');
+    cartCheck(!str_contains($checkoutHtml,"amount: '115'")&&str_contains($checkoutHtml,'amount: order.amount')&&str_contains($checkoutHtml,'checkout-item__price">₹1.15'),'Checkout must preserve the fractional display and use the server gateway amount.');
     $fixture->setProducts($savedProducts);
     $expiredOffer=$fixture->knowledge()->products('',0,1,['expired-offer-ring'])['products'][0];
     cartCheck($expiredOffer['priceInr']===199.99,'Expired offer is still applied.');

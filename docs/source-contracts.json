@@ -13,9 +13,9 @@
             "review_note": "Reviewed unchanged actor/session/CSRF boundaries; new recovery retries stay on original owner/item identity and expected token."
         },
         "commerce": {
-            "source_sha256": "81b1644c7e6216baa5ba42a9f5a78a484a354d21d01c387ab86816e13d513239",
-            "references_sha256": "532315cb3e3be9bb177146c78033112f74bcfc00bd7f3a9dcbc1b6e06acc4608",
-            "review_note": "Reviewed shared database service; recovery retry not applied to cart, checkout, payment or order operations."
+            "source_sha256": "56c2354c15a4b4af4a9698bc2a65f237fdebccff02d9e6b80183b30ec9559d2a",
+            "references_sha256": "5617398d031571e14c8a0a907712fb5a5f74cc4723ed5151b21e4a77e29f09bb",
+            "review_note": "Reviewed actual eight checkout amount cases, no client fallback, fractional pricing and verified-order recovery; current dependency preserved."
         },
         "content": {
             "source_sha256": "b45da45a1b157b983bb95283f1e1384ad07a4a2613648b18533fbd00f5231b50",
@@ -38,9 +38,9 @@
             "review_note": "Reviewed private editor failure semantics: confirmed rolled-back autocommit deadlock retried only within bounded CAS; unknown or exhausted failure remains explicit, browser copy preserved."
         },
         "interface": {
-            "source_sha256": "cfce6b1688022d87402445e1c34cba693bc00a28329223d74195f8991757f84a",
+            "source_sha256": "fde92d57feff59ec7f1f72e8014984b35a75f2c0d48ddbdbc2b159ff8288b250",
             "references_sha256": "eef7e0667f963f48e68350ec36a1e015e0f195d2cda5c0868aeb3e87ccfa0f62",
-            "review_note": "Reviewed actual desktop/mobile/no-JS product landing and owner editor, compact title and factual purchase guidance preserve existing buttons and footer."
+            "review_note": "Reviewed native checkout request omits shopper amount and uses authoritative response; existing mobile product and purchase guidance preserved."
         },
         "mail": {
             "source_sha256": "d6701ee87e38200539b4d91602756009396ba9564e7e9dec371c048502dcf3ac",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed the owner UI skill changes against authenticated media navigation, route declarations, and Media Library behavior. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
         },
         "operator-help": {
-            "source_sha256": "5c4b9c4d54abd60a878468b056d266d27ea8b2c601186d6096fca51f92197446",
+            "source_sha256": "5b20bbbe5d6ab50deccf314927b7eec24df8841974594553c966fa604ba6e6d7",
             "references_sha256": "a1d740de3a88f050bdc402955b7eaca59edb27f5169edb7ebd652f1ed20dcf09",
-            "review_note": "Reviewed authenticated owner Merchant download and help, no Google write or link claims."
+            "review_note": "Reconciled current merchant owner preview and editor recovery with checkout payment correction; no owner guide mutation beyond actual payment behavior."
         },
         "public-mcp": {
             "source_sha256": "41c1243435ecb682c9f3f12859ce7f6d060fa5c933144e2e08f49d7747feda07",
@@ -68,9 +68,9 @@
             "review_note": "Reviewed editor-only storage retry and unchanged route authorization; no public capability or private data projection added."
         },
         "remote-commerce": {
-            "source_sha256": "91bf7a42aa9b6af692ccbafe217dc1b2b5ae3f2e4e771e71f2c0a71193fe7bf4",
-            "references_sha256": "aa6614e7c90895d5c1515fa46c5afa244da7c83502587a5ed55af881e04cb970",
-            "review_note": "Reviewed shared DatabaseService diff: only private editor recovery path changed; existing remote mutation protocol, payment and checkout behavior unchanged."
+            "source_sha256": "170d247cf2e7a0d1435ccbc18288a487e1e73d33573bf0554b85429126606a8a",
+            "references_sha256": "07ee70743aec95dca5faa3bf4e33c13f48e8184db843eef495a0bbbd88b1493b",
+            "review_note": "Reviewed current dependency and browser-only server amount change; remote quote, payment and editor protocol unchanged by checkout fix."
         },
         "sales-channels": {
             "source_sha256": "0012f20cbd5531b10a54baf77e4070710c02f926dae38c826cc657cf1939ec07",

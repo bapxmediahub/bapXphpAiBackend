@@ -688,8 +688,8 @@
             "finding": "Availability/on-hold guards exist; numeric reservations, expiry, release and backorders remain.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed stock status display uses existing sellability guard and schema adds identity only; no quantity reservation change.",
-                "source_sha256": "be9b0b1f91de92d17a4239740415e5911d60121b696c607c8063eaf0726f603f"
+                "reason": "Reviewed verified-order and authoritative amount fixtures against current dependency; stock and reservation logic unchanged.",
+                "source_sha256": "dc58ff9430e83d80f3298852148c136502a87caf6628f210948aa39635fdd9c9"
             },
             "production_evidence": []
         },
@@ -876,8 +876,8 @@
             "finding": "Frozen issued invoice/tax state evidence exists; authenticated register and statutory reconciliation remain.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed existing GST browser regression extended with read-only Merchant download; frozen tax, invoice and checkout records unchanged.",
-                "source_sha256": "17ed9122e36c46cdb618d40dd44f38bdcf3263905fc1629263270123ec46062d"
+                "reason": "Reviewed current Merchant metadata and editor-recovery fixture with checkout price tests; frozen invoice and GST contract unchanged.",
+                "source_sha256": "76772900b476ab52014996b209d287795bbce63f38b13187f307072c61e7d341"
             },
             "production_evidence": []
         },
@@ -888,7 +888,8 @@
             "status": "implemented",
             "issues": [
                 356,
-                335
+                335,
+                520
             ],
             "references": [
                 {
@@ -899,17 +900,19 @@
             "local_sources": [
                 "app/Services/VerifiedOrderService.php",
                 "app/Services/PaymentService.php",
-                "app/Services/OrderService.php"
+                "app/Services/OrderService.php",
+                "app/Controllers/CommerceController.php"
             ],
             "acceptance_evidence": [
                 "tests/verified-order.php",
-                "tests/remote-checkout-mysql.php"
+                "tests/remote-checkout-mysql.php",
+                "tests/fixtures/browser-checkout-amount.php"
             ],
-            "finding": "Verified payment and idempotent order fixtures exist; no real production payment acceptance claimed.",
+            "finding": "Verified payment and idempotent order fixtures exist. Browser Razorpay charge is derived from server cart and validated coupon only; zero and subminimum amounts are rejected without replacing existing recovery. Actual controller tested against recording gateway; no real production payment acceptance claimed.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
-                "source_sha256": "4c1b4742a06139563aab7c26fc61508c7bf23869aaa8b887c32997d2d558d8b4"
+                "reason": "Reviewed actual browser controller amount regression: computed payable only, zero/subminimum rejected, original recovery preserved. Reconciled exact #527 dependency.",
+                "source_sha256": "591a60d2717f3b52b9f6be63b486c3b572c08c0abbd331dea2c0304d02ff4220"
             },
             "production_evidence": []
         },
@@ -941,8 +944,8 @@
             "finding": "Whole-order fulfilment/refund state exists; line-level partial shipment, notes and return allocation need end-to-end checks.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed schema optional product identity only; no order notes, partial fulfilment or refund allocation change.",
-                "source_sha256": "19872b6fa96e5a53872eb114b50de0f02c838fb00823442972f7f5841c34a03a"
+                "reason": "Reviewed merged order docs and checkout amount boundary; fulfilment and refund workflow unchanged.",
+                "source_sha256": "b0135c2d52ed1550bcf7a88c8715722ce73e087c7d3bc7cba64bfe507566fd0f"
             },
             "production_evidence": []
         },
@@ -976,8 +979,8 @@
             "finding": "Persistent capability-bound remote cart exists; general customer cart merge/abandonment lifecycle remains.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
-                "source_sha256": "223ac8df4c22c19b6c8f6ebe54c6c719ba4a03c535cf3b339996124e30149531"
+                "reason": "Reviewed actual fractional cart and gateway response assertions; existing cart persistence and revision guards retained.",
+                "source_sha256": "55815ba9f312ef8f242586c3bf2e46c3a11c16f04c03d146499b596bcd8860b7"
             },
             "production_evidence": []
         },
@@ -1138,8 +1141,8 @@
             "finding": "Inbound gateway webhook is not signed outgoing webhook subscription/delivery/replay.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed optional catalogue metadata additions; no webhook delivery mechanism or payment provider write change.",
-                "source_sha256": "bebcf2e40c06edf4146f636c77d6625d192c8dbf7f628cb287a0c97c6f3c8c8a"
+                "reason": "Reviewed order and verified-payment boundary; no webhook behavior change.",
+                "source_sha256": "d3906d6053560951eb281d15f5344567d1a140677168adb9d3af302e07031e3d"
             },
             "production_evidence": []
         },
@@ -2363,8 +2366,8 @@
             "finding": "Explicit form actions and payment idempotency exist; generic approval/unknown-outcome recovery missing.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed existing product form validation before durable save; model cannot supply manufacturer facts and no automatic commerce action.",
-                "source_sha256": "e0a88c4bee5c2f65e40a52f9f1c1704b2f4d90f29b9a6f88e32e8bcebf717e38"
+                "reason": "Reviewed server-derived charge and rejection before gateway, preserved prior cart/recovery; no new write tool.",
+                "source_sha256": "1c21aeb3786d39f9d16cd14071a445dcaf4b91e1d40e606d2506877c0a123945"
             },
             "production_evidence": []
         },

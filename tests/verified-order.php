@@ -23,6 +23,37 @@ foreach([
 $expect(!PaymentService::isCapturedRazorpayPayment($payment,'pay_fixture','order_fixture',0),'Zero expected payment cannot verify.');
 $expect(!PaymentService::isCapturedRazorpayPayment([],'pay_fixture','order_fixture',115),'Missing gateway facts cannot verify.');
 
+// Run the actual browser controller against native cart/coupon calculation and
+// an isolated recording gateway. Never submit a real payment.
+$fixtureCoupon=static fn(string $type,float $value):array=>['code'=>'FIXTURE','active'=>true,'discount_type'=>$type,'discount_value'=>$value];
+$checkoutCases=[
+    [['price'=>105.0,'coupon'=>$fixtureCoupon('percentage',100),'posted'=>'99999'],400,0],
+    [['price'=>105.0,'coupon'=>$fixtureCoupon('fixed',200),'posted'=>'100'],400,0],
+    [['price'=>0.0,'posted'=>'100'],400,0],
+    [['price'=>105.0,'coupon'=>$fixtureCoupon('fixed',105)],400,0],
+    [['price'=>1.0,'coupon'=>$fixtureCoupon('fixed',0.01),'posted'=>'10000'],400,0],
+    [['price'=>105.0,'coupon'=>$fixtureCoupon('percentage',10),'posted'=>'1'],200,9450],
+    [['price'=>1.15,'posted'=>'999999'],200,115],
+    [['price'=>1.0],200,100],
+];
+foreach($checkoutCases as [$case,$status,$amount]){
+    $process=proc_open([PHP_BINARY,__DIR__.'/fixtures/browser-checkout-amount.php',json_encode($case,JSON_THROW_ON_ERROR)],
+        [0=>['pipe','r'],1=>['pipe','w'],2=>['pipe','w']],$pipes,null,['BAPX_CHECKOUT_AMOUNT_FIXTURE'=>'1']);
+    if(!is_resource($process))throw new RuntimeException('Cannot start checkout fixture');
+    fclose($pipes[0]);$raw=stream_get_contents($pipes[1]);$stderr=stream_get_contents($pipes[2]);
+    fclose($pipes[1]);fclose($pipes[2]);$exit=proc_close($process);
+    $expect($exit===0 && $stderr==='','Checkout fixture must execute without runtime errors');
+    $result=json_decode($raw,true,512,JSON_THROW_ON_ERROR);
+    $expect($result['status']===$status,'Browser checkout must enforce server-derived payable amount');
+    $expect($result['gateway_calls']===($amount>0?[$amount]:[]),'Only the authoritative amount may reach the recording gateway');
+    $expect($result['session']['cart']===[['slug'=>'fixture-product','qty'=>1]],'Checkout creation must preserve cart');
+    if($amount>0){
+        $expect($result['body']['amount']===$amount && (int)round($result['session']['pending_order']['total']*100)===$amount,'Response and pending order must agree with gateway amount');
+    }else{
+        $expect(isset($result['body']['error'])&&$result['session']['pending_order']===['marker'=>'existing recovery'],'Rejected amount must preserve prior payment recovery');
+    }
+}
+
 $sessionBefore=$_SESSION;
 $records=[];$catalogue=['item'=>['stock_status'=>'in_stock','gst_rate'=>5,'hsn_code'=>'8306']];
 $settings=['gst_state'=>'Tamil Nadu','default_gst_rate'=>5.0,'default_hsn_code'=>'8306',

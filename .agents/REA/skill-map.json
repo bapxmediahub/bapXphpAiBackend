@@ -1877,8 +1877,8 @@
             ],
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed actual Woo source and Google ProductInput, selected account/source diagnostics and bounded preview-only group/channel attributes; no fake Woo identity or unsupported public route.",
-                "sha256": "12a4b2a670d4f4f76786ed0754e1aaece83cc88beda4431b2c7ff3c60896bbcd"
+                "reason": "Reviewed exact #527 dependency and P25 server amount fix; only verified server price may reach gateway, no paid or free-order flow fabricated.",
+                "sha256": "c562656f5be740107a22d884fafcfc6bb5cb5fdf66f5e2f911952e24e41bf819"
             }
         },
         {
