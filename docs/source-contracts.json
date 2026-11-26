@@ -24,8 +24,8 @@
         },
         "foundation": {
             "source_sha256": "cbe9cc784939b451fccbd4e1c1447ca82630f101f52d5dfc0a2336e91c825864",
-            "references_sha256": "b74a87abe3b3116729352d75ffa1d346d973d2c1810d8792c868480d670e74be",
-            "review_note": "Reviewed architecture public knowledge projection and deployment verification boundaries against changed read adapters and WebMCP documentation; existing data isolation unchanged."
+            "references_sha256": "a46ae9db7aba58f69395e04483ddddfd2732e8a473440861ff35194cbab64dad",
+            "review_note": "Reviewed shared public projection and native WebMCP lifecycle; contact and services still use existing PHP GET routes and validation, registration failure only aborts group."
         },
         "google-tags": {
             "source_sha256": "ee67bf3e50c0de63820bd128a2c2df6f29571d0df37e7e3f22bd910948554f0e",
@@ -38,9 +38,9 @@
             "review_note": "Compared article trace redaction with the private response guard, Chat Completions provider failures and labelled Support reference. A failed turn reports a bounded application trace identifier."
         },
         "interface": {
-            "source_sha256": "bd36cf28217c90e2822174e23f90107b57d1a3d1fefa76b693f8c7998ec5b0e3",
+            "source_sha256": "cf5d389babfbae48dd6a69b2ed894b818fe72db4aa1ed246e8f813a1cebfab33",
             "references_sha256": "7593f0def754e85b99f97b22336cda86a8b0be70b70fadeae820f17b1cfae663",
-            "review_note": "Reviewed public adapter invocation and lifecycle cleanup against frontend skill and Design; no visual or checkout state change, public reads preserve existing schema and credential omission."
+            "review_note": "Reviewed public tool availability, lifecycle and frontend skill; incomplete registration now fails closed without affecting contact form or unrelated browser modules."
         },
         "mail": {
             "source_sha256": "11a3b674d92d0714846359177499966c2f5ad2b1af5380a972280c64bb79b7b8",
@@ -69,8 +69,8 @@
         },
         "remote-commerce": {
             "source_sha256": "28a3c2d025729100fe529cb5d1d05d3bd967ca18d4f29f99bb27505419d09e56",
-            "references_sha256": "88a430822a21f9fdd98971ec33f4632a4e311c9f2670a097e6cb43fe264840d5",
-            "review_note": "Reviewed public read adapters and WebMCP cancellation guidance against remote commerce and public MCP contracts; no mutation, checkout or authorization changes."
+            "references_sha256": "905af3a611b5ea5eeeaf5c1c7d19bcc63709309b6c2372568956bf50498cc362",
+            "review_note": "Reviewed contact/services group against public read, remote commerce and MCP contracts; no checkout registration or state mutation changes."
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",

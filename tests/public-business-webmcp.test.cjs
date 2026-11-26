@@ -14,10 +14,12 @@ const contact={name:'Published Business',path:'/contact',phones:[{label:'Support
 const service={name:'Temple Guidance',description:'Ask about published temple guides.',path:'/contact?subject=temple#contact-form'};
 function fixture(payload,{mode='promise',enabled=true,ok=true}={}) {
     const tools=[],requests=[],warnings=[];
-    let pagehide;
+    let pagehide, release;
     const registry=enabled?{registerTool(tool,options){
-        if(mode==='throw')throw new Error('Registration denied');
+        if(mode==='throw'||(mode==='secondThrow'&&tools.length===1))throw new Error('Registration denied');
+        if(mode==='secondReject'&&tools.length===1)return Promise.reject(new Error('Registration denied'));
         tools.push({tool,options});
+        if(mode==='pending'&&tools.length===2)return new Promise(resolve=>{release=resolve;});
         return mode==='void'?undefined:Promise.resolve();
     }}:undefined;
     vm.runInNewContext(source,{
@@ -26,10 +28,12 @@ function fixture(payload,{mode='promise',enabled=true,ok=true}={}) {
         URL,AbortController, AbortSignal,console:{warn:message=>warnings.push(message)},
         fetch:async(url,options)=>{requests.push({url:new URL(url),options});return {ok,json:async()=>payload};}
     });
-    return {tools,requests,warnings,get pagehide(){return pagehide},tool:name=>tools.find(x=>x.tool.name===name)?.tool};
+    return {tools,requests,warnings,get pagehide(){return pagehide},get release(){return release},tool:name=>tools.find(x=>x.tool.name===name)?.tool};
 }
-test('business tools register without shop DOM, use canonical schemas and clean up on pagehide',()=>{
-    const f=fixture(contact,{mode:'void'});
+const settle=()=>new Promise(resolve=>setImmediate(resolve));
+async function readyFixture(payload,options){const f=fixture(payload,options);await settle();return f;}
+test('business tools register without shop DOM, use canonical schemas and clean up on pagehide',async()=>{
+    const f=await readyFixture(contact,{mode:'void'});
     assert.deepEqual(f.tools.map(x=>x.tool.name),['get_public_contact','list_public_services']);
     assert.deepEqual(JSON.parse(JSON.stringify(f.tools[0].tool.inputSchema)),contracts.contact.inputSchema);
     assert.ok(f.tools.every(x=>x.tool.annotations.readOnlyHint));
@@ -39,14 +43,36 @@ test('business tools register without shop DOM, use canonical schemas and clean 
     assert.ok(f.tools.every(x=>x.options.signal.aborted));
     assert.equal(fixture(contact,{enabled:false}).tools.length,0);
 });
-test('a native registration refusal is caught separately for each business tool',async()=>{
-    const f=fixture(contact,{mode:'throw'});
-    await new Promise(resolve=>setImmediate(resolve));
+test('a first registration refusal stops the batch and logs a single warning',async()=>{
+    const f=await readyFixture(contact,{mode:'throw'});
     assert.equal(f.tools.length,0);
-    assert.equal(f.warnings.length,2);
+    assert.equal(f.warnings.length,1);
+});
+test('a refused sibling rolls back the registered business tool',async()=>{
+    for(const mode of ['secondThrow','secondReject']){
+        const f=await readyFixture(contact,{mode});
+        assert.equal(f.tools.length,1);
+        assert.equal(f.tools[0].options.signal.aborted,true);
+        assert.equal(f.warnings.length,1);
+        await assert.rejects(f.tool('get_public_contact').execute(),/unavailable/);
+        assert.equal(f.requests.length,0);
+    }
+});
+test('a partially registered group is not executable and teardown cannot reactivate it',async()=>{
+    const f=fixture(contact,{mode:'pending'});
+    await settle();
+    assert.equal(f.tools.length,2);
+    await assert.rejects(f.tool('get_public_contact').execute(),/unavailable/);
+    assert.equal(f.requests.length,0);
+    f.release();await settle();
+    assert.deepEqual(await f.tool('get_public_contact').execute(),contact);
+    const g=fixture(contact,{mode:'pending'});
+    await settle();g.pagehide({persisted:false});g.release();await settle();
+    await assert.rejects(g.tool('get_public_contact').execute(),/unavailable/);
+    assert.equal(g.requests.length,0);
 });
 test('contact returns only published facts through credential-free GET and never submits the form',async()=>{
-    const f=fixture(contact);
+    const f=await readyFixture(contact);
     assert.deepEqual(await f.tool('get_public_contact').execute(),contact);
     assert.equal(f.requests[0].url.pathname,'/api/knowledge/contact');
     assert.equal(f.requests[0].options.method,'GET');
@@ -58,13 +84,13 @@ test('contact returns only published facts through credential-free GET and never
     for(const bad of [{...contact,adminEmail:'owner@example.test'}, {...contact,path:'/admin'},
         {...contact,phones:[{label:'Bad',number:'javascript:alert(1)'}]},
         {...contact,hours:[{days:'Mon',hours:'9–5',private:true}]}]) {
-        await assert.rejects(fixture(bad).tool('get_public_contact').execute(),{name:'TypeError'});
+        await assert.rejects((await readyFixture(bad)).tool('get_public_contact').execute(),{name:'TypeError'});
     }
-    await assert.rejects(fixture(contact,{ok:false}).tool('get_public_contact').execute(),/unavailable/);
+    await assert.rejects((await readyFixture(contact,{ok:false})).tool('get_public_contact').execute(),/unavailable/);
 });
 test('service search is paginated, bounded, and limited to real enquiry destinations',async()=>{
     const payload={services:[service],total:2,nextOffset:1};
-    const f=fixture(payload);
+    const f=await readyFixture(payload);
     assert.deepEqual(await f.tool('list_public_services').execute({query:'temple',offset:0,limit:1}),payload);
     assert.equal(f.requests[0].url.pathname,'/api/knowledge/services');
     assert.equal(f.requests[0].url.searchParams.get('q'),'temple');
@@ -74,8 +100,21 @@ test('service search is paginated, bounded, and limited to real enquiry destinat
         await assert.rejects(f.tool('list_public_services').execute(input),{name:'TypeError'});
     }
     for(const path of ['/consult','https://outside.test','/admin','/contact?subject=temple&role=owner#contact-form']) {
-        await assert.rejects(fixture({...payload,services:[{...service,path}]}).tool('list_public_services').execute(),{name:'TypeError'});
+        await assert.rejects((await readyFixture({...payload,services:[{...service,path}]})).tool('list_public_services').execute(),{name:'TypeError'});
     }
-    await assert.rejects(fixture({...payload,services:[{...service,description:'x'.repeat(281)}]}).tool('list_public_services').execute(),{name:'TypeError'});
-    await assert.rejects(fixture({...payload,total:5}).tool('list_public_services').execute(),{name:'TypeError'});
+    await assert.rejects((await readyFixture({...payload,services:[{...service,description:'x'.repeat(281)}]})).tool('list_public_services').execute(),{name:'TypeError'});
+    await assert.rejects((await readyFixture({...payload,total:5})).tool('list_public_services').execute(),{name:'TypeError'});
+});
+
+test('each business invocation can be cancelled without unregistering the complete group',async()=>{
+    for(const [name,payload] of [['get_public_contact',contact],['list_public_services',{services:[service],total:1,nextOffset:null}]]){
+        const f=await readyFixture(payload);
+        const call=new AbortController();
+        await f.tool(name).execute({}, {signal:call.signal});
+        call.abort();
+        assert.equal(f.requests[0].options.signal.aborted,true);
+        assert.ok(f.tools.every(entry=>!entry.options.signal.aborted));
+        await f.tool(name).execute({});
+        assert.equal(f.requests[1].options.signal.aborted,false);
+    }
 });
