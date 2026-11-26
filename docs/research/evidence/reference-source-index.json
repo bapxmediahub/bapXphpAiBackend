@@ -199,7 +199,7 @@
       "origin": "woocommerce.11.3.0.zip",
       "revision": "d9eb1e46df8309eb37b6f7f3fba51480f2a9a00e7feb10b1487592fde39accc6",
       "license": "GPL-3.0 (archive readme)",
-      "scope": "Selected static source; no upstream execution",
+      "scope": "Selected static source; no upstream execution; supplementary selected shipping/checkout source classes",
       "rea": {
         "version": "6.8.0",
         "authority": "historical-reference",
@@ -543,8 +543,40 @@
           "path": "woocommerce.php",
           "sha256": "5a3d1c31d8add1106d100323f4ba1038be2c7bd52e93285d76b3c9ac29658803",
           "bytes": 2401
+        },
+        {
+          "path": "includes/class-wc-cart-totals.php",
+          "sha256": "e4ce6c2bd160e6c33017bfcf4215eaa399775e409529fa7cda143381bf97bfbe",
+          "bytes": 30332
+        },
+        {
+          "path": "includes/class-wc-checkout.php",
+          "sha256": "34725ad282099d72348bdbca41db040693433775dc0fbaaece8d6aa144562c20",
+          "bytes": 57626
+        },
+        {
+          "path": "includes/class-wc-shipping-zones.php",
+          "sha256": "b0d3cec14e8425fd73b5802d0daa0660e46694668bb94b36fab1ea36b7235558",
+          "bytes": 12128
+        },
+        {
+          "path": "includes/shipping/flat-rate/class-wc-shipping-flat-rate.php",
+          "sha256": "a355a15e14a53bac73668b5314f9ec29b05ee0976f96df55f163e3aa1e2d05fa",
+          "bytes": 11224
+        },
+        {
+          "path": "includes/shipping/free-shipping/class-wc-shipping-free-shipping.php",
+          "sha256": "8371a7f5a4d9f460f1243e64c6ed7a88df2c7b02825114161bf7b95e5c632712",
+          "bytes": 8007
         }
-      ]
+      ],
+      "supplementary_shipping_rea": {
+        "authority": "historical-reference",
+        "inventory_state": "partial",
+        "root_sha256": "d428db88a7474d7e6d7844b7ab71b2ee6bd90fa5e4e046b0fcd559d28aa9bd27",
+        "artifact_sha256": "c07b4439216a4e3cacdbdc73d57a1e5a80efa031cb2fa2296bed7c70b62eb5e7",
+        "parse_failure_count": 0
+      }
     },
     {
       "id": "wordpress-mcp",

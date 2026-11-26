@@ -806,6 +806,26 @@
                 {
                     "source": "woocommerce",
                     "path": "includes/class-wc-shipping-zone.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/class-wc-shipping-zones.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/class-wc-cart-totals.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/class-wc-checkout.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/shipping/flat-rate/class-wc-shipping-flat-rate.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/shipping/free-shipping/class-wc-shipping-free-shipping.php"
                 }
             ],
             "local_sources": [
@@ -816,10 +836,10 @@
             "acceptance_evidence": [
                 "tests/shipping-preview-browser.cjs"
             ],
-            "finding": "Region rate preview exists; integrate verified quote into real checkout, taxes, refunds and orders.",
+            "finding": "Ordered native state/PIN flat/free dry-run exists; remote checkout still sets shippingPaise=0. Pinned zone matching, cart totals, checkout and flat/free methods extracted. Persist revisioned rules and integrate authoritative address/cart quote, GST, payment and immutable order/refund before owner enables charges.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "reason": "Reviewed pinned WooCommerce shipping zone, rate classes, cart totals and checkout REA extraction against native preview and actual zero shipping checkout. No charges enabled or completion claim.",
                 "source_sha256": "c6a3ba859e7ef8ad2643ca31c9973aec6953d73da5312b8f48509f34d6ca6cef"
             },
             "production_evidence": []
@@ -2058,8 +2078,8 @@
             "finding": "Provider-only editorial generation and protected unpublished form implemented. Live authenticated Enterprise blog draft succeeded at deployed 17aa4c6 (trace 3fa837cf031c2d26; provider fallback, unpublished/create-only, no Save). Standalone editor and product generation live acceptance remain separate.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed actual deployed Enterprise draft trace 3fa837cf031c2d26 and unchanged provider-generation behavior in the new editor recovery; standalone editor and product production acceptance remain separate.",
-                "source_sha256": "bdadc8a885713ea6dc117e47f4154b992cda7f23e13e6de576e82ef27bfb7da4"
+                "reason": "Reviewed unchanged editorial model generation and save semantics; only added developer skill discovery and knowledge-index assertions in tests/run.php.",
+                "source_sha256": "8a9daf3111ea323c41612ce1e843b19f4a3fa2f0ff84dc9a078c5ce10efb6c85"
             },
             "production_evidence": [
                 {
@@ -2227,8 +2247,8 @@
             "finding": "Fixed role-specific .bapX instruction manifest and execution authorization; not developer harness exposure.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed retained role instruction and authorization tests, draft generation is authenticated and no public capability added.",
-                "source_sha256": "b1b27820007863ab7f9e1e6c7b743ebb8389b0cfa768b2e810a6fe71d8b2361b"
+                "reason": "Reviewed developer-only REA skill discovery and unchanged live instruction allowlist; no runtime prompt or capability exposure change.",
+                "source_sha256": "49bf631afefde5ef9f1620a24f2bfcdd62536b8e1295d2137b0f0932e90944c2"
             },
             "production_evidence": []
         },
@@ -2257,8 +2277,8 @@
             "finding": "Sanitized observed metadata, durations, usage and safe evidence; no exported private telemetry.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed observed draft provider attempts persisted in turn and audit outcome; no invented execution metadata.",
-                "source_sha256": "54dd456ca0d084911f36d5d199b358b9e21e9205d6d0524402c66ba8b0a55bca"
+                "reason": "Reviewed updated developer knowledge index assertions; no telemetry, evidence sanitization or agent trace runtime changes.",
+                "source_sha256": "6a5e8826a50719e8a23e546a17558b89c6247186fff3ffc5451f4d033124686b"
             },
             "production_evidence": []
         },

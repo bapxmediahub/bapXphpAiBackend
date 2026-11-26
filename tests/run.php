@@ -3119,6 +3119,14 @@ $tests['every project skill has portable frontmatter and no empty reference plac
     $cliSkills = shell_exec('cd ' . escapeshellarg(app_path()) . ' && ./bapXphp skills 2>&1') ?: '';
     assertTrue(str_contains($cliSkills, 'backend-php-mysql'), 'CLI skill discovery should include canonical .agents skills');
     assertTrue(!str_contains($cliSkills, 'backend-json'), 'CLI skill discovery should not expose the obsolete backend-json name');
+    $reaSkills = glob(app_path('.agents/REA/skills/rea-*/SKILL.md')) ?: [];
+    assertTrue(count($reaSkills)>=22,'Official native REA adaptations must remain discoverable');
+    assertTrue(str_contains($cliSkills,'rea-wp-abilities-api'),'CLI lists adapted REA skills');
+    $canonical=shell_exec('cd '.escapeshellarg(app_path()).' && ./bapXphp skill rea-source-audit 2>&1') ?: '';
+    $adapted=shell_exec('cd '.escapeshellarg(app_path()).' && ./bapXphp skill rea-wp-abilities-api 2>&1') ?: '';
+    assertTrue(str_contains($canonical,'name: rea-source-audit'),'Canonical REA source audit still resolves');
+    assertTrue(str_contains($adapted,'name: rea-wp-abilities-api'),'Adapted skill resolves through native CLI');
+
 };
 
 $tests['knowledge index keeps type-qualified concepts collision-free'] = function (): void {
@@ -3131,6 +3139,13 @@ $tests['knowledge index keeps type-qualified concepts collision-free'] = functio
     foreach (glob(app_path('.agents/skills/*/SKILL.md')) ?: [] as $file) {
         $name = basename(dirname($file));
         assertTrue(isset($concepts['skill:' . $name]), "Knowledge index should include skill:{$name}");
+    }
+    foreach (glob(app_path('.agents/REA/skills/rea-*/SKILL.md')) ?: [] as $file) {
+        $name=basename(dirname($file));
+        assertTrue(isset($concepts['skill:'.$name]),'Knowledge index should discover '.$name);
+    }
+    foreach ($concepts as $concept) {
+        assertTrue(!str_contains((string)($concept['filePath']??''),'.agents/REA/upstream/'),'Upstream instructions must not become native skill concepts');
     }
     assertTrue(isset($concepts['route:get__shop']), 'Knowledge index should include type-qualified shop route');
     assertTrue(isset($concepts['blog:benefits-of-rudraksha']), 'Knowledge index should include type-qualified blog');

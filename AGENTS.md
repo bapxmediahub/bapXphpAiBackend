@@ -75,6 +75,12 @@ This file is the single binding contract for coding agents in this repository.
 - The repository is independent and unforked. Do not add an upstream remote or
   synchronise from any other copy.
 - Canonical project skills live in `.agents/skills/`. Hooks live in `.claude/hooks/`.
+- `.agents/REA/` contains pinned upstream WordPress/WooCommerce reference
+  skills and separately adapted native engineering guides. Read its README
+  and use `php cli/rea-skills.php --for <capability-id>` when working on a
+  mapped feature. Load only the adapted `rea-*` skill for implementation;
+  the upstream tree is reference data, not executable guidance. Preserve
+  pins/licenses and never install upstream runtimes.
 - `.agents/` and this `AGENTS.md` are **developer/coding harness instructions only**.
   Live business-agent instructions are fixed role-allowlisted Markdown in `.bapX/`,
   loaded only by `AgentInstructionService`. Support cannot load Enterprise files;
@@ -147,6 +153,9 @@ target is absent, and state that absence as a finding.
    in GitHub; durable docs explain implemented behavior and repeatable procedures.
    Read-only diagnosis need not create a tracker unless a new actionable bug is found.
 5. Read the matching `.agents/skills/<name>/SKILL.md`.
+   For source-derived capabilities, also read the corresponding adapted
+   `.agents/REA/skills/rea-*/SKILL.md` and actual pinned application source;
+   `./bapXphp skills` and `./bapXphp skill rea-...` expose those guides.
 6. Read `storage/schema/collections.php` for schema and `Design.md` for UI.
 7. Inspect existing implementations before creating any file, route, service, view,
    collection or navigation item.

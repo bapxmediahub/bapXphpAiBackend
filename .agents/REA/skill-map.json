@@ -1,0 +1,1905 @@
+{
+    "schema_version": 1,
+    "scope": "Read-only upstream reference skill bundles; no installers or upstream CI executed. Adapted guides are developer-only.",
+    "sources": [
+        {
+            "id": "wordpress",
+            "url": "https://github.com/WordPress/agent-skills",
+            "revision": "32ea909f7d01be2e08fee6aff6ae449a42b9b34f",
+            "license": "GPL-2.0-or-later",
+            "scope": "skills, licenses, README, contribution guidance, docs, shared references, evaluation scenarios; exclude upstream CI and distribution installers",
+            "rea": {
+                "authority": "historical-reference",
+                "inventory_state": "partial",
+                "root_sha256": "a9499f28cadf8468e7cc628510f50cbfe45870ca1d0c99dfa8c10c3323d91077",
+                "artifact_sha256": "4ce0f254472afc5b1812a4aedf4d718bed7ce40d6d4894f1ed91e1e684d3db7a",
+                "parse_failure_count": 0
+            },
+            "files": [
+                {
+                    "path": "CONTRIBUTING.md",
+                    "sha256": "d9e520b716bfda4ef0467afe7901cf6fe63fc9a59dedea1c3a72710bca76d6d5",
+                    "bytes": 6131
+                },
+                {
+                    "path": "LICENSE",
+                    "sha256": "e32a315ba45df64329783a922f7bf457064b7a8fa1f46c1bda55a95850d5377c",
+                    "bytes": 750
+                },
+                {
+                    "path": "README.md",
+                    "sha256": "ffc30ff547df407de38d6d7a7d4dfc3b20acab7333bf8a268e851f2bea7a9b8b",
+                    "bytes": 9543
+                },
+                {
+                    "path": "docs/ai-authorship.md",
+                    "sha256": "ec734244c05b8f76752e9f6c8bf5dcf815f647d2ecdf5552b3423cf95fc1c3c4",
+                    "bytes": 3520
+                },
+                {
+                    "path": "docs/authoring-guide.md",
+                    "sha256": "db4cde170ce011731c567c4c578095ef4617fc27dddf6664328d79b3691597ed",
+                    "bytes": 2576
+                },
+                {
+                    "path": "docs/compatibility-policy.md",
+                    "sha256": "e41c600366620300087e4792cc3ccdba5eff4b86011cc32fbfe5f7817ab7d27f",
+                    "bytes": 532
+                },
+                {
+                    "path": "docs/packaging.md",
+                    "sha256": "91e5384f63060334ef8d5e32a4286ab2ec6bbd4e3f3e8d124dc2aee7d6daaa55",
+                    "bytes": 1269
+                },
+                {
+                    "path": "docs/principles.md",
+                    "sha256": "15af92950ad4c6e1d23a8d57ba6bfc648eedbac9da5b28862791fa1926aeb66d",
+                    "bytes": 374
+                },
+                {
+                    "path": "docs/skill-set-v1.md",
+                    "sha256": "09a5c5cca97345d1eb8f55dc6783871fc780a4da4ac377cc2592809b27d2dccf",
+                    "bytes": 387
+                },
+                {
+                    "path": "docs/upstream-sync.md",
+                    "sha256": "d6081544d8ab5b5ca3e0e51d33569d358cbdbddbeaabed1f32a4fc202929f0e7",
+                    "bytes": 1947
+                },
+                {
+                    "path": "eval/scenarios/README.md",
+                    "sha256": "a3ad5f662b1b72b43ed19c7b4596c0341652bcca353c099542890a1b4881043f",
+                    "bytes": 221
+                },
+                {
+                    "path": "eval/scenarios/abilities-register-and-expose.json",
+                    "sha256": "5f30f4b1621eb4ebb77ea8725e3102965e2c4fcda3c1cf4cc9be9b172c0012ef",
+                    "bytes": 1071
+                },
+                {
+                    "path": "eval/scenarios/block-add-attribute-and-migrate.json",
+                    "sha256": "cb7ae36855432432b79682e5a2dfc195ef93a6748d6151ea8eaf51417400fbcd",
+                    "bytes": 1281
+                },
+                {
+                    "path": "eval/scenarios/block-convert-to-dynamic-render-php.json",
+                    "sha256": "e255b2aa30a1eb02c6c29d523c5419893b7dbc165d197c91ce525c652225a4c6",
+                    "bytes": 1228
+                },
+                {
+                    "path": "eval/scenarios/block-create-interactive-inner-blocks.json",
+                    "sha256": "f5c7335bfa249ee940bf3a962d257b7f438196092d4ef666b27e1b71c7262e3d",
+                    "bytes": 1395
+                },
+                {
+                    "path": "eval/scenarios/blueprint-current-schema-keys.json",
+                    "sha256": "f85833eab120496a1b778b434c4f0b38458cde960c74a96665fead69b48bc049",
+                    "bytes": 1050
+                },
+                {
+                    "path": "eval/scenarios/interactivity-route-and-debug.json",
+                    "sha256": "a060f842ae17aa81d023514c44e51514912a3f6d62bd3f66d3c3a2114870fe5c",
+                    "bytes": 1251
+                },
+                {
+                    "path": "eval/scenarios/performance-autoload-options-bloat.json",
+                    "sha256": "50ff3424ec79ed41e33ca7143ea6057055355da6e839665df11f7716b91b1fac",
+                    "bytes": 1226
+                },
+                {
+                    "path": "eval/scenarios/performance-profile-slow-endpoint.json",
+                    "sha256": "c8cf50c1b79d8683beb7f4a60c5b1e5c9a3c95d93725cd11f4afc2c17f7287c0",
+                    "bytes": 1266
+                },
+                {
+                    "path": "eval/scenarios/phpstan-fix-third-party-class.json",
+                    "sha256": "f6e64fa01385c3494fe92793d6fd5bbb21e64f974838e0b67508a48afd93b800",
+                    "bytes": 1174
+                },
+                {
+                    "path": "eval/scenarios/plugin-add-settings-page.json",
+                    "sha256": "fe2b9a8df8ee4d40559346c84ac961a532b647db6a89a12bd4abd2bdd2e03507",
+                    "bytes": 1269
+                },
+                {
+                    "path": "eval/scenarios/plugin-add-uninstall-cleanup.json",
+                    "sha256": "73e4f2c1aae336467bbea253253c83945b76dc492c2baa973ae3894c3e4ac1f0",
+                    "bytes": 1169
+                },
+                {
+                    "path": "eval/scenarios/plugin-directory-check-false-positive.json",
+                    "sha256": "e93c01d1d8a789e1426bad68a6e291477082f35050b34e5c21845bbeaf9fd024",
+                    "bytes": 1280
+                },
+                {
+                    "path": "eval/scenarios/plugin-directory-check-missing-tooling.json",
+                    "sha256": "624b0c5a4a1998165eeae851425e40ba0ed6b72da4837eec061c0cbf9fa8daaa",
+                    "bytes": 1370
+                },
+                {
+                    "path": "eval/scenarios/plugin-directory-check-review-only.json",
+                    "sha256": "86accc9ef0984fb9dd0b110c4dca71f8f7335334b95cfae46f93d4b0952b0514",
+                    "bytes": 1109
+                },
+                {
+                    "path": "eval/scenarios/plugin-directory-check-validation.json",
+                    "sha256": "90acc68615a9a6ff9e6339ca9de78897b435d8b262d18e60ec6a3f06ea67f557",
+                    "bytes": 1700
+                },
+                {
+                    "path": "eval/scenarios/plugin-directory-license-review.json",
+                    "sha256": "eb7dd3c8a9bebf88158427df25420abb25bd5fbb5fd1328509042da891d03181",
+                    "bytes": 1630
+                },
+                {
+                    "path": "eval/scenarios/plugin-directory-name-trademark.json",
+                    "sha256": "35b15292bec428743961f092f90bcfe3eda47b15d4d259635ebb200d99fa1383",
+                    "bytes": 1670
+                },
+                {
+                    "path": "eval/scenarios/plugin-security-nonce-and-capability.json",
+                    "sha256": "edb1f921eacbc26b95015a25a3d413e8ed13874a85bcd34a13778ff92db648f2",
+                    "bytes": 1176
+                },
+                {
+                    "path": "eval/scenarios/rest-api-add-custom-endpoint.json",
+                    "sha256": "403b85c1cb4c3b365f4d40634cdbaf738b7b42df3b3bf37cc88647ffd61cea91",
+                    "bytes": 1067
+                },
+                {
+                    "path": "eval/scenarios/router-route-theme-json.json",
+                    "sha256": "cdf8a6d36196db4596817acf6b89b7f561545e0570f2a98c6e7febc23b948d41",
+                    "bytes": 1049
+                },
+                {
+                    "path": "eval/scenarios/skillpack-build-and-install.json",
+                    "sha256": "fbaad6d69b9f38799260b4128eb5c1298667ee87a8a3b0eefb6fb87175cc621e",
+                    "bytes": 922
+                },
+                {
+                    "path": "eval/scenarios/theme-add-pattern-file.json",
+                    "sha256": "499dd85bfc125fc978cb3ccdb389bcddb3b85943baa048975d79a1b78ba35887",
+                    "bytes": 1069
+                },
+                {
+                    "path": "eval/scenarios/theme-add-style-variation.json",
+                    "sha256": "a2e3e40838c1c7b8abc6fa91f0af65afaa7a9a416ad239d97894af896ba666ed",
+                    "bytes": 1150
+                },
+                {
+                    "path": "eval/scenarios/theme-json-add-typography-preset.json",
+                    "sha256": "ab29e51a405be7c55f3648a0e42b6a013db21d8bd0bbe0fea5379108acff9970",
+                    "bytes": 1087
+                },
+                {
+                    "path": "eval/scenarios/triage-output-contract.json",
+                    "sha256": "4d23411d0ae26f6088745308a6a68c9db12ab881750efefeda5729da7d3c0771",
+                    "bytes": 940
+                },
+                {
+                    "path": "eval/scenarios/upstream-sync-indices.json",
+                    "sha256": "2af50993fb802d4dd32686a273cb15f2ef9df252fa2b5e4dcb82d131b3ca6dc6",
+                    "bytes": 994
+                },
+                {
+                    "path": "eval/scenarios/wp-abilities-audit.json",
+                    "sha256": "7a46ac28eddcc949e5e326074f4287a4230a895e41f7edc55c86a822b2496933",
+                    "bytes": 2464
+                },
+                {
+                    "path": "eval/scenarios/wp-abilities-verify.json",
+                    "sha256": "744c4db0a624ca6469291ae8fb1fc3e316a4a21c6c4e03fb6f055d30ad0849db",
+                    "bytes": 2581
+                },
+                {
+                    "path": "eval/scenarios/wp-ability-development.json",
+                    "sha256": "ea89427db527039c22fa468a3cfc62bc1301224aaa1162a52bfb3d06b775d5b5",
+                    "bytes": 1824
+                },
+                {
+                    "path": "eval/scenarios/wp-env-start-plugin.json",
+                    "sha256": "8eb36d5fa440c0c22f7acf693a3aa2ec502a0eacd9173971ca81d121c4acc8d3",
+                    "bytes": 1639
+                },
+                {
+                    "path": "eval/scenarios/wp-env-troubleshoot-port.json",
+                    "sha256": "901b528d5d54355a6e32b8ec87faa381730eaccf55d51a1e8bd6268ffa04452c",
+                    "bytes": 897
+                },
+                {
+                    "path": "eval/scenarios/wp-patterns-album-poster-split.json",
+                    "sha256": "d021ae83f9767d5cf0da6abb6679e26e73d36813688278d3c1225da6558ce028",
+                    "bytes": 1429
+                },
+                {
+                    "path": "eval/scenarios/wp-patterns-bold-duotone-cover-cta.json",
+                    "sha256": "c34a7c545c49915435a21aaab682c237fad30328932e4f4f71ed2a428080f257",
+                    "bytes": 1473
+                },
+                {
+                    "path": "eval/scenarios/wp-patterns-create-hero-pattern.json",
+                    "sha256": "a3dd3ab8c66b8bc89c22d9f6d0d93927ae455ea0a7ac972ef23a4e297470ecc2",
+                    "bytes": 2046
+                },
+                {
+                    "path": "eval/scenarios/wp-patterns-forest-editorial-cover.json",
+                    "sha256": "71e4de07ce4dcc8dd67fc2e336ec11a2fea026fba5166da170eeda69569e5b0e",
+                    "bytes": 1577
+                },
+                {
+                    "path": "eval/scenarios/wp-patterns-header-hero-image.json",
+                    "sha256": "9b8165f58e0702efcebd244a10bb5611caed5a2bfe9a7dc8b4701a335ec92445",
+                    "bytes": 1502
+                },
+                {
+                    "path": "eval/scenarios/wp-patterns-image-text-color-field.json",
+                    "sha256": "2ff4f323e745591eb999f0aa5ab2f5d670027b7e6071e7a465502974a71ab9d1",
+                    "bytes": 1431
+                },
+                {
+                    "path": "eval/scenarios/wp-patterns-large-cover-exhibition.json",
+                    "sha256": "a5b9e412471525548ea57b80ccd33e816369bec9052027b10304de768b41d674",
+                    "bytes": 1763
+                },
+                {
+                    "path": "eval/scenarios/wp-patterns-media-text-case-study.json",
+                    "sha256": "25c8ea651f6f76fa05cfe22c73dc916fd8f6850242f7f6e5e0000bd6b2d1b2ab",
+                    "bytes": 1442
+                },
+                {
+                    "path": "eval/scenarios/wp-patterns-offset-wordmark-hero.json",
+                    "sha256": "8c06e797426d5873cda5c0bfbce61ae54810b6710fbc1aed01f82a430e905ca7",
+                    "bytes": 1424
+                },
+                {
+                    "path": "eval/scenarios/wp-patterns-query-date-title-index.json",
+                    "sha256": "72271007bc3a83c1e9956c064744fb70b97679e55856ce1197da6106ee0a963a",
+                    "bytes": 1462
+                },
+                {
+                    "path": "eval/scenarios/wp-patterns-repeating-display-text-cover.json",
+                    "sha256": "fc48f1d68af62ca06654bf61173ec0e375784e0a9a2f5a82dc87ec2ed4f69ae9",
+                    "bytes": 1389
+                },
+                {
+                    "path": "eval/scenarios/wp-patterns-two-tone-centered-image.json",
+                    "sha256": "2dfe7daff35521003486be705a0280d0c153706e5e0c1549d1417ce8476813a5",
+                    "bytes": 1405
+                },
+                {
+                    "path": "eval/scenarios/wp-playground-cli-auto-mount.json",
+                    "sha256": "77d200eb2356332569fcb7e963a5dbfce958ad8024be16050b538a3ce1b22981",
+                    "bytes": 1057
+                },
+                {
+                    "path": "eval/scenarios/wp-playground-explicit-mcp.json",
+                    "sha256": "30c89e8008abb4534b10b76e01be988150df015bc8e0eb62a40a4580e1ca5646",
+                    "bytes": 802
+                },
+                {
+                    "path": "eval/scenarios/wp-playground-router-delegation.json",
+                    "sha256": "7f2f8e5967a48ebbcd14f663a2a2c44d2d011c517f3a2bb1290e89e691bcb955",
+                    "bytes": 1030
+                },
+                {
+                    "path": "eval/scenarios/wp-playground-webmcp-fallback.json",
+                    "sha256": "079ccb571b4eb4b72a5b0523f1df7249da90552df6fd44f7483149af5d6b70ab",
+                    "bytes": 932
+                },
+                {
+                    "path": "eval/scenarios/wp-playground-webmcp-missing-operation.json",
+                    "sha256": "41d55631865b7f2c9aee918140473b91373f4877543231871d1c2e37cb3dd9eb",
+                    "bytes": 1134
+                },
+                {
+                    "path": "eval/scenarios/wp-playground-webmcp-preferred.json",
+                    "sha256": "8f2117afe107417fe22bd8c8451b5ca5d9dad40415b2cb18dfbfc37171ea20a9",
+                    "bytes": 1066
+                },
+                {
+                    "path": "eval/scenarios/wp-playground-website-share-url.json",
+                    "sha256": "1625e203a92f03810ff80d232782956bdf62a9176e0c2c2a5fb1a36af5b2e3e2",
+                    "bytes": 1412
+                },
+                {
+                    "path": "eval/scenarios/wpcli-multisite-targeting.json",
+                    "sha256": "037d46102fe6cd76fafff792b9421633fd1a13d8937e4ab5da1a5a477815cc52",
+                    "bytes": 1132
+                },
+                {
+                    "path": "eval/scenarios/wpcli-safe-search-replace.json",
+                    "sha256": "3b876d109e8f4da82527b38b95797f6fa6ca77d66710b8838b4bb3dbc8c84317",
+                    "bytes": 1154
+                },
+                {
+                    "path": "shared/references/.gitkeep",
+                    "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+                    "bytes": 1
+                },
+                {
+                    "path": "shared/references/gutenberg-releases.json",
+                    "sha256": "41a1b0607e849278b26a8e29ff42bd24e460ec6eb9330c2f4ad4d61590743fdb",
+                    "bytes": 5715
+                },
+                {
+                    "path": "shared/references/wordpress-core-versions.json",
+                    "sha256": "64b4e3e007720210030993514ab2b6a01dd9bd239ef1105f7fd0590295e19df1",
+                    "bytes": 5527
+                },
+                {
+                    "path": "shared/references/wp-gutenberg-version-map.json",
+                    "sha256": "10aa48b6780c626792cc5d28e0f224557c76a19c904a8ff71d138584b1b2c5ed",
+                    "bytes": 142
+                },
+                {
+                    "path": "skills/blueprint/SKILL.md",
+                    "sha256": "e5770f02397f18005fb176def00c7dbc76dc3e8ce84407e7025734336d973747",
+                    "bytes": 16201
+                },
+                {
+                    "path": "skills/wordpress-router/SKILL.md",
+                    "sha256": "691647fe83b870e2da0a937645459dd152a42c29383763f651ab5f6d8beae4f4",
+                    "bytes": 2226
+                },
+                {
+                    "path": "skills/wordpress-router/references/decision-tree.md",
+                    "sha256": "713c775dc9775c56c98483f8f9be099fca518491ce245550f6cf12064af8084f",
+                    "bytes": 3321
+                },
+                {
+                    "path": "skills/wp-abilities-api/SKILL.md",
+                    "sha256": "68152b5acc1b36b7d7aadd296363611db22bec1d23b556ec869744ef2bedfc5b",
+                    "bytes": 5302
+                },
+                {
+                    "path": "skills/wp-abilities-api/references/delegate-helper-pattern.md",
+                    "sha256": "5e570d530a53cdc324069e26766b14402ba421bb709913ee48aa3321e0a55e0d",
+                    "bytes": 12516
+                },
+                {
+                    "path": "skills/wp-abilities-api/references/domain-vs-projection.md",
+                    "sha256": "69cd065482a7faf6ca7b88e0621ed6025d3f8cffceee21e87a9712ad7bf9e5af",
+                    "bytes": 9073
+                },
+                {
+                    "path": "skills/wp-abilities-api/references/error-code-vocabulary.md",
+                    "sha256": "3044edfd7f0046a5d3e0272760513a2a10272641a59ac3c86a55c5ae2eebd658",
+                    "bytes": 7153
+                },
+                {
+                    "path": "skills/wp-abilities-api/references/grouping-heuristic.md",
+                    "sha256": "125247117e9f50802fe28e3f0fec8661c62a3d6f12c08c0f3d464a9ac8211867",
+                    "bytes": 8683
+                },
+                {
+                    "path": "skills/wp-abilities-api/references/input-schema-gotchas.md",
+                    "sha256": "cd5a7a02166a21e78caeb5f634d13891e4ce445238d30fd82a9ca1a3f30f6ca6",
+                    "bytes": 13213
+                },
+                {
+                    "path": "skills/wp-abilities-api/references/php-registration.md",
+                    "sha256": "d2cdc136024ed551c9fd3c2e83c12ec99807af7e674fc0c5a52ed5abbde7dd77",
+                    "bytes": 6535
+                },
+                {
+                    "path": "skills/wp-abilities-api/references/plugin-family-patterns.md",
+                    "sha256": "8a0e16f1ab6aff76441c11b6981877dc248cd96cfae0bcbe0cd601faa9f6f545",
+                    "bytes": 11977
+                },
+                {
+                    "path": "skills/wp-abilities-api/references/rest-api.md",
+                    "sha256": "e58192bed6200dd694b5301918ebbb58612d6f734f7616913fbe4780d5275311",
+                    "bytes": 378
+                },
+                {
+                    "path": "skills/wp-abilities-api/references/shared-core-service.md",
+                    "sha256": "639da91b3fb0c46a375f13704e7f5f6e800bff21796ffc22c781285e8332327c",
+                    "bytes": 15132
+                },
+                {
+                    "path": "skills/wp-abilities-audit/SKILL.md",
+                    "sha256": "fbc883197822c9764516122b66d1285053ec31ad6f026cfe7f04ebeef7304b0c",
+                    "bytes": 9812
+                },
+                {
+                    "path": "skills/wp-abilities-audit/references/audit-schema.md",
+                    "sha256": "fc2218a72cac147dbeea938b19ade27ee67bff98e1b01e997065b9c66cee1e3e",
+                    "bytes": 17767
+                },
+                {
+                    "path": "skills/wp-abilities-audit/references/capability-gate-tracing.md",
+                    "sha256": "4273115aef9ca63d40b20abdc062088c55cb9fb4bc2ab69d17dee5746c2f3103",
+                    "bytes": 8560
+                },
+                {
+                    "path": "skills/wp-abilities-audit/references/controller-enumeration.md",
+                    "sha256": "7454df9e1f21ddc44490e90edc1cfd1ca35992b257c4754246ab8965d6a712c6",
+                    "bytes": 5044
+                },
+                {
+                    "path": "skills/wp-abilities-verify/SKILL.md",
+                    "sha256": "101b67e1f978136be54556001961579ca03572c18b2449d4b85d810fbf4fc324",
+                    "bytes": 8951
+                },
+                {
+                    "path": "skills/wp-abilities-verify/references/annotation-correctness.md",
+                    "sha256": "5eadeba8e132336155772b79b43e9bf306c2077670581cb27fdd477cf6586ce7",
+                    "bytes": 8217
+                },
+                {
+                    "path": "skills/wp-abilities-verify/references/audit-schema-validation.md",
+                    "sha256": "989e8823d821c371ec3526ccc204ab8cf3ce122d193a1f71b0315e8d3b3edc60",
+                    "bytes": 5243
+                },
+                {
+                    "path": "skills/wp-abilities-verify/references/permission-roundtrip.md",
+                    "sha256": "d0e76551f398b6b1b763c80165a795f68f1ff6670e8a80cb1c007b0baee79136",
+                    "bytes": 7611
+                },
+                {
+                    "path": "skills/wp-abilities-verify/references/runtime-harness.md",
+                    "sha256": "08b634b73839549018d54a6a95fe617a2d7f4a734bc661b28752d6c9c48055be",
+                    "bytes": 16825
+                },
+                {
+                    "path": "skills/wp-abilities-verify/references/schema-lints.md",
+                    "sha256": "4a14215ba849182de0dc75eb5330d5fc1a09fb0b53f8aaad219d85c1e03ce6f7",
+                    "bytes": 4772
+                },
+                {
+                    "path": "skills/wp-abilities-verify/references/static-enumeration.md",
+                    "sha256": "8377032cbc5c23214b0ec7176828e566acc5a72645fbabbd8296b3bead5a3eed",
+                    "bytes": 4487
+                },
+                {
+                    "path": "skills/wp-ability-development/SKILL.md",
+                    "sha256": "d568efa0ab52320e2dff00c8a333e6ad336f2c443d95dc2ae964afdd3c27a0eb",
+                    "bytes": 10505
+                },
+                {
+                    "path": "skills/wp-block-development/SKILL.md",
+                    "sha256": "d0db3166a84e2efeaa56a697f2b9879be96893bb8dc24f45438f444503699b36",
+                    "bytes": 6491
+                },
+                {
+                    "path": "skills/wp-block-development/references/attributes-and-serialization.md",
+                    "sha256": "953725785cda47a6f6fc0ee19d5c96b9b4016300278b68eb64bdaaabf5d41a45",
+                    "bytes": 759
+                },
+                {
+                    "path": "skills/wp-block-development/references/block-json.md",
+                    "sha256": "a6f9f3f56f75caf54ece9beaa61835fda4fa241afc9c91cc3db39a9c396f2d63",
+                    "bytes": 2336
+                },
+                {
+                    "path": "skills/wp-block-development/references/creating-new-blocks.md",
+                    "sha256": "45a437e3a4bc78e517ed478fb550cdb70c88b5b7bd05fe2b61525c95e2a35e0c",
+                    "bytes": 1594
+                },
+                {
+                    "path": "skills/wp-block-development/references/debugging.md",
+                    "sha256": "eced905202c692f626a4ffbf7282579b1463e0301496e1464d0e917a964e1e77",
+                    "bytes": 1372
+                },
+                {
+                    "path": "skills/wp-block-development/references/deprecations.md",
+                    "sha256": "136b1328823964ae7a7c638398c5662304db5b9d6f45f318a3523705ffd5e937",
+                    "bytes": 665
+                },
+                {
+                    "path": "skills/wp-block-development/references/dynamic-rendering.md",
+                    "sha256": "fee9acc6909290cf3549f7d23d23cc12fc3003f4db07ba9c49f0e165b2e39dd1",
+                    "bytes": 685
+                },
+                {
+                    "path": "skills/wp-block-development/references/inner-blocks.md",
+                    "sha256": "06d5b2b929d9e27d7c9114ecb14b2d7ee538d24088d80d1e9b3e49890ce16355",
+                    "bytes": 1196
+                },
+                {
+                    "path": "skills/wp-block-development/references/registration.md",
+                    "sha256": "b5b0386a03b6c5eabcd9076e3067f78231fef471018e88c1bcf4e4745e9d1e9c",
+                    "bytes": 932
+                },
+                {
+                    "path": "skills/wp-block-development/references/supports-and-wrappers.md",
+                    "sha256": "e4001355e8e6c1117da157881589a2267520a7846666ee7540251114f88f697a",
+                    "bytes": 512
+                },
+                {
+                    "path": "skills/wp-block-development/references/tooling-and-testing.md",
+                    "sha256": "571c08dbc19c99bfdc59d277189e8391bb7651e6ee3ea8f09c2b7c412a2cf9d5",
+                    "bytes": 928
+                },
+                {
+                    "path": "skills/wp-block-development/scripts/list_blocks.mjs",
+                    "sha256": "01bd752371dd13d3e8c0b1f7a240eed382c0177594449c102e8853a288023951",
+                    "bytes": 2889
+                },
+                {
+                    "path": "skills/wp-block-themes/SKILL.md",
+                    "sha256": "ae92ea0d67010c0e68a798dfd9ca8d196e66fa9602414bfa7fcca00dc1a95fa5",
+                    "bytes": 3967
+                },
+                {
+                    "path": "skills/wp-block-themes/references/creating-new-block-theme.md",
+                    "sha256": "3dcb5bb2ed6c1298b9bb26e3f665f7c3ebebe69e94810a0a0a065fa8a054b774",
+                    "bytes": 1378
+                },
+                {
+                    "path": "skills/wp-block-themes/references/debugging.md",
+                    "sha256": "a1387e6e34220613ae1292a6d86b5c2f4479f443392037ff6977aa68cf9c8239",
+                    "bytes": 1008
+                },
+                {
+                    "path": "skills/wp-block-themes/references/patterns.md",
+                    "sha256": "43a2f184a42a80d4784cb0ce064339aead8d411c18827f7d958b247d633453a4",
+                    "bytes": 592
+                },
+                {
+                    "path": "skills/wp-block-themes/references/style-variations.md",
+                    "sha256": "6f50b6055d3da1dd89543bbafcef2b726756c1901bedf55574f7f5bc1cbd208d",
+                    "bytes": 439
+                },
+                {
+                    "path": "skills/wp-block-themes/references/templates-and-parts.md",
+                    "sha256": "05e9491404e434fe66711d4fcb63ceddb52385365ccb5a5c8ce9b7020a859edc",
+                    "bytes": 442
+                },
+                {
+                    "path": "skills/wp-block-themes/references/theme-json.md",
+                    "sha256": "27c8a68465aa3fdf23cdb411242323ee930149048ed3e524ee1584a92e170fa1",
+                    "bytes": 3491
+                },
+                {
+                    "path": "skills/wp-block-themes/scripts/detect_block_themes.mjs",
+                    "sha256": "63bfa8dfbb6d71f615ff62581dec4f361a9da8e11b99ea6faf6c2d9d8c79d13f",
+                    "bytes": 2736
+                },
+                {
+                    "path": "skills/wp-env/SKILL.md",
+                    "sha256": "13ddbbe524d762d598e8d0af9d441f4a1e56481bdcde6d7e7d51eee612a72597",
+                    "bytes": 8796
+                },
+                {
+                    "path": "skills/wp-interactivity-api/SKILL.md",
+                    "sha256": "68acba2672623ed903782ff5808ed36177d653fef2fc2430a55551fe0eb5f44e",
+                    "bytes": 6187
+                },
+                {
+                    "path": "skills/wp-interactivity-api/references/debugging.md",
+                    "sha256": "cdd37f64286979e731a577cf521ed5158ea90095893b3fdc8702f4f9e826ab66",
+                    "bytes": 1371
+                },
+                {
+                    "path": "skills/wp-interactivity-api/references/directives-quickref.md",
+                    "sha256": "8ca55a2636a528ba74fb1edc01caf81e453ff3b5c5aa207391f9b66d25408a7e",
+                    "bytes": 1163
+                },
+                {
+                    "path": "skills/wp-interactivity-api/references/server-side-rendering.md",
+                    "sha256": "49110c3ff77c60f46419e0fcf80a321fc65a0118696a9db82a37c24aa34c65bb",
+                    "bytes": 7733
+                },
+                {
+                    "path": "skills/wp-patterns/SKILL.md",
+                    "sha256": "662d1e312d8103f5be52a149e31257fb32e8b88c6be2897748fbfe78bb8a01a7",
+                    "bytes": 9870
+                },
+                {
+                    "path": "skills/wp-patterns/references/anti-patterns.md",
+                    "sha256": "3ac8deb9c3085f2cf7be273d48d9c33d79c653f3ceaf8e6a1043e456bce50bb6",
+                    "bytes": 5772
+                },
+                {
+                    "path": "skills/wp-patterns/references/block-markup-reference.md",
+                    "sha256": "af8b544bea2111274798e544b19197dc634bc879d4e04955529f3a4332640d3e",
+                    "bytes": 7139
+                },
+                {
+                    "path": "skills/wp-patterns/references/design-with-tokens.md",
+                    "sha256": "4f15bc8d4fb7f629309a84902eea3b8628b27ffbb226ba77a867bee322086c70",
+                    "bytes": 8218
+                },
+                {
+                    "path": "skills/wp-patterns/references/example-prompts.md",
+                    "sha256": "783397b05a5e12b3d068cf18f95df6f49c1d204a4bad88cf9dc8376a6554e0d6",
+                    "bytes": 1471
+                },
+                {
+                    "path": "skills/wp-patterns/references/pattern-categories-and-types.md",
+                    "sha256": "398e39733320c52663c25965e003ca4697c8e256016a6f005fdb2d145798556c",
+                    "bytes": 5047
+                },
+                {
+                    "path": "skills/wp-patterns/references/pattern-registration.md",
+                    "sha256": "b3db41735dc8e7f9c4124ca2e4f82eb42e8805c6909abe0f274a9c546878f19b",
+                    "bytes": 4673
+                },
+                {
+                    "path": "skills/wp-patterns/references/visual-composition.md",
+                    "sha256": "f4416789a8c29c7e6f3baaea5c4eb11d68085f61db25fbf80ba02d70f8485739",
+                    "bytes": 1622
+                },
+                {
+                    "path": "skills/wp-performance/SKILL.md",
+                    "sha256": "778eeed6d38c8584a04556cb4d6083369d83085a580dc2c7fac7c3de2409635d",
+                    "bytes": 6151
+                },
+                {
+                    "path": "skills/wp-performance/references/autoload-options.md",
+                    "sha256": "42d8465c18f87d2676281ce09534562d7f8f4a4c39342fab012c1b391458fbc8",
+                    "bytes": 810
+                },
+                {
+                    "path": "skills/wp-performance/references/cron.md",
+                    "sha256": "54c56935bfd4845515df28c8d6ea801aedd2d5710980ba2f0c3829bf61bd74ff",
+                    "bytes": 483
+                },
+                {
+                    "path": "skills/wp-performance/references/database.md",
+                    "sha256": "ffc6dc561228f2967f939ff4052711103a010f6c60bca442621ad94a051125de",
+                    "bytes": 619
+                },
+                {
+                    "path": "skills/wp-performance/references/http-api.md",
+                    "sha256": "bb6a36c4e8287ea589e9c9571822729d6f005ccb1268a7212b21a346cbb22ba3",
+                    "bytes": 458
+                },
+                {
+                    "path": "skills/wp-performance/references/measurement.md",
+                    "sha256": "906d0a8501b11cffc6bb86fd333bc7e96245124fbcc16a8d398e52ed7059b37e",
+                    "bytes": 1037
+                },
+                {
+                    "path": "skills/wp-performance/references/object-cache.md",
+                    "sha256": "9ee1ffc154564645b60772c1994a7080e376fbebc461ce5e277d92f1c7af8d2a",
+                    "bytes": 756
+                },
+                {
+                    "path": "skills/wp-performance/references/query-monitor-headless.md",
+                    "sha256": "4985fc2eccfefd3c3e12531972d0a76813b2d8f1935203a1003b4ff2ecb317d1",
+                    "bytes": 1108
+                },
+                {
+                    "path": "skills/wp-performance/references/server-timing.md",
+                    "sha256": "a0f4886d5842cae8b36ff8b801c210fda760f8cb5c0eb958ca11035f499ae341",
+                    "bytes": 639
+                },
+                {
+                    "path": "skills/wp-performance/references/wp-cli-doctor.md",
+                    "sha256": "6ac52e79e1d51e066cfcfefbe9431f5af75b6519bfe3edce70e24f5129acefd3",
+                    "bytes": 1023
+                },
+                {
+                    "path": "skills/wp-performance/references/wp-cli-profile.md",
+                    "sha256": "74f51a3caccde9a2deef9071bef0c70735868bff8a5e51cf9737308cdf59eac6",
+                    "bytes": 858
+                },
+                {
+                    "path": "skills/wp-performance/scripts/perf_inspect.mjs",
+                    "sha256": "5031a0ce0b81074cbf0fb69be5a60b8031de78f33fe2d6325c0d022165d6b688",
+                    "bytes": 4630
+                },
+                {
+                    "path": "skills/wp-phpstan/SKILL.md",
+                    "sha256": "fda508d51ddbcbb1f0f98d89a20c6a89e2684b3774b8ab1e859352b5e6676450",
+                    "bytes": 4100
+                },
+                {
+                    "path": "skills/wp-phpstan/references/configuration.md",
+                    "sha256": "444869ffacca37ea38eb79b01a0ec0ffc8cd68a701282232b058d490fb83aeb7",
+                    "bytes": 1366
+                },
+                {
+                    "path": "skills/wp-phpstan/references/third-party-classes.md",
+                    "sha256": "5cc8488188cdb917e6998f77ded6da136c6fe24a8b0f991efd06d2a03855ab0e",
+                    "bytes": 2901
+                },
+                {
+                    "path": "skills/wp-phpstan/references/wordpress-annotations.md",
+                    "sha256": "340b6299d539ab7fc34357842cd67187ef0ebdcfdca44f5439794f5c3148199a",
+                    "bytes": 3041
+                },
+                {
+                    "path": "skills/wp-phpstan/scripts/phpstan_inspect.mjs",
+                    "sha256": "035a73b0d47de4464bbcbf85f12bafbc432496f5cf393da3ca6071eeee44bb5d",
+                    "bytes": 8033
+                },
+                {
+                    "path": "skills/wp-playground/SKILL.md",
+                    "sha256": "85809c5a85dbb5e71456f011ffc05380fc6016804cd53adab3ebddf013f9ba8f",
+                    "bytes": 3941
+                },
+                {
+                    "path": "skills/wp-playground/references/cli.md",
+                    "sha256": "f00d5957ee321a03466d3448c1335c6c07dda2b103334a9810a81e1e082aad08",
+                    "bytes": 4658
+                },
+                {
+                    "path": "skills/wp-playground/references/debugging.md",
+                    "sha256": "33a4613f8b2617965f56d3aa66cb65c48b4012128a367af9e6347b02991cc10e",
+                    "bytes": 975
+                },
+                {
+                    "path": "skills/wp-playground/references/mcp.md",
+                    "sha256": "a1c306bfa02494fa464f3c47bb46b5fc488319c81b677e2d599af7be9e6a7937",
+                    "bytes": 1554
+                },
+                {
+                    "path": "skills/wp-playground/references/sites-api.md",
+                    "sha256": "c5ab005cc25df97c7d713dffe77c99623722f9896bd9161b288b880ba87cad98",
+                    "bytes": 5266
+                },
+                {
+                    "path": "skills/wp-playground/references/webmcp.md",
+                    "sha256": "227eca2a6edf25f92e58d88735c23bfa09ee2beea4dae3745f7673f053fb1903",
+                    "bytes": 2371
+                },
+                {
+                    "path": "skills/wp-playground/references/website.md",
+                    "sha256": "e589d822b5b40c17772c71bb98dfd4d68072b3945e01fb1960a6f4191bedc297",
+                    "bytes": 6453
+                },
+                {
+                    "path": "skills/wp-plugin-development/SKILL.md",
+                    "sha256": "a9b8af653897ac150e52de1430ad0c51cefe19553ac932c48cfc54639270c5bc",
+                    "bytes": 3996
+                },
+                {
+                    "path": "skills/wp-plugin-development/references/data-and-cron.md",
+                    "sha256": "6a21d6a919b536ca8c748649450031ec71b7606845cabb089540dddb0313626f",
+                    "bytes": 678
+                },
+                {
+                    "path": "skills/wp-plugin-development/references/debugging.md",
+                    "sha256": "045e6cfe9bfc77ddec277d4ce9b2ca3e90d3047281dbe4a58f18b4406c59cb6f",
+                    "bytes": 559
+                },
+                {
+                    "path": "skills/wp-plugin-development/references/lifecycle.md",
+                    "sha256": "231fb911cff2402b6701591a10e202e86cef0c4ea4d7053168fdd7ba02d0a91e",
+                    "bytes": 854
+                },
+                {
+                    "path": "skills/wp-plugin-development/references/security.md",
+                    "sha256": "8b673d60948932a00099664a79b1f92094e1ed2af9c6b3f80d637db8315ddaa5",
+                    "bytes": 1538
+                },
+                {
+                    "path": "skills/wp-plugin-development/references/settings-api.md",
+                    "sha256": "535fde7f0194f6f14e999d6d691f3e9b696d0da2425fa737254628c9c5d20ceb",
+                    "bytes": 703
+                },
+                {
+                    "path": "skills/wp-plugin-development/references/structure.md",
+                    "sha256": "00ae05f608a594e7be557d41aa8bf3b9240a4ce84986cbf11ab7a419f48fdb03",
+                    "bytes": 401
+                },
+                {
+                    "path": "skills/wp-plugin-development/scripts/detect_plugins.mjs",
+                    "sha256": "7df472957ab213161adad1111c2b69e3acc2d7235bae02d8e0f6fc14385efee5",
+                    "bytes": 2850
+                },
+                {
+                    "path": "skills/wp-plugin-directory-guidelines/SKILL.md",
+                    "sha256": "21b1ccad3ba6a9c263e6e157e4e7c14542e4662821bd35ab74b605c4cbe6d6c2",
+                    "bytes": 8123
+                },
+                {
+                    "path": "skills/wp-plugin-directory-guidelines/references/gpl-compliance.md",
+                    "sha256": "1f06c457e598870b242af48dbc703a2ab3b3aba0311444aeb7e82ff9490a4be0",
+                    "bytes": 10342
+                },
+                {
+                    "path": "skills/wp-plugin-directory-guidelines/references/guideline-review-checklist.md",
+                    "sha256": "8b382bbf6d3f13c873207d6118c0c7b86a5ac3beeaedfd5c36db75ab749b2455",
+                    "bytes": 25561
+                },
+                {
+                    "path": "skills/wp-plugin-directory-guidelines/references/naming-rules.md",
+                    "sha256": "48b8358b5fa78eadb150394c7e6e9defd9a1a98c3bd0a1b745cc82a89f5920b2",
+                    "bytes": 7003
+                },
+                {
+                    "path": "skills/wp-plugin-directory-guidelines/references/plugin-check.md",
+                    "sha256": "afe678b17b7e1b7507a5cf6c7b117e4ee3c360290470663cce18c679ad360aa9",
+                    "bytes": 7235
+                },
+                {
+                    "path": "skills/wp-project-triage/SKILL.md",
+                    "sha256": "6475b01679576ded3113a5d12f08b789c1def02249f0fcdd23d119593e72ce5c",
+                    "bytes": 1484
+                },
+                {
+                    "path": "skills/wp-project-triage/references/triage.schema.json",
+                    "sha256": "f24dd91e56c2268a8026ca97235ada9240c70aded32c1c70985c62af4f306903",
+                    "bytes": 4480
+                },
+                {
+                    "path": "skills/wp-project-triage/scripts/detect_wp_project.mjs",
+                    "sha256": "4920474fd1397f4e3c4251e74500ffdffa3d83d9b0063a13b7ae90c2d8ab5669",
+                    "bytes": 19195
+                },
+                {
+                    "path": "skills/wp-rest-api/SKILL.md",
+                    "sha256": "46c17297230f9f8f0f43f273277dad4d2fd4bee9849ae95cdcce8ae4cc04bb5b",
+                    "bytes": 4876
+                },
+                {
+                    "path": "skills/wp-rest-api/references/authentication.md",
+                    "sha256": "5ec3a866c0d4e956779f1048703835b70f5ba183442ad6a2239d4c1313ae4703",
+                    "bytes": 627
+                },
+                {
+                    "path": "skills/wp-rest-api/references/custom-content-types.md",
+                    "sha256": "a14caa1cc672022f9773e7fa9fec97f524b59e0a6fe62ea4aa4dcafd53780a75",
+                    "bytes": 760
+                },
+                {
+                    "path": "skills/wp-rest-api/references/discovery-and-params.md",
+                    "sha256": "7fd320f42b0b3d75f750a84c91d15281eec273701fe4b89fe194a2c323d3f71b",
+                    "bytes": 730
+                },
+                {
+                    "path": "skills/wp-rest-api/references/responses-and-fields.md",
+                    "sha256": "1a10fe4b8b73d82421456a9e864590bb061d96dc5f4a79c236e74445f404df54",
+                    "bytes": 1091
+                },
+                {
+                    "path": "skills/wp-rest-api/references/routes-and-endpoints.md",
+                    "sha256": "abcb570b61bc114337db7845f6da72d9f3c581d9b3a32997d703be0b586f0b35",
+                    "bytes": 1370
+                },
+                {
+                    "path": "skills/wp-rest-api/references/schema.md",
+                    "sha256": "05e2c9557d9d8a89010ac1b0f7b17dadbdf596490bcecedfc62c3c4a28333a4e",
+                    "bytes": 964
+                },
+                {
+                    "path": "skills/wp-wpcli-and-ops/SKILL.md",
+                    "sha256": "0d3e3524058326ff05bc47acb104a5a12035a155968bd685549b59f992ec3045",
+                    "bytes": 3975
+                },
+                {
+                    "path": "skills/wp-wpcli-and-ops/references/automation.md",
+                    "sha256": "06b967e13ad5f6e02df1a520987c06dc0b6ffcb289ea4e92bf1df66169bd70aa",
+                    "bytes": 628
+                },
+                {
+                    "path": "skills/wp-wpcli-and-ops/references/cron-and-cache.md",
+                    "sha256": "670c3a996fba891b64589e419265ae27b95705aebed3eeee3bfb331f0762bffe",
+                    "bytes": 490
+                },
+                {
+                    "path": "skills/wp-wpcli-and-ops/references/debugging.md",
+                    "sha256": "50105f756f8562d6bef454623c196614fba914c23136b7f4c0653ac550c4a388",
+                    "bytes": 519
+                },
+                {
+                    "path": "skills/wp-wpcli-and-ops/references/multisite.md",
+                    "sha256": "44e4322ce8fec4a4f5ed65b7cf7509b958fb314f756fc3e0d5ed4453fe229413",
+                    "bytes": 568
+                },
+                {
+                    "path": "skills/wp-wpcli-and-ops/references/packages-and-updates.md",
+                    "sha256": "6b619fc294734078b758121e6bfab6e36e7de119a6a3a50bf3d004749136420d",
+                    "bytes": 530
+                },
+                {
+                    "path": "skills/wp-wpcli-and-ops/references/safety.md",
+                    "sha256": "74628dbc5b0a6b78df40e2bcc4a1c2f9038ad2f0fe08734591868d944aa2d3fb",
+                    "bytes": 804
+                },
+                {
+                    "path": "skills/wp-wpcli-and-ops/references/search-replace.md",
+                    "sha256": "12b8f7d8aea1dfbca5610ab1680dca761c0512ee4ff628a4894e7bd56453b8ee",
+                    "bytes": 995
+                },
+                {
+                    "path": "skills/wp-wpcli-and-ops/scripts/wpcli_inspect.mjs",
+                    "sha256": "156d432ad3867fa9e8d53d09c0614350c4d9e2f6909b861779de9b137e0857c1",
+                    "bytes": 3048
+                },
+                {
+                    "path": "skills/wpds/SKILL.md",
+                    "sha256": "dce9a179907ec955ce7fc0b55d1d9c86a1f81f9cc935916d7aafa5700ddd57ad",
+                    "bytes": 2812
+                }
+            ]
+        },
+        {
+            "id": "woocommerce",
+            "url": "https://github.com/woocommerce/agent-skills",
+            "revision": "89cc969d2273ac9eb668c48b7284f77e0862bb21",
+            "license": "GPL-2.0-or-later",
+            "scope": "skills, licenses, README, contribution guidance, docs, shared references, evaluation scenarios; exclude upstream CI and distribution installers",
+            "rea": {
+                "authority": "historical-reference",
+                "inventory_state": "partial",
+                "root_sha256": "b4471e64ef2d6613e25079efe82e735c4ca6b408f112a32e145a5b0dcf32d320",
+                "artifact_sha256": "162923234b2b3110aaf1a7cc473148106aae4a43c097ffeaf89844fbe9a17738",
+                "parse_failure_count": 0
+            },
+            "files": [
+                {
+                    "path": "CONTRIBUTING.md",
+                    "sha256": "b62d346a94f35ce64ac21f8b944d1e7a84bc9782897f82498ebc78782b4e0e9e",
+                    "bytes": 5106
+                },
+                {
+                    "path": "LICENSE",
+                    "sha256": "fe61a8a26cade9d8a7c28bd32129edcca617ae1de6fa7d6c7fc9af1b3d06db57",
+                    "bytes": 754
+                },
+                {
+                    "path": "README.md",
+                    "sha256": "1e76c497d51e1de6fd06a3285659cc8267f8c33e54447f09d70c1e0de89ab12c",
+                    "bytes": 3737
+                },
+                {
+                    "path": "docs/authoring-guide.md",
+                    "sha256": "ef298a5da7cb6be5dd8dd58abd4d302377facf5517354d33754007dcf404fcad",
+                    "bytes": 2544
+                },
+                {
+                    "path": "docs/compatibility-policy.md",
+                    "sha256": "2e8cc309d1ad26e334bde5cc599bdab74c0b49feb835a4e0717562611bc24eee",
+                    "bytes": 1133
+                },
+                {
+                    "path": "docs/packaging.md",
+                    "sha256": "692669aff32397be5e30a2f7b9ae388e499f6a0c4e628d6616c3765d5cad95e8",
+                    "bytes": 815
+                },
+                {
+                    "path": "docs/principles.md",
+                    "sha256": "15af92950ad4c6e1d23a8d57ba6bfc648eedbac9da5b28862791fa1926aeb66d",
+                    "bytes": 374
+                },
+                {
+                    "path": "eval/scenarios/README.md",
+                    "sha256": "a3ad5f662b1b72b43ed19c7b4596c0341652bcca353c099542890a1b4881043f",
+                    "bytes": 221
+                },
+                {
+                    "path": "eval/scenarios/abilities-api-implement-register-first-read.json",
+                    "sha256": "d698cd1995a866e04e3db6b8454473ba74a441115278e88a6e7ec0b74b2f2820",
+                    "bytes": 2085
+                },
+                {
+                    "path": "eval/scenarios/woocommerce-stale-pr-audit.json",
+                    "sha256": "a2166f9b41dbe9ef7aaefedcf8750b41813037a27d450a97eb8dc7d4adb67222",
+                    "bytes": 2022
+                },
+                {
+                    "path": "shared/references/.gitkeep",
+                    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                    "bytes": 0
+                },
+                {
+                    "path": "skills/abilities-api-implement/SKILL.md",
+                    "sha256": "9a6d930bda8616aa204b0c1073a11832e54804ed495bcc2aead399d4f7189872",
+                    "bytes": 25787
+                },
+                {
+                    "path": "skills/abilities-api-implement/references/audit-precondition.md",
+                    "sha256": "55cad7e1ffd839eafb132d379ea04a3f1a4800929b36d804b7b44f7f9e76f8e3",
+                    "bytes": 10147
+                },
+                {
+                    "path": "skills/abilities-api-implement/references/first-ability-template.md",
+                    "sha256": "f757fb63e1bea6545f851cd990e565f87149c8f200144404309925dcb43baae6",
+                    "bytes": 17794
+                },
+                {
+                    "path": "skills/abilities-api-implement/references/paginated-output-envelope.md",
+                    "sha256": "9239df0946a63cf18791757151228a50cea8978688550be78c2bfd746ae217b1",
+                    "bytes": 7137
+                },
+                {
+                    "path": "skills/abilities-api-implement/references/pr-template.md",
+                    "sha256": "2c374917255cb57979d306b8bfefbd334c37216de33b45ec37e18ec12404b5ab",
+                    "bytes": 10621
+                },
+                {
+                    "path": "skills/abilities-api-implement/references/registrar-template.md",
+                    "sha256": "756b54ebf8aeba35b6d1fde31e07744955870408654ec3f2681f7d76dab5294c",
+                    "bytes": 24798
+                },
+                {
+                    "path": "skills/abilities-api-implement/references/test-the-public-contract.md",
+                    "sha256": "37948e680ba98a87c60beb8282687e46cb691fb6acbdf0416f9b7693ecacf7dd",
+                    "bytes": 12942
+                },
+                {
+                    "path": "skills/abilities-api-implement/references/wc-1009-dependency.md",
+                    "sha256": "a77fcc354f76131bf9de76127b08b10f9caa27b704b23137fb62638e97e73373",
+                    "bytes": 5830
+                },
+                {
+                    "path": "skills/abilities-api-implement/references/woo-extension-primitives.md",
+                    "sha256": "d5b0c9359eae524364528d0aed2b7dc6bb361178418b9d669794ca8016b68cf9",
+                    "bytes": 13096
+                },
+                {
+                    "path": "skills/abilities-api-implement/references/write-ability-template.md",
+                    "sha256": "e03fa59eb38a8a5f5b32b3e7b72139cb63500490b5fc3685c7138e309888cec7",
+                    "bytes": 23010
+                },
+                {
+                    "path": "skills/woocommerce-stale-pr-audit/SKILL.md",
+                    "sha256": "cd0a7051cedf6013bd0e1ae28b627729449a85739ba131d69c067fd41a59aa73",
+                    "bytes": 6153
+                },
+                {
+                    "path": "skills/woocommerce-stale-pr-audit/references/audit-schema.md",
+                    "sha256": "4be34af81ff898072e38bc5a4d739759769226037e4b71bfc99ae4374884511e",
+                    "bytes": 4852
+                },
+                {
+                    "path": "skills/woocommerce-stale-pr-audit/references/workflow.md",
+                    "sha256": "16bfbac48f6929b0ff17955a91851cbbd6057989b43a34d3fc3f383edca453b3",
+                    "bytes": 7258
+                },
+                {
+                    "path": "skills/woocommerce-stale-pr-audit/scripts/collect_cohort.py",
+                    "sha256": "f425eae74431a9aedcce01893b18046260bd8d2f6624a6d99827366b799eb1d4",
+                    "bytes": 6869
+                },
+                {
+                    "path": "skills/woocommerce-stale-pr-audit/scripts/fetch_live_state.mjs",
+                    "sha256": "65f4380f79a63c3e6c7d838d544f4ffc52c42f3b4195c19ff57e6f00adb39015",
+                    "bytes": 3906
+                },
+                {
+                    "path": "skills/woocommerce-stale-pr-audit/scripts/fetch_review_dismissals.mjs",
+                    "sha256": "7fd126643a4bd0023d7c872dd52be3df0496ef73bdc2b27115283011ef9c3f52",
+                    "bytes": 5978
+                },
+                {
+                    "path": "skills/woocommerce-stale-pr-audit/scripts/validate_audit.py",
+                    "sha256": "5420dc57a8e4551c21aee681f462d7c03036221df182944be0ca53426ebac96c",
+                    "bytes": 7447
+                }
+            ]
+        }
+    ],
+    "skills": [
+        {
+            "id": "rea-wordpress-router",
+            "source": "wordpress",
+            "upstream": "upstream/wordpress/skills/wordpress-router/SKILL.md",
+            "adapted": "skills/rea-wordpress-router/SKILL.md",
+            "capability_ids": [
+                "P01",
+                "P02",
+                "P14",
+                "P23",
+                "P33",
+                "SK02",
+                "UI04",
+                "CC06",
+                "DS03"
+            ],
+            "local_sources": [
+                "docs/research/capability-register.json",
+                "docs/research/rea-engineering-workflow.md",
+                "app/Services/ProjectMapService.php"
+            ],
+            "acceptance_tests": [
+                "tests/project-map.php"
+            ],
+            "upstream_references": [
+                "references/decision-tree.md"
+            ],
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Reconciled the independent main baseline; provider and DS03 recovery are still partial, and shipping remains preview only. Native task routing stays unchanged.",
+                "sha256": "fb7b7795a8c040c761ce6743700b2a7703e586e79d27da82f5316c62a6eacc4b"
+            }
+        },
+        {
+            "id": "rea-wp-project-triage",
+            "source": "wordpress",
+            "upstream": "upstream/wordpress/skills/wp-project-triage/SKILL.md",
+            "adapted": "skills/rea-wp-project-triage/SKILL.md",
+            "capability_ids": [
+                "P01",
+                "P36",
+                "DS08"
+            ],
+            "local_sources": [
+                "app/Services/ProjectMapService.php",
+                "app/Services/RuntimeHealthService.php",
+                "app/Services/DeploymentRevisionService.php",
+                "storage/schema/collections.php"
+            ],
+            "acceptance_tests": [
+                "tests/project-map.php",
+                "tests/deployment-revision.php"
+            ],
+            "upstream_references": [
+                "references/triage.schema.json"
+            ],
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial pinned skill adaptation: The upstream detector separates project kind, tooling and version evidence. Our triage must distinguish source checkout, local fixtures and deployed state; static scans never certify hosted runtime.",
+                "sha256": "bc378b8ef4e262f3747768ccfdaa3f4990d3143f52d541f619b4d9d8c95bf0eb"
+            }
+        },
+        {
+            "id": "rea-blueprint",
+            "source": "wordpress",
+            "upstream": "upstream/wordpress/skills/blueprint/SKILL.md",
+            "adapted": "skills/rea-blueprint/SKILL.md",
+            "capability_ids": [
+                "P01",
+                "P36",
+                "P14",
+                "X01",
+                "X02"
+            ],
+            "local_sources": [
+                "app/Services/SiteProfileService.php",
+                "app/Services/SettingsService.php",
+                "app/Services/SchemaService.php"
+            ],
+            "acceptance_tests": [
+                "tests/site-profile-browser.cjs",
+                "tests/deployment-revision.php"
+            ],
+            "upstream_references": [],
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial pinned skill adaptation: Blueprints model ordered setup, explicit resource references and schema validation. The upstream language also permits plugin installation and code execution, which are outside bapX scope. Native isolated customer provisioning is partial and /install is deferred.",
+                "sha256": "b9e14946b0dfa78447049a7841ddb762df5869fa6bf007d75b1dff2331732e6e"
+            }
+        },
+        {
+            "id": "rea-wp-env",
+            "source": "wordpress",
+            "upstream": "upstream/wordpress/skills/wp-env/SKILL.md",
+            "adapted": "skills/rea-wp-env/SKILL.md",
+            "capability_ids": [
+                "P01",
+                "P36",
+                "DS08"
+            ],
+            "local_sources": [
+                "app/Services/RuntimeHealthService.php",
+                "app/Services/DatabaseService.php",
+                "cli/bapXphp"
+            ],
+            "acceptance_tests": [
+                "tests/remote-checkout-mysql.php",
+                "tests/cli-lint.test.cjs"
+            ],
+            "upstream_references": [],
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial pinned skill adaptation: Upstream environment setup separates core/version, configuration overrides, database and tooling. Native app already has a fixture-driven local/hosted release gate; no container or WordPress runtime is required in production.",
+                "sha256": "897452afc6be35742463457473ce1331323f4ed02159523fddc9325d6edb06b0"
+            }
+        },
+        {
+            "id": "rea-wp-playground",
+            "source": "wordpress",
+            "upstream": "upstream/wordpress/skills/wp-playground/SKILL.md",
+            "adapted": "skills/rea-wp-playground/SKILL.md",
+            "capability_ids": [
+                "P01",
+                "P36",
+                "UI07",
+                "UI08",
+                "DS08"
+            ],
+            "local_sources": [
+                "assets/shop-webmcp.js",
+                "assets/vendor/webmcp/polyfill-0.1.1.js",
+                "views/layouts/app.php"
+            ],
+            "acceptance_tests": [
+                "tests/homepage-release-browser.cjs",
+                "tests/live-webmcp-a2ui-browser.cjs",
+                "tests/webmcp-official-browser.cjs"
+            ],
+            "upstream_references": [
+                "references/cli.md",
+                "references/webmcp.md",
+                "references/mcp.md"
+            ],
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial pinned skill adaptation: Upstream Playground routes to CLI, MCP or browser based on capability, and distinguishes snapshots/sharing from actual execution. bapX already uses isolated native browser fixtures and live exact-SHA smoke tests; no Playground site is needed.",
+                "sha256": "d49d1c82e0cce035013ec110f6a919d6c395bc1b22c595d04dc29b4962f929bc"
+            }
+        },
+        {
+            "id": "rea-wp-block-development",
+            "source": "wordpress",
+            "upstream": "upstream/wordpress/skills/wp-block-development/SKILL.md",
+            "adapted": "skills/rea-wp-block-development/SKILL.md",
+            "capability_ids": [
+                "P03",
+                "P04",
+                "P05",
+                "UI01",
+                "UI04",
+                "UI05",
+                "P06",
+                "P07",
+                "P08",
+                "P16",
+                "CC07"
+            ],
+            "local_sources": [
+                "app/Services/AuthoredPageService.php",
+                "app/Services/EditorDraftService.php",
+                "app/Services/BlogService.php",
+                "app/Services/PublicA2uiService.php",
+                "app/Services/CategoryService.php",
+                "storage/schema/collections.php",
+                "app/Services/MediaService.php",
+                "app/Services/SeoService.php",
+                "app/Services/AgentDraftService.php"
+            ],
+            "acceptance_tests": [
+                "tests/editor-server-recovery-browser.cjs",
+                "tests/campaign-form-http.php",
+                "tests/public-a2ui.php",
+                "docs/modules/catalog.md",
+                "tests/media-delete-integration.php",
+                "docs/modules/content-and-seo.md",
+                "tests/run.php"
+            ],
+            "upstream_references": [
+                "references/attributes-and-serialization.md",
+                "references/deprecations.md",
+                "references/dynamic-rendering.md"
+            ],
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial pinned skill adaptation: Block registration, serialized attributes, edit/save/render split, child composition and deprecation teach why editor schemas need stable versioned data. Native pages use bounded Markdown and typed page settings, not Gutenberg blocks. General reusable component hierarchy remains partial.",
+                "sha256": "79d36ebc40827e0e2bc138c73e0d8d04dea8a2218ead0ff8d92c7bd48dc330e2"
+            }
+        },
+        {
+            "id": "rea-wp-block-themes",
+            "source": "wordpress",
+            "upstream": "upstream/wordpress/skills/wp-block-themes/SKILL.md",
+            "adapted": "skills/rea-wp-block-themes/SKILL.md",
+            "capability_ids": [
+                "P05",
+                "P14",
+                "P15",
+                "P36"
+            ],
+            "local_sources": [
+                "views/layouts/app.php",
+                "views/admin/header-menu.php",
+                "app/Services/SiteProfileService.php",
+                "app/Services/SettingsService.php"
+            ],
+            "acceptance_tests": [
+                "tests/site-profile-browser.cjs",
+                "tests/header-menu-browser.cjs",
+                "tests/homepage-release-browser.cjs"
+            ],
+            "upstream_references": [
+                "references/theme-json.md",
+                "references/templates-and-parts.md",
+                "references/style-variations.md"
+            ],
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial pinned skill adaptation: Upstream theme JSON, template parts, precedence and style variations separate global design choices from content. Native Settings/Appearance and authored pages exist; arbitrary theme/plugin installation is excluded, reusable layouts remain partial.",
+                "sha256": "31ab108b45fec702a0dfe224331c8c1666d7850eee9dc64921e8c6fbd09acea8"
+            }
+        },
+        {
+            "id": "rea-wp-patterns",
+            "source": "wordpress",
+            "upstream": "upstream/wordpress/skills/wp-patterns/SKILL.md",
+            "adapted": "skills/rea-wp-patterns/SKILL.md",
+            "capability_ids": [
+                "P05",
+                "P15",
+                "UI01",
+                "UI02"
+            ],
+            "local_sources": [
+                "views/public/authored-page.php",
+                "views/admin/pages.php",
+                "app/Services/AuthoredPageService.php",
+                "app/Services/PublicA2uiService.php"
+            ],
+            "acceptance_tests": [
+                "tests/campaign-form-browser.cjs",
+                "tests/homepage-release-browser.cjs",
+                "tests/a2ui-public-browser.cjs"
+            ],
+            "upstream_references": [
+                "references/visual-composition.md",
+                "references/design-with-tokens.md",
+                "references/anti-patterns.md"
+            ],
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial pinned skill adaptation: Upstream patterns group reusable layout fragments with meaningful visual composition and responsive token discipline. Native authored pages and A2UI cards exist; a full reusable page-pattern editor is not established.",
+                "sha256": "7f5240c6d4069f80d5387be8a53731cae054ccd89cb13334790df256ee7fb08d"
+            }
+        },
+        {
+            "id": "rea-wp-interactivity-api",
+            "source": "wordpress",
+            "upstream": "upstream/wordpress/skills/wp-interactivity-api/SKILL.md",
+            "adapted": "skills/rea-wp-interactivity-api/SKILL.md",
+            "capability_ids": [
+                "UI01",
+                "UI04",
+                "UI05",
+                "UI06",
+                "P27",
+                "P04",
+                "UI03",
+                "CC08",
+                "DS06"
+            ],
+            "local_sources": [
+                "assets/a2ui-public-renderer.js",
+                "assets/editor-server-draft.js",
+                "app/Services/PublicA2uiService.php",
+                "app/Services/RemoteCartService.php",
+                "app/Services/AgentConversationService.php",
+                "app/Services/AiClient.php"
+            ],
+            "acceptance_tests": [
+                "tests/a2ui-public-browser.cjs",
+                "tests/editor-server-recovery-browser.cjs",
+                "tests/mobile-cart-restore-browser.cjs",
+                "tests/agent-history-browser.cjs",
+                "docs/runtime-agents.md",
+                "docs/agent-observability.md"
+            ],
+            "upstream_references": [
+                "references/server-side-rendering.md",
+                "references/directives-quickref.md",
+                "references/debugging.md"
+            ],
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial pinned skill adaptation: Upstream server directives and scoped state/actions illustrate explicit state ownership and hydration. bapX has native JS, typed A2UI envelopes and fixed actions; general streaming surface/data updates are partial.",
+                "sha256": "00fd04b60e40689dab52dd7b9802d9c1e1ae4444fde0fe2cb7ee847e77a0e64d"
+            }
+        },
+        {
+            "id": "rea-wpds",
+            "source": "wordpress",
+            "upstream": "upstream/wordpress/skills/wpds/SKILL.md",
+            "adapted": "skills/rea-wpds/SKILL.md",
+            "capability_ids": [
+                "P02",
+                "P14",
+                "P15",
+                "UI01",
+                "UI02"
+            ],
+            "local_sources": [
+                "views/layouts/app.php",
+                "views/layouts/admin.php",
+                "app/Services/SiteProfileService.php",
+                "app/Services/AgentAnswerPresentationService.php"
+            ],
+            "acceptance_tests": [
+                "tests/homepage-release-browser.cjs",
+                "tests/site-profile-browser.cjs",
+                "tests/agent-presentation-scope.php"
+            ],
+            "upstream_references": [],
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial pinned skill adaptation: Upstream design system guidance emphasizes canonical components and tokens. It assumes a WordPress MCP documentation source and React; those are references, not required bapX runtime. Design.md is the local authority.",
+                "sha256": "956d0f6fed7c3d92a2fd2c960a1983f61d5d246a22b130381dcb95aed5c5a0a8"
+            }
+        },
+        {
+            "id": "rea-wp-plugin-development",
+            "source": "wordpress",
+            "upstream": "upstream/wordpress/skills/wp-plugin-development/SKILL.md",
+            "adapted": "skills/rea-wp-plugin-development/SKILL.md",
+            "capability_ids": [
+                "P01",
+                "P12",
+                "P14",
+                "P17",
+                "P36",
+                "X01",
+                "X02",
+                "P13",
+                "SK01",
+                "SK03",
+                "SK05",
+                "SK06",
+                "SK08"
+            ],
+            "local_sources": [
+                "app/Services/SettingsService.php",
+                "app/Services/SchemaService.php",
+                "app/Services/DatabaseService.php",
+                "app/Services/MailQueueService.php",
+                "app/Controllers/AccountController.php",
+                "app/Controllers/AdminGoogleReportingController.php",
+                "integrations/google-site-kit/GoogleSiteKitClient.php",
+                "views/admin/integrations.php"
+            ],
+            "acceptance_tests": [
+                "tests/site-profile-browser.cjs",
+                "tests/mail-delivery-concurrency.php",
+                "tests/campaign-form-http.php",
+                "docs/modules/auth.md",
+                "tests/google-reporting.php",
+                "docs/pages/integrations.md"
+            ],
+            "upstream_references": [
+                "references/lifecycle.md",
+                "references/security.md",
+                "references/data-and-cron.md",
+                "references/settings-api.md"
+            ],
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial pinned skill adaptation: Upstream plugin architecture separates bootstrap, settings, permissions, migrations, scheduled tasks and cleanup. We adopt lifecycle contracts as first-party modules, not a plugin host or arbitrary hook interpreter.",
+                "sha256": "d888e7f6e8a56e1b25a155660da73c85ff3753239aa26425aaf73791db794200"
+            }
+        },
+        {
+            "id": "rea-wp-plugin-directory-guidelines",
+            "source": "wordpress",
+            "upstream": "upstream/wordpress/skills/wp-plugin-directory-guidelines/SKILL.md",
+            "adapted": "skills/rea-wp-plugin-directory-guidelines/SKILL.md",
+            "capability_ids": [
+                "P01",
+                "P36",
+                "X01",
+                "X02",
+                "X03",
+                "DS08"
+            ],
+            "local_sources": [
+                "docs/research/evidence/reference-source-index.json",
+                "docs/research/rea-engineering-workflow.md",
+                "cli/docs-check.php"
+            ],
+            "acceptance_tests": [
+                "tests/documentation-review.php",
+                "tests/cli-lint.test.cjs"
+            ],
+            "upstream_references": [
+                "references/gpl-compliance.md",
+                "references/guideline-review-checklist.md",
+                "references/naming-rules.md"
+            ],
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial pinned skill adaptation: Upstream directory review separates licensing, security, prohibited behavior, identity/naming and review-only checks. Those plugin-submission rules are not applicable release requirements for bapX; their review discipline is useful.",
+                "sha256": "153c9dc9e4f33aaf91ae06ede180bf7347814cebdc386f4b4ccda7a5b347a3ad"
+            }
+        },
+        {
+            "id": "rea-wp-abilities-api",
+            "source": "wordpress",
+            "upstream": "upstream/wordpress/skills/wp-abilities-api/SKILL.md",
+            "adapted": "skills/rea-wp-abilities-api/SKILL.md",
+            "capability_ids": [
+                "P31",
+                "P33",
+                "P34",
+                "MCP01",
+                "MCP02",
+                "MCP03",
+                "CC05",
+                "DS04"
+            ],
+            "local_sources": [
+                "app/Services/AgentCapabilityPolicy.php",
+                "app/Services/RuntimeAgentToolRegistry.php",
+                "app/Services/PublicMcpService.php",
+                "app/Services/McpClientService.php"
+            ],
+            "acceptance_tests": [
+                "tests/public-mcp.php",
+                "tests/mcp-client-access.test.cjs",
+                "tests/model-driven-agents.php"
+            ],
+            "upstream_references": [
+                "references/domain-vs-projection.md",
+                "references/shared-core-service.md",
+                "references/input-schema-gotchas.md"
+            ],
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial pinned skill adaptation: Upstream distinguishes stable domain ability from MCP/REST/UI projection, with explicit opt-in and shared service rather than duplicate SQL. REA pinned WordPress abilities and MCP adapter permission/normalization source. Native role schemas exist but cross-transport parity is partial.",
+                "sha256": "df932adada2329bd9f62bb80b8f65d35a48a8310b56ff6eba913180829064055"
+            }
+        },
+        {
+            "id": "rea-wp-abilities-audit",
+            "source": "wordpress",
+            "upstream": "upstream/wordpress/skills/wp-abilities-audit/SKILL.md",
+            "adapted": "skills/rea-wp-abilities-audit/SKILL.md",
+            "capability_ids": [
+                "P31",
+                "P33",
+                "P34",
+                "MCP01",
+                "MCP03",
+                "CC05",
+                "DS07"
+            ],
+            "local_sources": [
+                "app/Services/ProjectMapService.php",
+                "app/Services/AgentCapabilityPolicy.php",
+                "app/Services/PublicAgentDiscoveryService.php",
+                "app/Services/PublicMcpService.php"
+            ],
+            "acceptance_tests": [
+                "tests/project-map.php",
+                "tests/public-agent-discovery.php",
+                "tests/public-mcp.php"
+            ],
+            "upstream_references": [
+                "references/controller-enumeration.md",
+                "references/capability-gate-tracing.md",
+                "references/audit-schema.md"
+            ],
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial pinned skill adaptation: Upstream audit enumerates controllers, traces gates, records side effects and groups semantic operations rather than exposing each REST endpoint. Native projected surfaces are not yet fully unified. Use this as a source-derived audit method.",
+                "sha256": "38471f088973584d7d835dfcbf6366742bd2a3c7d5a6c9041f6f2ddb198d61bf"
+            }
+        },
+        {
+            "id": "rea-wp-abilities-verify",
+            "source": "wordpress",
+            "upstream": "upstream/wordpress/skills/wp-abilities-verify/SKILL.md",
+            "adapted": "skills/rea-wp-abilities-verify/SKILL.md",
+            "capability_ids": [
+                "P31",
+                "P33",
+                "P34",
+                "MCP01",
+                "MCP02",
+                "MCP04",
+                "DS07",
+                "CC06"
+            ],
+            "local_sources": [
+                "app/Services/PublicMcpService.php",
+                "app/Services/McpClientService.php",
+                "app/Services/AgentCapabilityPolicy.php",
+                "app/Services/VerifiedOrderService.php"
+            ],
+            "acceptance_tests": [
+                "tests/public-mcp-sdk.cjs",
+                "tests/mcp-client-access.test.cjs",
+                "tests/remote-checkout-mysql.php",
+                "tests/model-driven-agents.php"
+            ],
+            "upstream_references": [
+                "references/annotation-correctness.md",
+                "references/permission-roundtrip.md",
+                "references/schema-lints.md"
+            ],
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Reviewed main CC06 live tool-answer versus continuation failure; no deployed alternate synthesis claim, actual role and effect verification unchanged.",
+                "sha256": "f722f8a5ba31d3c68723bbe858720ad9af6e8eb0ef0f017507f97ef1d7ffbf4d"
+            }
+        },
+        {
+            "id": "rea-wp-ability-development",
+            "source": "wordpress",
+            "upstream": "upstream/wordpress/skills/wp-ability-development/SKILL.md",
+            "adapted": "skills/rea-wp-ability-development/SKILL.md",
+            "capability_ids": [
+                "P33",
+                "MCP01",
+                "MCP03",
+                "CC05",
+                "UI05",
+                "DS07",
+                "CC01",
+                "CC03",
+                "DS01",
+                "DS02"
+            ],
+            "local_sources": [
+                "app/Services/AgentCapabilityPolicy.php",
+                "app/Services/AgentToolRegistry.php",
+                "app/Services/RuntimeAgentToolRegistry.php",
+                "app/Services/PublicMcpService.php",
+                "app/Services/SecretService.php",
+                "app/Services/AiClient.php",
+                "app/Services/AgentConversationService.php",
+                "app/Services/AgentTraceService.php"
+            ],
+            "acceptance_tests": [
+                "tests/model-driven-agents.php",
+                "tests/public-mcp.php",
+                "tests/public-mcp-shopping.php",
+                "tests/openrouter-integrations-browser.cjs",
+                "tests/ai-provider-transport.php",
+                "tests/agent-concurrency.php",
+                "tests/agent-interruption.php"
+            ],
+            "upstream_references": [],
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial pinned skill adaptation: Upstream uses caller intent, small strict input, stable success envelope, meaningful errors and side-effect annotations. Existing native agent and MCP tools need consistent schemas without authorization by discovery.",
+                "sha256": "fdf68aea751fc28851956dc7d9b08c03008ee763e1f0bf7be34d0a0cb160d3de"
+            }
+        },
+        {
+            "id": "rea-wp-rest-api",
+            "source": "wordpress",
+            "upstream": "upstream/wordpress/skills/wp-rest-api/SKILL.md",
+            "adapted": "skills/rea-wp-rest-api/SKILL.md",
+            "capability_ids": [
+                "P12",
+                "P31",
+                "P32",
+                "P33",
+                "P34",
+                "MCP02",
+                "MCP03",
+                "MCP04",
+                "P11",
+                "P10"
+            ],
+            "local_sources": [
+                "app/Services/ProjectMapService.php",
+                "app/Services/PublicMcpService.php",
+                "app/Services/McpClientService.php",
+                "app/Controllers/RemoteDbController.php",
+                "app/Controllers/AccountController.php",
+                "views/admin/list-controls.php"
+            ],
+            "acceptance_tests": [
+                "tests/public-mcp-http.cjs",
+                "tests/mcp-client-access.test.cjs",
+                "tests/campaign-form-http.php",
+                "tests/account-profile-browser.cjs",
+                "tests/admin-list-pagination.php"
+            ],
+            "upstream_references": [
+                "references/routes-and-endpoints.md",
+                "references/authentication.md",
+                "references/schema.md",
+                "references/discovery-and-params.md"
+            ],
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial pinned skill adaptation: Upstream route namespace, args schema, response fields, permission callbacks and discovery demonstrate transport contracts. bapX already has routes/controller services and scoped MCP; private HTTP parity is partial.",
+                "sha256": "e397542331645887170727c8ab3f2b6703566025f8736498d82bfb04c4624bc0"
+            }
+        },
+        {
+            "id": "rea-wp-performance",
+            "source": "wordpress",
+            "upstream": "upstream/wordpress/skills/wp-performance/SKILL.md",
+            "adapted": "skills/rea-wp-performance/SKILL.md",
+            "capability_ids": [
+                "P01",
+                "P09",
+                "P17",
+                "P28",
+                "P29",
+                "SK02",
+                "SK04",
+                "CC04",
+                "DS05"
+            ],
+            "local_sources": [
+                "app/Services/RuntimeHealthService.php",
+                "app/Services/ImageOptimizerService.php",
+                "app/Services/SiteTelemetryService.php",
+                "integrations/google-site-kit/PageSpeedInsightsClient.php",
+                "app/Services/AiClient.php"
+            ],
+            "acceptance_tests": [
+                "tests/google-pagespeed.php",
+                "tests/google-pagespeed-browser.cjs",
+                "tests/ai-provider-transport.php"
+            ],
+            "upstream_references": [
+                "references/measurement.md",
+                "references/database.md",
+                "references/autoload-options.md",
+                "references/http-api.md"
+            ],
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Reviewed main CC04 retry holds and unverified live fallback; performance guide requires actual measurements, not the pending #518 candidate.",
+                "sha256": "8090cb969a9b2810f09b7fcff92de9e1fda66d3f6bdf73194dc3a723b8d52937"
+            }
+        },
+        {
+            "id": "rea-wp-phpstan",
+            "source": "wordpress",
+            "upstream": "upstream/wordpress/skills/wp-phpstan/SKILL.md",
+            "adapted": "skills/rea-wp-phpstan/SKILL.md",
+            "capability_ids": [
+                "P01",
+                "P33",
+                "CC02",
+                "DS08"
+            ],
+            "local_sources": [
+                "cli/bapXphp",
+                "app/Services/ProjectMapService.php",
+                "app/Services/AgentModelTurn.php",
+                "app/Services/SchemaService.php"
+            ],
+            "acceptance_tests": [
+                "tests/cli-lint.test.cjs",
+                "tests/project-map.php",
+                "tests/model-driven-agents.php"
+            ],
+            "upstream_references": [
+                "references/configuration.md",
+                "references/third-party-classes.md"
+            ],
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial pinned skill adaptation: Upstream PHPStan workflow discovers tooling, uses accurate types and treats baselines as migrations rather than suppression. Native app uses PHP syntax, typed services, generated maps and actual tests; WP stubs would hide errors.",
+                "sha256": "e2e8474ad738ebdf038440d00e9e38cf40bc07605c85d6824827e2e9b9799d4a"
+            }
+        },
+        {
+            "id": "rea-wp-wpcli-and-ops",
+            "source": "wordpress",
+            "upstream": "upstream/wordpress/skills/wp-wpcli-and-ops/SKILL.md",
+            "adapted": "skills/rea-wp-wpcli-and-ops/SKILL.md",
+            "capability_ids": [
+                "P01",
+                "P17",
+                "P30",
+                "P36",
+                "DS07",
+                "SK07"
+            ],
+            "local_sources": [
+                "cli/bapXphp",
+                "app/Services/MailQueueService.php",
+                "app/Services/RuntimeHealthService.php",
+                "app/Services/DeploymentRevisionService.php"
+            ],
+            "acceptance_tests": [
+                "tests/mail-delivery-concurrency.php",
+                "tests/mail-scheduled-browser.cjs",
+                "tests/deployment-revision.php",
+                "docs/email-setup.md"
+            ],
+            "upstream_references": [
+                "references/safety.md",
+                "references/cron-and-cache.md",
+                "references/search-replace.md"
+            ],
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial pinned skill adaptation: Upstream CLI operations require site targeting, dry-run, backup and bounded automation. Native bapXphp and hosted queue processing already exist; generic persistent job orchestration remains partial.",
+                "sha256": "b94cf308913b749762e706b27bd4a03713b690e12ab4b62b603f422cfb2eacd5"
+            }
+        },
+        {
+            "id": "rea-abilities-api-implement",
+            "source": "woocommerce",
+            "upstream": "upstream/woocommerce/skills/abilities-api-implement/SKILL.md",
+            "adapted": "skills/rea-abilities-api-implement/SKILL.md",
+            "capability_ids": [
+                "P18",
+                "P19",
+                "P22",
+                "P23",
+                "P24",
+                "P25",
+                "P26",
+                "P27",
+                "P28",
+                "P29",
+                "P31",
+                "P33",
+                "P34",
+                "MCP01",
+                "DS07",
+                "P20",
+                "P21"
+            ],
+            "local_sources": [
+                "app/Services/ShippingService.php",
+                "app/Services/RemoteCheckoutService.php",
+                "app/Services/VerifiedOrderService.php",
+                "app/Services/TaxService.php",
+                "app/Services/AgentCapabilityPolicy.php",
+                "app/Services/PublicMcpService.php",
+                "app/Services/CampaignDownloadService.php",
+                "app/Services/ProductImportService.php"
+            ],
+            "acceptance_tests": [
+                "tests/shipping-preview-browser.cjs",
+                "tests/remote-checkout.php",
+                "tests/remote-checkout-mysql.php",
+                "tests/verified-order.php",
+                "tests/public-mcp-checkout.php",
+                "tests/campaign-booking.php",
+                "docs/modules/catalog.md"
+            ],
+            "upstream_references": [
+                "references/audit-precondition.md",
+                "references/paginated-output-envelope.md",
+                "references/test-the-public-contract.md",
+                "references/write-ability-template.md"
+            ],
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial pinned skill adaptation: WooCommerce skill requires an audit, reference read first, shared service for writes, pagination, capability gates and public-contract tests. Loader-specific WC 10.9 classes are not a native dependency. REA identifies shipping preview only, missing variants/numeric stock, partial fulfilment and reporting.",
+                "sha256": "355f468d4be10f5f8b935d21c0d271fd202dc511a98a8894e89079823dc36d1b"
+            }
+        },
+        {
+            "id": "rea-woocommerce-stale-pr-audit",
+            "source": "woocommerce",
+            "upstream": "upstream/woocommerce/skills/woocommerce-stale-pr-audit/SKILL.md",
+            "adapted": "skills/rea-woocommerce-stale-pr-audit/SKILL.md",
+            "capability_ids": [
+                "P01",
+                "P35",
+                "CC04",
+                "CC06",
+                "DS08",
+                "P36"
+            ],
+            "local_sources": [
+                "docs/development-workflow.md",
+                "docs/engineering/ai-review-workflow.md",
+                "docs/research/rea-engineering-workflow.md",
+                "cli/bapXphp"
+            ],
+            "acceptance_tests": [
+                "tests/deployment-revision.test.cjs",
+                "tests/model-driven-agents.php",
+                "tests/cli-lint.test.cjs"
+            ],
+            "upstream_references": [
+                "references/workflow.md",
+                "references/audit-schema.md"
+            ],
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Reviewed main versus pending #518, including actual editor concurrency fixture failure and unchanged live scope; preserve exact-head evidence and read-only audit.",
+                "sha256": "92e0bacfc589e836076086b806e7b2d3a5d39ca69f39f5c3dd1d9d8694efde53"
+            }
+        }
+    ]
+}

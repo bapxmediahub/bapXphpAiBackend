@@ -684,6 +684,9 @@ cmd_ci() {
     php "$ROOT/tests/$fixture.php" 2>&1 || { failed=1; warn "PORTABLE FIXTURE FAILED: $fixture"; }
   done
 
+  echo "── rea-skills:check ──"
+  php "$ROOT/cli/rea-skills.php" --check 2>&1 || { failed=1; warn "REA SKILL INVENTORY FAILED"; }
+
   echo "── rea-capabilities:check ──"
   php "$ROOT/cli/rea-capabilities.php" --check 2>&1 || { failed=1; warn "REA CAPABILITY REVIEW REQUIRED"; }
 
@@ -790,6 +793,9 @@ cmd_skills() {
     desc="${desc:-No description}"
     printf "  %s  %s\n" "$name" "$desc"
   done
+  echo ""
+  echo "REA native reverse-engineering skills (developer-only):"
+  php "$ROOT/cli/rea-skills.php" --list
 }
 
 # ── Route:list ─────────────────────────────────────────────────
@@ -2139,10 +2145,17 @@ cmd_skill() {
   local name="${1:-}"
   [ -z "$name" ] && cmd_skills && return
 
+  if [[ ! "$name" =~ ^[a-z0-9]+(-[a-z0-9]+)*$ ]]; then
+    err "Invalid skill name: $name"
+    exit 1
+  fi
   local skill_file="$ROOT/.agents/skills/$name/SKILL.md"
   if [ -f "$skill_file" ]; then
     echo "── $name ──"
     cat "$skill_file"
+  elif [[ "$name" == rea-* ]]; then
+    require_php
+    php "$ROOT/cli/rea-skills.php" --show "$name"
   else
     err "Skill not found: $name"
     cmd_skills

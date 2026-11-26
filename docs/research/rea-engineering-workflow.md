@@ -53,6 +53,34 @@ Partial rows receive no fractional completion credit.
 The initial snapshot is a conservative source reconciliation, not an assertion
 that every listed test was rerun during the audit.
 
+## Official skill reference layer
+
+The [REA skill collection](../../.agents/REA/README.md) includes pinned
+WordPress and WooCommerce official skill bundles and a distinct native
+adaptation for every original skill. Select the relevant guide before
+implementation using `php cli/rea-skills.php --for P23`, for example.
+Use `./bapXphp skill rea-abilities-api-implement` to read the adapted
+commerce guide; consult the preserved upstream skill and its references
+as research data. This layer supports domain/projection separation,
+adversarial side-effect and permission verification, reproducible fixture
+environments, lifecycle contracts, design composition, performance and
+PR regression audits. It does not introduce an upstream plugin runtime,
+REST adapter, React dependency, WP-CLI or installer.
+
+The `.agents/REA/skill-map.json` inventory pins all imported bytes and
+routes each adaptation to existing capability IDs, native paths and tests.
+If new REA evidence changes a finding or scope, review its mapped skills,
+improve their actual engineering steps where needed and record affected
+IDs and rationale in the linked PR. List stale guides with
+`php cli/rea-skills.php --affected`; review and record each with
+`php cli/rea-skills.php --record <skill-id> --reason "<specific review>"`.
+The review receipt binds the guide and mapped finding/status/references,
+not every unrelated source hash. Reconcile source pins and new skill
+coverage explicitly on upstream refresh. `php cli/rea-skills.php --check`
+runs in the shared CI gate. The original upstream scripts and eval prompts
+are never executed by the check; the skill map is not a second progress
+ledger and cannot increase implementation percentages.
+
 ## Recover the behavioral contract before writing a component
 
 REA is not a checklist generator or a substitute for engineering the underlying

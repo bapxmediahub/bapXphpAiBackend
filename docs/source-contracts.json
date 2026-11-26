@@ -58,9 +58,9 @@
             "review_note": "Reviewed the owner UI skill changes against authenticated media navigation, route declarations, and Media Library behavior. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
         },
         "operator-help": {
-            "source_sha256": "40a66ad14deb960af2ed6e5329aaf990ceb7e4d22ffacda158ee95fdf108fe68",
+            "source_sha256": "75a2e562d4b13957fb0483d8788f3e7f109c495144e60edf086ac689339eb602",
             "references_sha256": "4e2591fafd1e772fb73b53865320e18914867c5d36d31f01f3406f58dcc80b4f",
-            "review_note": "Reviewed both editor templates and their declared shared partial; JSON recovery endpoint remains owner-only and actual HTTP tests pass."
+            "review_note": "Reviewed developer-only adapted REA skill discovery and knowledge map changes; owner runtime guides and role-allowlisted business instructions are unchanged."
         },
         "public-mcp": {
             "source_sha256": "16885ac8b5f31d7e7f4734b227e46c4dcce33001b2d019e251fd2891730ae4c7",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed settings loader exclusion of private ed rows; existing public product feed and channel settings untouched."
         },
         "workflow": {
-            "source_sha256": "b0a651b36d0f4fde60bd9aadc480cedcff8746bddf7c9a9d466470d2f3bc54ff",
-            "references_sha256": "14c2c675da06f0e52ce81e374d38de55ffbbc5cbdffb344aa94a62f7ec668e68",
-            "review_note": "Corrected actual shared view include edges and database settings dependency; regenerated maps and all five project-map tests passed."
+            "source_sha256": "4ff850c1be73c1f187e300e6c4c5219ed2fe2a8a0281d0c1f3a879b3d98aa071",
+            "references_sha256": "c499b32b69232a672bac8fe5d835060d10c4424fc949814e18bad2904b9a83ee",
+            "review_note": "Reviewed both pinned official source skill collections, 22 distinct native adaptations, all mapped REA findings, CLI discovery, review fingerprints and regenerated developer map; upstream scripts not executed."
         }
     }
 }
