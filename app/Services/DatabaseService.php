@@ -769,8 +769,10 @@ final class DatabaseService {
 
     private function editorDraftOnce(string $id,string $owner,string $kind,string $target,string $operation,
         string $expected,string $revision,array $values): array {
-        $row = $this->find('settings',$id);
+        $row = $this->editorDraftRow($owner,$kind,$target);
         $current = $row === null ? null : EditorDraftService::assertRecord($row,$owner,$kind,$target);
+        // Continue to use the actual stored key for a full-width legacy row.
+        $id = $row['id'] ?? $id;
         if ($operation === 'read') return ['outcome'=>'read','draft'=>$current];
         if (($current['token'] ?? '') !== $expected) return ['outcome'=>'conflict','draft'=>$current];
         if ($operation === 'discard') {
@@ -783,7 +785,7 @@ final class DatabaseService {
             if ($next === $current) {
                 // An identical snapshot still needs CAS: do not acknowledge a
                 // stale writer after another device has replaced/discarded it.
-                $latest = $this->find('settings',$id);
+                $latest = $this->editorDraftRow($owner,$kind,$target);
                 if ($latest !== null && EditorDraftService::assertRecord($latest,$owner,$kind,$target)['token']===$expected) return ['outcome'=>'saved','draft'=>$current];
             } else {
                 $record = ['id'=>$id,'editor_recovery'=>$next];
@@ -797,7 +799,13 @@ final class DatabaseService {
                             VALUES (?,?,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)');
                         $stmt->execute([$id,json_encode($record,JSON_THROW_ON_ERROR)]);
                         if ($stmt->rowCount()!==1) throw new \RuntimeException('Recovery insert was not acknowledged.');
-                        return ['outcome'=>'saved','draft'=>$next];
+                        // A permissive SQL mode can acknowledge a truncated primary
+                        // key. Verify the inserted identity before returning a token.
+                        $stored=$this->editorDraftRow($owner,$kind,$target);
+                        if ($stored===null || $stored['id']!==$id) throw new \RuntimeException('Recovery insert identity was not observed.');
+                        $observed=EditorDraftService::assertRecord($stored,$owner,$kind,$target);
+                        return $observed['token']===$next['token'] ? ['outcome'=>'saved','draft'=>$next]
+                            : ['outcome'=>'conflict','draft'=>$observed];
                     } catch (\PDOException $error) {
                         if (($error->errorInfo[0]??null)!=='23000'
                             || (int)($error->errorInfo[1]??0)!==1062) throw $error;
@@ -809,8 +817,24 @@ final class DatabaseService {
                 }
             }
         }
-        $row = $this->find('settings',$id);
+        $row = $this->editorDraftRow($owner,$kind,$target);
         return ['outcome'=>'conflict','draft'=>$row === null ? null : EditorDraftService::assertRecord($row,$owner,$kind,$target)];
+    }
+
+    /** Resolve both historical key widths in one observation. If both exist,
+     * fail closed rather than choosing, merging or discarding someone's history. */
+    private function editorDraftRow(string $owner,string $kind,string $target): ?array {
+        $rows=$this->query('SELECT id, _data FROM settings WHERE id IN (?, ?)',[
+            EditorDraftService::identity($owner,$kind,$target),
+            EditorDraftService::legacyIdentity($owner,$kind,$target),
+        ]);
+        if (count($rows)>1) throw new \RuntimeException('Ambiguous editor recovery identities.');
+        if ($rows===[]) return null;
+        $data=json_decode($rows[0]['_data'],true,flags:JSON_THROW_ON_ERROR);
+        if (!is_array($data)) throw new \RuntimeException('Invalid editor recovery row.');
+        // The outer database key is authoritative; historical JSON may still
+        // contain the original long id even when MySQL truncated the key.
+        return ['id'=>$rows[0]['id']]+$data;
     }
 
     public function deleteAuthoredPage(string $slug, string $expected): bool {

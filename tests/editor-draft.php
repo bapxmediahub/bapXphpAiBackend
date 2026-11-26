@@ -51,6 +51,9 @@ $rev=str_repeat('a',32);$slug='fixture-editor-'.bin2hex(random_bytes(4));
 $v=['slug'=>$slug,'title'=>'Unsaved title','content'=>'Unsaved body','campaign_fields[detail_1][label]'=>'Question'];
 check(EditorDraftService::identity($a,'page',$slug)!==EditorDraftService::identity($b,'page',$slug),'Different owner identity');
 check(EditorDraftService::identity($a,'page',$slug)!==EditorDraftService::identity($a,'blog',$slug),'Different document type');
+$short=EditorDraftService::identity($a,'page',$slug);$long=EditorDraftService::legacyIdentity($a,'page',$slug);
+check(strlen($short)===36&&strlen($long)===63&&$short===substr($long,0,36),'Identity fits deployed key and retains truncated legacy prefix');
+
 $old=null;
 for($i=1;$i<=4;$i++) $old=EditorDraftService::next($a,'page',$slug,$rev,array_replace($v,['title'=>"Version $i"]),$old,$i);
 check(count($old['versions'])===3 && array_column($old['versions'],'at')===[4,3,2],'Bounded newest-first recovery history');
@@ -100,6 +103,59 @@ foreach([['40001',1213,3],['HY000',1205,1],['HY000',2006,1],['23000',1062,1],['4
 if (!$mysql) {echo "Editor recovery validation, identity, history and bounded deadlock policy PASS\n";exit;}
 $db=new DatabaseService(true);$pdo=$db->connection();
 check($pdo->query('SELECT DATABASE()')->fetchColumn()==='sps_order_test','Only fixture DB');
+// A connection-local temporary table shadows the shared fixture table without
+// changing its schema or other test records. Exercise actual production width
+// and permissive SQL truncation as well as the strict and wider installations.
+$originalMode=(string)$pdo->query('SELECT @@SESSION.sql_mode')->fetchColumn();
+$createTemp=static function(int $width) use($pdo):void {
+    check(in_array($width,[36,64],true),'Known fixture widths');
+    $pdo->exec("CREATE TEMPORARY TABLE settings (id VARCHAR($width) PRIMARY KEY,_data JSON NOT NULL,_owner VARCHAR(255),_status VARCHAR(64),_created_at VARCHAR(40),_updated_at VARCHAR(40)) ENGINE=InnoDB");
+};
+$legacy=EditorDraftService::next($a,'page',$slug,$rev,$v,null,1);
+$insertLegacy=static function(string $id,array $draft) use($pdo):void {
+    $stmt=$pdo->prepare('INSERT INTO settings (id,_data) VALUES (?,?)');
+    $stmt->execute([$id,json_encode(['id'=>$id,'editor_recovery'=>$draft],JSON_THROW_ON_ERROR)]);
+};
+$createTemp(36);
+try {
+    foreach (['','STRICT_ALL_TABLES'] as $mode) {
+        $pdo->exec('SET SESSION sql_mode='.$pdo->quote($mode));
+        $saved=$db->editorDraftOperation($a,'page',$slug,'write','',$rev,$v);
+        check($saved['outcome']==='saved','Production-width initial insert succeeds in either SQL mode');
+        check($pdo->query('SELECT id FROM settings')->fetchColumn()===$short,'Stored primary key exactly matches the expected key');
+        $read=$db->editorDraftOperation($a,'page',$slug,'read')['draft'];
+        check(canonicalFixtureJson($read)===canonicalFixtureJson($saved['draft']),'Acknowledged production-width write can be read');
+        check($db->editorDraftOperation($a,'page',$slug,'discard',$saved['draft']['token'])['outcome']==='discarded','Exact token clears production-width copy');
+    }
+    $pdo->exec("SET SESSION sql_mode=''");
+    $insertLegacy($long,$legacy);
+    check($pdo->query('SELECT id FROM settings')->fetchColumn()===$short,'Reproduce original permissive truncation');
+    $read=$db->editorDraftOperation($a,'page',$slug,'read')['draft'];
+    check(canonicalFixtureJson($read)===canonicalFixtureJson($legacy),'Recover historical truncated row with original token');
+    check($db->editorDraftOperation($a,'page',$slug,'discard',$legacy['token'])['outcome']==='discarded','Truncated legacy copy is discardable only by exact token');
+} finally {
+    $pdo->exec('SET SESSION sql_mode='.$pdo->quote($originalMode));
+    $pdo->exec('DROP TEMPORARY TABLE settings');
+}
+$createTemp(64);
+try {
+    $insertLegacy($long,$legacy);
+    check(canonicalFixtureJson($db->editorDraftOperation($a,'page',$slug,'read')['draft'])===canonicalFixtureJson($legacy),'Existing full-width copy remains readable');
+    $updated=$db->editorDraftOperation($a,'page',$slug,'write',$legacy['token'],$rev,array_replace($v,['title'=>'Updated legacy draft']));
+    check($updated['outcome']==='saved'&&$pdo->query('SELECT id FROM settings')->fetchColumn()===$long,'CAS updates the existing full-width row, not a second record');
+    check(count($updated['draft']['versions'])===2,'Existing full-width history preserved');
+    $insertLegacy($short,$legacy);
+    $refused=0;
+    foreach (['read','write','discard'] as $operation) {
+        try { $db->editorDraftOperation($a,'page',$slug,$operation,$updated['draft']['token'],$rev,$v); }
+        catch (RuntimeException $error) { if($error->getMessage()==='Ambiguous editor recovery identities.')$refused++; }
+    }
+    check($refused===3&&(int)$pdo->query('SELECT COUNT(*) FROM settings')->fetchColumn()===2,'Ambiguous key widths fail closed without mutation');
+    $stmt=$pdo->prepare('DELETE FROM settings WHERE id=?');$stmt->execute([$short]);
+    check($db->editorDraftOperation($a,'page',$slug,'discard',$updated['draft']['token'])['outcome']==='discarded','Matching token discards existing full-width row');
+} finally { $pdo->exec('DROP TEMPORARY TABLE settings'); }
+echo "Editor recovery production key width, legacy truncated/full-width identity and duplicate refusal PASS\n";
+
 $pdo->exec("CREATE TABLE IF NOT EXISTS settings (id VARCHAR(64) PRIMARY KEY,_data JSON NOT NULL,_owner VARCHAR(255),_status VARCHAR(64),_created_at VARCHAR(40),_updated_at VARCHAR(40)) ENGINE=InnoDB");
 $keys=[EditorDraftService::identity($a,'page',$slug),EditorDraftService::identity($b,'page',$slug),EditorDraftService::identity($a,'blog',$slug)];
 try {

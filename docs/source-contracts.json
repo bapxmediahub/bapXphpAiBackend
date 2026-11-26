@@ -4,28 +4,28 @@
     "reviews": {
         "agents": {
             "source_sha256": "b4df00f4a124fde6cb668d105c5174970e9e90865eabeee0ecfc20834743c436",
-            "references_sha256": "3ec1b054aff080dca232841d9864f9c05f2a70d1255445584907432063f8ac33",
-            "review_note": "Reviewed backend skill and shared storage diff; no agent tool replay, model or conversation persistence change."
+            "references_sha256": "265d1524391729ad8da5764303172e8d440ed0739029d0671ba083ae3b170bdc",
+            "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
         },
         "auth": {
             "source_sha256": "c34a5b34bc904f36cda184c26113f91e2cf36afa2b506217d1f74e22e9e0cefd",
-            "references_sha256": "c8306c57b610c933cc62d7599118cd249f0028557929a31fcf78e407974d0946",
-            "review_note": "Reviewed unchanged actor/session/CSRF boundaries; new recovery retries stay on original owner/item identity and expected token."
+            "references_sha256": "5a09cc9ec37a1d67a9bb55c7650e468d9c2c918fe52edeb9cebe2529f3d7fd74",
+            "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
         },
         "commerce": {
             "source_sha256": "56c2354c15a4b4af4a9698bc2a65f237fdebccff02d9e6b80183b30ec9559d2a",
-            "references_sha256": "5617398d031571e14c8a0a907712fb5a5f74cc4723ed5151b21e4a77e29f09bb",
-            "review_note": "Reviewed actual eight checkout amount cases, no client fallback, fractional pricing and verified-order recovery; current dependency preserved."
+            "references_sha256": "1fa8fb3454d9d51e211e141c08d963101f47dcb7ffeaf12d501cb2de2fce9d51",
+            "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
         },
         "content": {
-            "source_sha256": "b45da45a1b157b983bb95283f1e1384ad07a4a2613648b18533fbd00f5231b50",
-            "references_sha256": "bfc615b1bcb7cc9ede6d72e578afb1664fb1cc451d676bcf6f82393d9feaafa8",
-            "review_note": "Reviewed actual hosted deadlock diagnostic, strict insert and original-token retry, deterministic policy and isolated HTTP pass; canonical content save/publication unchanged."
+            "source_sha256": "7bc0e3afdd5a80dcbe48b999af092c2609cc94d7eb44da9efa39f7494402254d",
+            "references_sha256": "b51bf13ae52f94e391eab038ee358b9f4d1135bd567aed8c50033b4412a19f12",
+            "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
         },
         "foundation": {
-            "source_sha256": "b2311467ddfc85ab384a5a06953c281207a9773352bcf113e6e840c21ac65b42",
-            "references_sha256": "227fb28de8ad34b1862ec76eeddfd80a087a06de2ad33929524bd219c4e47048",
-            "review_note": "Reviewed direct autocommit requirement, bounded confirmed rollback retry and unchanged MySQL schema/runtime; no new dependency or outer transaction replay."
+            "source_sha256": "0e9c368c5cbc2a11037c4227724cab4196df01f1e6afe1071152611c7a195e0d",
+            "references_sha256": "fbfb24aa19302e8b09b0fbe1cd05458c331795045fa3b256990b1a0574e103e5",
+            "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
         },
         "google-tags": {
             "source_sha256": "239140bbf84afe1d759b8fba20f012147c59202640638ffb270bd0820fdbe5b5",
@@ -34,8 +34,8 @@
         },
         "http-errors": {
             "source_sha256": "0f920c297cfc4e216a87be02a35c20827cc254dd6934ba24a1fa9135520a0560",
-            "references_sha256": "336dc6e5120452560ddda73586730c89d991c7f1388223dc7c244637df7ec704",
-            "review_note": "Reviewed private editor failure semantics: confirmed rolled-back autocommit deadlock retried only within bounded CAS; unknown or exhausted failure remains explicit, browser copy preserved."
+            "references_sha256": "a175fe67d17649770e40d54ece7fc264b05e2484c5a7ab28cffbf5857fa7ed7e",
+            "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
         },
         "interface": {
             "source_sha256": "fde92d57feff59ec7f1f72e8014984b35a75f2c0d48ddbdbc2b159ff8288b250",
@@ -44,8 +44,8 @@
         },
         "mail": {
             "source_sha256": "d6701ee87e38200539b4d91602756009396ba9564e7e9dec371c048502dcf3ac",
-            "references_sha256": "f350ff4d468dce168821dee1631891fd78c23070e7a88004c5d13e9fdc5cebcd",
-            "review_note": "Reviewed editor-only autocommit recovery; mail queue, claims and delivery unchanged."
+            "references_sha256": "18b4092f26b698eef0a8027f266cbd6e58d9377f6f8a8b5719be0a0e5cd724c2",
+            "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
         },
         "mcp-clients": {
             "source_sha256": "2567e2792ed1acb0c80ae14605c2ac550abb824197b404fc2da99e97e1507d8e",
@@ -64,13 +64,13 @@
         },
         "public-mcp": {
             "source_sha256": "41c1243435ecb682c9f3f12859ce7f6d060fa5c933144e2e08f49d7747feda07",
-            "references_sha256": "187074328e2d8cef855181cd4bd4b39c760ec09de1d93862ea23531c5b7f18f7",
-            "review_note": "Reviewed editor-only storage retry and unchanged route authorization; no public capability or private data projection added."
+            "references_sha256": "68f79ed443df0cba4c7aa1bf073c7d7afd53cab5b9447fb5aef1628fb4743345",
+            "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
         },
         "remote-commerce": {
-            "source_sha256": "170d247cf2e7a0d1435ccbc18288a487e1e73d33573bf0554b85429126606a8a",
-            "references_sha256": "07ee70743aec95dca5faa3bf4e33c13f48e8184db843eef495a0bbbd88b1493b",
-            "review_note": "Reviewed current dependency and browser-only server amount change; remote quote, payment and editor protocol unchanged by checkout fix."
+            "source_sha256": "8fe91464d93957e4520172523d3f258b2abcebc0d110bbd94bde2700a1bdca3a",
+            "references_sha256": "30d51b4bee8d26efc0fd2ab3034f6d58f007c4e95cd807f00146d5ab4291cf3d",
+            "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
         },
         "sales-channels": {
             "source_sha256": "0012f20cbd5531b10a54baf77e4070710c02f926dae38c826cc657cf1939ec07",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed actual Woo core and Google plugin source, current Google v1 ProductInput and processed product contracts, offline projection and read-only country-specific diagnostics; browser and 47 checks pass."
         },
         "workflow": {
-            "source_sha256": "28b633517373ddb1e29a6f7e4c523d8f16328f25ac5c80fee2464577ecacb3dd",
+            "source_sha256": "db0669c73a6b004effc7ad18248790104b62bd12a4a68fcccfb6746c6bcdc046",
             "references_sha256": "5a27cde698babfc821a71a740e94a9ff3035f44912123bc1ea47f3a348dc7911",
-            "review_note": "Owner-directed continuity contract: reconstruct bounded context from canonical Git/GitHub, exact-head checks and deployed evidence at each inference boundary; material transitions recorded on existing issues/PRs, no duplicate ledger, no runtime change or automatic background execution."
+            "review_note": "Reconciled deployed #529 recovery identity width and source contracts. Reviewed owner-directed inference rehydration/checkpoint instructions, canonical issue/PR and exact source/deployment receipts, unknown outcome reconciliation; developer-only process unchanged by runtime repair."
         }
     }
 }
