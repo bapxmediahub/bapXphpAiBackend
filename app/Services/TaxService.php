@@ -5,13 +5,44 @@ final class TaxService {
     /** Devotional statuettes of base metal, HSN 8306 — 5% since the Sept 2025 GST 2.0 handicraft reform. */
     public const DEFAULT_GST_RATE = 5.0;
     public const DEFAULT_HSN_CODE = '8306';
+    // GSTN domestic state master: https://docs.ewaybillgst.gov.in/apidocs/state-code.html
     private const INDIAN_STATES = [
-        'Andaman and Nicobar Islands', 'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar',
-        'Chandigarh', 'Chhattisgarh', 'Dadra and Nagar Haveli and Daman and Diu', 'Delhi', 'Goa',
-        'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jammu and Kashmir', 'Jharkhand', 'Karnataka',
-        'Kerala', 'Ladakh', 'Lakshadweep', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya',
-        'Mizoram', 'Nagaland', 'Odisha', 'Puducherry', 'Punjab', 'Rajasthan', 'Sikkim',
-        'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
+        'Andaman and Nicobar Islands' => '35',
+        'Andhra Pradesh' => '37',
+        'Arunachal Pradesh' => '12',
+        'Assam' => '18',
+        'Bihar' => '10',
+        'Chandigarh' => '04',
+        'Chhattisgarh' => '22',
+        'Dadra and Nagar Haveli and Daman and Diu' => '26',
+        'Delhi' => '07',
+        'Goa' => '30',
+        'Gujarat' => '24',
+        'Haryana' => '06',
+        'Himachal Pradesh' => '02',
+        'Jammu and Kashmir' => '01',
+        'Jharkhand' => '20',
+        'Karnataka' => '29',
+        'Kerala' => '32',
+        'Ladakh' => '38',
+        'Lakshadweep' => '31',
+        'Madhya Pradesh' => '23',
+        'Maharashtra' => '27',
+        'Manipur' => '14',
+        'Meghalaya' => '17',
+        'Mizoram' => '15',
+        'Nagaland' => '13',
+        'Odisha' => '21',
+        'Puducherry' => '34',
+        'Punjab' => '03',
+        'Rajasthan' => '08',
+        'Sikkim' => '11',
+        'Tamil Nadu' => '33',
+        'Telangana' => '36',
+        'Tripura' => '16',
+        'Uttar Pradesh' => '09',
+        'Uttarakhand' => '05',
+        'West Bengal' => '19',
     ];
 
     /**
@@ -153,6 +184,7 @@ final class TaxService {
         return [
             'supply_type' => $interstate ? 'interstate' : 'intrastate',
             'place_of_supply' => $shippingState,
+            'place_of_supply_code' => self::stateCode($shippingState),
             'taxable_value' => $this->money($taxableTotal),
             'cgst_total' => $this->money($cgstTotal),
             'sgst_total' => $this->money($sgstTotal),
@@ -167,7 +199,7 @@ final class TaxService {
                 'gstin' => (string)($settings['gstin'] ?? ''),
                 'address' => (string)($settings['gst_address'] ?? ''),
                 'state' => $supplierState,
-                'state_code' => (string)($settings['gst_state_code'] ?? ''),
+                'state_code' => self::stateCode($supplierState),
             ],
         ];
     }
@@ -229,17 +261,43 @@ final class TaxService {
         ]);
     }
 
-    public static function states(): array { return self::INDIAN_STATES; }
+    public static function states(): array { return array_keys(self::INDIAN_STATES); }
+
+    public static function stateCode(string $state): ?string {
+        $canonical = self::normaliseState($state);
+        return $canonical === null ? null : self::INDIAN_STATES[$canonical];
+    }
 
     public static function normaliseState(string $state): ?string {
         $key = strtolower(preg_replace('/[^a-z]/i', '', trim($state)));
         if ($key === '') return null;
         $aliases = ['orissa' => 'odisha', 'nctofdelhi' => 'delhi', 'pondicherry' => 'puducherry', 'uttaranchal' => 'uttarakhand'];
         $key = $aliases[$key] ?? $key;
-        foreach (self::INDIAN_STATES as $canonical) {
+        foreach (self::states() as $canonical) {
             if (strtolower(preg_replace('/[^a-z]/i', '', $canonical)) === $key) return $canonical;
         }
         return null;
+    }
+
+    /** Report only saved evidence; never infer a code for an issued invoice. */
+    public static function issuedStateCodes(array $order): array {
+        $supplier = is_array($order['supplier'] ?? null) ? $order['supplier'] : [];
+        $evidence = [
+            'supplier' => [$supplier['state'] ?? null, $supplier['state_code'] ?? null, 'supplier'],
+            'place' => [$order['place_of_supply'] ?? null, $order['place_of_supply_code'] ?? null, 'place-of-supply'],
+        ];
+        $result = ['supplier'=>'', 'place'=>'', 'issues'=>[]];
+        foreach ($evidence as $key => [$state, $recorded, $label]) {
+            $expected = is_string($state) ? self::stateCode($state) : null;
+            if ($recorded === null || $recorded === '') {
+                $result['issues'][] = "Missing issued $label code";
+            } elseif (!is_string($recorded) || $expected === null || $recorded !== $expected) {
+                $result['issues'][] = "Issued $label code conflicts with saved state";
+            } else {
+                $result[$key] = $recorded;
+            }
+        }
+        return $result;
     }
 
     /** Existing invoices are immutable; return a reason so an accountant can audit them. */

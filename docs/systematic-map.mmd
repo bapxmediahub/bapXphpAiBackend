@@ -1805,6 +1805,7 @@ flowchart LR
   service_settingsservice -. source new .-> service_authoredpageservice
   service_settingsservice -. source new .-> service_databaseservice
   service_settingsservice -. static reference .-> service_authoredpageservice
+  service_settingsservice -. static reference .-> service_taxservice
   service_shippingservice -. static reference .-> service_taxservice
   service_siteinsightsservice -. static reference .-> service_storestatsservice
   service_siteprofileservice -. source new .-> service_secretservice

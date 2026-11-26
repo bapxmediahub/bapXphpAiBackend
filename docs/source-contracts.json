@@ -13,24 +13,24 @@
             "review_note": "Reviewed guest, customer and owner tool and conversation boundaries with the shared backend guidance. Article reads enforce the public publication and module checks in both authenticated and guest turns."
         },
         "commerce": {
-            "source_sha256": "c53c5c291d70428a6219887de1da8c789c7fc0f23afb3b909b75ac55f034306a",
-            "references_sha256": "421bcfc4ff33f095ff53a86a5929968f7274b0d7b754713a0d0a75cbe1ac2aa5",
-            "review_note": "Compared the shared evidence guidance with order and payment contracts and the separate storefront counts. The article path reads published Markdown and retains only the approved source metadata in its trace."
+            "source_sha256": "81b1644c7e6216baa5ba42a9f5a78a484a354d21d01c387ab86816e13d513239",
+            "references_sha256": "633fa1f406763eac89a44364dfdcc71e22ba07c844862971c64b0c599bcdafa3",
+            "review_note": "Reviewed GST code master, immutable snapshots and reconciliation docs against TaxService, register and recovery implementation; existing tax amounts and column order preserved."
         },
         "content": {
-            "source_sha256": "23f40b9ce0b264c7be62addfb41826a49c3cdf77931a4144e20f6a7cc564b1b9",
+            "source_sha256": "17c498e4b2dd326e20bd0f6fc83a3fbe2b7486eff64cc8d949ccf2e71a9bde12",
             "references_sha256": "40b3710dec9dc6e35df054fe7128c76310f2fd0e6f1e44c34d33bab628352b77",
-            "review_note": "Reviewed authored page status UI with existing capture, download and retry contracts; no publication, payment or storage mutation change."
+            "review_note": "Reviewed controller/settings/schema changes against content, authored-page and storage docs: independent GST form, no content or publication mutation."
         },
         "foundation": {
-            "source_sha256": "cbe9cc784939b451fccbd4e1c1447ca82630f101f52d5dfc0a2336e91c825864",
+            "source_sha256": "054eec08ef508b848da81c53adf577ad38844b7894c64468d0b472f8cb9e16e1",
             "references_sha256": "ab8280bb52a12774a146db46d004b3ce31f11071370c2203171f6f5d2ece1412",
-            "review_note": "Reviewed merged native Chrome 160 acceptance and rollback of incomplete business group against canonical schemas and public-only projection; preserve existing deployment and private boundaries."
+            "review_note": "Reviewed existing JSON order schema and settings persistence with native MySQL/remote bridge, no new table or deployment dependency; optional frozen code leaves historical invoices untouched."
         },
         "google-tags": {
             "source_sha256": "ee67bf3e50c0de63820bd128a2c2df6f29571d0df37e7e3f22bd910948554f0e",
-            "references_sha256": "08f9da8b7db9697d249bb5eca2e46aee6a70d0a1ce51a5b6f2128bc3d6add967",
-            "review_note": "Compared the scoped AI provider fields and Google-compatible route with the separate Google tag and reporting controls on Integrations. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
+            "references_sha256": "242d531767e83cd1100a04a04cc83a08e50f02dff2b825c33bdb0b9d9bb23c85",
+            "review_note": "Reviewed independent GST Settings form and help alongside Google tags guidance; existing integration fields and tag handling are unchanged."
         },
         "http-errors": {
             "source_sha256": "0f920c297cfc4e216a87be02a35c20827cc254dd6934ba24a1fa9135520a0560",
@@ -38,19 +38,19 @@
             "review_note": "Compared article trace redaction with the private response guard, Chat Completions provider failures and labelled Support reference. A failed turn reports a bounded application trace identifier."
         },
         "interface": {
-            "source_sha256": "cf5d389babfbae48dd6a69b2ed894b818fe72db4aa1ed246e8f813a1cebfab33",
+            "source_sha256": "74ac131a1196c7ca6704c1a23680333838870118a36866d719e97ed57005d2ec",
             "references_sha256": "7593f0def754e85b99f97b22336cda86a8b0be70b70fadeae820f17b1cfae663",
-            "review_note": "Reviewed combined public browser discovery, readiness guard, native descriptor metadata and lifecycle; no human form or visual behavior changed."
+            "review_note": "Reviewed Settings selector, invoice register scroll layout and generated schema, verified actual desktop/375px form and report browser regression."
         },
         "mail": {
-            "source_sha256": "11a3b674d92d0714846359177499966c2f5ad2b1af5380a972280c64bb79b7b8",
+            "source_sha256": "58afef82778a9251bfe3498e436ad660b606ccd0814c732ca28f30c63ee32f36",
             "references_sha256": "fff258ed8121b5ab72cd0adf60dcdcd8d1a414afc1e94332c6498de85371b0da",
-            "review_note": "Checked the shared article evidence rule against sign-in notice and queue entry points. Published passage reads use BlogService without triggering mail."
+            "review_note": "Reviewed AdminController save scope and optional order schema code field against invoice-link/email delivery contracts; no mail logic, recipient or queue state changes."
         },
         "mcp-clients": {
             "source_sha256": "2567e2792ed1acb0c80ae14605c2ac550abb824197b404fc2da99e97e1507d8e",
-            "references_sha256": "80ed43f4c86272f00f5bd45a05837735fd5fbb83aa3e907b873926fe9f9bb137",
-            "review_note": "Reviewed the MCP-related developer CLI guidance after adding storefront validation to the release gate. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
+            "references_sha256": "c5f5b6496695e656047ecc330dac37fc2b156be6a357aa08954e544086952c8c",
+            "review_note": "Reviewed Settings help update and scoped MCP client guide: tax configuration addition leaves client identity and integration instructions unchanged."
         },
         "media": {
             "source_sha256": "edc32a5a9f73cf7f2954eac135a2eaed1394089034bac24ea835af48c4d9600e",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed the owner UI skill changes against authenticated media navigation, route declarations, and Media Library behavior. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
         },
         "operator-help": {
-            "source_sha256": "5b228cf8312f9774e73c4ae89be1be152efac4308a6405d4032bcb19b13d063e",
-            "references_sha256": "7ac21e243ab67d658be2730305e40e8e22c505ecd97d1725532ca8def1118f0d",
-            "review_note": "Preserved both reviewed owner integration guidance and version 3 report evidence; regenerated exact route inventory against merged main."
+            "source_sha256": "25dc9f07a6d004afcdede3740c9f5cff8ec3fa8eb577274415494a710e0a2be6",
+            "references_sha256": "3b690bf683e90c0926ff0654509bce848dd733dbcac0ca706a26754793d357fb",
+            "review_note": "Reviewed actual Settings save and report view with both operator guides: selected supplier state derives code; issued legacy discrepancies visible, no unrelated owner operation changed."
         },
         "public-mcp": {
             "source_sha256": "e45e0b33143554284f2733f661c71751693e3b31b37ee47efb90a766e46c6bba",
@@ -68,14 +68,14 @@
             "review_note": "Cross-checked revised remote commerce receipt guidance against public MCP; no protocol or operation change."
         },
         "remote-commerce": {
-            "source_sha256": "28a3c2d025729100fe529cb5d1d05d3bd967ca18d4f29f99bb27505419d09e56",
+            "source_sha256": "3f52960c311d7885f80421ea1e43afc89ffc57360a5510628735b499f45f42f0",
             "references_sha256": "e07dabc1dfb591efd31a1990275413f85c6159f93704ff5aff35ed1b76964abf",
-            "review_note": "Reconciled reviewed Chrome 160 native metadata and business group lifecycle with the receipt-only payment deadline wording; provider confirmation and existing checkout contracts unchanged."
+            "review_note": "Reviewed checkout/verified order/remote tax-review persistence and schema: frozen code derived from existing state, unchanged payable amounts and idempotency, no new mutation route."
         },
         "sales-channels": {
-            "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",
+            "source_sha256": "5133aad1b8eb87f5ca305e4e42ec0acbcb1d279b6d5b773b0a8ce6f6f5003647",
             "references_sha256": "74993e200695917d28e7714a13d8c126a4b32ce85051d19dfa7931f3f49525b0",
-            "review_note": "Compared the CLI guide combining catalogue, storefront search, and generated artifact checks. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
+            "review_note": "Reviewed SettingsService canonical patch semantics and sales channel guides; deriving supplier tax code touches no channel settings, feed or product behavior."
         },
         "workflow": {
             "source_sha256": "db465530e3fdb0326d704ac698843b20afeb4734f574f21e81c0c3dde33a25f1",

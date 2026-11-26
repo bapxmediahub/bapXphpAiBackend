@@ -532,7 +532,7 @@ final class AdminController extends BaseController {
         }
         // Independent settings forms only send the fields they own.
         $settings = [];
-        foreach (['shipping_mode','currency','timezone','gstin','gst_legal_name','gst_trade_name','gst_address','gst_state','gst_state_code','default_hsn_code'] as $key) {
+        foreach (['shipping_mode','currency','timezone','gstin','gst_legal_name','gst_trade_name','gst_address','gst_state','default_hsn_code'] as $key) {
             if (array_key_exists($key, $_POST)) $settings[$key] = trim((string)$_POST[$key]);
         }
         if (array_key_exists('flat_rate', $_POST)) $settings['flat_rate'] = max(0, (float)$_POST['flat_rate']);
@@ -544,7 +544,13 @@ final class AdminController extends BaseController {
             $settings[$field] = ((string)$_POST[$field] === '1') ? '1' : '0';
             $changedModules[] = $field;
         }
-        $service->savePublic($settings);
+        try {
+            $service->savePublic($settings);
+        } catch (\InvalidArgumentException $error) {
+            $this->flash($error->getMessage(), 'error');
+            $this->redirect('/admin/settings');
+            return;
+        }
         (new AuditLogService())->record('save','settings','public',['fields'=>array_merge(array_values(array_intersect(['shipping_mode','flat_rate','currency','timezone','gstin'], array_keys($_POST))), $changedModules)]);
         $this->flash('Settings saved.','success');
         $this->redirect('/admin/settings');

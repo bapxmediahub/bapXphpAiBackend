@@ -209,6 +209,13 @@ try {
     if (!$paid['created'] || $recovered['tax_review_required'] || $recovered['id'] !== 'tax-review' || $sequences !== [1, 2, 3, 4, 5, 6]) {
         throw new RuntimeException('Callback and tax recovery through the bridge must issue distinct invoices.');
     }
+    $storedReview = $store->find('orders', 'tax-review');
+    if (($recovered['place_of_supply_code'] ?? null) !== '33'
+        || ($recovered['supplier']['state_code'] ?? null) !== '33'
+        || ($storedReview['place_of_supply_code'] ?? null) !== '33'
+        || ($storedReview['supplier']['state_code'] ?? null) !== '33') {
+        throw new RuntimeException('Delegated tax correction must persist both official state codes.');
+    }
     echo "Concurrent remote bridge payment and tax recovery passed.\n";
     [$paid, $fulfilled] = $race('pay_fulfillment', 'status', 'fulfillment', 'remote', 'tax-review');
     if (!$paid['created'] || $fulfilled['status'] !== 'processing'

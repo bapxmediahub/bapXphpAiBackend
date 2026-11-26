@@ -155,10 +155,7 @@
                 <label for="supplier-gstin">Supplier GSTIN (tax number)</label>
                 <input id="supplier-gstin" type="text" name="gstin" value="<?= e($settings['gstin'] ?? '') ?>" placeholder="33ABCDE1234F1Z5" maxlength="15">
             </div>
-            <div class="form-group">
-                <label for="settings-gst-state-code">State Code</label>
-                <input type="text" id="settings-gst-state-code" name="gst_state_code" value="<?= e($settings['gst_state_code'] ?? '33') ?>" placeholder="33" maxlength="2">
-            </div>
+
         </div>
         <div class="admin-form__row">
             <div class="form-group">
@@ -177,8 +174,14 @@
         <div class="admin-form__row">
             <div class="form-group">
                 <label for="settings-gst-state">State</label>
-                <input type="text" id="settings-gst-state" name="gst_state" value="<?= e($settings['gst_state'] ?? 'Tamil Nadu') ?>" placeholder="Tamil Nadu" aria-describedby="settings-gst-state-help">
-                <small id="settings-gst-state-help" style="color:var(--color-text-muted);">Determines whether a sale is intrastate or interstate.</small>
+                <?php $selectedGstState = \App\Services\TaxService::normaliseState((string)($settings['gst_state'] ?? 'Tamil Nadu')); ?>
+                <select id="settings-gst-state" name="gst_state" required aria-describedby="settings-gst-state-help">
+                    <option value="" <?= $selectedGstState === null ? 'selected' : '' ?> disabled>Select supplier state</option>
+                    <?php foreach (\App\Services\TaxService::states() as $gstState): ?>
+                        <option value="<?= e($gstState) ?>" <?= $selectedGstState === $gstState ? 'selected' : '' ?>><?= e($gstState . ' (' . \App\Services\TaxService::stateCode($gstState) . ')') ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <small id="settings-gst-state-help" style="color:var(--color-text-muted);">The selected state determines its official GST code and intrastate or interstate classification.</small>
             </div>
         </div>
         <button class="btn btn-primary btn-sm">Save GST Configuration</button>

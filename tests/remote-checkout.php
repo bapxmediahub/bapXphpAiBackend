@@ -145,6 +145,7 @@ try {
     checkoutCheck($status['paymentStatus']==='captured'&&$status['orderStatus']==='saved'&&count($f->orders)===1,'Verified payment did not save exactly one paid order.');
     $order=$f->orders[$status['orderReference']];
     checkoutCheck($order['total']===500.75&&$order['supply_type']==='interstate'&&$order['igst_total']>0&&!$order['tax_review_required']&&isset($order['invoice_number']),'Shared verified save lost frozen GST/invoice facts.');
+    checkoutCheck($order['supplier']['state_code']==='33'&&$order['place_of_supply_code']==='29','Shared checkout freezes official supplier and destination codes.');
     checkoutCheck($order['razorpay_payment_link_id']===$attempt['provider_link_id'],'Paid order lost its verified provider link identity.');
     checkoutCheck(!isset($f->attempts[$attemptId]['pending_order']),'Completed status receipt retained a second delivery snapshot.');
     checkoutPrivateAbsent($status);

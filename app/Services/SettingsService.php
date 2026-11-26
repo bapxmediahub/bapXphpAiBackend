@@ -163,6 +163,13 @@ final class SettingsService {
     }
 
     public function savePublic(array $settings): void {
+        unset($settings['gst_state_code']);
+        if (array_key_exists('gst_state', $settings)) {
+            $state = is_string($settings['gst_state']) ? TaxService::normaliseState($settings['gst_state']) : null;
+            if ($state === null) throw new \InvalidArgumentException('Select a valid supplier GST state.');
+            $settings['gst_state'] = $state;
+            $settings['gst_state_code'] = TaxService::stateCode($state);
+        }
         $settings['id'] = self::SETTINGS_ID;
         $this->store->upsert('settings', $settings, 'id');
         self::flushCache();
