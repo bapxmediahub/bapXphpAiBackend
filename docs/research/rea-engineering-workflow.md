@@ -144,8 +144,7 @@ tool message to the originating provider -> model decides next call or final
 answer -> validate and present -> persist actual outcome. Stop on explicit
 budget, cancellation, unrecoverable failure or accepted final answer.
 Do not replay an uncertain write or pass provider-specific continuation
-metadata to another provider. Recovery may resume only from known durable
-evidence; mark unknown outcomes instead of inventing success.
+metadata to another provider. Recovery across requests may resume only from known durable evidence; mark unknown outcomes instead of inventing success. Within a still-active request, accepted read-only observations may support one fresh text-only synthesis on an explicitly configured alternate of the same connection. It is not durable replay, new tool execution or a provider-private continuation. DeepSeek Harness session repair distinguishes recorded outcomes from unknown dispatch; preserve that distinction.
 
 Knowledge RAG retrieves bounded current records/documents, Instruction RAG
 selects fixed role-authorized skill content, Tool RAG resolves the callable

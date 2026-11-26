@@ -144,6 +144,61 @@ if (PHP_SAPI === 'cli-server') {
         }
         return;
     }
+    if (str_starts_with($scenario, 'synthesis_')) {
+        $last = end($messages);
+        if (!$google || $authorization !== 'Bearer fixture-key') {
+            http_response_code(400); echo '{"error":{"message":"Recovery crossed connection"}}'; return;
+        }
+        if (!$primary) {
+            $data = json_decode($last['content'] ?? '',true);
+            $observed = $data['reference_data']['completed_read_evidence'] ?? [];
+            $policy = $observed[0] ?? [];
+            if (count($messages)!==2 || ($messages[0]['role']??null)!=='system'
+                || ($last['role']??null)!=='user' || ($data['question']??null)!=='What is the delivery charge?'
+                || ($data['reference_data']['fixture']??null)!=='preserved'
+                || isset($request['tools']) || isset($request['tool_choice'])
+                || str_contains($payload,'opaque-recovery-signature')
+                || str_contains($payload,'fixture-policy-call')
+                || count($observed)!==1 || ($policy['name']??null)!=='public_policy'
+                || ($policy['arguments']['key']??null)!=='shipping_cost'
+                || ($policy['result']['value']??null)!=='Shipping is calculated at checkout.') {
+                http_response_code(400);echo '{"error":{"message":"Unsafe or incomplete synthesis payload"}}';return;
+            }
+            if ($scenario==='synthesis_failed_alternate') {
+                http_response_code(503);echo '{"error":{"status":"UNAVAILABLE"}}';return;
+            }
+            $respond('<final_answer>Shipping is calculated at checkout.</final_answer>');
+            return;
+        }
+        if (count($messages)===2) {
+            $name=match($scenario) {'synthesis_proposal'=>'present_contact_enquiry','synthesis_meta'=>'tool_search',default=>'public_policy'};
+            $args=match($name) {
+                'present_contact_enquiry'=>(object)[],
+                'tool_search'=>['query'=>'public_policy'],
+                default=>['key'=>$scenario==='synthesis_rejected'?'invalid':'shipping_cost'],
+            };
+            $call=$makeCall('fixture-policy-call',$name,$args);
+            $call['extra_content']=['google'=>['thought_signature'=>'opaque-recovery-signature']];
+            $respond(null,[$call]); return;
+        }
+        $prev=$messages[count($messages)-2]??[];
+        if (($last['role']??null)!=='tool'||($last['tool_call_id']??null)!=='fixture-policy-call'
+            || ($prev['tool_calls'][0]['extra_content']['google']['thought_signature']??null)!=='opaque-recovery-signature') {
+            http_response_code(400);echo '{"error":{"message":"Original continuation must preserve signature"}}';return;
+        }
+        if ($scenario==='synthesis_auth') {
+            http_response_code(401);echo '{"error":{"message":"Credential rejected"}}';return;
+        }
+        if ($scenario==='synthesis_incomplete') {
+            echo '{"choices":[{"message":{"role":"assistant","content":"partial"},"finish_reason":"length"}]}';return;
+        }
+        if ($scenario==='synthesis_daily') {
+            http_response_code(429);
+            echo json_encode(['error'=>['details'=>[['@type'=>'type.googleapis.com/google.rpc.QuotaFailure','violations'=>[['quotaId'=>'RequestsPerDay','quotaValue'=>'1']]]]]]);
+            return;
+        }
+        http_response_code(429);header('Retry-After: 60');echo '{"error":{"status":"RESOURCE_EXHAUSTED"}}';return;
+    }
     if ($scenario === 'tool_discovery') {
         $names = array_column(array_column($request['tools'] ?? [], 'function'), 'name');
         $count = count($messages);
@@ -338,6 +393,47 @@ try {
     check($reply === 'Shipping is calculated at checkout.' && $client->toolCalls() === 2,
         'Deferred discovery updates Chat Completions declarations and executes the actual policy tool');
     check(count($client->transferTimings()) === 3, 'Expected exactly three provider transfers for discovery and execution');
+    // Real request-local runtime registry; no provider-private continuation
+    // fields or repeated business tools in the alternate text-only request.
+    $routeRead = new ReflectionMethod(AiClient::class, 'route');
+    foreach (['synthesis_success','synthesis_failed_alternate','synthesis_proposal','synthesis_meta',
+        'synthesis_rejected','synthesis_auth','synthesis_incomplete','synthesis_daily',
+        'synthesis_other_credential','synthesis_held_alternate','synthesis_diagnostic'] as $scenario) {
+        $health=new \App\Services\AiProviderHealthService($cycleDir.'/health-'.$scenario.'.json');
+        $connection=['provider'=>'google','endpoint'=>$googleEndpoint($scenario),'apiKey'=>'fixture-key',
+            'model'=>SecretService::PRIMARY_MODEL,'models'=>SecretService::GOOGLE_MODELS,'configured'=>true];
+        $plan=[$connection];
+        if ($scenario==='synthesis_other_credential') {
+            $plan[0]['models']=[SecretService::PRIMARY_MODEL];
+            $other=$connection;$other['apiKey']='replacement-fixture-key';
+            $other['models']=[SecretService::FALLBACK_MODEL];$other['model']=SecretService::FALLBACK_MODEL;
+            $plan[]=$other;
+        }
+        if ($scenario==='synthesis_held_alternate') $health->record($connection,SecretService::FALLBACK_MODEL,429,0,60000);
+        $client=new AiClient(health:$health);
+        $tools=new RuntimeAgentToolRegistry('support',null,new SupportToolRegistry(null));
+        $turn=new \App\Services\AgentModelTurn('Answer from verified read-only data.',[],'What is the delivery charge?',['fixture'=>'preserved']);
+        AgentTraceService::begin(bin2hex(random_bytes(8)),null,AiClient::agentLimits());
+        try {
+            $reply=$routeRead->invoke($client,$turn,256,0.0,null,$tools,2,$plan,$scenario==='synthesis_diagnostic');
+            $attempts=$client->transferTimings();
+            $expectedRecovery=in_array($scenario,['synthesis_success','synthesis_failed_alternate'],true);
+            check(count($attempts)===($expectedRecovery?3:2),'Bounded synthesis transfers: '.$scenario);
+            if ($expectedRecovery) {
+                check(array_column($attempts,'inference_phase')===['initial','continuation','synthesis_recovery']
+                    && $attempts[2]['model']===SecretService::FALLBACK_MODEL
+                    && $attempts[2]['attempt_in_model']===1,'Distinct observed recovery transfer: '.$scenario);
+                check(count($tools->activity())===1 && $client->toolCalls()===1,'Recovery must not execute the tool twice');
+                $spans=array_values(array_filter(AgentTraceService::snapshot()['spans'],static fn($s)=>$s['type']==='model_attempt'));
+                check(($spans[2]['inference_phase']??null)==='synthesis_recovery','Recovery trace phase survives projection');
+                check(!str_contains(json_encode($attempts),'Shipping is calculated')&&!str_contains(json_encode($attempts),'opaque-recovery-signature'),'No raw evidence or opaque reasoning in attempt metadata');
+            }
+            if ($scenario==='synthesis_success') check($reply==='Shipping is calculated at checkout.' && $client->failureCategory()===null,'Actual alternate text response accepted');
+            else check(AiClient::isError($reply),'Unsafe or failed recovery remains a real error: '.$scenario);
+            echo "PASS bounded read-evidence synthesis $scenario\n";
+        } finally { AgentTraceService::reset(); }
+    }
+
     // Ordinary generation avoids only a previously observed transient failure.
     // Explicit diagnostics still contact the selected endpoint, with no fake attempts.
     $healthDir=sys_get_temp_dir().'/bapx-ai-health-fixture-'.bin2hex(random_bytes(6));

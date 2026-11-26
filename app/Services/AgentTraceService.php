@@ -367,7 +367,7 @@ final class AgentTraceService
     /** Measured transport metadata and a fixed request-rejection hint; no provider content. */
     public static function attemptTimings(array $attempt): array {
         $timings = [];
-        foreach(['quota_kind'=>['zero','daily','minute','other'],'inference_phase'=>['initial','continuation'],
+        foreach(['quota_kind'=>['zero','daily','minute','other'],'inference_phase'=>['initial','continuation','synthesis_recovery'],
             'response_kind'=>['tool_calls','text_or_empty','invalid'],
             'finish_reason'=>['STOP','MAX_TOKENS','SAFETY','RECITATION','OTHER','MALFORMED_FUNCTION_CALL','stop','length','tool_calls','content_filter','function_call','error']] as $key=>$allowed)
             if(in_array($attempt[$key]??null,$allowed,true))$timings[$key]=$attempt[$key];
