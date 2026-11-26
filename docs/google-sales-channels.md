@@ -61,9 +61,7 @@ Google's processing and item diagnostics after a fetch. Feed generation is
 not a receipt from Google; successful ingestion is not approval. The admin
 page therefore reports approval and account connection as unverified.
 
-A scheduled file is the supported connection method implemented here. More
-frequent API synchronization must use Merchant API with authorized account and
-data-source setup. Do not start new work on the sunset Content API for Shopping.
+A scheduled file is the implemented product-delivery method here. Typed Merchant API preview and read-only diagnostics are also available; actual synchronization requires authorized account and data-source setup. Do not start new work on the sunset Content API for Shopping.
 Neither GA4 tag placement nor a Search Console verification string establishes
 Merchant Center account ownership, product approval or reporting authorization.
 
@@ -113,6 +111,77 @@ References:
 - https://support.google.com/merchants/answer/6324478
 - https://developers.google.com/search/docs/appearance/structured-data/merchant-listing
 - https://baymard.com/research-articles/mobile-ux-ecommerce (updated 2026-07-14).
+
+## Narrow native Merchant API v1 compatibility bridge
+
+The downloaded WooCommerce 11.3.0 archive (SHA-256
+`d9eb1e46df8309eb37b6f7f3fba51480f2a9a00e7feb10b1487592fde39accc6`)
+was re-inspected with REA: WC REST authentication/key creation, products
+controller, and Store API product route/schema/query are distinct from the
+Google extension. The Google for WooCommerce source at the existing
+`e4c389b` pin calls WordPress.com site registration/authorization and an
+authenticated partner proxy; its Merchant ProductInput client resolves the
+actual data source. No evidence shows YouTube Studio selecting this platform
+by a public WooCommerce product endpoint or a version banner. Do not expose
+fake WordPress, WooCommerce, Jetpack or XML-RPC identities, credentials, or
+authorization receipts. Native protocol compatibility is useful only where
+the consuming client has an authorized, documented contract.
+
+The native owner page exports an attachment at its existing authenticated
+`/admin/google-merchant?format=product-inputs&language=en&feed_label=IN`
+route. The language and feed label must come from the real data source;
+these values are examples, not assumed production configuration.
+`MerchantApiService::preview()` maps the existing RSS-eligible offer IDs,
+links, images, stock, owner-confirmed metadata and payable INR amount to
+Google's current `ProductInput` v1 shape. Integer price micros derive from
+the same two-decimal price, preserving leading-zero GTINs. It does not
+produce Google resource names, claim approval, write data or change the RSS.
+
+For a participating platform only, a separately authorized operator can
+prepare an offline proposal with the actual assigned stable group ID and
+one or more actual channel IDs. The preview emits the four documented
+custom attribute names (repeating channel ID); it never changes the public
+feed, issues a link, sets a destination, or transmits those values.
+Never invent the IDs, impersonate the WooCommerce platform, or assume
+monetization is equivalent to Shopping eligibility.
+
+Developer-only `merchant:diagnose` uses an explicitly supplied ephemeral
+Merchant API bearer token in the operator environment and exact account,
+primary data source, language, feed label and country. It makes only bounded
+GETs to the fixed Google Merchant API host, without redirects or token
+persistence/output. Check the selected data source's actual
+`YOUTUBE_SHOPPING` destination and the matching processed offers' country
+statuses; affiliate, unrelated data sources, archived offers and unknown
+statuses are distinct. At most five pages of 100 account products are scanned.
+An incomplete scan does not label unseen items missing. API quota/authorization
+errors are failures, not empty success. Item approval never proves a YouTube
+channel link. An owner must obtain the authorized content scope and Google
+developer registration before real use; the existing reporting grant is not
+reused or broadened.
+
+Current developer commands:
+
+```bash
+./bapXphp merchant:inputs --language en --feed-label IN
+./bapXphp merchant:diagnose --account <account-id> --data-source <source-id> --language en --feed-label IN --country IN
+```
+
+Supply the short-lived `BAPX_MERCHANT_ACCESS_TOKEN` only via an authorized
+operator environment, not command arguments, source code, browser forms,
+chat, logs or the repository. Do not set a real token for automated tests.
+The CLI help documents the explicit partner-preview arguments. There is no
+automatic API insertion, deletion, source registration or OAuth write in this
+release.
+
+References:
+- https://developers.google.com/merchant/api/reference/rest/products_v1/accounts.productInputs
+- https://developers.google.com/merchant/api/reference/rest/products_v1/ProductAttributes
+- https://developers.google.com/merchant/api/reference/rest/datasources_v1/accounts.dataSources/get
+- https://developers.google.com/merchant/api/reference/rest/products_v1/accounts.products/list
+- https://developers.google.com/merchant/api/guides/quickstart/registration
+- https://developer.woocommerce.com/docs/apis/store-api/resources-endpoints/products/
+- https://woocommerce.com/document/google-for-woocommerce/common-errors/
+- https://support.google.com/merchants/answer/12375531
 
 ## Shared CLI and verification
 

@@ -58,7 +58,26 @@ $largeB=EditorDraftService::next($a,'blog',$slug,str_repeat('a',64),$large,$larg
 check(strlen(json_encode($largeB,JSON_THROW_ON_ERROR))<=2500000
     && $largeB['versions'][0]['values']===$large,'Bound actual encoded bytes; latest Unicode copy intact');
 
-if (!$mysql) {echo "Editor recovery validation, identity and history PASS\n";exit;}
+// Deterministically test the policy even when the real race does not deadlock.
+$failure=static function(string $state,int $code):PDOException {
+    $error=new PDOException('Synthetic fixture failure');
+    $error->errorInfo=[$state,$code,'Synthetic fixture failure'];
+    return $error;
+};
+$attempts=0;$conflict=['outcome'=>'conflict','draft'=>['token'=>'winning-token']];
+$result=EditorDraftService::retryDeadlock(static function() use(&$attempts,$failure,$conflict):array {
+    if (++$attempts===1)throw $failure('40001',1213);
+    return $conflict;
+});
+check($attempts===2&&$result===$conflict,'Confirmed rollback re-observes the competing winner');
+foreach([['40001',1213,3],['HY000',1205,1],['HY000',2006,1],['23000',1062,1],['40001',9999,1]] as [$state,$code,$limit]){
+    $attempts=0;$original=$failure($state,$code);$caught=null;
+    try {EditorDraftService::retryDeadlock(static function() use(&$attempts,$original):array {
+        ++$attempts;throw $original;
+    });}catch(PDOException $error){$caught=$error;}
+    check($caught===$original&&$attempts===$limit,'Only confirmed rollback is retried with a strict bound');
+}
+if (!$mysql) {echo "Editor recovery validation, identity, history and bounded deadlock policy PASS\n";exit;}
 $db=new DatabaseService(true);$pdo=$db->connection();
 check($pdo->query('SELECT DATABASE()')->fetchColumn()==='sps_order_test','Only fixture DB');
 $pdo->exec("CREATE TABLE IF NOT EXISTS settings (id VARCHAR(64) PRIMARY KEY,_data JSON NOT NULL,_owner VARCHAR(255),_status VARCHAR(64),_created_at VARCHAR(40),_updated_at VARCHAR(40)) ENGINE=InnoDB");
@@ -124,9 +143,23 @@ try {
     check(!isset((new SettingsService($db))->public()['editor_recovery']),'Private recovery cannot become public settings');
     check($db->editorDraftOperation($a,'page',$slug,'discard',$latest['token'])['outcome']==='discarded','Matching discard clears only own copy');
     check($db->editorDraftOperation($a,'page',$slug,'read')['draft']===null && $db->editorDraftOperation($b,'page',$slug,'read')['draft']!==null,'Discard isolation');
-    $out=$race('');$states=array_column($out,'outcome');sort($states);
-    check($states===['conflict','saved'],'Concurrent initial insert has one winner');
-    echo "Editor recovery MySQL CAS, simultaneous writes, role and namespace isolation PASS\n";
+    for ($round=0;$round<12;$round++) {
+        $out=$race('');$states=array_column($out,'outcome');sort($states);
+        check($states===['conflict','saved'],'Concurrent initial insert has one winner');
+        $latest=$db->editorDraftOperation($a,'page',$slug,'read')['draft'];
+        $winner=array_values(array_filter($out,static fn($result)=>$result['outcome']==='saved'))[0]['draft'];
+        check($latest===$winner&&count($latest['versions'])===1,'Only the winning initial copy persisted');
+        check($db->editorDraftOperation($a,'page',$slug,'discard',$latest['token'])['outcome']==='discarded','Clear only the exact fixture winner before next race');
+    }
+    $pdo->beginTransaction();
+    try {
+        $denied=false;
+        try {$db->editorDraftOperation($a,'page',$slug,'write','',$rev,$v);}
+        catch (LogicException) {$denied=true;}
+        check($denied&&$pdo->inTransaction(),'Refuse ambient transaction without rollback or write');
+    }finally {$pdo->rollBack();}
+    check($db->editorDraftOperation($a,'page',$slug,'read')['draft']===null,'Ambient write did not create recovery');
+    echo "Editor recovery MySQL CAS, 12 simultaneous initial insert races, role and namespace isolation PASS\n";
 } finally {
     $delete=$pdo->prepare('DELETE FROM settings WHERE id=?');
     foreach($keys as $key) $delete->execute([$key]);

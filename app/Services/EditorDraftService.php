@@ -86,6 +86,25 @@ final class EditorDraftService
         return $record;
     }
 
+    /**
+     * Only a confirmed InnoDB deadlock rollback is safe to retry here.
+     * The caller must own the entire single-statement/autocommit operation,
+     * including a fresh read of the original expected recovery token.
+     * Never use this for transport errors, payments or external effects.
+     */
+    public static function retryDeadlock(callable $attempt): array
+    {
+        for ($i=0; ; $i++) {
+            try { return $attempt(); }
+            catch (\PDOException $error) {
+                if ($i>=2 || ($error->errorInfo[0] ?? null)!=='40001'
+                    || (int)($error->errorInfo[1] ?? 0)!==1213) throw $error;
+                // Two bounded retries, with short jitter; no busy wait.
+                usleep(random_int(10000,25000)*($i+1));
+            }
+        }
+    }
+
     /** Bounded append; identical snapshots preserve their existing token. */
     public static function next(string $owner,string $kind,string $target,string $revision,array $values,?array $previous,int $now): array
     {

@@ -115,7 +115,8 @@
             "status": "partial",
             "issues": [
                 359,
-                47
+                47,
+                526
             ],
             "references": [
                 {
@@ -150,11 +151,11 @@
                 "tests/campaign-form-http.php",
                 "docs/modules/content-and-seo.md"
             ],
-            "finding": "Native browser fallback, owner-scoped server recovery, up to three CAS versions, stale download and explicit canonical save are implemented in the candidate. HTTP and desktop/mobile fixture regressions pass. WordPress timestamped edit-presence lease and production acceptance remain incomplete; isolated DB race checks added to hosted CI.",
+            "finding": "Native browser fallback, owner-scoped server recovery, bounded three CAS versions, stale download and explicit canonical save exist. Hosted MariaDB #521 reported SQLSTATE 40001/vendor 1213 during initial recovery insert. Candidate #526 uses strict insert, duplicate conflict and at most two retries of the complete autocommit recovery CAS only after confirmed rollback. Deterministic policy and HTTP fixtures pass; repeated isolated database races and authorized production recovery remain outstanding. WordPress timestamped edit presence lease remains incomplete.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed recurring hosted fixture worker JSON decode failure; capture sanitized worker exit and SQLSTATE/vendor diagnostics before decoding, retain both concurrent CAS assertions and all actual runtime code unchanged. Root cause not yet established.",
-                "source_sha256": "14db6e98359dde12d60095e34ca107b2ab599d112aeba1e1d9c34900431b3134"
+                "reason": "Reviewed actual hosted MariaDB 40001/1213 at initial INSERT IGNORE and confirmed rollback semantics; strict insert, duplicate conflict and bounded original-token autocommit retry. Portable policy and real router fixtures passed, hosted repeated CAS and production owner acceptance pending.",
+                "source_sha256": "6d046a5ded5f4c63a0483515de93cc69d572b959708c23ea68b3e5c5b37755c4"
             },
             "production_evidence": []
         },
@@ -255,8 +256,8 @@
             "finding": "Product reviews exist; blog-comment moderation lifecycle not established.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed shared owner controller diff; only product metadata validation added, moderation and review behavior unchanged.",
-                "source_sha256": "a46ebe040f92d7ff4ef39c25321c559f97791b12f11a96da655b03a78ea21da2"
+                "reason": "Reviewed shared owner controller diff; only authenticated no-store Merchant preview added, reviews and moderation unchanged.",
+                "source_sha256": "827cbdcab3ec58e6991ba13da5b6e392d816bbbf1a0d683e74718f614a04d4e8"
             },
             "production_evidence": []
         },
@@ -347,8 +348,8 @@
             "finding": "Native filters/pagination exist; verify consistent bulk-action safety across every owner list.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed shared admin controller product edit validation and existing list pagination; no list or bulk-action change.",
-                "source_sha256": "03902ce83f8b9201a6996c4f399d0b09d5d47c77f80298d02ce862f1c052932a"
+                "reason": "Reviewed owner Merchant data preview and route mapping; existing product lists, filters and bulk operations unchanged.",
+                "source_sha256": "90f699e4097f3cc6c2355fd8094a1621ffd51fe8aee6eb16e45ebbe73d730403"
             },
             "production_evidence": []
         },
@@ -515,8 +516,8 @@
             "finding": "Canonical metadata and slugs exist; managed redirect registry, conflict and lifecycle checks remain.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed shared resolved price, actual identity metadata and Product Offer JSON-LD; managed redirect gap remains.",
-                "source_sha256": "599eaa0dafd221c59fd05f10052df044e38abf32ca42d06d503927971ca7aa6d"
+                "reason": "Reviewed the content/SEO contract change for private recovery deadlock handling; canonical slugs, publication and SEO projections remain unchanged.",
+                "source_sha256": "799712a5e863a6356fd16cfd730c6950c0eaba9705ffb2b76290e32a5e8e70d6"
             },
             "production_evidence": []
         },
@@ -581,8 +582,8 @@
             "finding": "Configurable identity and native persistence exist; isolated installer/provisioning deferred.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed existing hosted MySQL settings model and isolated private owner namespace, no new runtime or cross-client provisioning claim.",
-                "source_sha256": "ea9e0572ab17775d22b74001360248eca19e2d334cbccdbce6372c40a90fadb5"
+                "reason": "Reviewed shared DatabaseService recovery-only CAS and storage contract; native hosting requirements and installation scope unchanged.",
+                "source_sha256": "3aa7b88ecb19241607fc1f39befde8331d80fd53736c23f17a077c2901cf941f"
             },
             "production_evidence": []
         },
@@ -687,7 +688,7 @@
             "finding": "Availability/on-hold guards exist; numeric reservations, expiry, release and backorders remain.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed reconciled verified-order fixture and current merchant schema; server amount change does not alter stock or reservations.",
+                "reason": "Reviewed verified-order and authoritative amount fixtures against current dependency; stock and reservation logic unchanged.",
                 "source_sha256": "dc58ff9430e83d80f3298852148c136502a87caf6628f210948aa39635fdd9c9"
             },
             "production_evidence": []
@@ -756,8 +757,8 @@
             "finding": "CSV parse/import exists; full validated resumable import/export and reconciliation remain.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed native metadata validation and feed projection; CSV import/export completeness remains partial, channel onboarding tracked separately under MC01.",
-                "source_sha256": "42c7f12ad1b979e6af76e0897c4e4dfddfad483ed02ce8f82bb4e2ba052834fa"
+                "reason": "Reviewed shared existing feed data and typed Merchant API projection; no import changes or claim of resumable API synchronization.",
+                "source_sha256": "0a4e3ec1079aded0719e66874d8206015b378f69af4e4e52eb82b2195fd358ad"
             },
             "production_evidence": []
         },
@@ -875,8 +876,8 @@
             "finding": "Frozen issued invoice/tax state evidence exists; authenticated register and statutory reconciliation remain.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed reconciled product identity and GST browser acceptance plus authoritative checkout amount; frozen tax/invoice contract unchanged.",
-                "source_sha256": "594980ec896ee2244ff560516fb06fb1cc65b1f725582b83cf4878dd1b656980"
+                "reason": "Reviewed current Merchant metadata and editor-recovery fixture with checkout price tests; frozen invoice and GST contract unchanged.",
+                "source_sha256": "76772900b476ab52014996b209d287795bbce63f38b13187f307072c61e7d341"
             },
             "production_evidence": []
         },
@@ -910,7 +911,7 @@
             "finding": "Verified payment and idempotent order fixtures exist. Browser Razorpay charge is derived from server cart and validated coupon only; zero and subminimum amounts are rejected without replacing existing recovery. Actual controller tested against recording gateway; no real production payment acceptance claimed.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed actual controller zero and subminimum rejection, no client amount fallback, preserved cart and existing payment recovery; reconciled current main.",
+                "reason": "Reviewed actual browser controller amount regression: computed payable only, zero/subminimum rejected, original recovery preserved. Reconciled exact #527 dependency.",
                 "source_sha256": "591a60d2717f3b52b9f6be63b486c3b572c08c0abbd331dea2c0304d02ff4220"
             },
             "production_evidence": []
@@ -943,7 +944,7 @@
             "finding": "Whole-order fulfilment/refund state exists; line-level partial shipment, notes and return allocation need end-to-end checks.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed merged order documentation and authoritative payment amount; no fulfilment or refund change.",
+                "reason": "Reviewed merged order docs and checkout amount boundary; fulfilment and refund workflow unchanged.",
                 "source_sha256": "b0135c2d52ed1550bcf7a88c8715722ce73e087c7d3bc7cba64bfe507566fd0f"
             },
             "production_evidence": []
@@ -978,7 +979,7 @@
             "finding": "Persistent capability-bound remote cart exists; general customer cart merge/abandonment lifecycle remains.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed fractional cart display and browser use of returned gateway amount; existing cart persistence and recoverability unchanged.",
+                "reason": "Reviewed actual fractional cart and gateway response assertions; existing cart persistence and revision guards retained.",
                 "source_sha256": "55815ba9f312ef8f242586c3bf2e46c3a11c16f04c03d146499b596bcd8860b7"
             },
             "production_evidence": []
@@ -1140,7 +1141,7 @@
             "finding": "Inbound gateway webhook is not signed outgoing webhook subscription/delivery/replay.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed merged schema and verified-order boundary; no webhook subscription or delivery changes.",
+                "reason": "Reviewed order and verified-payment boundary; no webhook behavior change.",
                 "source_sha256": "d3906d6053560951eb281d15f5344567d1a140677168adb9d3af302e07031e3d"
             },
             "production_evidence": []
@@ -2040,8 +2041,8 @@
             "finding": "Previous real Enterprise tool-to-answer and editorial draft passed. On deployed #518 Support trace 0a43c85083302228: one completed public_policy read, 429 continuation, one same-connection synthesis 503, final HTTP503 and no A2UI. Live recovery dispatch/no replay verified, successful both-agent answer acceptance remains partial.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed actual model-driven controller regression with additional owner-only identity validation; no new live provider answer claim.",
-                "source_sha256": "ddf2cb96b930f6141985b17f972a16f59c0bf09bd4c01d0325df44b097fb1317"
+                "reason": "Reviewed shared owner controller route for merchant data only; no model transport or live inference status changed.",
+                "source_sha256": "15333eb8feec98fc2973656ec0022291a8c7589ad8ec346b36d0b01037e24307"
             },
             "production_evidence": [
                 {
@@ -2091,8 +2092,8 @@
             "finding": "Provider-only editorial generation and protected unpublished form implemented. Live authenticated Enterprise blog draft succeeded at deployed 17aa4c6 (trace 3fa837cf031c2d26; provider fallback, unpublished/create-only, no Save). Standalone editor and product generation live acceptance remain separate.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed AgentDraftService hints exclude actual brand, GTIN, MPN, condition and identifier status from AI generation; explicit owner edit required.",
-                "source_sha256": "eeb6c4a2144070c2d574871747eeccf683f7ce0f3c6ca210b90e180e254da585"
+                "reason": "Reviewed authenticated catalogue preview and unchanged owner-only identity draft boundaries; no editorial generation changes.",
+                "source_sha256": "c7bea6195cea772a044fb4f09ed8aa5f7905b3819d941ec30a2139cfb3e55fd2"
             },
             "production_evidence": [
                 {
@@ -2365,7 +2366,7 @@
             "finding": "Explicit form actions and payment idempotency exist; generic approval/unknown-outcome recovery missing.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed rejection before any external payment, exact server-derived charge and preserved recovery; no new write capability.",
+                "reason": "Reviewed server-derived charge and rejection before gateway, preserved prior cart/recovery; no new write tool.",
                 "source_sha256": "1c21aeb3786d39f9d16cd14071a445dcaf4b91e1d40e606d2506877c0a123945"
             },
             "production_evidence": []
@@ -2532,7 +2533,8 @@
             "issues": [
                 522,
                 277,
-                356
+                356,
+                524
             ],
             "references": [
                 {
@@ -2546,6 +2548,42 @@
                 {
                     "source": "google-for-woocommerce",
                     "path": "src/API/Google/Mapi/MerchantApiClient.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/class-wc-auth.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/class-wc-rest-authentication.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "src/StoreApi/Routes/V1/Products.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "src/StoreApi/Schemas/V1/ProductSchema.php"
+                },
+                {
+                    "source": "google-for-woocommerce",
+                    "path": "src/Internal/DependencyManagement/GoogleServiceProvider.php"
+                },
+                {
+                    "source": "google-for-woocommerce",
+                    "path": "src/API/Site/Controllers/Jetpack/AccountController.php"
+                },
+                {
+                    "source": "google-for-woocommerce",
+                    "path": "src/API/Google/Mapi/Services/MapiProductInputsService.php"
+                },
+                {
+                    "source": "google-for-woocommerce",
+                    "path": "src/API/Google/Mapi/Services/MapiDataSourcesService.php"
+                },
+                {
+                    "source": "google-for-woocommerce",
+                    "path": "src/API/Google/Mapi/Services/MapiProductsService.php"
                 }
             ],
             "local_sources": [
@@ -2557,21 +2595,32 @@
                 "views/admin/product-form.php",
                 "views/admin/google-merchant.php",
                 "views/public/product.php",
-                "assets/css/band.css"
+                "assets/css/band.css",
+                "app/Services/MerchantApiService.php",
+                "cli/merchant.php"
             ],
             "acceptance_evidence": [
                 "tests/run.php",
                 "tests/gst-unit-browser.cjs",
                 "tests/model-driven-agents.php",
-                "docs/google-sales-channels.md"
+                "docs/google-sales-channels.md",
+                "tests/merchant-api.php"
             ],
-            "finding": "Existing native scheduled-fetch RSS exports 43 live items; all lacked brand, GTIN, MPN and condition in the audited baseline. Candidate adds owner-validated metadata and shared product/offer projection, clearer purchase guidance and multi-channel onboarding instructions. Google account, product approval, direct creator invitation/partner eligibility, Merchant API sync and each channel link remain unverified; no WooCommerce impersonation.",
+            "finding": "Deployed #523 at ffb6505: 43 distinct public offers retained, actual sampled price matched XML/JSON-LD/display, improved desktop/mobile purchase guidance. Candidate #524 adds native exact typed Merchant API v1 ProductInput preview and bounded read-only source/product YouTube destination diagnostics with authorized ephemeral token; optional explicit partner attributes offline only. WooCommerce core REST keys/public Store API are separate from Google extension registered WordPress.com/Jetpack partner proxy. Google developer registration, actual approved products, channel IDs/authorization, store-link acceptance and automatic synchronization remain unverified.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed 333 PHP regressions, 120 actual model/controller fixture scenarios and Chromium owner metadata, RSS/JSON-LD/visible price and desktop/mobile/no-JS product landing; no Google approval or channel link claimed.",
-                "source_sha256": "f92277ce21cc0173a4c6fc5ce8f0aa42f2204e80b715a24b8f75efe5422f53fd"
+                "reason": "Reviewed actual WC ZIP REST/Store API classes, Google extension signed partner connection/Mapi classes, 47 native API fixture checks, actual owner browser download, guest denial and offline projection of 43 live feed items. Google authorization and links remain unverified.",
+                "source_sha256": "a9e0903b08d59c33f3dd8d0c66a8962d6bacd0fb5044816bec1f85ca893956dc"
             },
-            "production_evidence": []
+            "production_evidence": [
+                {
+                    "deployed_sha": "ffb65050b8348f38357688d829772d2a8fe8b392",
+                    "date": "2026-11-26",
+                    "url": "https://github.com/bapxmediahub/bapXphpAiBackend/issues/522#issuecomment-7198156727",
+                    "scope": "43 distinct live feed items retained; sampled real product price and stock match XML and JSON-LD; desktop/mobile title and purchase guidance verified; no Google approval or channel link",
+                    "source_sha256": "f92277ce21cc0173a4c6fc5ce8f0aa42f2204e80b715a24b8f75efe5422f53fd"
+                }
+            ]
         }
     ]
 }

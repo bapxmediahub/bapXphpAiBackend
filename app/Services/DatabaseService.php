@@ -755,6 +755,20 @@ final class DatabaseService {
         if ($this->isTestMode()) throw new \LogicException('Editor recovery requires an isolated database.');
         if ($this->isRemote()) return $this->remoteMutation('editor_draft_operation','settings',
             compact('owner','kind','target','operation','expected','revision','values'))['result'];
+        // A retry must own the complete operation. An ambient transaction may
+        // contain unrelated writes that a deadlock would roll back.
+        $attempt=function() use($id,$owner,$kind,$target,$operation,$expected,$revision,$values):array {
+            if ($operation!=='read' && ($this->db()->inTransaction()
+                || (int)$this->db()->getAttribute(\PDO::ATTR_AUTOCOMMIT)!==1)) {
+                throw new \LogicException('Editor recovery requires its own autocommit write.');
+            }
+            return $this->editorDraftOnce($id,$owner,$kind,$target,$operation,$expected,$revision,$values);
+        };
+        return $operation==='read'?$attempt():EditorDraftService::retryDeadlock($attempt);
+    }
+
+    private function editorDraftOnce(string $id,string $owner,string $kind,string $target,string $operation,
+        string $expected,string $revision,array $values): array {
         $row = $this->find('settings',$id);
         $current = $row === null ? null : EditorDraftService::assertRecord($row,$owner,$kind,$target);
         if ($operation === 'read') return ['outcome'=>'read','draft'=>$current];
@@ -774,7 +788,20 @@ final class DatabaseService {
             } else {
                 $record = ['id'=>$id,'editor_recovery'=>$next];
                 if ($current===null) {
-                    if ($this->insertIfAbsent('settings',$record)['inserted']) return ['outcome'=>'saved','draft'=>$next];
+                    // Do not suppress other storage errors with INSERT IGNORE.
+                    // An actual duplicate means another editor won. A confirmed
+                    // deadlock rolls back this statement and retries the whole
+                    // CAS with the original expected token, never an upsert.
+                    try {
+                        $stmt=$this->db()->prepare('INSERT INTO settings (id,_data,_created_at,_updated_at)
+                            VALUES (?,?,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)');
+                        $stmt->execute([$id,json_encode($record,JSON_THROW_ON_ERROR)]);
+                        if ($stmt->rowCount()!==1) throw new \RuntimeException('Recovery insert was not acknowledged.');
+                        return ['outcome'=>'saved','draft'=>$next];
+                    } catch (\PDOException $error) {
+                        if (($error->errorInfo[0]??null)!=='23000'
+                            || (int)($error->errorInfo[1]??0)!==1062) throw $error;
+                    }
                 } else {
                     $stmt = $this->db()->prepare("UPDATE settings SET _data=?, _updated_at=CURRENT_TIMESTAMP WHERE id=? AND JSON_UNQUOTE(JSON_EXTRACT(_data,'$.editor_recovery.token'))=?");
                     $stmt->execute([json_encode($record,JSON_THROW_ON_ERROR),$id,$expected]);

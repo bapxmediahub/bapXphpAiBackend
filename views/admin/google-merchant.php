@@ -24,6 +24,23 @@
         </div>
         <p><strong>Exportable does not mean approved.</strong> This screen has not accessed your Google account. Review brand/identifiers, condition, image suitability, country/language, shipping and returns before submitting. It never invents a GTIN or claims unknown products have no identifiers.</p>
     </section>
+    <section class="admin-card" aria-labelledby="merchant-api-preview-title">
+        <h3 id="merchant-api-preview-title">Merchant API compatibility preview</h3>
+        <p>Download the same valid catalogue as typed Merchant API v1 product input records. Use the actual language and feed label from your Google data source. This is a local preview, not an upload or a connected account.</p>
+        <form action="/admin/google-merchant" method="get" class="admin-form" aria-label="Merchant API product input preview">
+            <input type="hidden" name="format" value="product-inputs">
+            <div class="admin-form__row">
+                <label>Content language (two letters)
+                    <input name="language" required pattern="[a-z]{2}" maxlength="2" placeholder="en" autocomplete="off">
+                </label>
+                <label>Merchant feed label
+                    <input name="feed_label" required pattern="[A-Z0-9_\-]{1,20}" maxlength="20" placeholder="IN" autocomplete="off">
+                </label>
+            </div>
+            <button type="submit" class="btn btn-outline">Download product input JSON</button>
+        </form>
+        <p>Developer diagnostics can read the selected Merchant data source and processed YouTube Shopping item statuses with separately authorized Merchant API access. They cannot create a store link.</p>
+    </section>
     <section class="admin-card" aria-labelledby="merchant-records-title"><h3 id="merchant-records-title">Product preflight</h3>
         <p>The first 100 records are shown below. The feed contains all valid public records, including accurate out-of-stock items. Hidden, draft and invalid records are excluded.</p>
         <?php if($report['rows']===[]): ?><p>No catalogue records found.</p><?php else: ?>
@@ -41,7 +58,7 @@
             <li>Add the XML URL as a product file with scheduled fetch. Inspect Google's processing results—not just this site's feed counts.</li>
             <li>Set accurate shipping, returns and business information. Confirm genuine brand, GTIN/MPN or a legitimate identifier exception; review image policy and current size requirements.</li>
             <li>Fix Merchant Center item issues and confirm eligible destinations. A successful fetch or API insertion is not an approval.</li></ol>
-        <p>For faster programmatic inventory updates, use the current <strong>Merchant API</strong> after authorized account setup—not the retired Content API. This release supplies a scheduled-fetch file, not an API sync.</p>
+        <p>For faster programmatic inventory updates, use the current <strong>Merchant API</strong> after authorized account setup—not the retired Content API. The website supplies a scheduled-fetch file and a typed JSON preview; automatic API synchronization is not enabled.</p>
         <a href="https://support.google.com/merchants/answer/12631822" target="_blank" rel="noopener noreferrer">Google product-file setup ↗</a>
     </section>
     <section class="admin-card" aria-labelledby="youtube-readiness-title"><h3 id="youtube-readiness-title">Then connect YouTube Shopping</h3>

@@ -90,6 +90,14 @@ Existing test starting points (extend rather than claim these cover the entire n
 
 For YouTube Shopping, use actual native product metadata, RSS, visible landing and checkout facts. Read Google Merchant data-source and direct invited-creator onboarding docs. An eligible creator may link an authorized data source/channel; a store platform must be approved and may submit repeated actual channel IDs only under that authorized contract. Never impersonate WooCommerce, invent identifiers, channel names or a connected status, or join affiliate data to customer identities. Verify each account, item approval, link and actual tagging separately. A generated feed or schema is not approval. See `docs/google-sales-channels.md`.
 
+The #524 source comparison uses the actual pinned WC core REST and Store API
+classes plus Google extension Jetpack registration and Merchant API client.
+The native bridge projects current RSS facts as Google ProductInput v1 and
+reads real authorized source/item status only. Exact account/source/locale and
+country matching, bounded pagination, no writes and no identity imitation
+are mandatory. Do not add speculative WooCommerce REST or XML-RPC routes for
+YouTube selection; no evidence that Google consumes them.
+
 ## Evidence handoff
 Record the upstream entrypoint/callee, authoritative state, permissions, normal/failure/concurrent transitions and the intentional native deviation in the linked GitHub issue. Record actual test commands and results, update affected REA rows, regenerate the report and run the existing CI gate. Distinguish static reading, synthetic fixture execution and live acceptance. Read unknown source bodies before implementing; no file count or test name proves parity.
 

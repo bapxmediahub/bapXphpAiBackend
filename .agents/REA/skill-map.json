@@ -1280,8 +1280,8 @@
             ],
             "review": {
                 "date": "2026-11-26",
-                "reason": "Initial pinned skill adaptation: Block registration, serialized attributes, edit/save/render split, child composition and deprecation teach why editor schemas need stable versioned data. Native pages use bounded Markdown and typed page settings, not Gutenberg blocks. General reusable component hierarchy remains partial.",
-                "sha256": "79d36ebc40827e0e2bc138c73e0d8d04dea8a2218ead0ff8d92c7bd48dc330e2"
+                "reason": "Reviewed pinned WordPress autosave identity versus native CAS; actual MariaDB deadlock receipt, strict duplicate insert conflict, bounded rollback retry and explicit publication boundary retained.",
+                "sha256": "d8cae415549962d1e5679a2b79c8e1ebf8f2425b4b0b1e4a424e17cb95ae258b"
             }
         },
         {
@@ -1389,8 +1389,8 @@
             ],
             "review": {
                 "date": "2026-11-26",
-                "reason": "Initial pinned skill adaptation: Upstream server directives and scoped state/actions illustrate explicit state ownership and hydration. bapX has native JS, typed A2UI envelopes and fixed actions; general streaming surface/data updates are partial.",
-                "sha256": "00fd04b60e40689dab52dd7b9802d9c1e1ae4444fde0fe2cb7ee847e77a0e64d"
+                "reason": "Reviewed server recovery error/conflict semantics and browser fallback; confirmed rollback-only retry does not replay unknown results or replace concurrent user input.",
+                "sha256": "7f7c04623770ed1d95ba4ee2843dc2f89d4ac1fa4dd61d229ace46032f036bf0"
             }
         },
         {
@@ -1728,14 +1728,16 @@
                 "integrations/google-site-kit/PageSpeedInsightsClient.php",
                 "app/Services/AiClient.php",
                 "app/Services/MerchantFeedService.php",
-                "app/Services/SeoService.php"
+                "app/Services/SeoService.php",
+                "app/Services/MerchantApiService.php"
             ],
             "acceptance_tests": [
                 "tests/google-pagespeed.php",
                 "tests/google-pagespeed-browser.cjs",
                 "tests/ai-provider-transport.php",
                 "tests/gst-unit-browser.cjs",
-                "docs/google-sales-channels.md"
+                "docs/google-sales-channels.md",
+                "tests/merchant-api.php"
             ],
             "upstream_references": [
                 "references/measurement.md",
@@ -1745,8 +1747,8 @@
             ],
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed actual 43-item feed and Chromium baseline, pinned Google for WooCommerce separate link and Merchant API contract; no fabricated approval, channel analytics or customer join.",
-                "sha256": "52d13f84d1dd8229cf827c64a5652baadb962392f983b3af6eb46a7a937095d9"
+                "reason": "Reviewed actual saved 43-item feed projection and bounded official Merchant read paths; per-country destination status, quota and incomplete pagination kept distinct; no invented approval or attribution.",
+                "sha256": "cc8c384b1b1edbd8dfd16a4e19d5a3365b81d11daafd2c397c3b572726ce6dc2"
             }
         },
         {
@@ -1852,7 +1854,8 @@
                 "app/Services/CampaignDownloadService.php",
                 "app/Services/ProductImportService.php",
                 "app/Services/MerchantFeedService.php",
-                "app/Services/SeoService.php"
+                "app/Services/SeoService.php",
+                "app/Services/MerchantApiService.php"
             ],
             "acceptance_tests": [
                 "tests/shipping-preview-browser.cjs",
@@ -1863,7 +1866,8 @@
                 "tests/campaign-booking.php",
                 "docs/modules/catalog.md",
                 "tests/gst-unit-browser.cjs",
-                "docs/google-sales-channels.md"
+                "docs/google-sales-channels.md",
+                "tests/merchant-api.php"
             ],
             "upstream_references": [
                 "references/audit-precondition.md",
@@ -1873,8 +1877,8 @@
             ],
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed P25 change against actual WooCommerce totals contract; reject unsupported zero-payable checkout rather than substitute shopper amounts; actual synthetic controller/gateway evidence, no production charge.",
-                "sha256": "975dd6d6d3cc387f3292d9e51ac6da4e6783339e56a2db76f00645a1b84b0728"
+                "reason": "Reviewed exact #527 dependency and P25 server amount fix; only verified server price may reach gateway, no paid or free-order flow fabricated.",
+                "sha256": "c562656f5be740107a22d884fafcfc6bb5cb5fdf66f5e2f911952e24e41bf819"
             }
         },
         {

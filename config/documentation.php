@@ -21,7 +21,7 @@ $rules = [
   'dependencies'=>['views/layouts/app.php','views/admin/dashboard.php','views/admin/integrations.php','app/Services/SecretService.php'],
   'references'=>['docs/pages/integrations.md','content/help/admin/settings.md','.agents/skills/frontend-php/SKILL.md']],
 
- 'sales-channels'=>['sources'=>['app/Services/MerchantFeedService.php','cli/merchant.php','views/admin/google-merchant.php','views/public/merchant-feed.php'],
+ 'sales-channels'=>['sources'=>['app/Services/MerchantFeedService.php','app/Services/MerchantApiService.php','tests/merchant-api.php','cli/merchant.php','views/admin/google-merchant.php','views/public/merchant-feed.php'],
   'dependencies'=>['app/Services/ProductService.php','app/Services/SettingsService.php','app/Services/MediaService.php'],
   'references'=>['docs/google-sales-channels.md','content/help/admin/catalogue.md','.agents/skills/bapxphp-cli/SKILL.md']],
 

@@ -63,6 +63,12 @@ Live #518 exhausted multiple initial provider attempts and then failed both cont
 
 For YouTube Shopping, use actual native product metadata, RSS, visible landing and checkout facts. Read Google Merchant data-source and direct invited-creator onboarding docs. An eligible creator may link an authorized data source/channel; a store platform must be approved and may submit repeated actual channel IDs only under that authorized contract. Never impersonate WooCommerce, invent identifiers, channel names or a connected status, or join affiliate data to customer identities. Verify each account, item approval, link and actual tagging separately. A generated feed or schema is not approval. See `docs/google-sales-channels.md`.
 
+For Merchant API/YouTube diagnostics, bound remote reads and distinguish
+provider failure or partial pagination from no approved product. Use actual
+country-specific YOUTUBE_SHOPPING statuses; never count affiliate, another
+source or an unobserved offer as approval. No customer/order attribution
+or channel link is inferred.
+
 ## Evidence handoff
 Record the upstream entrypoint/callee, authoritative state, permissions, normal/failure/concurrent transitions and the intentional native deviation in the linked GitHub issue. Record actual test commands and results, update affected REA rows, regenerate the report and run the existing CI gate. Distinguish static reading, synthetic fixture execution and live acceptance. Read unknown source bodies before implementing; no file count or test name proves parity.
 

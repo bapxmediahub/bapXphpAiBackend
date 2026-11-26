@@ -24,6 +24,14 @@ description: Use when editing PHP controllers, services, hosted MySQL persistenc
 - Keep payment clients as small `integrations/` wrappers, source secrets through `SecretService` or system environment variables, and verify signatures before mutating orders or wallet balances.
 - Use `bapXphp read blog <slug>` and `bapXphp write blog [slug]` for blog operations. Product and other admin-editable content must be read and written through hosted MySQL-backed application flows.
 
+For private editor recovery only, the direct CAS operation owns its
+autocommit write. A confirmed database rollback (40001/1213) may retry the
+whole CAS with a fresh row and unchanged expected token, at most twice.
+Do not replay an ambient transaction, transport error, payment or unrelated
+mutation. Use strict insert with duplicate conflict, never an upsert or ignored
+storage failure. Keep the real MySQL/MariaDB worker outcome and safe SQLSTATE
+diagnostics; a passing fixture must still prove exactly one winner.
+
 ## Testing
 
 Run `php -l` on every changed PHP file and then `./bapXphp test`. For storage changes, exercise the affected admin page against the remote database. Confirm transport, non-2xx, and invalid-response failures surface visibly; repeated reads are memoized within a request; and mutations invalidate cached reads.

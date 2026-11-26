@@ -4,28 +4,28 @@
     "reviews": {
         "agents": {
             "source_sha256": "b4df00f4a124fde6cb668d105c5174970e9e90865eabeee0ecfc20834743c436",
-            "references_sha256": "362927e7bf2d6ea315efde424804dda08742aab5d8dc1439c7b56a871451816e",
-            "review_note": "Reviewed actual AgentDraftService owner-only metadata restrictions and 120 controller fixtures; no model-manufactured product identifiers."
+            "references_sha256": "3ec1b054aff080dca232841d9864f9c05f2a70d1255445584907432063f8ac33",
+            "review_note": "Reviewed backend skill and shared storage diff; no agent tool replay, model or conversation persistence change."
         },
         "auth": {
             "source_sha256": "c34a5b34bc904f36cda184c26113f91e2cf36afa2b506217d1f74e22e9e0cefd",
-            "references_sha256": "7fd7d87a436748a3ef9c4ac04d0e79b2bfef59a79f653a002cf05af59df6ce04",
-            "review_note": "Reviewed actor-owned registry and credential-scoped recovery, no alternate connection or change to authentication or account scopes."
+            "references_sha256": "c8306c57b610c933cc62d7599118cd249f0028557929a31fcf78e407974d0946",
+            "review_note": "Reviewed unchanged actor/session/CSRF boundaries; new recovery retries stay on original owner/item identity and expected token."
         },
         "commerce": {
             "source_sha256": "56c2354c15a4b4af4a9698bc2a65f237fdebccff02d9e6b80183b30ec9559d2a",
-            "references_sha256": "865725da88363e0802880d1b719eacbb37bfa0f7e7f131d0aeabde521af39076",
-            "review_note": "Reviewed actual eight browser controller amount cases, fractional display and prior payment recovery alongside newly merged product metadata."
+            "references_sha256": "5617398d031571e14c8a0a907712fb5a5f74cc4723ed5151b21e4a77e29f09bb",
+            "review_note": "Reviewed actual eight checkout amount cases, no client fallback, fractional pricing and verified-order recovery; current dependency preserved."
         },
         "content": {
-            "source_sha256": "df716574d278497fb26eab84230c8563105ba5271d0aa5bb0fbdd80189559a1d",
-            "references_sha256": "bb87a962c5e570bc772f172d9d7956af475f5118e4cc9aeb2b16c875313ccb4d",
-            "review_note": "Reviewed public product metadata/SEO changes and real product landing, no editorial publication behavior changed."
+            "source_sha256": "b45da45a1b157b983bb95283f1e1384ad07a4a2613648b18533fbd00f5231b50",
+            "references_sha256": "bfc615b1bcb7cc9ede6d72e578afb1664fb1cc451d676bcf6f82393d9feaafa8",
+            "review_note": "Reviewed actual hosted deadlock diagnostic, strict insert and original-token retry, deterministic policy and isolated HTTP pass; canonical content save/publication unchanged."
         },
         "foundation": {
-            "source_sha256": "bd1636a6fe6c04157eb4d8d88c8c0ef592b622705268ec226964960246e5d69a",
-            "references_sha256": "a2f45f72c07d79756151601bc2547a814a56e08a60d853e0c42d5b33bc892221",
-            "review_note": "Reviewed optional JSON fields in existing hosted MySQL catalogue and existing PHP UI; no new runtime, dependency, OAuth credential or data store."
+            "source_sha256": "b2311467ddfc85ab384a5a06953c281207a9773352bcf113e6e840c21ac65b42",
+            "references_sha256": "227fb28de8ad34b1862ec76eeddfd80a087a06de2ad33929524bd219c4e47048",
+            "review_note": "Reviewed direct autocommit requirement, bounded confirmed rollback retry and unchanged MySQL schema/runtime; no new dependency or outer transaction replay."
         },
         "google-tags": {
             "source_sha256": "239140bbf84afe1d759b8fba20f012147c59202640638ffb270bd0820fdbe5b5",
@@ -34,23 +34,23 @@
         },
         "http-errors": {
             "source_sha256": "0f920c297cfc4e216a87be02a35c20827cc254dd6934ba24a1fa9135520a0560",
-            "references_sha256": "b2a485eca027262f58130080df144e1a4d84b0541f1c681ca29edeae2b697b83",
-            "review_note": "Reviewed recovery only for recoverable transport, quota and hold failures; failed alternate remains explicit error, malformed/denied responses are not replayed."
+            "references_sha256": "336dc6e5120452560ddda73586730c89d991c7f1388223dc7c244637df7ec704",
+            "review_note": "Reviewed private editor failure semantics: confirmed rolled-back autocommit deadlock retried only within bounded CAS; unknown or exhausted failure remains explicit, browser copy preserved."
         },
         "interface": {
             "source_sha256": "fde92d57feff59ec7f1f72e8014984b35a75f2c0d48ddbdbc2b159ff8288b250",
             "references_sha256": "eef7e0667f963f48e68350ec36a1e015e0f195d2cda5c0868aeb3e87ccfa0f62",
-            "review_note": "Reviewed updated checkout request and authoritative gateway response; retained new direct product landing guidance and layout."
+            "review_note": "Reviewed native checkout request omits shopper amount and uses authoritative response; existing mobile product and purchase guidance preserved."
         },
         "mail": {
-            "source_sha256": "cb099c4b966b3212aeda987f30f63206bfd9d8d685c828e2c6b3b5468d2bd30f",
-            "references_sha256": "f55d00e8a94c81806bd8ad3c99334154db4a91bb299be7e13d5696d523c6d806",
-            "review_note": "Reviewed shared controller changes restricted to product validation; no mail or queue changes."
+            "source_sha256": "d6701ee87e38200539b4d91602756009396ba9564e7e9dec371c048502dcf3ac",
+            "references_sha256": "f350ff4d468dce168821dee1631891fd78c23070e7a88004c5d13e9fdc5cebcd",
+            "review_note": "Reviewed editor-only autocommit recovery; mail queue, claims and delivery unchanged."
         },
         "mcp-clients": {
             "source_sha256": "2567e2792ed1acb0c80ae14605c2ac550abb824197b404fc2da99e97e1507d8e",
-            "references_sha256": "d53c35e5619515b0fc525390c35584fcf6cf692077eaab6495b3a41ce146fb75",
-            "review_note": "Reconciled shared CLI guide against current main; public and owner STDIO grant behavior unchanged, no new MCP tool."
+            "references_sha256": "f0a3d7f76e09e94dabdf02a042962976825b6f2991e782675f074f52ac2d67f0",
+            "review_note": "Reviewed project map and new CLI-only fixed Google read adapter; existing MCP client registration and grants unchanged."
         },
         "media": {
             "source_sha256": "edc32a5a9f73cf7f2954eac135a2eaed1394089034bac24ea835af48c4d9600e",
@@ -58,29 +58,29 @@
             "review_note": "Reviewed the owner UI skill changes against authenticated media navigation, route declarations, and Media Library behavior. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
         },
         "operator-help": {
-            "source_sha256": "790242fb302fc90bf03a945a3ee536e4f92611ef5060d8aeb89a2839af308f89",
-            "references_sha256": "4e2591fafd1e772fb73b53865320e18914867c5d36d31f01f3406f58dcc80b4f",
-            "review_note": "Reconciled owner product metadata baseline and checkout amount behavior; no owner help or customer instructions changed except truthful checkout rules."
+            "source_sha256": "5b20bbbe5d6ab50deccf314927b7eec24df8841974594553c966fa604ba6e6d7",
+            "references_sha256": "a1d740de3a88f050bdc402955b7eaca59edb27f5169edb7ebd652f1ed20dcf09",
+            "review_note": "Reconciled current merchant owner preview and editor recovery with checkout payment correction; no owner guide mutation beyond actual payment behavior."
         },
         "public-mcp": {
-            "source_sha256": "16885ac8b5f31d7e7f4734b227e46c4dcce33001b2d019e251fd2891730ae4c7",
-            "references_sha256": "8f28106af1d8ed34363188d4e56dc2cd7ba9a20c70dd97ab625eb7ab175e69c0",
-            "review_note": "Reviewed same-model continuation and alternate text-only synthesis; no new public MCP schemas or grants, private tool evidence stays on original configured connection."
+            "source_sha256": "41c1243435ecb682c9f3f12859ce7f6d060fa5c933144e2e08f49d7747feda07",
+            "references_sha256": "187074328e2d8cef855181cd4bd4b39c760ec09de1d93862ea23531c5b7f18f7",
+            "review_note": "Reviewed editor-only storage retry and unchanged route authorization; no public capability or private data projection added."
         },
         "remote-commerce": {
-            "source_sha256": "1932f2121213b84e2e3620e7dd8b8965d69c1c82b409614ad555a2a22d624591",
-            "references_sha256": "711a06978be39e170b69071048cb0aa2ccbc4c337287ee369e7944ac26f7dc98",
-            "review_note": "Reviewed merged merchant and checkout changes; server computes payable amount and no posted price fallback, remote checkout contract unchanged."
+            "source_sha256": "170d247cf2e7a0d1435ccbc18288a487e1e73d33573bf0554b85429126606a8a",
+            "references_sha256": "07ee70743aec95dca5faa3bf4e33c13f48e8184db843eef495a0bbbd88b1493b",
+            "review_note": "Reviewed current dependency and browser-only server amount change; remote quote, payment and editor protocol unchanged by checkout fix."
         },
         "sales-channels": {
-            "source_sha256": "2bc0b017ce4a0ccca5c110ef40fcdcdefc3f45578ad09cff84fcbbe193d6a59b",
-            "references_sha256": "7f28b1ba2c9491423fca2c4fd0026b0932b2b33438179f2734c1d907368d40fd",
-            "review_note": "Reviewed pinned Google for WooCommerce connection source, actual public merchant feed, owner-only metadata, shared product structured data and separate multi-channel account gates."
+            "source_sha256": "0012f20cbd5531b10a54baf77e4070710c02f926dae38c826cc657cf1939ec07",
+            "references_sha256": "f2d81de1cbac07c6783060e22cc859e0ec6e86c66f50c9d7d2ec590b11ec5c8a",
+            "review_note": "Reviewed actual Woo core and Google plugin source, current Google v1 ProductInput and processed product contracts, offline projection and read-only country-specific diagnostics; browser and 47 checks pass."
         },
         "workflow": {
-            "source_sha256": "a1c0fcc27ed0ee0996595b2b2091495133c26929389bca1d9149ee3b47de652b",
+            "source_sha256": "e448093ee3d6979ea5d70db440c9b7225ee9a864e6c3a4bd577d5253708c3348",
             "references_sha256": "ce296268f8e6ab4a20955480efe5431f31112561643d61298121d265ee480280",
-            "review_note": "Reviewed explicit MC01 scope addition, pinned static source and two adapted skill receipts; new denominator is one additional partial obligation, no artificial promotion."
+            "review_note": "Reviewed actual database rollback evidence, preserved fixture stderr diagnostics, twelve repeated initial-race tests, mapped guides and generated architecture contracts."
         }
     }
 }

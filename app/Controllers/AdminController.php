@@ -37,9 +37,27 @@ final class AdminController extends BaseController {
     }
 
     public function googleMerchant(): void {
+        header('Cache-Control: private, no-store');
+        header('X-Robots-Tag: noindex, nofollow');
+        $download=($_GET['format']??null)==='product-inputs';
+        if($download){
+            $language=is_string($_GET['language']??null)?$_GET['language']:'';
+            $label=is_string($_GET['feed_label']??null)?$_GET['feed_label']:'';
+            try {\App\Services\MerchantApiService::validateLocale($language,$label);}
+            catch(\InvalidArgumentException $error){$this->jsonResponse(['error'=>$error->getMessage()],422);}
+        }
         $channelReport=null;$shopEnabled=(new SettingsService())->moduleEnabled('shop');
         if($shopEnabled){try{$channelReport=(new \App\Services\MerchantFeedService())->inspect();}
             catch(\Throwable){error_log('Merchant catalogue preflight unavailable');}}
+        if($download){
+            if(!$shopEnabled)$this->jsonResponse(['error'=>'Shop disabled.'],404);
+            if($channelReport===null)$this->jsonResponse(['error'=>'Catalogue unavailable.'],503);
+            try {
+                $result=(new \App\Services\MerchantApiService())->preview($channelReport,$language,$label);
+                header('Content-Disposition: attachment; filename="merchant-product-inputs.json"');
+                $this->jsonResponse($result);
+            }catch(\Throwable){$this->jsonResponse(['error'=>'Merchant preview unavailable.'],503);}
+        }
         $this->render('admin/google-merchant',compact('channelReport','shopEnabled')+['pageTitle'=>'Google & YouTube']);
     }
 

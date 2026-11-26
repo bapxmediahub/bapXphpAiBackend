@@ -73,7 +73,7 @@ async function project(t) {
         'deployment-revision', 'public-knowledge', 'catalogue-comparison', 'public-product-selection',
         'public-agent-discovery', 'public-mcp', 'remote-cart', 'remote-checkout', 'verified-order',
         'public-mcp-shopping', 'public-mcp-checkout', 'public-a2ui', 'agent-presentation-scope',
-        'enterprise-commerce', 'documentation-review',
+        'enterprise-commerce', 'merchant-api', 'documentation-review',
     ]) await write('tests/' + name + '.php', '<?php\necho "FIXTURE:' + name + '-ok\\n";\n');
     for (const [generator, artifact, content] of [
         ['generate-project-index.php', 'docs/project-index.json', 'fixture project index'],
@@ -185,7 +185,7 @@ test('ci executes the portable hosted PHP fixtures and aggregates HTTP fixture f
         'deployment-revision', 'public-knowledge', 'catalogue-comparison', 'public-product-selection',
         'public-agent-discovery', 'public-mcp', 'remote-cart', 'remote-checkout', 'verified-order',
         'public-mcp-shopping', 'public-mcp-checkout', 'public-a2ui', 'agent-presentation-scope',
-        'enterprise-commerce', 'documentation-review',
+        'enterprise-commerce', 'merchant-api', 'documentation-review',
     ]) assert.match(good.output, new RegExp('FIXTURE:' + name + '-ok'));
     await fixture.write('tests/campaign-form-http.php', '<?php echo "FIXTURE:http-error\\n"; exit(17);');
     await rm(join(fixture.directory, 'tests', 'public-knowledge.php'));
