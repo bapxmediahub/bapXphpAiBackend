@@ -1877,8 +1877,8 @@
             ],
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed exact #527 dependency and P25 server amount fix; only verified server price may reach gateway, no paid or free-order flow fabricated.",
-                "sha256": "c562656f5be740107a22d884fafcfc6bb5cb5fdf66f5e2f911952e24e41bf819"
+                "reason": "Reviewed shared browser and remote frozen tax inputs, same authoritative coupon-adjusted gateway amount for Stripe and Razorpay, 194 verified-order and 120 remote checkout checks. Shipping pricing activation and actual captured-payment acceptance remain separate.",
+                "sha256": "7b7945523667ecbd53095d32667df5b07125f0a474a8384586d9ed591850b904"
             }
         },
         {

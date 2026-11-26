@@ -13,9 +13,9 @@
             "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
         },
         "commerce": {
-            "source_sha256": "56c2354c15a4b4af4a9698bc2a65f237fdebccff02d9e6b80183b30ec9559d2a",
-            "references_sha256": "1fa8fb3454d9d51e211e141c08d963101f47dcb7ffeaf12d501cb2de2fce9d51",
-            "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
+            "source_sha256": "982980f41e5f696533d985019693fcb70f8db63b80b97a03059f9799c619eab8",
+            "references_sha256": "5e3c98a7f3923a1ab921b618e4ee85af753f78c575e86bcbbb9a6fbdf52ee435",
+            "review_note": "Reviewed actual both-gateway recording fixtures, exact server payable paise, frozen tax data and persisted verified-order evidence; no live charge."
         },
         "content": {
             "source_sha256": "7bc0e3afdd5a80dcbe48b999af092c2609cc94d7eb44da9efa39f7494402254d",
@@ -58,19 +58,19 @@
             "review_note": "Reviewed the owner UI skill changes against authenticated media navigation, route declarations, and Media Library behavior. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
         },
         "operator-help": {
-            "source_sha256": "5b20bbbe5d6ab50deccf314927b7eec24df8841974594553c966fa604ba6e6d7",
+            "source_sha256": "72087e86ac9a613839c4370c420b4ed0c126fb9e9e59d43fb25ae474970ae0d4",
             "references_sha256": "a1d740de3a88f050bdc402955b7eaca59edb27f5169edb7ebd652f1ed20dcf09",
-            "review_note": "Reconciled current merchant owner preview and editor recovery with checkout payment correction; no owner guide mutation beyond actual payment behavior."
+            "review_note": "Reviewed shared tax projection before both browser gateways and actual coupon rejection; no owner controls or help behavior changed."
         },
         "public-mcp": {
             "source_sha256": "41c1243435ecb682c9f3f12859ce7f6d060fa5c933144e2e08f49d7747feda07",
-            "references_sha256": "68f79ed443df0cba4c7aa1bf073c7d7afd53cab5b9447fb5aef1628fb4743345",
-            "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
+            "references_sha256": "18b90cbbc442ae32810c0e9545032e61e157fb1b25157e654ec6f2bf143aebaa",
+            "review_note": "Reviewed RemoteCheckoutService refactor only, existing public checkout schema and projection unchanged."
         },
         "remote-commerce": {
-            "source_sha256": "8fe91464d93957e4520172523d3f258b2abcebc0d110bbd94bde2700a1bdca3a",
-            "references_sha256": "30d51b4bee8d26efc0fd2ab3034f6d58f007c4e95cd807f00146d5ab4291cf3d",
-            "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
+            "source_sha256": "8d0e05991b8b1523c1adfdf5b9d852e2b30d25db0cc4ca9c04029a41fe8acb9c",
+            "references_sha256": "f3eb378c70f9c7cad4c58fd9b259c0291dbe7245f550481e8a2abd332e7be5e0",
+            "review_note": "Reviewed identical remote checkout frozen tax field order/types and shared native browser gateway amount; 120 remote checkout checks passed."
         },
         "sales-channels": {
             "source_sha256": "0012f20cbd5531b10a54baf77e4070710c02f926dae38c826cc657cf1939ec07",

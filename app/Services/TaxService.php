@@ -108,6 +108,29 @@ final class TaxService {
         return ['gst_uqc' => $uqc, 'gst_qty_per_unit' => self::quantityDecimal($quantity)];
     }
 
+    /** Freeze only the supplier facts used in a confirmed checkout and its invoice. */
+    public static function checkoutSettings(array $settings): array {
+        $result=['gst_state'=>(string)($settings['gst_state']??'Tamil Nadu'),
+            'default_gst_rate'=>self::rateFor([],$settings),
+            'default_hsn_code'=>self::hsnFor([],$settings)];
+        foreach (['gst_legal_name','gst_trade_name','gstin','gst_address','gst_state_code'] as $key)
+            $result[$key]=(string)($settings[$key]??'');
+        return $result;
+    }
+
+    /** Resolve tax facts from the same server-side cart lines used for pricing. */
+    public static function checkoutItems(array $resolved,array $settings): array {
+        $items=[];
+        foreach ($resolved as $line) {
+            $items[]=['slug'=>$line['slug'],'name'=>$line['name'],'qty'=>$line['qty'],
+                'unit_price'=>$line['unit_price'],'line_total'=>$line['line_total'],
+                'gst_rate'=>self::rateFor($line['product'],$settings),
+                'hsn_code'=>self::hsnFor($line['product'],$settings)]
+                + self::reportingUnit($line['product']);
+        }
+        return $items;
+    }
+
     /** Cart amounts use each product's rate, including mixed-rate baskets. */
     public static function cartSummary(array $items, array $settings): array {
         $total = $tax = 0.0;

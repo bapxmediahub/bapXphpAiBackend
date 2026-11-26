@@ -689,8 +689,8 @@
             "finding": "Availability/on-hold guards exist; numeric reservations, expiry, release and backorders remain.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed verified-order and authoritative amount fixtures against current dependency; stock and reservation logic unchanged.",
-                "source_sha256": "dc58ff9430e83d80f3298852148c136502a87caf6628f210948aa39635fdd9c9"
+                "reason": "Reviewed expanded verified-order fixtures: frozen checkout tax/amount changes do not alter stock checks or reservation behavior.",
+                "source_sha256": "5010fa1563a5e89864ab140ddf580e6822912310ea095f924d30d9eda802cff1"
             },
             "production_evidence": []
         },
@@ -853,7 +853,8 @@
             "status": "partial",
             "issues": [
                 230,
-                434
+                434,
+                533
             ],
             "references": [
                 {
@@ -874,11 +875,11 @@
                 "tests/gst-unit-browser.cjs",
                 "tests/verified-order.php"
             ],
-            "finding": "Frozen issued invoice/tax state evidence exists; authenticated register and statutory reconciliation remain.",
+            "finding": "Frozen issued invoice/tax state evidence exists. Candidate #533 shares remote checkout frozen product/supplier facts with both browser gateways before payment, retaining actual coupon discount. Authenticated statutory reconciliation and shipping GST allocation remain partial.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed current Merchant metadata and editor-recovery fixture with checkout price tests; frozen invoice and GST contract unchanged.",
-                "source_sha256": "76772900b476ab52014996b209d287795bbce63f38b13187f307072c61e7d341"
+                "reason": "Reviewed shared browser and remote prepayment tax projection and real recording-gateway pending evidence; preserves original invoice facts after supplier/catalogue changes. Shipping tax and statutory acceptance still partial.",
+                "source_sha256": "cac6299745deb586327eba1fd339b601eeab57c12411e0ed3da6c334815093c6"
             },
             "production_evidence": []
         },
@@ -890,7 +891,8 @@
             "issues": [
                 356,
                 335,
-                520
+                520,
+                533
             ],
             "references": [
                 {
@@ -909,11 +911,11 @@
                 "tests/remote-checkout-mysql.php",
                 "tests/fixtures/browser-checkout-amount.php"
             ],
-            "finding": "Verified payment and idempotent order fixtures exist. Browser Razorpay charge is derived from server cart and validated coupon only; zero and subminimum amounts are rejected without replacing existing recovery. Actual controller tested against recording gateway; no real production payment acceptance claimed.",
+            "finding": "Verified payment and idempotent order fixtures exist. Deployed #521 rejects client amount fallback and zero/subminimum Razorpay cart. Candidate #533 uses one server-computed payable amount and frozen product/supplier evidence for Razorpay and Stripe; 194 recording-gateway and verified-order checks pass. No real production payment acceptance claimed.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed actual browser controller amount regression: computed payable only, zero/subminimum rejected, original recovery preserved. Reconciled exact #527 dependency.",
-                "source_sha256": "591a60d2717f3b52b9f6be63b486c3b572c08c0abbd331dea2c0304d02ff4220"
+                "reason": "Reviewed both native browser gateway controller fixtures and identical remote checkout projection, coupon rejection, exact integer paise and existing recovery. All 194 verified-payment checks and 120 remote checks pass; no live charge.",
+                "source_sha256": "aaac7ab406e8b648ccf73d9ee0db28fb947584775c64ea32213067e31f95e9c8"
             },
             "production_evidence": []
         },
@@ -945,8 +947,8 @@
             "finding": "Whole-order fulfilment/refund state exists; line-level partial shipment, notes and return allocation need end-to-end checks.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed merged order docs and checkout amount boundary; fulfilment and refund workflow unchanged.",
-                "source_sha256": "b0135c2d52ed1550bcf7a88c8715722ce73e087c7d3bc7cba64bfe507566fd0f"
+                "reason": "Reviewed order documentation change confined to shared prepayment tax and coupon evidence; no fulfillment or refund mutation.",
+                "source_sha256": "9f3377dbd0090aa8b171b660615ca9c727a032bedcfe2c4185e1c177e21b3a87"
             },
             "production_evidence": []
         },
@@ -1142,8 +1144,8 @@
             "finding": "Inbound gateway webhook is not signed outgoing webhook subscription/delivery/replay.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed order and verified-payment boundary; no webhook behavior change.",
-                "source_sha256": "d3906d6053560951eb281d15f5344567d1a140677168adb9d3af302e07031e3d"
+                "reason": "Reviewed order documentation and shared verified-order tests; signed outbound webhook feature remains missing.",
+                "source_sha256": "9ffb143ec21c887fd3ee9032380fc24a3be1c49bac38db2959e18e2fcefb0570"
             },
             "production_evidence": []
         },
@@ -2093,8 +2095,8 @@
             "finding": "Provider-only editorial generation and protected unpublished form implemented. Live authenticated Enterprise blog draft succeeded at deployed 17aa4c6 (trace 3fa837cf031c2d26; provider fallback, unpublished/create-only, no Save). Standalone editor and product generation live acceptance remain separate.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed authenticated catalogue preview and unchanged owner-only identity draft boundaries; no editorial generation changes.",
-                "source_sha256": "c7bea6195cea772a044fb4f09ed8aa5f7905b3819d941ec30a2139cfb3e55fd2"
+                "reason": "Reviewed tests/run.php adjustment to shared pending state assertion; editorial and product model generation unchanged.",
+                "source_sha256": "515de1dd50c382ecfcbe327102b08dd9f9ce3cf9d4287fb58d05bbd8d884a14c"
             },
             "production_evidence": [
                 {
@@ -2266,8 +2268,8 @@
             "finding": "Fixed role-specific .bapX instruction manifest and execution authorization; not developer harness exposure.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed added owner-only draft field hints and retained actor-scoped runtime instruction and tool boundaries.",
-                "source_sha256": "0a2d108c0e1c617bdb4d6737e3dd9eabc3e66792093348a2cef800b66fb79612"
+                "reason": "Reviewed tests/run.php only changed checkout source assertion; runtime instruction and role authority unchanged.",
+                "source_sha256": "7bef6ae68a7693031176cb039307d92b40d70ad5f94f06247043b82332ddd021"
             },
             "production_evidence": []
         },
@@ -2296,8 +2298,8 @@
             "finding": "Sanitized observed metadata, durations, usage and safe evidence; no exported private telemetry.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed extra model fixture identity assertions; no private trace or raw evidence persistence added.",
-                "source_sha256": "3e16b08a1034fdf743fa1a9617da4c966854278de6f6b36a1f588a7553562907"
+                "reason": "Reviewed checkout source assertion and recording-gateway tests; no private trace or telemetry changes.",
+                "source_sha256": "423249c2dd70376af29feb14c341bb2ee60062ac21c69d91be0b833fbf9863d0"
             },
             "production_evidence": []
         },
@@ -2367,8 +2369,8 @@
             "finding": "Explicit form actions and payment idempotency exist; generic approval/unknown-outcome recovery missing.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed server-derived charge and rejection before gateway, preserved prior cart/recovery; no new write tool.",
-                "source_sha256": "1c21aeb3786d39f9d16cd14071a445dcaf4b91e1d40e606d2506877c0a123945"
+                "reason": "Reviewed server-calculated payment total and frozen pending state, rejecting invalid coupons and preserving prior recovery; existing idempotency and confirmation retained.",
+                "source_sha256": "40ccf138230964fa0260db6c6c5fe4dabc3416495f605b05a3bf86e456a5ea73"
             },
             "production_evidence": []
         },
@@ -2610,8 +2612,8 @@
             "finding": "Deployed #523 at ffb6505: 43 distinct public offers retained, actual sampled price matched XML/JSON-LD/display, improved desktop/mobile purchase guidance. Candidate #524 adds native exact typed Merchant API v1 ProductInput preview and bounded read-only source/product YouTube destination diagnostics with authorized ephemeral token; optional explicit partner attributes offline only. WooCommerce core REST keys/public Store API are separate from Google extension registered WordPress.com/Jetpack partner proxy. Google developer registration, actual approved products, channel IDs/authorization, store-link acceptance and automatic synchronization remain unverified.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed actual WC ZIP REST/Store API classes, Google extension signed partner connection/Mapi classes, 47 native API fixture checks, actual owner browser download, guest denial and offline projection of 43 live feed items. Google authorization and links remain unverified.",
-                "source_sha256": "a9e0903b08d59c33f3dd8d0c66a8962d6bacd0fb5044816bec1f85ca893956dc"
+                "reason": "Reviewed checkout regression and shared frozen tax evidence; Merchant feed, typed API and authorized channel linkage remain unchanged.",
+                "source_sha256": "e7a8a462c40c4cb0627a92497cf82c44686d804ad6956e6c34f62c514aaaba01"
             },
             "production_evidence": [
                 {
