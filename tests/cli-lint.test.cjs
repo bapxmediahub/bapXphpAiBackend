@@ -2,7 +2,7 @@
 
 const assert = require('node:assert/strict');
 const {execFile} = require('node:child_process');
-const {chmod, copyFile, mkdir, mkdtemp, rm, writeFile} = require('node:fs/promises');
+const {access, chmod, copyFile, mkdir, mkdtemp, readFile, rm, writeFile} = require('node:fs/promises');
 const {tmpdir} = require('node:os');
 const {dirname, join, resolve} = require('node:path');
 const {promisify} = require('node:util');
@@ -166,4 +166,45 @@ test('ci reports storefront search failure and completes independent gates', {ti
     assert.match(failure.output, /FIXTURE:test-ok/);
     assert.match(failure.output, /FIXTURE:smoke-ok/);
     assert.doesNotMatch(failure.output, /LINT FAILED|TESTS FAILED|SMOKE FAILED|ALL CHECKS PASSED/);
+});
+
+test('ci reports generator failure, stale index and missing map while still running smoke', {timeout: 60000}, async t => {
+    const fixture = await project(t);
+    await fixture.write('cli/generate-project-index.php', '<?php fwrite(STDERR, "FIXTURE: unable to generate index\n"); exit(17);');
+    await fixture.write('index.yaml', 'outdated knowledge index');
+    await rm(join(fixture.directory, 'map.mmd'));
+    const result = await fixture.run(['ci']);
+    assert.notEqual(result.status, 0, result.output);
+    assert.match(result.output, /FIXTURE: unable to generate index/);
+    assert.match(result.output, /Project index generation failed/);
+    assert.match(result.output, /Knowledge index stale.*index\.yaml/);
+    assert.match(result.output, /Code map missing.*map\.mmd/);
+    assert.match(result.output, /FIXTURE:smoke-ok/);
+    assert.doesNotMatch(result.output, /ALL CHECKS PASSED/);
+});
+
+test('map validation reports both maps and concurrent runs use separate scratch outputs', {timeout: 60000}, async t => {
+    const fixture = await project(t);
+    await fixture.write('cli/validate-project-map.php', '<?php fwrite(STDERR, "FIXTURE: systematic map stale\n"); exit(1);');
+    await fixture.write('map.mmd', 'outdated code graph');
+    const stale = await fixture.run(['map:val']);
+    assert.notEqual(stale.status, 0, stale.output);
+    assert.match(stale.output, /FIXTURE: systematic map stale/);
+    assert.match(stale.output, /map\.mmd stale/);
+
+    await fixture.write('cli/validate-project-map.php', '<?php echo "FIXTURE: map-ok\n";');
+    await fixture.write('map.mmd', 'fixture code map');
+    const outputsFile = join(fixture.directory, 'generator-outputs.txt');
+    await fixture.write('cli/generate-code-map.php', `<?php
+        file_put_contents($argv[1].'/generator-outputs.txt', $argv[2].PHP_EOL, FILE_APPEND | LOCK_EX);
+        file_put_contents($argv[2], 'fixture code map');
+    `);
+    const reports = await Promise.all([fixture.run(['map:val']), fixture.run(['map:val'])]);
+    for (const report of reports) assert.equal(report.status, 0, report.output);
+    const outputs = (await readFile(outputsFile, 'utf8')).trim().split(/\r?\n/);
+    assert.equal(new Set(outputs).size, 2);
+    for (const output of outputs) {
+        assert.equal(output.startsWith(fixture.directory + '/'), false);
+        await assert.rejects(access(output), {code: 'ENOENT'});
+    }
 });

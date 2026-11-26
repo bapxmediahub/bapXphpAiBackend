@@ -3,9 +3,9 @@
     "meaning": "Source/document review attestations, not proof of semantic correctness or issue completion.",
     "reviews": {
         "agents": {
-            "source_sha256": "f2bd16e998cbad7c8e146490054010293840a46b0608dacaa1ce00b4b9227dfd",
+            "source_sha256": "a8315ffdb60d338e41303595cf8a95012c1e5d2189cbc472e72e3d772b7c77d3",
             "references_sha256": "cd622f5bf32c5ea4bc6223a8f9e62283ba79d7d3757ae4f9c85d21d1d04a9bdb",
-            "review_note": "Checked version 3 owner report observations and their evaluation spans against the observability guide. Both agent controllers retain the documented shared Chat Completions evidence and published passage provenance, and saved version 2 receipts retain their original results."
+            "review_note": "Reconciled reviewed version 3 report evidence from merged PR 475 with unchanged shared Chat Completions adapter and generated-artifact checks."
         },
         "auth": {
             "source_sha256": "c34a5b34bc904f36cda184c26113f91e2cf36afa2b506217d1f74e22e9e0cefd",
@@ -19,18 +19,18 @@
         },
         "content": {
             "source_sha256": "6f6aee47caea344734b1f2662269fbcebf1615d4f4ecabe1a79e2a7818206e24",
-            "references_sha256": "d16ec1123e6b1f65535cd1941df51e900b36ddd100960005a07c766f52d72bc4",
-            "review_note": "Compared the published article guide with exact-slug lookup, current publication and module gates, and rendered block and fenced-code whitespace. Campaign download and booking revisions remain governed by their existing guides."
+            "references_sha256": "40b3710dec9dc6e35df054fe7128c76310f2fd0e6f1e44c34d33bab628352b77",
+            "review_note": "Compared local published Markdown and scoped passage reads with the exact article route and generated knowledge index. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
         },
         "foundation": {
-            "source_sha256": "1f6614d8a5e1cea1224bf29558c740dbd5e5ab343abb69da87041a9e1a77ad61",
+            "source_sha256": "cbe9cc784939b451fccbd4e1c1447ca82630f101f52d5dfc0a2336e91c825864",
             "references_sha256": "e394d7890b387bcf8d4864890601c47f3596a8a96b2f97fb118ca84549dd0f74",
-            "review_note": "Compared the storage and architecture guides with published article evidence, private chat traces and the audit reference. The targeted excerpt stays in provider request context while private traces retain source identity, hashes and position."
+            "review_note": "Verified pre-dispatch request failure registration, source-based inventory candidates, exact route parity and generated output cleanup. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
         },
         "google-tags": {
-            "source_sha256": "71d32eb1f8f536427d9c6d90d8afa363cc84dc16b9b485f5ff76796746b05258",
-            "references_sha256": "1828010ee298ab71f3bcae4daae1236d05698cecf403de72c331735febbbfc79",
-            "review_note": "Compared Google inference configuration and provider diagnostics with the independent tags, reporting, and authentication settings."
+            "source_sha256": "ee67bf3e50c0de63820bd128a2c2df6f29571d0df37e7e3f22bd910948554f0e",
+            "references_sha256": "08f9da8b7db9697d249bb5eca2e46aee6a70d0a1ce51a5b6f2128bc3d6add967",
+            "review_note": "Compared the scoped AI provider fields and Google-compatible route with the separate Google tag and reporting controls on Integrations. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
         },
         "http-errors": {
             "source_sha256": "0f920c297cfc4e216a87be02a35c20827cc254dd6934ba24a1fa9135520a0560",
@@ -39,8 +39,8 @@
         },
         "interface": {
             "source_sha256": "16d1d84ab9413ed744d82606a7721d827acc68a4707854984b37af6ab4f6653e",
-            "references_sha256": "faf87e5a40e578bf97ed14d1f78efeec4269acf2fa897a74d9ef8e19351e4527",
-            "review_note": "Compared the Support error reference, keyboard recovery, and owner diagnostic card with the shared layout and both desktop and narrow viewport fixtures."
+            "references_sha256": "7593f0def754e85b99f97b22336cda86a8b0be70b70fadeae820f17b1cfae663",
+            "review_note": "Compared the owner dashboard, legacy redirect, masked integration fields and exact operator labels against the current admin code, skill and generated maps. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
         },
         "mail": {
             "source_sha256": "11a3b674d92d0714846359177499966c2f5ad2b1af5380a972280c64bb79b7b8",
@@ -48,39 +48,39 @@
             "review_note": "Checked the shared article evidence rule against sign-in notice and queue entry points. Published passage reads use BlogService without triggering mail."
         },
         "mcp-clients": {
-            "source_sha256": "d3156f090ffd44f61c1d53c8726bfc94aa1eb8914036f037be289bdba31565ec",
-            "references_sha256": "56bc8bcc3e33bdc079b94654bc5370d13c7e8b4766b80d91eb4fea3bf77f6659",
-            "review_note": "Reviewed the CLI skill change against MCP client guidance. Local CI runs the public storefront search fixture without changing MCP client administration."
+            "source_sha256": "2567e2792ed1acb0c80ae14605c2ac550abb824197b404fc2da99e97e1507d8e",
+            "references_sha256": "80ed43f4c86272f00f5bd45a05837735fd5fbb83aa3e907b873926fe9f9bb137",
+            "review_note": "Reviewed the MCP-related developer CLI guidance after adding storefront validation to the release gate. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
         },
         "media": {
             "source_sha256": "edc32a5a9f73cf7f2954eac135a2eaed1394089034bac24ea835af48c4d9600e",
-            "references_sha256": "bb02d897e7b68e33511130766ce52a09d9b74f352c9c52e43c45706712515ef8",
-            "review_note": "Checked retained campaign file descriptors and protected streaming against Media Library behavior. Booking authorization is scoped to the frozen private manifest."
+            "references_sha256": "e95db2dda18ff50219214cfd0f96a32a26d5316d09a01efca7500c30ecc33142",
+            "review_note": "Reviewed the owner UI skill changes against authenticated media navigation, route declarations, and Media Library behavior. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
         },
         "operator-help": {
-            "source_sha256": "96328e76952912d6c655aaed3990e9b010a5bc5ce581ca63c65425413ad742ca",
-            "references_sha256": "290f76393a7f1ff5ba583e3da9f3ac9d8b3f6580c1cdee7db531e981e2e1d99f",
-            "review_note": "Reviewed the Enterprise Agent and Agent Monitoring guides against the authorized conversation export and staff assessment screens. Report observations and published passage evidence remain available in the saved turn alongside its guardrails and original evaluation."
+            "source_sha256": "5b228cf8312f9774e73c4ae89be1be152efac4308a6405d4032bcb19b13d063e",
+            "references_sha256": "7ac21e243ab67d658be2730305e40e8e22c505ecd97d1725532ca8def1118f0d",
+            "review_note": "Preserved both reviewed owner integration guidance and version 3 report evidence; regenerated exact route inventory against merged main."
         },
         "public-mcp": {
-            "source_sha256": "98bb406d5d51bf64265612bd379b5e7970909522482d79649e2f7eaf9ca97835",
+            "source_sha256": "e45e0b33143554284f2733f661c71751693e3b31b37ee47efb90a766e46c6bba",
             "references_sha256": "d06c98bd47f7604ad0a0529c3673bc10c92cbb8608c2027af4a5df5d379fcb67",
-            "review_note": "Compared HTTP, WebMCP and MCP article search with the shared retriever. Their schema and title and summary scoring remain intact, while the native agents opt in to body matching and topic passages."
+            "review_note": "Compared the existing public response contracts and article publication scope with the exact generated route and resource identities. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
         },
         "remote-commerce": {
-            "source_sha256": "1ec73aa2fe94913016cfa026925744b2d6f5c6e9b6133233a8d173df67b00f29",
+            "source_sha256": "28a3c2d025729100fe529cb5d1d05d3bd967ca18d4f29f99bb27505419d09e56",
             "references_sha256": "c891045c682af6832d9509bbb49f9324a50b0581ba8da9a0617da2e52be4bad9",
-            "review_note": "Compared published article retrieval and shared transport against the cart, checkout and campaign dispatch contracts. Article lookup reads published Markdown, and the authenticated storefront count remains an independent database read."
+            "review_note": "Reviewed the scoped report evidence and commerce route declarations alongside the corrected audit declaration inventory. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
         },
         "sales-channels": {
             "source_sha256": "492f8e8aa91eea19a7292b96f29400c4031e9523a40380b151c29d13b03f13b3",
-            "references_sha256": "584b563cb628dce2573081ef1aaf46071bd9815c6bc37e1c4bc18b295a9daa39",
-            "review_note": "Compared public search fixture coverage with the product feed and CLI guidance. The fixture verifies published search and module controls using synthetic records."
+            "references_sha256": "74993e200695917d28e7714a13d8c126a4b32ce85051d19dfa7931f3f49525b0",
+            "review_note": "Compared the CLI guide combining catalogue, storefront search, and generated artifact checks. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
         },
         "workflow": {
-            "source_sha256": "2a572008f9ecd767de53a6906f98cfe70615153218ad195c10704d95dee836a7",
-            "references_sha256": "ef79bf65beb22f7ccf6e25d186ce5ee84980449efcdda3b0673982ea3bf29b1b",
-            "review_note": "Compared the generated inventories and CLI development guide against the combined tree. Local storefront search stays in CI, and real Support and Enterprise handlers exercise topic article retrieval over Chat Completions fixtures."
+            "source_sha256": "34127a2258781c2684ecd7ac64d3f66e56a31577dc17cb6ea62f11bab8670a11",
+            "references_sha256": "e02da7c441df6fad273bb71dd829c2564589fc319753a291036c415e8b8494ca",
+            "review_note": "Compared the full local release gate, independent artifact scratch paths, malformed generation reporting and the focused map and CLI regressions. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
         }
     }
 }

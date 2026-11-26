@@ -6,7 +6,10 @@ final class ProjectMapService {
     ];
 
     public const SHARED_CONTROLLERS = ['BaseController'];
-    public const SHARED_SERVICES = ['SeoService', 'SmtpMailer', 'ImageOptimizerService', 'DocsMapService', 'GitHubDocService', 'RateLimiter', 'KnowledgeGraphService'];
+    public const SHARED_SERVICES = [
+        'SeoService', 'SmtpMailer', 'ImageOptimizerService', 'DocsMapService', 'GitHubDocService', 'RateLimiter', 'KnowledgeGraphService',
+        'RequestFailureService', // Registered in app/bootstrap.php before controller dispatch.
+    ];
     public const SHARED_VIEWS = ['account/_nav', 'layouts/admin', 'layouts/app', 'public/404', 'admin/environment', 'public/home-collections', 'public/home-product-card', 'public/home-rail-controls', 'admin/_commerce-overview', 'admin/list-controls'];
     public const KNOWN_UNWIRED_COLLECTIONS = ['wallet_transactions'];
 
@@ -466,7 +469,7 @@ final class ProjectMapService {
         $descs = [
             '/docs'           => 'Documentation landing — blog categories overview',
             '/blog'           => 'Blog listing — all posts with category filters',
-            '/blog/{slug}'    => 'Blog post — rendered from GitHub-sourced markdown',
+            '/blog/{slug}'    => 'Published blog post rendered from local Markdown',
             '/blog/category/{slug}' => 'Blog listing filtered by category',
             '/'                => 'Home page — hero, categories, featured products, temple guide',
             '/about'           => 'About SPS — story, values, CTA',
@@ -519,7 +522,8 @@ final class ProjectMapService {
             '/support/ask|POST' => 'Support bot — AI-powered Q&A',
 
 
-            '/admin'            => 'Admin dashboard — commerce analytics and operations',
+            '/admin'            => 'Legacy owner dashboard redirect to /admin/',
+            '/admin/'           => 'Admin dashboard for commerce analytics and operations',
             '/admin/products'   => 'Admin — manage products',
             '/admin/categories' => 'Admin — manage categories',
             '/admin/coupons'    => 'Admin — manage coupons',
@@ -647,7 +651,7 @@ final class ProjectMapService {
         foreach ($scan['gaps'] as $kind => $items) {
             foreach ($items as $index => $item) {
                 if ($kind === 'admin_mutations_without_audit' && is_array($item)) {
-                    $label = (($item['method'] ?? '') . ' ' . ($item['path'] ?? '') . ' — missing AuditLogService');
+                    $label = (($item['method'] ?? '') . ' ' . ($item['path'] ?? '') . ' — no declared AuditLogService');
                 } elseif (is_array($item)) {
                     $label = (($item['method'] ?? '') . ' ' . ($item['path'] ?? '') . ' missing mapping');
                 } elseif ($kind === 'unreferenced_services') {

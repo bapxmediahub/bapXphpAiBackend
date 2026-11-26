@@ -96,7 +96,7 @@ Test rapid history switching, New chat during a pending read, keyboard mention s
 The admin-agent flow:
 1. `GET /admin/agent` calls `AdminController::agent()` and renders the page.
 2. `POST /admin/agent/ask` calls `AdminController::agentAsk()`. The model selects named read-only queries through `EnterpriseToolRegistry`, and PHP supplies actor-owned prior report dates.
-3. `SecretService` supplies provider/model settings. `AiClient` handles provider failover and bounded tools.
+3. `SecretService` supplies the ordered, enabled provider plan. `AiClient` uses Chat Completions for bounded tool execution and failover.
 4. `AgentConversationService` saves a single private JSON file per chat. The browser stores one opaque active chat ID under its session-scoped key and restores it through the authenticated history route. Use History to switch threads or New chat to begin one.
 5. The controller returns JSON; `views/admin/agent.php` safely renders replies, source links, drafts, traces and history.
 
@@ -111,25 +111,33 @@ full user lists, payment data, or unrelated customer records. A future write
 operation needs an explicit controller/service contract, authorization, confirmation,
 CSRF protection and audit event; a prompt alone is never authorization.
 
-## OpenRouter Free in existing AI settings
+## AI provider settings and diagnostics
 
-Keep the OpenRouter enable checkbox and masked API key adjacent to Google API Key.
-The saved key exists only in encrypted `app_secrets` (hosted MySQL); blank
-password means preserve, and disable retains it. A successful Test AI Connection
-must say which model actually answered, especially after a Google fallback.
-Test this owner-only form using Chromium Playwright at 1280px and 375px, and
-assert the password never appears in HTML or screenshots. Do not create a new
-frontend, local secret copy or separate provider client.
+Keep the three Chat Completions connections and their independent enable
+switches under **Admin → Integrations → AI Providers and Models**. The owner can
+choose Google or the custom connection as preferred. OpenRouter runs last when
+eligible. Keep model IDs in fallback order and retain Google's individual
+model switches.
 
-## AI Integration Secrets
+| Connection | Settings handled by `SecretService` |
+|---|---|
+| Google | `ai_api_key`, `ai_google_enabled`, `ai_google_models`, `ai_google_disabled_models` |
+| OpenRouter | `ai_openrouter_key`, `ai_openrouter_enabled`, `ai_openrouter_models` |
+| Custom | `ai_compatible_key`, `ai_compatible_enabled`, `ai_compatible_url`, `ai_compatible_models`, `ai_compatible_token_field` |
 
-Configured in Admin → Integrations with these fields stored in MySQL `secrets` table:
+Save through the existing encrypted `app_secrets` record in the hosted MySQL
+`secrets` collection. Show saved-key status outside an empty password field.
+Blank inputs preserve keys for the same endpoint. Switching a connection off
+retains its saved configuration. A changed custom endpoint requires its own key.
 
-| Key | Purpose |
-|-----|---------|
-| `agent_api_key` | Authentication key |
-| `agent_model` | Model ID; defaults to `gemma-4-31b-it` |
-| `api_endpoint` | Full provider API URL |
+Verify **Save AI Provider Settings**, persistence after reload, and isolation
+from unrelated integrations in Chromium at 1280px and 375px. Use synthetic
+credentials and verify that the rendered HTML and screenshots keep saved keys
+masked. In **Test the AI connection**, exercise **Text response** and **Tool
+round trip** for an exact connection and model, including two connections with
+the same model ID. Check that the result identifies the attempted connection
+and model and displays only safe diagnostics. Use the provider acceptance checks in
+[Development workflow](../../../docs/development-workflow.md).
 
 ## Testing
 

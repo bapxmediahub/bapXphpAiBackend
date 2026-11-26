@@ -21,7 +21,7 @@ flowchart LR
     arch_views["> Views: 76"]:::arch
     arch_data["> Collections: 25 schema | 0 files"]:::arch
     arch_tools["> Tools: 30"]:::arch
-    arch_gaps["> Gaps: 8"]:::arch
+    arch_gaps["> Gaps: 7"]:::arch
     arch_routes -.-> arch_ctrl -.-> arch_svc -.-> arch_data
     arch_ctrl -.-> arch_views
   end
@@ -93,7 +93,7 @@ flowchart LR
     route_get_help_slug["GET /help/{slug}"]:::route
     route_post_remotedb["POST /remotedb — Remote DB query endpoint — proxies SQL to production MySQL"]:::route
     route_get_blog["GET /blog — Blog listing — all posts with category filters"]:::route
-    route_get_blog_slug["GET /blog/{slug} — Blog post — rendered from GitHub-sourced markdown"]:::route
+    route_get_blog_slug["GET /blog/{slug} — Published blog post rendered from local Markdown"]:::route
     route_get_blog_category_slug["GET /blog/category/{slug} — Blog listing filtered by category"]:::route
   end
 
@@ -134,8 +134,8 @@ flowchart LR
   end
 
   subgraph ROUTES_ADMIN["ADMIN Routes"]
-    route_get_admin["GET /admin — Admin dashboard — commerce analytics and operations"]:::route
-    route_get_admin_slash["GET /admin/"]:::route
+    route_get_admin["GET /admin — Legacy owner dashboard redirect to /admin/"]:::route
+    route_get_admin_slash["GET /admin/ — Admin dashboard for commerce analytics and operations"]:::route
     route_get_admin_system_health["GET /admin/system-health"]:::route
     route_get_admin_docs["GET /admin/docs"]:::route
     route_get_admin_docs_slug["GET /admin/docs/{slug}"]:::route
@@ -507,13 +507,12 @@ flowchart LR
 
   subgraph GAPS["Gaps & Missing Links — inventory checks"]
     gap_35faf425c4["no declared or scanned reference: AstrologerService"]:::gap
-    gap_006b2fd1e7["no declared or scanned reference: RequestFailureService"]:::gap
-    gap_751b59f88f["POST /admin/google-pagespeed/run — missing AuditLogService"]:::gap
-    gap_b46dc42ce5["POST /admin/shipping/preview — missing AuditLogService"]:::gap
-    gap_fb85c15f10["POST /admin/email-templates/test — missing AuditLogService"]:::gap
-    gap_5f80d1ae21["POST /admin/integrations/test-email — missing AuditLogService"]:::gap
-    gap_d113e938d0["POST /admin/blog/enhance-title — missing AuditLogService"]:::gap
-    gap_5e590bb6d3["POST /admin/blog/enhance-content — missing AuditLogService"]:::gap
+    gap_cb3ecd4dfd["POST /admin/google-pagespeed/run — no declared AuditLogService"]:::gap
+    gap_57cf7adf91["POST /admin/shipping/preview — no declared AuditLogService"]:::gap
+    gap_6800d60697["POST /admin/email-templates/test — no declared AuditLogService"]:::gap
+    gap_d2a8b09443["POST /admin/integrations/test-email — no declared AuditLogService"]:::gap
+    gap_8bdf75dd52["POST /admin/blog/enhance-title — no declared AuditLogService"]:::gap
+    gap_949057eeec["POST /admin/blog/enhance-content — no declared AuditLogService"]:::gap
   end
 
   route_get -- registered handler --> controller_publiccontroller
@@ -1913,10 +1912,9 @@ flowchart LR
   tool_smoke_local -. declared probe coverage .-> ROUTES_PUBLIC
   tool_smoke_local -. declared probe coverage .-> ROUTES_ADMIN
   gap_35faf425c4 -. inspect .-> service_astrologerservice
-  gap_006b2fd1e7 -. inspect .-> service_requestfailureservice
-  gap_751b59f88f -. missing .-> controller_adminpagespeedcontroller
-  gap_b46dc42ce5 -. missing .-> controller_admincontroller
-  gap_fb85c15f10 -. missing .-> controller_admincontroller
-  gap_5f80d1ae21 -. missing .-> controller_admincontroller
-  gap_d113e938d0 -. missing .-> controller_admincontroller
-  gap_5e590bb6d3 -. missing .-> controller_admincontroller
+  gap_cb3ecd4dfd -. missing .-> controller_adminpagespeedcontroller
+  gap_57cf7adf91 -. missing .-> controller_admincontroller
+  gap_6800d60697 -. missing .-> controller_admincontroller
+  gap_d2a8b09443 -. missing .-> controller_admincontroller
+  gap_8bdf75dd52 -. missing .-> controller_admincontroller
+  gap_949057eeec -. missing .-> controller_admincontroller

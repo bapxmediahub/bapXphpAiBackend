@@ -504,7 +504,10 @@ final class KnowledgeGraphService {
     }
 
     private static function routeId(array $route): string {
-        return 'route:' . strtolower(trim(preg_replace('/[^a-zA-Z0-9]/', '_', ($route['method'] ?? 'GET') . '_' . ($route['path'] ?? '')), '_'));
+        $path = $route['path'] ?? '';
+        $id = strtolower(trim(preg_replace('/[^a-zA-Z0-9]/', '_', ($route['method'] ?? 'GET') . '_' . $path), '_'));
+        // Keep existing IDs while distinguishing a registered trailing-slash alias.
+        return 'route:' . $id . ($path !== '/' && str_ends_with($path, '/') ? '_' : '');
     }
 
     private function stableId(string $value): string {

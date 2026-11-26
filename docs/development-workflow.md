@@ -27,7 +27,8 @@ Root `map.mmd` and `docs/systematic-map.mmd` are generated from the same
 ProjectMapService inventory. They distinguish registered handlers, declared
 service/related-view associations, literal source references and collection
 references. A related view can be a redirect destination, fallback or resource
-template; that association does not prove the handler renders it. Explicit
+template. Check the exact registered method and path in the code maps and
+indexes, including distinct paths such as `GET /admin` and `GET /admin/`. Explicit
 `response: json` metadata is retained in `docs/project-index.json` and `index.yaml`
 without adding an HTML view.
 
@@ -50,10 +51,22 @@ explicit overrides and do not establish read/write direction. The project index'
 `relationship_provenance` explains these limits; knowledge-router relations use
 `declared_service` and `collection_reference` rather than claiming calls or writes.
 
-Run `php tests/project-map.php` for focused source/decoy, inheritance, gateway,
-presenter and metadata regressions. The same tests run in `tests/run.php` under
-the required `./bapXphp ci` gate. Regenerate with `./bapXphp update`; never patch
-generated edges by hand.
+Read `gaps` in `docs/project-index.json` or the gap nodes in `map.mmd`. For a
+route warning, open the handler and follow its service calls. An admin audit
+warning reports a missing declaration. Check whether the operation changes
+durable data or performs an external action, and trace where any audit event is
+written before correcting route metadata or runtime code. For an unreferenced
+service, check entry points outside the bounded scan. Record each confirmed
+defect against the affected source and add a focused regression when the
+existing suite cannot detect it.
+
+Fix the route registry, source or generator that caused the discrepancy and
+regenerate with `./bapXphp update`. Use `./bapXphp map:val` to check and report
+the root and systematic code maps together. Run `./bapXphp ci` to also check the
+documentation map, JSON and YAML indexes, documentation review receipts and
+application tests. Use `php tests/project-map.php` for focused source,
+inheritance, gateway, presenter and metadata regressions. These tests also run
+through `tests/run.php`.
 
 Read the relevant developer skill and current code, issue comments and merged
 PRs. Use REA pinned-source evidence to form testable questions, not proof that
@@ -105,14 +118,20 @@ system or build the deferred installer.
 
 Test the actual integration form at desktop and 375px. Exercise masked key
 retention, explicit model IDs, independent enable switches, safe endpoint changes,
-and saved configuration reload with isolated credentials. Test Google wire
-schemas against official API contracts; verify a real text response and a real
-authorized tool round-trip separately. Use synthetic non-private questions and
-record only redacted status, exact model, timings and tool results as bounded
-evidence. Distinguish rejected schema, authentication, transport, quota, model
-availability, and actual answer quality. Never label a provider failure a
-successful agent run. After merge, verify exact deployed SHA and repeat the
-affected authenticated and guest flows before closing the corresponding scope.
+and saved configuration reload with isolated credentials. Check Chat Completions
+requests and tool continuation against the official API contracts for Google,
+OpenRouter, and the custom endpoint under review. Run
+`php tests/ai-provider-transport.php` for loopback transport coverage and
+`php tests/model-driven-agents.php` for both native chat controllers. Use
+`php cli/agent-eval.php` for deterministic agent fixtures.
+
+On the deployed revision, select each affected enabled provider and model and
+verify a live text response and synthetic tool round trip separately. Exercise
+the affected authenticated and guest flows through both agents with authorized
+lookups. Use synthetic, non-private questions and record the deployed SHA,
+provider/model, redacted status, timings and tool outcomes. Track rejected schema,
+authentication, transport, quota and model-availability failures separately from
+the quality of a completed answer.
 
 ## GitHub issue-first loop
 

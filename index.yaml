@@ -46,15 +46,15 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 513
-  relationships: 478
+  concepts: 514
+  relationships: 480
   by_type:
     blog: 16
     controller: 19
     doc: 55
     image: 89
     operator_guide: 12
-    route: 187
+    route: 188
     runtime_instruction: 6
     schema: 25
     service: 92
@@ -655,7 +655,7 @@ concepts:
   - id: "doc:integrations"
     type: "doc"
     title: "Integrations"
-    description: "Route /admin/integrations - configure Razorpay, Stripe, Google OAuth, SMTP, Meta Pixel, native Google tag settings, Support Bot, and SEO defaults."
+    description: "Configure payments, Google OAuth and site tags, SMTP, and the Chat Completions connections shared by Support and Enterprise."
     resource: "docs/pages/integrations.md"
     tags:
       - "page"
@@ -2313,6 +2313,27 @@ concepts:
     path: "/admin"
     controller: "AdminController@legacyDashboard"
     services:
+      - "AuthService"
+    view: "admin/dashboard"
+    response: null
+    provenance: "route_registry"
+  - id: "route:get__admin_"
+    type: "route"
+    title: "GET /admin/"
+    description: "admin.dashboard"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "GET"
+    path: "/admin/"
+    controller: "AdminController@dashboard"
+    services:
+      - "ResourceService"
+      - "OrderService"
+      - "StoreStatsService"
+      - "SiteInsightsService"
+      - "SiteTelemetryService"
       - "AuthService"
     view: "admin/dashboard"
     response: null
@@ -7243,6 +7264,9 @@ relationships:
   - from: "route:get__admin"
     to: "controller:AdminController"
     relation: "handled_by"
+  - from: "route:get__admin_"
+    to: "controller:AdminController"
+    relation: "handled_by"
   - from: "route:get__admin_agent"
     to: "controller:AdminController"
     relation: "handled_by"
@@ -7936,3 +7960,6 @@ relationships:
   - from: "service:VerifiedOrderService"
     to: "schema:orders"
     relation: "collection_reference"
+  - from: "skill:admin-ui"
+    to: "doc:development-workflow"
+    relation: "references"
