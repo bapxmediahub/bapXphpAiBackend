@@ -1,0 +1,2459 @@
+{
+    "schema_version": 1,
+    "baseline_commit": "00ad614096cade47a1701cf6dfa13819a92b2de6",
+    "scope": "Selected native adaptation obligations, not full upstream parity. Each obligation appears once. Historical audits remain separate.",
+    "groups": {
+        "wordpress": "WordPress CMS and native admin",
+        "woocommerce": "WooCommerce commerce",
+        "sitekit": "Google Site Kit reporting",
+        "wordpress-mcp": "WordPress MCP / Abilities adaptation",
+        "a2ui": "A2UI 1.0",
+        "chat-completions": "OpenAI-compatible Chat Completions",
+        "deepseek": "DeepSeek Harness agent engineering"
+    },
+    "rows": [
+        {
+            "id": "P01",
+            "group": "wordpress",
+            "title": "PHP 8.3+ and MySQL 8.4+ runtime baseline",
+            "status": "partial",
+            "issues": [
+                270
+            ],
+            "references": [
+                {
+                    "source": "wordpress",
+                    "path": "wp-admin/includes/class-wp-site-health.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/admin/class-wc-admin-status.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/RuntimeHealthService.php",
+                "views/admin/system-health.php"
+            ],
+            "acceptance_evidence": [
+                "docs/runtime-requirements.md"
+            ],
+            "finding": "System Health and version policy exist; verify deployed PHP and actual database engine, no silent migration.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "0074f9a57d2474cfd00b1affdff527833ffbc2c4c4b7fe81fcb0cb44e414a63e"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P02",
+            "group": "wordpress",
+            "title": "Unified admin navigation and contextual help",
+            "status": "implemented",
+            "issues": [
+                270
+            ],
+            "references": [
+                {
+                    "source": "wordpress",
+                    "path": "wp-admin/menu.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/admin/class-wc-admin-menus.php"
+                }
+            ],
+            "local_sources": [
+                "views/layouts/admin.php",
+                "app/Services/AdminHelpService.php"
+            ],
+            "acceptance_evidence": [
+                "docs/admin-help.md"
+            ],
+            "finding": "Integrated native sidebar and contextual guides exist; verify all owner navigation at desktop/mobile.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "e67371295c70ca93217515278a7cf1859008b8801aa95bbc06e33e17118dc671"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P03",
+            "group": "wordpress",
+            "title": "Posts draft/preview and public search",
+            "status": "implemented",
+            "issues": [
+                47
+            ],
+            "references": [
+                {
+                    "source": "wordpress",
+                    "path": "wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/BlogService.php",
+                "app/Controllers/BlogController.php"
+            ],
+            "acceptance_evidence": [
+                "tests/blog-concurrency.php",
+                "tests/storefront-search.php"
+            ],
+            "finding": "Draft, preview, public search and published filters exist; authenticate and verify editorial save/search on deployment.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "49865a0ef521df14a2ecbcaccc8b81289e2cf77b3e2a4d4daad4369f9c345bf6"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P04",
+            "group": "wordpress",
+            "title": "Autosave, revisions, edit locking and scheduled publishing",
+            "status": "partial",
+            "issues": [
+                359,
+                47
+            ],
+            "references": [
+                {
+                    "source": "wordpress",
+                    "path": "wp-includes/revision.php"
+                },
+                {
+                    "source": "wordpress",
+                    "path": "wp-includes/rest-api/endpoints/class-wp-rest-autosaves-controller.php"
+                },
+                {
+                    "source": "wordpress",
+                    "path": "wp-includes/cron.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/BlogService.php",
+                "app/Services/AuthoredPageService.php",
+                "assets/blog-draft.js",
+                "assets/page-draft.js"
+            ],
+            "acceptance_evidence": [
+                "tests/blog-concurrency.php",
+                "tests/page-draft-browser.cjs"
+            ],
+            "finding": "Revision CAS, scheduled visibility and browser recovery exist; server recovery and edit-session locks not merged.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "21d7ace472077367e30b6327b95ff233fa0ce038c2e23c7da6b2f2637b7f5587"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P05",
+            "group": "wordpress",
+            "title": "General pages, reusable layouts and content hierarchy",
+            "status": "partial",
+            "issues": [
+                466,
+                270
+            ],
+            "references": [
+                {
+                    "source": "wordpress",
+                    "path": "wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php"
+                },
+                {
+                    "source": "wordpress",
+                    "path": "wp-admin/site-editor.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/AuthoredPageService.php",
+                "views/admin/pages.php"
+            ],
+            "acceptance_evidence": [
+                "tests/campaign-form-http.php"
+            ],
+            "finding": "Native authored pages and campaign controls exist; reusable layout/template hierarchy remains.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "9b234d0b169cc7caf007ea1ca7d31f44c299a23c8535848622a5231c671fe244"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P06",
+            "group": "wordpress",
+            "title": "Taxonomies, tags and hierarchical catalog organization",
+            "status": "partial",
+            "issues": [
+                270,
+                356
+            ],
+            "references": [
+                {
+                    "source": "wordpress",
+                    "path": "wp-admin/menu.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/admin/class-wc-admin-menus.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/CategoryService.php",
+                "app/Services/BlogService.php",
+                "storage/schema/collections.php"
+            ],
+            "acceptance_evidence": [
+                "docs/modules/catalog.md"
+            ],
+            "finding": "Existing categories and collection membership; hierarchical taxonomy, tags and generalized relations need scoped design.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "a81ee3c69b38cc624719cdd5e0e751176eddbc16ba102df24c3793bd147437e9"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P07",
+            "group": "wordpress",
+            "title": "Blog comments and product-review moderation",
+            "status": "partial",
+            "issues": [
+                270
+            ],
+            "references": [
+                {
+                    "source": "wordpress",
+                    "path": "wp-admin/menu.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/class-wc-comments.php"
+                }
+            ],
+            "local_sources": [
+                "storage/schema/collections.php",
+                "app/Controllers/AdminController.php"
+            ],
+            "acceptance_evidence": [
+                "docs/modules/catalog.md"
+            ],
+            "finding": "Product reviews exist; blog-comment moderation lifecycle not established.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Inspected #512 AdminController diff; only agent guidance changed, not product review or blog moderation operations.",
+                "source_sha256": "535c6041b8c2eec2494a67d95566c4499fd43fef33e87e2158b52337cf7fbc7b"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P08",
+            "group": "wordpress",
+            "title": "Media CRUD and protected deletion",
+            "status": "implemented",
+            "issues": [
+                270
+            ],
+            "references": [
+                {
+                    "source": "wordpress",
+                    "path": "wp-admin/menu.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/MediaService.php",
+                "views/admin/media.php"
+            ],
+            "acceptance_evidence": [
+                "tests/media-delete-integration.php"
+            ],
+            "finding": "Media CRUD and protected reference-aware deletion; live owner acceptance still required.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "47dfe8447e7dd99714aa256d85ef1152fcc4bedc5647248dca784454799156e4"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P09",
+            "group": "wordpress",
+            "title": "Media pagination, alt/caption editing and image transforms",
+            "status": "partial",
+            "issues": [
+                270
+            ],
+            "references": [
+                {
+                    "source": "wordpress",
+                    "path": "wp-admin/includes/class-wp-list-table.php"
+                },
+                {
+                    "source": "wordpress",
+                    "path": "wp-admin/includes/image-edit.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/MediaService.php",
+                "views/admin/media.php"
+            ],
+            "acceptance_evidence": [
+                "tests/media-metadata-browser.cjs"
+            ],
+            "finding": "Metadata CAS and pagination exist; advanced image editing and complete transform workflow remain.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "1552b99d6e55baf6737877893c831e28f37b18b067dd3cf9cd29ecee7bbd8f02"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P10",
+            "group": "wordpress",
+            "title": "Admin tables pagination, filters and safe bulk actions",
+            "status": "partial",
+            "issues": [
+                270
+            ],
+            "references": [
+                {
+                    "source": "wordpress",
+                    "path": "wp-admin/includes/class-wp-list-table.php"
+                }
+            ],
+            "local_sources": [
+                "views/admin/list-controls.php",
+                "views/admin/list.php",
+                "app/Controllers/AdminController.php"
+            ],
+            "acceptance_evidence": [
+                "tests/admin-list-pagination.php"
+            ],
+            "finding": "Native filters/pagination exist; verify consistent bulk-action safety across every owner list.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Inspected #512 AdminController diff; list pagination, filters and bulk actions unchanged; partial scope remains.",
+                "source_sha256": "f3168f69c5c1ca89630da2dc0c0335fdb20eba6cb78cf5fdc93f31bb96c1d505"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P12",
+            "group": "wordpress",
+            "title": "Fine-grained staff roles and delegated API identities",
+            "status": "partial",
+            "issues": [
+                270,
+                272
+            ],
+            "references": [
+                {
+                    "source": "wordpress",
+                    "path": "wp-includes/capabilities.php"
+                },
+                {
+                    "source": "wordpress",
+                    "path": "wp-includes/class-wp-application-passwords.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/AuthService.php",
+                "app/Services/AgentCapabilityPolicy.php",
+                "app/Services/McpClientService.php"
+            ],
+            "acceptance_evidence": [
+                "tests/mcp-client-access.test.cjs"
+            ],
+            "finding": "Owner/customer and scoped API grants exist; fine-grained staff permissions remain.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "18af00d64378b961ee0766115e585944532e8b74a62a0503f2c5db5d83ce2875"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P13",
+            "group": "wordpress",
+            "title": "Personal-data export/erasure and consent governance",
+            "status": "missing",
+            "issues": [
+                270
+            ],
+            "references": [
+                {
+                    "source": "wordpress",
+                    "path": "wp-admin/includes/privacy-tools.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/admin/settings/class-wc-settings-accounts.php"
+                }
+            ],
+            "local_sources": [
+                "app/Controllers/AccountController.php",
+                "storage/schema/collections.php"
+            ],
+            "acceptance_evidence": [
+                "docs/modules/auth.md"
+            ],
+            "finding": "No verified native privacy export/erasure and consent-governance workflow; specify legal retention and role boundaries first.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "2b5d04c8eb4e40da84ed2b6b2f18ec0cbc793d19a3d02d6f24739d2179742024"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P14",
+            "group": "wordpress",
+            "title": "Site settings, branding and module controls",
+            "status": "implemented",
+            "issues": [
+                379
+            ],
+            "references": [
+                {
+                    "source": "wordpress",
+                    "path": "wp-admin/options-general.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/admin/settings/class-wc-settings-general.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/SettingsService.php",
+                "app/Services/SiteProfileService.php",
+                "views/admin/settings.php"
+            ],
+            "acceptance_evidence": [
+                "tests/site-profile-browser.cjs"
+            ],
+            "finding": "Branding and module controls exist; verify independent settings saves with production owner.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "a228e897e8e1eb44801212fd14ed2940976629362e51f240d63d1dd7e50635c4"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P15",
+            "group": "wordpress",
+            "title": "Editable navigation, layout templates and global design controls",
+            "status": "partial",
+            "issues": [
+                270,
+                379
+            ],
+            "references": [
+                {
+                    "source": "wordpress",
+                    "path": "wp-admin/nav-menus.php"
+                },
+                {
+                    "source": "wordpress",
+                    "path": "wp-admin/site-editor.php"
+                }
+            ],
+            "local_sources": [
+                "views/admin/header-menu.php",
+                "app/Services/SettingsService.php",
+                "views/admin/pages.php"
+            ],
+            "acceptance_evidence": [
+                "tests/header-menu-browser.cjs"
+            ],
+            "finding": "Editable navigation and appearance exist; reusable page templates/global layout governance incomplete.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "7edb4e30f118bf1fa5a9151f49a3c1c375ccc40466d5f91c10d7e2dfcfcfd6b3"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P16",
+            "group": "wordpress",
+            "title": "Canonical/permalink and redirect governance",
+            "status": "partial",
+            "issues": [
+                270
+            ],
+            "references": [
+                {
+                    "source": "wordpress",
+                    "path": "wp-admin/options-permalink.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/SeoService.php",
+                "app/Services/BlogService.php"
+            ],
+            "acceptance_evidence": [
+                "docs/modules/content-and-seo.md"
+            ],
+            "finding": "Canonical metadata and slugs exist; managed redirect registry, conflict and lifecycle checks remain.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "d24d8f6474e8bdbe327fb3fde4d627bc59a14c4a3625a4d528b24383113f5da6"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P17",
+            "group": "wordpress",
+            "title": "Persistent job scheduling and operator job health",
+            "status": "partial",
+            "issues": [
+                25,
+                270
+            ],
+            "references": [
+                {
+                    "source": "wordpress",
+                    "path": "wp-includes/cron.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/class-wc-emails.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/MailQueueService.php",
+                "views/admin/mailbox.php"
+            ],
+            "acceptance_evidence": [
+                "tests/mail-delivery-concurrency.php",
+                "tests/mail-scheduled-browser.cjs"
+            ],
+            "finding": "Bounded mail due processing and health exist; generalized persistent job scheduler and delivery proof absent.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "db0b8e3829c7e6cebf2dc4da2b7aefa69ec2cf438974643de6836f0d8a7ec54d"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P36",
+            "group": "wordpress",
+            "title": "Safe multi-client provisioning and deployment separation",
+            "status": "partial",
+            "issues": [
+                379,
+                42
+            ],
+            "references": [
+                {
+                    "source": "wordpress",
+                    "path": "wp-admin/network/sites.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/SiteProfileService.php",
+                "app/Services/DatabaseService.php",
+                "app/Services/SettingsService.php"
+            ],
+            "acceptance_evidence": [
+                "docs/client-runtime-adaptation.md"
+            ],
+            "finding": "Configurable identity and native persistence exist; isolated installer/provisioning deferred.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "a906b374a3bc66025478df206d4be525998cc343f95cfffe01050312d3731012"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P11",
+            "group": "woocommerce",
+            "title": "Customer profile/address/order access",
+            "status": "partial",
+            "issues": [
+                75
+            ],
+            "references": [
+                {
+                    "source": "woocommerce",
+                    "path": "includes/class-wc-customer.php"
+                }
+            ],
+            "local_sources": [
+                "app/Controllers/AccountController.php",
+                "app/Services/AddressService.php",
+                "app/Services/AuthService.php"
+            ],
+            "acceptance_evidence": [
+                "tests/account-profile-browser.cjs"
+            ],
+            "finding": "Profile/address/order workflow exists; live password and Google callback acceptance remain.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "802ebff97b0f37c122866a1f324efb1274440a92c9a985496d2e839531d96111"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P18",
+            "group": "woocommerce",
+            "title": "Product variations, attributes, grouped/external types",
+            "status": "missing",
+            "issues": [
+                356
+            ],
+            "references": [
+                {
+                    "source": "woocommerce",
+                    "path": "includes/class-wc-product-variable.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/class-wc-product-variation.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/class-wc-product-grouped.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/class-wc-product-external.php"
+                }
+            ],
+            "local_sources": [
+                "storage/schema/collections.php",
+                "app/Services/ProductService.php",
+                "app/Services/CartService.php"
+            ],
+            "acceptance_evidence": [
+                "docs/modules/catalog.md"
+            ],
+            "finding": "Variant-specific SKU/price/stock must flow through cart, order and refund; no complete variant model.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "04c408b3ebb62ef2949d752443562ca37a63bf12d34606f7e47e8b6e0ca53c9b"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P19",
+            "group": "woocommerce",
+            "title": "Numeric inventory, reservations, low-stock/backorder policies",
+            "status": "partial",
+            "issues": [
+                356
+            ],
+            "references": [
+                {
+                    "source": "woocommerce",
+                    "path": "src/Checkout/Helpers/ReserveStock.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/admin/settings/class-wc-settings-products.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/ProductService.php",
+                "app/Services/VerifiedOrderService.php",
+                "storage/schema/collections.php"
+            ],
+            "acceptance_evidence": [
+                "tests/verified-order.php"
+            ],
+            "finding": "Availability/on-hold guards exist; numeric reservations, expiry, release and backorders remain.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "d50682b875929f4fcb46fa92cc8d206c6e8156324314420a9fd5e1c11a4e01d4"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P20",
+            "group": "woocommerce",
+            "title": "Virtual/downloadable products and download permissions",
+            "status": "partial",
+            "issues": [
+                356,
+                477,
+                478
+            ],
+            "references": [
+                {
+                    "source": "woocommerce",
+                    "path": "includes/class-wc-product-download.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/class-wc-download-handler.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/CampaignDownloadService.php",
+                "app/Services/CampaignPaymentService.php",
+                "storage/schema/collections.php"
+            ],
+            "acceptance_evidence": [
+                "tests/campaign-booking.php"
+            ],
+            "finding": "Campaign protected downloads exist; product-line virtual/downloadable entitlement workflow not complete.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "2fe9b138a18311caea62e61942d0ab6ba9e687b439150ce3f62210d069e0df96"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P21",
+            "group": "woocommerce",
+            "title": "Catalog import/export with validation and resumable work",
+            "status": "partial",
+            "issues": [
+                356
+            ],
+            "references": [
+                {
+                    "source": "woocommerce",
+                    "path": "includes/admin/class-wc-admin-importers.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/admin/class-wc-admin-exporters.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/ProductImportService.php",
+                "app/Controllers/AdminController.php"
+            ],
+            "acceptance_evidence": [
+                "docs/modules/catalog.md"
+            ],
+            "finding": "CSV parse/import exists; full validated resumable import/export and reconciliation remain.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Inspected #512 AdminController diff; product CSV import/export and resumable processing unchanged.",
+                "source_sha256": "c46e4f4fcd93315c18f0e66ca8aa4454dce67f128e8e2bd06499bd6511ca92f6"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P22",
+            "group": "woocommerce",
+            "title": "Coupon rules and promotion precedence",
+            "status": "partial",
+            "issues": [
+                356
+            ],
+            "references": [
+                {
+                    "source": "woocommerce",
+                    "path": "includes/class-wc-coupon.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/CouponService.php",
+                "app/Services/CartService.php"
+            ],
+            "acceptance_evidence": [
+                "tests/remote-checkout.php"
+            ],
+            "finding": "Coupon constraints exist; comprehensive precedence and discount stacking parity remain.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "d5f1d3910a3d4f51b44779bc1800ba9ca98f0bb23e121d130dda4fcb9352e097"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P23",
+            "group": "woocommerce",
+            "title": "Shipping zones/classes/rate methods and packages",
+            "status": "partial",
+            "issues": [
+                360
+            ],
+            "references": [
+                {
+                    "source": "woocommerce",
+                    "path": "includes/admin/settings/class-wc-settings-shipping.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/class-wc-shipping-zone.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/ShippingService.php",
+                "views/admin/shipping.php",
+                "app/Services/RemoteCartService.php"
+            ],
+            "acceptance_evidence": [
+                "tests/shipping-preview-browser.cjs"
+            ],
+            "finding": "Region rate preview exists; integrate verified quote into real checkout, taxes, refunds and orders.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "c6a3ba859e7ef8ad2643ca31c9973aec6953d73da5312b8f48509f34d6ca6cef"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P24",
+            "group": "woocommerce",
+            "title": "GST invoices, verified refunds and reconciliation",
+            "status": "partial",
+            "issues": [
+                230,
+                434
+            ],
+            "references": [
+                {
+                    "source": "woocommerce",
+                    "path": "includes/class-wc-tax.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/class-wc-order-refund.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/TaxService.php",
+                "app/Services/GstRegisterService.php",
+                "app/Services/VerifiedOrderService.php"
+            ],
+            "acceptance_evidence": [
+                "tests/gst-unit-browser.cjs",
+                "tests/verified-order.php"
+            ],
+            "finding": "Frozen issued invoice/tax state evidence exists; authenticated register and statutory reconciliation remain.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "709016bccc9c1270369060a62f41f4873e2e5667eb744008a0fcdfa25b3b95d3"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P25",
+            "group": "woocommerce",
+            "title": "Verified payment and retry-safe paid orders",
+            "status": "implemented",
+            "issues": [
+                356,
+                335
+            ],
+            "references": [
+                {
+                    "source": "woocommerce",
+                    "path": "includes/class-wc-order.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/VerifiedOrderService.php",
+                "app/Services/PaymentService.php",
+                "app/Services/OrderService.php"
+            ],
+            "acceptance_evidence": [
+                "tests/verified-order.php",
+                "tests/remote-checkout-mysql.php"
+            ],
+            "finding": "Verified payment and idempotent order fixtures exist; no real production payment acceptance claimed.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "4c1b4742a06139563aab7c26fc61508c7bf23869aaa8b887c32997d2d558d8b4"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P26",
+            "group": "woocommerce",
+            "title": "Order notes, line-level operations and partial fulfilment",
+            "status": "partial",
+            "issues": [
+                356
+            ],
+            "references": [
+                {
+                    "source": "woocommerce",
+                    "path": "includes/class-wc-order.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/class-wc-order-refund.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/OrderService.php",
+                "storage/schema/collections.php"
+            ],
+            "acceptance_evidence": [
+                "docs/modules/orders.md"
+            ],
+            "finding": "Whole-order fulfilment/refund state exists; line-level partial shipment, notes and return allocation need end-to-end checks.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "982c4331d87c3d73135d3fe89382f568ba239a322f0d3954687c2ca926dbebbe"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P27",
+            "group": "woocommerce",
+            "title": "Persistent carts, guest merge and recoverable checkout",
+            "status": "partial",
+            "issues": [
+                335,
+                356
+            ],
+            "references": [
+                {
+                    "source": "woocommerce",
+                    "path": "includes/class-wc-cart-session.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/class-wc-session-handler.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/RemoteCartService.php",
+                "app/Services/CartService.php"
+            ],
+            "acceptance_evidence": [
+                "tests/remote-cart.php",
+                "tests/remote-checkout.php"
+            ],
+            "finding": "Persistent capability-bound remote cart exists; general customer cart merge/abandonment lifecycle remains.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "223ac8df4c22c19b6c8f6ebe54c6c719ba4a03c535cf3b339996124e30149531"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P28",
+            "group": "woocommerce",
+            "title": "Commerce reports and analytic comparison/drill-down",
+            "status": "partial",
+            "issues": [
+                322,
+                356
+            ],
+            "references": [
+                {
+                    "source": "woocommerce",
+                    "path": "src/Admin/API/Reports/Orders/Controller.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/StoreStatsService.php",
+                "views/admin/tax-report.php"
+            ],
+            "acceptance_evidence": [
+                "tests/enterprise-commerce.php"
+            ],
+            "finding": "Scoped sales/stock/product/customer/coupon reports exist; drill-down and verified live report acceptance remain.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "f3ac6b20b1e92d87f0d763faa936f6522f41fb8a8444e9365126f1116c4cdd4d"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P29",
+            "group": "woocommerce",
+            "title": "Order attribution and trustworthy funnel denominators",
+            "status": "partial",
+            "issues": [
+                356
+            ],
+            "references": [
+                {
+                    "source": "woocommerce",
+                    "path": "src/Internal/Orders/OrderAttributionController.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/StoreStatsService.php",
+                "views/admin/dashboard.php",
+                "app/Services/AuditLogService.php"
+            ],
+            "acceptance_evidence": [
+                "tests/storefront-activity-mysql.php"
+            ],
+            "finding": "Bounded storefront activity exists; trusted attribution, cohort and denominator completeness remain.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "4c7110ab71404ed9ca3a7033bd4b6ebee727ef22cfbb778bf0c678f59d111299"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P30",
+            "group": "woocommerce",
+            "title": "Transactional email controls and actual receipt evidence",
+            "status": "partial",
+            "issues": [
+                25,
+                383,
+                384
+            ],
+            "references": [
+                {
+                    "source": "woocommerce",
+                    "path": "includes/admin/settings/class-wc-settings-emails.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/class-wc-emails.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/MailQueueService.php",
+                "app/Services/MailTemplateService.php"
+            ],
+            "acceptance_evidence": [
+                "tests/mail-delivery-concurrency.php"
+            ],
+            "finding": "Claimed deliveries and safe contact hold exist; actual customer/owner inbox receipts unverified.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "1f4c047b6f24813b03b60290c5e6412dcfb61c9e720d4e60a4439b24ab31c6a0"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P31",
+            "group": "wordpress-mcp",
+            "title": "Authenticated public REST integration API and revocable credentials",
+            "status": "partial",
+            "issues": [
+                272,
+                304
+            ],
+            "references": [
+                {
+                    "source": "woocommerce",
+                    "path": "includes/admin/class-wc-admin-api-keys.php"
+                },
+                {
+                    "source": "wordpress",
+                    "path": "wp-includes/class-wp-application-passwords.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/McpClientService.php",
+                "app/Controllers/AdminMcpClientController.php"
+            ],
+            "acceptance_evidence": [
+                "tests/mcp-client-access.test.cjs"
+            ],
+            "finding": "Revocable scoped STDIO credentials exist; authenticated remote capability invocation parity remains.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "a057587b2367ca92891f7dd4414e2a5bb08233abeed5cb58bc8450d64480c25a"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P32",
+            "group": "woocommerce",
+            "title": "Signed webhooks and retry-safe event delivery",
+            "status": "missing",
+            "issues": [
+                356
+            ],
+            "references": [
+                {
+                    "source": "woocommerce",
+                    "path": "includes/class-wc-webhook.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/admin/class-wc-admin-webhooks.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/PaymentService.php",
+                "storage/schema/collections.php"
+            ],
+            "acceptance_evidence": [
+                "docs/modules/orders.md"
+            ],
+            "finding": "Inbound gateway webhook is not signed outgoing webhook subscription/delivery/replay.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "33a4912b0ca76adbe6d98614719333b514766960ad22b7791fa2738e38961684"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P33",
+            "group": "wordpress-mcp",
+            "title": "Shared typed capability catalogue and cross-transport schema parity",
+            "status": "partial",
+            "issues": [
+                304,
+                375
+            ],
+            "references": [
+                {
+                    "source": "wordpress",
+                    "path": "wp-includes/abilities-api/class-wp-ability.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "src/Internal/Abilities/AbilitiesLoader.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/AgentCapabilityPolicy.php",
+                "app/Services/RuntimeAgentToolRegistry.php",
+                "app/Services/PublicAgentDiscoveryService.php"
+            ],
+            "acceptance_evidence": [
+                "tests/public-agent-discovery.php"
+            ],
+            "finding": "Native typed role policies, public MCP and WebMCP projections exist; common cross-transport discovery and invocation parity remains. Direct model tool access tracked in CC05.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Reviewed #512 registry and role filters; direct native declarations fixed, cross-transport typed projection remains partial.",
+                "source_sha256": "c511cd6cdafc28deb44b53937e3be9bfe54cbe24535ae15095c02f5091877a9e"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P34",
+            "group": "wordpress-mcp",
+            "title": "Native MCP transport and scoped client management",
+            "status": "partial",
+            "issues": [
+                272,
+                304
+            ],
+            "references": [
+                {
+                    "source": "woocommerce",
+                    "path": "src/Internal/MCP/McpEndpointRemoval.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "src/Internal/Abilities/Domain/ProductsQuery.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/PublicMcpService.php",
+                "cli/mcp-stdio.php",
+                "app/Services/McpClientService.php"
+            ],
+            "acceptance_evidence": [
+                "tests/public-mcp-sdk.cjs",
+                "tests/mcp-client-access.test.cjs"
+            ],
+            "finding": "Native HTTP public reads/commerce and scoped STDIO exist; authenticated HTTP scope and common projection incomplete.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "c5d7d37eab8a95a373e1390586366bbc24d216b03bc0bd77fa73225f657f7c66"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "P35",
+            "group": "deepseek",
+            "title": "Human quality review and Support resolution feedback",
+            "status": "partial",
+            "issues": [
+                251,
+                176
+            ],
+            "references": [
+                {
+                    "source": "wordpress",
+                    "path": "wp-includes/abilities-api/class-wp-ability.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/AgentConversationService.php",
+                "app/Services/AgentEvaluationService.php",
+                "views/admin/agent-monitoring.php"
+            ],
+            "acceptance_evidence": [
+                "tests/agent-review-concurrency.php",
+                "docs/agent-observability.md"
+            ],
+            "finding": "Owner review revisions and explicit feedback are present; production review workflow, coverage and customer resolution remain unverified. Separate from DS08 model regression experiments.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "f8b8c85d3c99655c8361781380c614fe097b4625072f192a55388219902c0159"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "SK01",
+            "group": "sitekit",
+            "title": "Separate reporting OAuth grant and property discovery",
+            "status": "partial",
+            "issues": [
+                46,
+                355
+            ],
+            "references": [
+                {
+                    "source": "sitekit",
+                    "path": "includes/Core/Authentication/Authentication.php"
+                },
+                {
+                    "source": "sitekit",
+                    "path": "includes/Modules/Analytics_4.php"
+                }
+            ],
+            "local_sources": [
+                "app/Controllers/AdminGoogleReportingController.php",
+                "integrations/google-site-kit/GoogleReportingClient.php"
+            ],
+            "acceptance_evidence": [
+                "tests/google-reporting.php",
+                "tests/google-reporting-storage.php"
+            ],
+            "finding": "Separate owner callback implemented; live redirect mismatch and absent grant, preserve customer sign-in.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "cb9a917b5d17ce6eb8b92376c7fc8553061a970fb96a10735e6d066bbd423c86"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "SK02",
+            "group": "sitekit",
+            "title": "GA4 and Search Console reports",
+            "status": "partial",
+            "issues": [
+                46,
+                355
+            ],
+            "references": [
+                {
+                    "source": "sitekit",
+                    "path": "includes/Modules/Analytics_4.php"
+                },
+                {
+                    "source": "sitekit",
+                    "path": "includes/Modules/Search_Console.php"
+                }
+            ],
+            "local_sources": [
+                "integrations/google-site-kit/GoogleReportingClient.php",
+                "views/admin/google-reporting.php",
+                "views/admin/dashboard.php"
+            ],
+            "acceptance_evidence": [
+                "tests/google-reporting.php"
+            ],
+            "finding": "Read APIs and report UI exist; authorize real property/site and validate dated metrics/no-data.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "bfd9daf607446f7293d406aadf4a63c3ed98459b073477c509d3d5c8ca1bd0f7"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "SK03",
+            "group": "sitekit",
+            "title": "Google tags and verification",
+            "status": "implemented",
+            "issues": [
+                355
+            ],
+            "references": [
+                {
+                    "source": "sitekit",
+                    "path": "includes/Core/Authentication/Verification.php"
+                }
+            ],
+            "local_sources": [
+                "integrations/google-site-kit/GoogleSiteKitClient.php",
+                "views/layouts/app.php",
+                "views/admin/integrations.php"
+            ],
+            "acceptance_evidence": [
+                "docs/pages/integrations.md"
+            ],
+            "finding": "Validated tag and independent configuration projection exist; verify live configured tag with owner permission.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "0ec2ff6aa6a5a72a8a9e4b0eeb9d1808be47b91b8c4257d567e5df856ea3749f"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "SK04",
+            "group": "sitekit",
+            "title": "PageSpeed lab/field data and quota recovery",
+            "status": "partial",
+            "issues": [
+                358
+            ],
+            "references": [
+                {
+                    "source": "sitekit",
+                    "path": "includes/Modules/PageSpeed_Insights.php"
+                }
+            ],
+            "local_sources": [
+                "app/Controllers/AdminPageSpeedController.php",
+                "integrations/google-site-kit/PageSpeedInsightsClient.php",
+                "views/admin/google-pagespeed.php"
+            ],
+            "acceptance_evidence": [
+                "tests/google-pagespeed.php",
+                "tests/google-pagespeed-browser.cjs"
+            ],
+            "finding": "Explicit mobile/desktop requests and honest errors exist; real provider quota-free result and recovery remain.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "ef745eca64cbefa1d6b0b92ae659d4ce5f813042cdcf2ffcbb5fb71923b8a1c5"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "SK05",
+            "group": "sitekit",
+            "title": "Tag Manager container and consent governance",
+            "status": "missing",
+            "issues": [
+                355
+            ],
+            "references": [
+                {
+                    "source": "sitekit",
+                    "path": "includes/Modules/Tag_Manager.php"
+                }
+            ],
+            "local_sources": [
+                "integrations/google-site-kit/GoogleSiteKitClient.php",
+                "views/admin/integrations.php"
+            ],
+            "acceptance_evidence": [
+                "docs/pages/integrations.md"
+            ],
+            "finding": "Native tag projection is not container selection or consent management.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "773d4016bbc292e6e6f1f797ec5f2f987031ab64496d5de83fa28147e4d11460"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "SK06",
+            "group": "sitekit",
+            "title": "AdSense and Ads reporting",
+            "status": "missing",
+            "issues": [
+                355
+            ],
+            "references": [
+                {
+                    "source": "sitekit",
+                    "path": "includes/Modules/AdSense.php"
+                },
+                {
+                    "source": "sitekit",
+                    "path": "includes/Modules/Ads.php"
+                }
+            ],
+            "local_sources": [
+                "views/admin/integrations.php",
+                "integrations/google-site-kit/GoogleReportingClient.php"
+            ],
+            "acceptance_evidence": [
+                "docs/pages/integrations.md"
+            ],
+            "finding": "No verified authorized AdSense/Ads metrics workflow; separate account scope, no billing actions.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "0508516ad28224f5741a6c161238002d645c85a45deca3cdaf5efaed19ff27eb"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "SK07",
+            "group": "sitekit",
+            "title": "Scheduled owner analytics email reports",
+            "status": "missing",
+            "issues": [
+                355,
+                25
+            ],
+            "references": [
+                {
+                    "source": "sitekit",
+                    "path": "includes/Core/Email_Reporting/Cron_Health_Check.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/MailQueueService.php",
+                "integrations/google-site-kit/GoogleReportingClient.php"
+            ],
+            "acceptance_evidence": [
+                "docs/email-setup.md"
+            ],
+            "finding": "Existing mail queue is not analytics subscription and report delivery.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "c4555b03e5a60f42357357a59474fd48b1564174abeddd3409a03dd97682e1ec"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "SK08",
+            "group": "sitekit",
+            "title": "Reader Revenue Manager and Tag Gateway",
+            "status": "missing",
+            "issues": [
+                355
+            ],
+            "references": [
+                {
+                    "source": "sitekit",
+                    "path": "includes/Modules/Reader_Revenue_Manager.php"
+                }
+            ],
+            "local_sources": [
+                "integrations/google-site-kit/GoogleSiteKitClient.php",
+                "views/admin/integrations.php"
+            ],
+            "acceptance_evidence": [
+                "docs/pages/integrations.md"
+            ],
+            "finding": "No verified native onboarding and authorization workflow; scope optional business need before implementation.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "773d4016bbc292e6e6f1f797ec5f2f987031ab64496d5de83fa28147e4d11460"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "MCP01",
+            "group": "wordpress-mcp",
+            "title": "Typed public opt-in and normalized permission checks",
+            "status": "implemented",
+            "issues": [
+                304,
+                272
+            ],
+            "references": [
+                {
+                    "source": "wordpress-mcp",
+                    "path": "includes/Abilities/McpAbilityExposure.php"
+                },
+                {
+                    "source": "wordpress-mcp",
+                    "path": "includes/Domain/Utils/AbilityPermissionChecker.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/PublicMcpService.php",
+                "app/Services/AgentCapabilityPolicy.php"
+            ],
+            "acceptance_evidence": [
+                "tests/public-mcp.php",
+                "tests/public-agent-discovery.php"
+            ],
+            "finding": "Named public allowlist and input checks exist; no arbitrary WordPress ability execution.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "c1935cd4ce719a8607f6ffeda088ed5c8c084a2f740b6036d624e10e84b019e8"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "MCP02",
+            "group": "wordpress-mcp",
+            "title": "Public Streamable HTTP tools and resources",
+            "status": "implemented",
+            "issues": [
+                304,
+                272
+            ],
+            "references": [
+                {
+                    "source": "wordpress-mcp",
+                    "path": "includes/Transport/HttpTransport.php"
+                },
+                {
+                    "source": "wordpress-mcp",
+                    "path": "includes/Domain/Resources/RegisterAbilityAsMcpResource.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/PublicMcpService.php",
+                "app/Controllers/PublicMcpController.php"
+            ],
+            "acceptance_evidence": [
+                "tests/public-mcp-http.cjs",
+                "tests/public-mcp-sdk.cjs"
+            ],
+            "finding": "Stateless scoped tools/list, tools/call and resources; no generic remote admin endpoint.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "7f579bf710554b0e0c184530c7841b3af9a5df863a9c596f2ce7eedba60f0778"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "MCP03",
+            "group": "wordpress-mcp",
+            "title": "MCP private prompt projection and authenticated remote tools",
+            "status": "missing",
+            "issues": [
+                272,
+                304,
+                311
+            ],
+            "references": [
+                {
+                    "source": "wordpress-mcp",
+                    "path": "includes/Domain/Prompts/RegisterAbilityAsMcpPrompt.php"
+                },
+                {
+                    "source": "wordpress-mcp",
+                    "path": "includes/Abilities/ExecuteAbilityAbility.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/AgentInstructionService.php",
+                "app/Services/McpClientService.php",
+                "app/Services/PublicMcpService.php"
+            ],
+            "acceptance_evidence": [
+                "docs/public-mcp.md",
+                "docs/runtime-agents.md"
+            ],
+            "finding": "Need authorized private prompts/resources with same execution permission; never expose .agents or private instructions publicly.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Reviewed updated runtime-agents contract; native declaration access does not grant external MCP private prompts or HTTP owner access.",
+                "source_sha256": "f784d1a1a0e9630e4731bdea3204981bd93085c1296510a142605bccdefa5664"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "MCP04",
+            "group": "wordpress-mcp",
+            "title": "Client lifecycle, session and transport observability",
+            "status": "partial",
+            "issues": [
+                272,
+                304
+            ],
+            "references": [
+                {
+                    "source": "wordpress-mcp",
+                    "path": "includes/Transport/Infrastructure/SessionManager.php"
+                },
+                {
+                    "source": "wordpress-mcp",
+                    "path": "includes/Infrastructure/Observability/Contracts/McpObservabilityHandlerInterface.php"
+                }
+            ],
+            "local_sources": [
+                "app/Services/McpClientService.php",
+                "app/Services/PublicMcpService.php",
+                "app/Services/AuditLogService.php"
+            ],
+            "acceptance_evidence": [
+                "tests/mcp-client-access.test.cjs",
+                "tests/public-mcp-sdk.cjs"
+            ],
+            "finding": "Stateless public transport deliberately; scoped credential and errors exist; authenticated session lifecycle and safe correlation remain.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "7828b32563fe8766aa9ac4401e24c5343bdaef2b13d40fdbcf5c0d5f6afa888a"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "UI01",
+            "group": "a2ui",
+            "title": "Validated structured surface and scoped renderer",
+            "status": "implemented",
+            "issues": [
+                313,
+                311
+            ],
+            "references": [
+                {
+                    "source": "a2ui",
+                    "path": "specification/v1_0/json/agent_to_renderer.json"
+                }
+            ],
+            "local_sources": [
+                "app/Services/AgentAnswerPresentationService.php",
+                "app/Services/PublicA2uiService.php",
+                "assets/a2ui-public-renderer.js"
+            ],
+            "acceptance_evidence": [
+                "tests/public-a2ui.php",
+                "tests/a2ui-public-browser.cjs"
+            ],
+            "finding": "Trusted bounded server components, scope, graph and text fallback; not full SDK.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "564fcd787dbaa0d44fe705d1ed2817038f7aecbce10f36c29db95c0aa8dcd3fc"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "UI02",
+            "group": "a2ui",
+            "title": "Product, article and owner report components",
+            "status": "implemented",
+            "issues": [
+                313,
+                322
+            ],
+            "references": [
+                {
+                    "source": "a2ui",
+                    "path": "specification/v1_0/json/catalog_definition.json"
+                }
+            ],
+            "local_sources": [
+                "app/Services/PublicA2uiService.php",
+                "app/Services/AgentAnswerPresentationService.php"
+            ],
+            "acceptance_evidence": [
+                "tests/public-a2ui.php",
+                "tests/agent-presentation-scope.php"
+            ],
+            "finding": "Published cards and recorded report evidence; live real-model answer still requires verification.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "4c73b67c2a7d6f87eddfac95b7e86446a2af98c4101622edd88e03ad945e1baa"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "UI03",
+            "group": "a2ui",
+            "title": "Native chat history/replay and fallback",
+            "status": "implemented",
+            "issues": [
+                313
+            ],
+            "references": [
+                {
+                    "source": "a2ui",
+                    "path": "specification/v1_0/docs/a2ui_protocol.md"
+                }
+            ],
+            "local_sources": [
+                "app/Services/AgentConversationService.php",
+                "assets/a2ui-public-renderer.js",
+                "views/admin/agent.php"
+            ],
+            "acceptance_evidence": [
+                "tests/agent-history-browser.cjs"
+            ],
+            "finding": "Original text and stored evidence replay; no new model call for replay.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "34adc0bd4e615b27fe5a55dd72b902725a842d23f78b34cf54da3f4f589d2ce2"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "UI04",
+            "group": "a2ui",
+            "title": "Incremental component and data-model update lifecycle",
+            "status": "partial",
+            "issues": [
+                311
+            ],
+            "references": [
+                {
+                    "source": "a2ui",
+                    "path": "specification/v1_0/json/agent_to_renderer.json"
+                }
+            ],
+            "local_sources": [
+                "assets/a2ui-public-renderer.js",
+                "app/Services/PublicA2uiService.php"
+            ],
+            "acceptance_evidence": [
+                "docs/a2ui.md"
+            ],
+            "finding": "Complete envelopes render; general stateful update/delete lifecycle and streaming are not implemented.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "85b1cbec2f7a06d8c757dd5be27c8b8ef59a9d6958c74ce732d6cba382988168"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "UI05",
+            "group": "a2ui",
+            "title": "Typed bidirectional action and form events",
+            "status": "partial",
+            "issues": [
+                311,
+                335
+            ],
+            "references": [
+                {
+                    "source": "a2ui",
+                    "path": "specification/v1_0/json/renderer_to_agent.json"
+                }
+            ],
+            "local_sources": [
+                "assets/a2ui-public-renderer.js",
+                "assets/public-mcp-shopping.js"
+            ],
+            "acceptance_evidence": [
+                "tests/public-mcp-shopping-browser.cjs"
+            ],
+            "finding": "Fixed checkout controller and safe navigation exist; general validated action/data-sync protocol remains.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "c4d72de29940f4daef94082a905383a398d0400031d6d3f6753ef4e03398f41e"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "UI06",
+            "group": "a2ui",
+            "title": "Renderer/agent capability negotiation and function calls",
+            "status": "missing",
+            "issues": [
+                311
+            ],
+            "references": [
+                {
+                    "source": "a2ui",
+                    "path": "specification/v1_0/json/renderer_capabilities.json"
+                },
+                {
+                    "source": "a2ui",
+                    "path": "specification/v1_0/json/agent_capabilities.json"
+                }
+            ],
+            "local_sources": [
+                "assets/a2ui-public-renderer.js",
+                "app/Services/PublicA2uiService.php"
+            ],
+            "acceptance_evidence": [
+                "docs/a2ui.md"
+            ],
+            "finding": "Do not enable arbitrary functions; implement allowlisted negotiated protocol only as needed.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "85b1cbec2f7a06d8c757dd5be27c8b8ef59a9d6958c74ce732d6cba382988168"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "UI07",
+            "group": "a2ui",
+            "title": "External chat MCP App and shopping host interoperability",
+            "status": "partial",
+            "issues": [
+                304,
+                344,
+                335
+            ],
+            "references": [
+                {
+                    "source": "a2ui",
+                    "path": "specification/v1_0/docs/a2ui_protocol.md"
+                }
+            ],
+            "local_sources": [
+                "assets/public-a2ui-webmcp.js",
+                "assets/vendor/webmcp/polyfill-0.1.1.js",
+                "app/Services/PublicMcpService.php"
+            ],
+            "acceptance_evidence": [
+                "tests/live-webmcp-a2ui-browser.cjs",
+                "tests/public-mcp-app-browser.cjs"
+            ],
+            "finding": "Native browser discovery is tracked separately in UI08. External host shopping and authenticated interoperability still require real client acceptance.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "2b65d28527ff6a8a59bb5757735c403a51188d9919c9f1ad0c6ac5debd2e596e"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "CC01",
+            "group": "chat-completions",
+            "title": "Configurable independent provider plan and credential isolation",
+            "status": "implemented",
+            "issues": [
+                496,
+                346
+            ],
+            "references": [
+                {
+                    "source": "chat-completions",
+                    "path": "https://developers.openai.com/api/docs/guides/function-calling"
+                }
+            ],
+            "local_sources": [
+                "app/Services/SecretService.php",
+                "views/admin/integrations.php"
+            ],
+            "acceptance_evidence": [
+                "tests/openrouter-integrations-browser.cjs"
+            ],
+            "finding": "Saved independent Google/compatible/OpenRouter endpoint/model/key plan; real enabled fallback credentials must be accepted.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "3a6ff1ea5a2c8d7f45f55c4535e6bd74036f1335bb2abcfe09e8229394508b7f"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "CC02",
+            "group": "chat-completions",
+            "title": "Chat Completions message roles and correlated tool calls",
+            "status": "implemented",
+            "issues": [
+                496
+            ],
+            "references": [
+                {
+                    "source": "chat-completions",
+                    "path": "https://developers.openai.com/api/docs/guides/function-calling"
+                }
+            ],
+            "local_sources": [
+                "app/Services/AiClient.php",
+                "app/Services/AgentModelTurn.php"
+            ],
+            "acceptance_evidence": [
+                "tests/model-driven-agents.php"
+            ],
+            "finding": "Wire fixture covers tools, role=tool and call IDs; not support for Responses-only models.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Reviewed unchanged Chat Completions envelope/call correlation and actual controller fixtures after #512; compatible wire contract remains implemented.",
+                "source_sha256": "2cdc0b7f51f233b6bffb26d0f69d325ef2a2141af3138cbc98dc31661696ad29"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "CC03",
+            "group": "chat-completions",
+            "title": "Provider-specific continuation metadata",
+            "status": "implemented",
+            "issues": [
+                496
+            ],
+            "references": [
+                {
+                    "source": "chat-completions",
+                    "path": "https://developers.openai.com/api/docs/guides/function-calling"
+                }
+            ],
+            "local_sources": [
+                "app/Services/AiClient.php"
+            ],
+            "acceptance_evidence": [
+                "tests/ai-provider-transport.php",
+                "tests/model-driven-agents.php"
+            ],
+            "finding": "Bounded Google signatures and OpenRouter reasoning continuity; validate selected live model, never leak internal metadata.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Reviewed #512 safe invalid-call guidance change and provider continuation fixtures; no Google or OpenRouter continuation field changed.",
+                "source_sha256": "4a27ba916f3d691e08b91974b4cbd937900982266252e398b7a6c7cca931bb32"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "CC04",
+            "group": "chat-completions",
+            "title": "Provider retries, holds, time budgets and latency",
+            "status": "partial",
+            "issues": [
+                176,
+                449,
+                459,
+                461
+            ],
+            "references": [
+                {
+                    "source": "chat-completions",
+                    "path": "https://developers.openai.com/api/docs/guides/function-calling"
+                }
+            ],
+            "local_sources": [
+                "app/Services/AiClient.php",
+                "app/Services/AiProviderHealthService.php"
+            ],
+            "acceptance_evidence": [
+                "tests/ai-provider-transport.php"
+            ],
+            "finding": "Bounded retries and credential holds exist; #395 lengthened deadlines, live 503/429/401 and continuation starvation remain.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Reviewed #512 AiClient diff; only invalid-call guidance changed; retry and hold policy and live provider failure remain unresolved.",
+                "source_sha256": "1acfce2f45434fc8a0fc3a1d75cf842aaa08202144597e175a4f9febd26bae5e"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "CC05",
+            "group": "chat-completions",
+            "title": "All role-authorized tools directly reachable without false answers",
+            "status": "implemented",
+            "issues": [
+                375,
+                251
+            ],
+            "references": [
+                {
+                    "source": "chat-completions",
+                    "path": "https://developers.openai.com/api/docs/guides/function-calling"
+                }
+            ],
+            "local_sources": [
+                "app/Services/RuntimeAgentToolRegistry.php",
+                "app/Services/SupportBotService.php"
+            ],
+            "acceptance_evidence": [
+                "tests/model-driven-agents.php"
+            ],
+            "finding": "PR #512 removed forced lexical preselection and cumulative tool activation ceiling; all six hosted checks, direct multilingual controller fixtures and deployed SHA passed. Live model answer acceptance remains CC06.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Reviewed merged #512 direct role/module-filtered declarations, multilingual and permission regressions; all six hosted checks and exact deployed SHA passed.",
+                "source_sha256": "78e64e8893e046e7b8704a12dfa9471c993ad065f4032089cd4dec5369cc02f3"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "CC06",
+            "group": "chat-completions",
+            "title": "Real provider text and tool-result-final-answer acceptance",
+            "status": "partial",
+            "issues": [
+                496,
+                176
+            ],
+            "references": [
+                {
+                    "source": "chat-completions",
+                    "path": "https://developers.openai.com/api/docs/guides/function-calling"
+                }
+            ],
+            "local_sources": [
+                "app/Services/AiClient.php",
+                "app/Controllers/AdminController.php",
+                "app/Services/SupportBotService.php"
+            ],
+            "acceptance_evidence": [
+                "tests/model-driven-agents.php"
+            ],
+            "finding": "Current direct native and compatible probes returned 503. Both real agent paths require complete live answer, not synthetic probe success.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Reviewed #512 exact-head controlled provider fixtures; no fresh successful production answer, so preserve partial status.",
+                "source_sha256": "073d6c85fa36b4cc3864d75d3f8969d4fc9b575d36c6f0020ba50da8715dcf74"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "CC07",
+            "group": "chat-completions",
+            "title": "Model-backed editorial draft generation and truthful failure",
+            "status": "partial",
+            "issues": [
+                251,
+                47
+            ],
+            "references": [
+                {
+                    "source": "chat-completions",
+                    "path": "https://developers.openai.com/api/docs/guides/function-calling"
+                }
+            ],
+            "local_sources": [
+                "app/Services/AgentDraftService.php",
+                "app/Services/BlogDraftService.php",
+                "app/Controllers/AdminController.php"
+            ],
+            "acceptance_evidence": [
+                "tests/run.php"
+            ],
+            "finding": "Legacy AI draft scaffold is non-inference; draft failure reporting and safe review require candidate validation.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Reviewed #512 owner instruction-only diff and test changes; legacy editorial inference correction remains isolated and unmerged.",
+                "source_sha256": "b21857fd6b79e46a823f86a5ddc3505f7ffcfe8653facb7214b6ef3912be4346"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "CC08",
+            "group": "chat-completions",
+            "title": "Validated streaming and cancellation",
+            "status": "missing",
+            "issues": [
+                311,
+                176
+            ],
+            "references": [
+                {
+                    "source": "chat-completions",
+                    "path": "https://developers.openai.com/api/docs/guides/function-calling"
+                }
+            ],
+            "local_sources": [
+                "app/Services/AiClient.php",
+                "app/Controllers/SupportController.php"
+            ],
+            "acceptance_evidence": [
+                "docs/runtime-agents.md"
+            ],
+            "finding": "Synchronous native requests; browser timeout is not provider cancellation or event stream.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Reviewed #512 runtime docs and AiClient error guidance; no new model streaming or cancellation mechanism.",
+                "source_sha256": "7d9de705af0d1273de6484a2776b99db22859ecb94becd1df9c9d220cf3e609c"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "DS01",
+            "group": "deepseek",
+            "title": "Owned session, bounded context and actor admission",
+            "status": "implemented",
+            "issues": [
+                251
+            ],
+            "references": [
+                {
+                    "source": "deepseek",
+                    "path": "packages/core/session/src/tool-history.ts"
+                },
+                {
+                    "source": "deepseek",
+                    "path": "packages/core/agent-loop/src/agent.ts"
+                }
+            ],
+            "local_sources": [
+                "app/Services/AgentConversationService.php",
+                "app/Services/AgentModelTurn.php"
+            ],
+            "acceptance_evidence": [
+                "tests/agent-concurrency.php",
+                "tests/model-driven-agents.php"
+            ],
+            "finding": "One private JSON per chat, ownership before inference and accepted multi-turn history; live acceptance remains.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Reviewed updated controller fixtures and retained actor-owned dialogue, foreign conversation rejection and report scope regressions.",
+                "source_sha256": "c90f7487541616ac964c8e9b5d43de63688d2ac55ea5c7928d8bbaf6bd9f2565"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "DS02",
+            "group": "deepseek",
+            "title": "Observed execution events and checkpointing",
+            "status": "implemented",
+            "issues": [
+                251
+            ],
+            "references": [
+                {
+                    "source": "deepseek",
+                    "path": "packages/core/agent-loop/src/agent.ts"
+                },
+                {
+                    "source": "deepseek",
+                    "path": "packages/session/session-telemetry/src/coordinator.ts"
+                }
+            ],
+            "local_sources": [
+                "app/Services/AgentTraceService.php",
+                "app/Services/AgentConversationService.php"
+            ],
+            "acceptance_evidence": [
+                "tests/agent-interruption.php"
+            ],
+            "finding": "Pending turn and observed spans checkpointed; not a general durable event-sourced runtime.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "5c74e058066c1001a45d521fb1af4c21db11b903276324a469e49698c55c941b"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "DS03",
+            "group": "deepseek",
+            "title": "Interrupted tool outcome repair and safe resumption",
+            "status": "partial",
+            "issues": [
+                251,
+                176
+            ],
+            "references": [
+                {
+                    "source": "deepseek",
+                    "path": "packages/core/session/src/repair.ts"
+                }
+            ],
+            "local_sources": [
+                "app/Services/AgentConversationService.php",
+                "app/Services/AiClient.php"
+            ],
+            "acceptance_evidence": [
+                "tests/agent-interruption.php"
+            ],
+            "finding": "Interruption visible; no general safe resumption of incomplete tool exchanges. Preserve unknown outcomes and avoid replay.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Reviewed AiClient #512 tool guidance change; interruption handling remains, no new durable replay/resumption mechanism.",
+                "source_sha256": "a71d286cd71c534b034cb8a8a3c68ec72dfbfa3b28ff208e3dca38da3e90eb87"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "DS04",
+            "group": "deepseek",
+            "title": "Instruction assembly and explicit tool authority",
+            "status": "implemented",
+            "issues": [
+                251,
+                375
+            ],
+            "references": [
+                {
+                    "source": "deepseek",
+                    "path": "packages/core/agent-loop/src/agent.ts"
+                },
+                {
+                    "source": "deepseek",
+                    "path": "docs/subsystems/core.md"
+                }
+            ],
+            "local_sources": [
+                "app/Services/AgentInstructionService.php",
+                "app/Services/AgentCapabilityPolicy.php"
+            ],
+            "acceptance_evidence": [
+                "tests/run.php"
+            ],
+            "finding": "Fixed role-specific .bapX instruction manifest and execution authorization; not developer harness exposure.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Reviewed #512 direct authorized tool and existing instruction-manifest regression; private skill selection and policy unchanged.",
+                "source_sha256": "4a1248f0a39ef30c7cfaa84a02047bb6bd6b5b25dfa183c775aed933db5f755d"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "DS05",
+            "group": "deepseek",
+            "title": "Tool/result evidence and telemetry failure isolation",
+            "status": "implemented",
+            "issues": [
+                251
+            ],
+            "references": [
+                {
+                    "source": "deepseek",
+                    "path": "packages/session/session-telemetry/src/coordinator.ts"
+                }
+            ],
+            "local_sources": [
+                "app/Services/AgentTraceService.php",
+                "app/Services/AuditLogService.php"
+            ],
+            "acceptance_evidence": [
+                "tests/agent-interruption.php",
+                "tests/run.php"
+            ],
+            "finding": "Sanitized observed metadata, durations, usage and safe evidence; no exported private telemetry.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Reviewed changed registry tests; telemetry, safe evidence and actual span semantics remain unchanged.",
+                "source_sha256": "c8f0abd7392fb108708435cd7e75cc925deffd0cf9b87808588c5b6452431607"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "DS06",
+            "group": "deepseek",
+            "title": "Cancellation and live turn progress",
+            "status": "partial",
+            "issues": [
+                311,
+                176
+            ],
+            "references": [
+                {
+                    "source": "deepseek",
+                    "path": "packages/core/agent-loop/src/agent.ts"
+                },
+                {
+                    "source": "deepseek",
+                    "path": "packages/core/agent-loop/src/assistant-stream.ts"
+                }
+            ],
+            "local_sources": [
+                "app/Services/AiClient.php",
+                "app/Services/AgentTraceService.php"
+            ],
+            "acceptance_evidence": [
+                "docs/agent-observability.md"
+            ],
+            "finding": "Bounded execution and checkpoints exist, no confirmed transport cancellation/real streaming.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Reviewed #512 AiClient diff and observability contract; native streaming and actual cancellation remain incomplete.",
+                "source_sha256": "d855871862e652f6465c5f283f0d1ad3ddd7fa54f2e88b31eee29b975e3e355c"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "DS07",
+            "group": "deepseek",
+            "title": "Human-approved writes and idempotent operation results",
+            "status": "partial",
+            "issues": [
+                251,
+                478,
+                335
+            ],
+            "references": [
+                {
+                    "source": "deepseek",
+                    "path": "packages/core/session/src/repair.ts"
+                },
+                {
+                    "source": "deepseek",
+                    "path": "packages/core/agent-loop/src/agent.ts"
+                }
+            ],
+            "local_sources": [
+                "app/Services/AgentDraftService.php",
+                "app/Services/SupportTicketService.php",
+                "app/Services/VerifiedOrderService.php"
+            ],
+            "acceptance_evidence": [
+                "tests/verified-order.php",
+                "tests/agent-interruption.php"
+            ],
+            "finding": "Explicit form actions and payment idempotency exist; generic approval/unknown-outcome recovery missing.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
+                "source_sha256": "2d424047ee4bac03a018b4dcdaad43a35c7462fdaca36065f4e88555f430dcc0"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "DS08",
+            "group": "deepseek",
+            "title": "Regression experiments, source provenance and real task outcomes",
+            "status": "partial",
+            "issues": [
+                251,
+                176
+            ],
+            "references": [
+                {
+                    "source": "deepseek",
+                    "path": "docs/subsystems/core.md"
+                },
+                {
+                    "source": "deepseek",
+                    "path": "packages/session/session-telemetry/src/coordinator.ts"
+                }
+            ],
+            "local_sources": [
+                "app/Services/AgentEvaluationService.php",
+                "app/Services/AgentTraceService.php"
+            ],
+            "acceptance_evidence": [
+                "tests/model-driven-agents.php",
+                "docs/agent-observability.md"
+            ],
+            "finding": "Golden and loopback results do not prove model quality; retain prompt/model/source hashes and real multilingual outcomes.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Reviewed #512 model fixture changes and 38 golden checks; no promotion of real model quality from scripted decisions.",
+                "source_sha256": "75e15344a1a12daf098ff7e42f3443c81f068f0ca5d44d009479b6896155b4d2"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "X01",
+            "group": "wordpress",
+            "title": "Install/update arbitrary themes and plugins",
+            "status": "excluded",
+            "issues": [
+                270
+            ],
+            "references": [
+                {
+                    "source": "wordpress",
+                    "path": "wp-admin/menu.php"
+                },
+                {
+                    "source": "woocommerce",
+                    "path": "includes/admin/class-wc-admin-menus.php"
+                }
+            ],
+            "local_sources": [],
+            "acceptance_evidence": [],
+            "finding": "Explicitly excluded by owner. Native curated capabilities ship through tested repository PRs, not uploaded executable bundles.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Explicit native-product boundary.",
+                "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "X02",
+            "group": "wordpress",
+            "title": "Execute arbitrary theme/plugin PHP in browser",
+            "status": "excluded",
+            "issues": [
+                270
+            ],
+            "references": [
+                {
+                    "source": "wordpress",
+                    "path": "wp-admin/menu.php"
+                }
+            ],
+            "local_sources": [],
+            "acceptance_evidence": [],
+            "finding": "Do not add a PHP file editor, arbitrary SQL tool or code-execution surface to imitate WordPress menus.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Explicit native-product boundary.",
+                "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "X03",
+            "group": "wordpress",
+            "title": "Paid extensions mistaken for core parity",
+            "status": "excluded",
+            "issues": [
+                270
+            ],
+            "references": [
+                {
+                    "source": "woocommerce",
+                    "path": "includes/admin/class-wc-admin-menus.php"
+                }
+            ],
+            "local_sources": [],
+            "acceptance_evidence": [],
+            "finding": "Marketplace entries do not establish bundled subscriptions/bookings/loyalty/wishlist features. Optional additions require their own scope; no paid dependency proposed.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Explicit native-product boundary.",
+                "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            },
+            "production_evidence": []
+        },
+        {
+            "id": "UI08",
+            "group": "a2ui",
+            "title": "Native Chrome 160 public WebMCP discovery and read invocation",
+            "status": "verified",
+            "issues": [
+                501,
+                503
+            ],
+            "references": [
+                {
+                    "source": "webmcp",
+                    "path": "https://developer.chrome.com/docs/ai/webmcp/updates"
+                }
+            ],
+            "local_sources": [
+                "assets/public-a2ui-webmcp.js",
+                "assets/public-business-webmcp.js",
+                "assets/public-products-webmcp.js",
+                "assets/public-knowledge-webmcp.js",
+                "assets/shop-webmcp.js",
+                "assets/vendor/webmcp/polyfill-0.1.1.js"
+            ],
+            "acceptance_evidence": [
+                "tests/webmcp-official-browser.cjs",
+                "tests/live-webmcp-a2ui-browser.cjs"
+            ],
+            "finding": "Chrome 160.0.8184.0 public landing/shop/A2UI and CDP calls verified at deployed c9efc19; tracked files unchanged at baseline. Scope excludes live payment and unrelated external hosts.",
+            "review": {
+                "date": "2026-11-26",
+                "reason": "Rechecked git diff of tracked browser adapters and browser test from verified merge and issue #503 evidence.",
+                "source_sha256": "485b458fc39feac93f5aeda82d69be8c6946d7189245354e7a04dd5c6be4d499"
+            },
+            "production_evidence": [
+                {
+                    "deployed_sha": "c9efc19f3f272b679f71792958755b08e64cc713",
+                    "date": "2026-11-26",
+                    "url": "https://github.com/bapxmediahub/bapXphpAiBackend/issues/503",
+                    "scope": "Native Chrome 160 landing/shop A2UI and read-only CDP invocation; no live payment",
+                    "source_sha256": "485b458fc39feac93f5aeda82d69be8c6946d7189245354e7a04dd5c6be4d499"
+                }
+            ]
+        }
+    ]
+}

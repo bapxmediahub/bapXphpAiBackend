@@ -1,6 +1,7 @@
 'use strict';
 
 const assert = require('node:assert/strict');
+const {createHash} = require('node:crypto');
 const {execFile} = require('node:child_process');
 const {access, chmod, copyFile, mkdir, mkdtemp, readFile, rm, writeFile} = require('node:fs/promises');
 const {tmpdir} = require('node:os');
@@ -63,7 +64,7 @@ async function project(t) {
     // by the same real interpreter; generators produce their expected artifacts.
     for (const [file, marker] of Object.entries({
         'tests/run.php': 'test', 'tests/storefront-search.php': 'storefront-search',
-        'cli/agent-contracts.php': 'contracts',
+        'cli/agent-contracts.php': 'contracts', 'cli/rea-capabilities.php': 'rea-capabilities',
         'cli/docs-check.php': 'docs', 'cli/validate-project-map.php': 'map',
         'cli/validate-docs-map.php': 'docs-map', 'cli/smoke-local.php': 'smoke',
     })) await write(file, '<?php\necho "FIXTURE:' + marker + '-ok\\n";\n');
@@ -236,4 +237,53 @@ test('map validation reports both maps and concurrent runs use separate scratch 
         assert.equal(output.startsWith(fixture.directory + '/'), false);
         await assert.rejects(access(output), {code: 'ENOENT'});
     }
+});
+
+test('REA coverage rejects stale source/evidence, stale reports and unsupported live claims', {timeout: 60000}, async t => {
+    const directory=await mkdtemp(join(tmpdir(),'bapx-rea-ledger-'));
+    t.after(()=>rm(directory,{recursive:true,force:true}));
+    for (const name of ['cli','app','tests','docs/research/evidence']) await mkdir(join(directory,name),{recursive:true});
+    await copyFile(join(sourceRoot,'cli/rea-capabilities.php'),join(directory,'cli/rea-capabilities.php'));
+    const hash=value=>createHash('sha256').update(value).digest('hex');
+    const file='app/example.php', evidence='tests/example.php';
+    await writeFile(join(directory,file),valid);
+    await writeFile(join(directory,evidence),valid);
+    const digest=hash(file+'\0'+hash(valid)+'\n'+evidence+'\0'+hash(valid)+'\n');
+    const index={schema_version:1,sources:[{id:'fixture',revision:'fixture-revision',files:[{path:'upstream.php',sha256:hash(valid)}]}]};
+    const indexFile=join(directory,'docs/research/evidence/reference-source-index.json');
+    const register=join(directory,'docs/research/capability-register.json');
+    const report=join(directory,'docs/research/capability-progress.md');
+    await writeFile(indexFile,JSON.stringify(index));
+    const row={id:'F01',group:'fixture',title:'Synthetic verified scope',status:'verified',issues:[1],
+        references:[{source:'fixture',path:'upstream.php'}],local_sources:[file],acceptance_evidence:[evidence],
+        finding:'Synthetic test, never a production claim.',review:{date:'2026-11-26',reason:'Fixture-only review evidence.',source_sha256:digest},
+        production_evidence:[{deployed_sha:'a'.repeat(40),date:'2026-11-26',source_sha256:digest,
+            scope:'Synthetic fixture only',url:'https://github.com/bapxmediahub/bapXphpAiBackend/issues/1'}]};
+    const initial={schema_version:1,baseline_commit:'b'.repeat(40),groups:{fixture:'Fixture'},
+        rows:[row,{...row,id:'F02',status:'partial',production_evidence:[]}]};
+    const run=args=>invoke('php',['cli/rea-capabilities.php',...args],directory);
+    await writeFile(register,JSON.stringify(initial));
+    let result=await run(['--render']);assert.equal(result.status,0,result.output);
+    assert.match(await readFile(report,'utf8'),/Fixture \| 2 \| 1 \| 1 \| 0 \| 1 \| 50.0% \| 50.0%/);
+    assert.equal((await run(['--check'])).status,0);
+    await writeFile(report,'outdated');
+    assert.match((await run(['--check'])).output,/report stale/);
+    await writeFile(join(directory,file),valid+'// changed');
+    result=await run(['--check']);assert.notEqual(result.status,0);assert.match(result.output,/F01: mapped source/);assert.match(result.output,/F02: mapped source/);
+    assert.equal((await run(['--record','F01','--reason','Reviewed changed fixture source and retained old acceptance.'])).status,0);
+    let updated=JSON.parse(await readFile(register,'utf8'));
+    assert.equal(updated.rows[0].status,'implemented');assert.equal(updated.rows[0].production_evidence.length,1);
+    assert.equal((await run(['--record','F02','--reason','Reviewed changed fixture scope and preserved partial status.'])).status,0);
+    assert.equal((await run(['--render'])).status,0);
+    assert.match(await readFile(report,'utf8'),/Fixture \| 2 \| 1 \| 1 \| 0 \| 0 \| 50.0% \| 0.0%/);
+    updated=JSON.parse(await readFile(register,'utf8'));
+    updated.rows[0].status='verified';
+    await writeFile(register,JSON.stringify(updated));
+    assert.match((await run(['--check'])).output,/Verified status without matching/);
+    updated.rows[0].status='implemented';updated.rows[0].references[0].path='unmapped.php';
+    await writeFile(register,JSON.stringify(updated));
+    assert.match((await run(['--check'])).output,/Unpinned reference/);
+    updated.rows[0].references[0].path='upstream.php';updated.rows[1].id='F01';
+    await writeFile(register,JSON.stringify(updated));
+    assert.match((await run(['--check'])).output,/duplicate capability ID/);
 });

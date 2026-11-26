@@ -4,8 +4,8 @@
     "reviews": {
         "agents": {
             "source_sha256": "1cdb5a23cde24f33294a2ff5b45b7d141b00064cf7840535041f239995408e51",
-            "references_sha256": "f1bc7191d9af97bbddf29b36e0a5798f5958d766e5fc3a12bb0f9e56f551f408",
-            "review_note": "Reviewed actual registry sizes and upstream OpenAI function-calling guide. Removed arbitrary lexical activation ceiling, retain module/actor filters, same-batch validation and selective skill bodies; regression tests cover all current eligible tools and model-mediated errors."
+            "references_sha256": "a6e26a5652b6c579797bb27aa3047ebe22a9e6b0edc19f9a758dac83d4c8d337",
+            "review_note": "Reviewed merged direct tool declarations, role-scoped instruction contract and README; REA register preserves actual model evidence separate from controlled fixtures, no runtime or permission changes."
         },
         "auth": {
             "source_sha256": "c34a5b34bc904f36cda184c26113f91e2cf36afa2b506217d1f74e22e9e0cefd",
@@ -78,9 +78,9 @@
             "review_note": "Reviewed merchant feed and approved read-only CLI operations; portable validation uses synthetic fixtures only, no channel publishing."
         },
         "workflow": {
-            "source_sha256": "09797edda120743481a8a4da1c434c43c2f0c81f8905f920f22bea822b71fd24",
-            "references_sha256": "2f85a31c1621f754455434590d79b9a3c0a4695382d2ef09d002276048d6dbe5",
-            "review_note": "Reviewed README workflow diagram and backend skill; actual supported declaration behavior and release evidence updated, no workflow bypass."
+            "source_sha256": "0f8c845368443b614ac89ece7717a4cde3889764a929894a927400768329eac7",
+            "references_sha256": "14c2c675da06f0e52ce81e374d38de55ffbbc5cbdffb344aa94a62f7ec668e68",
+            "review_note": "Reviewed AGENTS and REA skill, documentation index and CLI gate; historical source evidence retained, GitHub sole issue backlog, reviewed hashes and generated completion separate from live proof."
         }
     }
 }

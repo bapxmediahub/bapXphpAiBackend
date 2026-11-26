@@ -247,6 +247,14 @@ The sequence groups `ProductService`, `SettingsService`, `SecretService` and `Da
 
 **Source trail:** [cart, create-order, verification and persistence](app/Controllers/CommerceController.php), [browser checkout callback](views/public/checkout.php), [Razorpay client](integrations/razorpay/RazorpayClient.php), [signature verification](app/Services/PaymentService.php), [order lock/deduplication](app/Services/DatabaseService.php), [mail enqueue/claim/receipt](app/Services/MailQueueService.php), [SMTP acknowledgement](app/Services/SmtpMailer.php), [fulfillment updates](app/Services/OrderService.php).
 
+### Native reference coverage
+
+[REA capability register and completion percentages](docs/research/capability-progress.md)
+track the selected WordPress, WooCommerce, Site Kit, WordPress MCP, A2UI,
+Chat Completions and DeepSeek Harness adaptation obligations. Follow the
+[engineering update workflow](docs/research/rea-engineering-workflow.md)
+for source-backed implementation and deployed verification.
+
 ### 3. Support and Enterprise: context, tools, provider and saved evidence
 
 Both PHP model paths use the same bounded `AiClient::completeWithTools`

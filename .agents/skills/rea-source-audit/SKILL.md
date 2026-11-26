@@ -11,6 +11,8 @@ Follow `AGENTS.md`; read the original source behind the index before changing co
 Run `rea --help` (not `rea -help`), command-specific help, and the installed REA
 skill documentation. Check runtime compatibility without changing global tooling.
 Keep public reference clones and raw evidence outside the production checkout;
+retain sanitized findings, source hashes and relative paths in the versioned
+capability register and reference-source index;
 never execute their package scripts or install their runtime as part of reading.
 
 Pin each upstream commit and license. Exclude enterprise/commercial code paths
@@ -51,3 +53,10 @@ work; isolate a branch/worktree when concurrent edits appear.
 Regenerate maps and indexes with `./bapXphp update`, then `./bapXphp ci`. Keep
 source-pinned manifests and bounded findings in `docs/research/`; raw evidence
 and external clones stay outside the repository.
+
+## Continuous capability reconciliation
+
+Follow `docs/research/rea-engineering-workflow.md`. For every changed mapped
+capability, inspect actual local/upstream code and acceptance evidence, record
+the row with `php cli/rea-capabilities.php --record ID --reason ...`, and regenerate
+the report. Never promote on file existence, CI alone or an invented live result.

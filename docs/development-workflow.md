@@ -11,6 +11,10 @@ GitHub issues/comments are the only backlog, implementation plan and acceptance
 record. `docs/` holds durable architecture, contracts, how-to instructions and
 source-pinned research—not issue status pages or task checklists. Keep historical
 research dated; current completion belongs to the relevant GitHub issue.
+The owner-required [REA capability register](research/capability-progress.md)
+is a versioned evidence coverage projection, not a second backlog. Follow the
+[REA engineering workflow](research/rea-engineering-workflow.md) for affected
+capability IDs, reviewed hashes, generated percentages and post-merge proof.
 
 ## Discover before changing
 

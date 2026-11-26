@@ -209,6 +209,14 @@ target is absent, and state that absence as a finding.
   Record exact source URLs/revisions, observed differences, and acceptance criteria
   on the existing GitHub issue before implementation. Never invent API fields or
   assume feature parity from README marketing or generated indexes.
+- Maintain the versioned REA capability register at
+  `docs/research/capability-register.json` and its generated percentage report.
+  Read `docs/research/rea-engineering-workflow.md` before changing a mapped
+  capability. Record affected IDs and exact evidence in the existing GitHub
+  issue/PR; review changed mapped source/test fingerprints and regenerate the
+  report. Implementation and exact-SHA production verification are separate.
+  GitHub remains the only backlog; this register is durable source-backed
+  coverage, not an independent task tracker.
 - Adopt missing mechanisms, not entire external frameworks. Preserve native PHP,
   vanilla JS, MySQL and low-cost shared-hosting constraints; no new paid service,
   embeddings, vector store or always-running agent process.

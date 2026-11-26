@@ -1,0 +1,1250 @@
+{
+  "schema_version": 1,
+  "target_commit": "c1a873f3895bed246529c31c096119278847cb34",
+  "archive_provenance": [
+    {
+      "archive": "wordpress-7.1.4.zip",
+      "sha256": "a147146c159362778ecbbbfb07bb20ddf4e85b130f971c824e656a8f938c5f87",
+      "members": 4250,
+      "expanded_bytes": 110113049,
+      "paths_safe": true,
+      "symlinks": 0,
+      "executed": false,
+      "php_files": 1512
+    },
+    {
+      "archive": "woocommerce.11.3.0.zip",
+      "sha256": "d9eb1e46df8309eb37b6f7f3fba51480f2a9a00e7feb10b1487592fde39accc6",
+      "members": 6349,
+      "expanded_bytes": 56489851,
+      "paths_safe": true,
+      "symlinks": 0,
+      "executed": false,
+      "php_files": 3658
+    }
+  ],
+  "rea_version": "6.8.0",
+  "reference_files": 102,
+  "reference_scope": "35 WordPress and 67 WooCommerce files selected from exact supplied archives. REA imports report partial inventories and no PHP call graph. Static existence/semantics inspected manually; no upstream code executed, installed or production runtime proven.",
+  "rows": [
+    {
+      "id": "P01",
+      "capability": "PHP 8.3+ and MySQL 8.4+ runtime baseline",
+      "state": "gap",
+      "reference": [
+        {
+          "tree": "wordpress",
+          "path": "wp-admin/includes/class-wp-site-health.php",
+          "sha256": "d7517a0ddaa8b59b15265febafc6545357ab53e3f982c50c8296b37484af654d"
+        },
+        {
+          "tree": "woocommerce",
+          "path": "includes/admin/class-wc-admin-status.php",
+          "sha256": "e87e93c49fe546eb170e89d5a5157ed2463b949bbb6ef31a01f7586982c8ff32"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": ".github/workflows/ci.yml",
+          "sha256": "225a46b39860915110e43df5a5dbfc24d407d91a2dfcad2376635c48ab5a1689",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "app/bootstrap.php",
+          "sha256": "b604292b8ed8913c1e92d1b424ea3cf7a7645453a1679b9db9a8f4a0abb26551",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "app/Services/DatabaseService.php",
+          "sha256": "cbbf1eac1c16d062690a9d3f7dcf481ccee46071d053d235f0257ec65d986908",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "CI still selects PHP 8.2; isolated CI DB is MySQL 8.4. Actual hosted DB reports MariaDB 11.8.9, not MySQL. No system health route or version policy checker. Do not silently migrate production.",
+      "existing_issue": null
+    },
+    {
+      "id": "P02",
+      "capability": "Unified admin navigation and contextual help",
+      "state": "existing_base",
+      "reference": [
+        {
+          "tree": "wordpress",
+          "path": "wp-admin/menu.php",
+          "sha256": "10dfad8b7ccab04c0af2e269c203c0a0a76c30438ee7b695dd97fb0f74a4cb3b"
+        },
+        {
+          "tree": "woocommerce",
+          "path": "includes/admin/class-wc-admin-menus.php",
+          "sha256": "fcccb0471e244970f0acd159eefb790c67cb3b935cd2c73379409ae0ae118ce6"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "views/layouts/admin.php",
+          "sha256": "9d7098f7395c197cf33516b4a6e0df2b93bf23d07df6edd33beb943198ac0766",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "app/Services/AdminHelpService.php",
+          "sha256": "df352ed4d3a68950a8535aa788c3705c1b91b73cd806c7b32c1d95cad504cd99",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "Existing integrated sidebar, section help and 12 private guides. Expand routes only with real native features; no hollow menu stubs.",
+      "existing_issue": null
+    },
+    {
+      "id": "P03",
+      "capability": "Posts draft/preview and public search",
+      "state": "existing_base",
+      "reference": [
+        {
+          "tree": "wordpress",
+          "path": "wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php",
+          "sha256": "ac06af313d150b4442eced4655142337552c56caf4dedbd5a88d34d4abae4338"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "app/Services/BlogService.php",
+          "sha256": "dc9d878e61851a4d79ed0dcd9e8a75073f76ec7d420e141d2a0aac140763f122",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "views/admin/blog.php",
+          "sha256": "8abeee1c8dec5a36854169aeb167d3fa62d42496006d63322637a586095e23d6",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "Markdown posts, publication toggle, preview, title/body enhancement and public search exist. Not a block editor parity claim.",
+      "existing_issue": 47
+    },
+    {
+      "id": "P04",
+      "capability": "Autosave, revisions, edit locking and scheduled publishing",
+      "state": "gap",
+      "reference": [
+        {
+          "tree": "wordpress",
+          "path": "wp-includes/revision.php",
+          "sha256": "1dc942d5eb3d9cee81b6c705a6fd52917c4ce5e5f509ece5ad6f748e345f8647"
+        },
+        {
+          "tree": "wordpress",
+          "path": "wp-includes/rest-api/endpoints/class-wp-rest-autosaves-controller.php",
+          "sha256": "4460e2aef083398870c980915319ebb45748ad93d0a748b7b0d941a0cc78e830"
+        },
+        {
+          "tree": "wordpress",
+          "path": "wp-includes/cron.php",
+          "sha256": "dc27910a1ad004eb2aaabc19352246cc0b9e601bf2da870e141646fd9dd95591"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "app/Services/BlogService.php",
+          "sha256": "dc9d878e61851a4d79ed0dcd9e8a75073f76ec7d420e141d2a0aac140763f122",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "views/admin/blog.php",
+          "sha256": "8abeee1c8dec5a36854169aeb167d3fa62d42496006d63322637a586095e23d6",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "No revision/restore/autosave/lock endpoints. A published date is metadata, not a job scheduler.",
+      "existing_issue": 47
+    },
+    {
+      "id": "P05",
+      "capability": "General pages, reusable layouts and content hierarchy",
+      "state": "gap",
+      "reference": [
+        {
+          "tree": "wordpress",
+          "path": "wp-includes/rest-api/endpoints/class-wp-rest-posts-controller.php",
+          "sha256": "ac06af313d150b4442eced4655142337552c56caf4dedbd5a88d34d4abae4338"
+        },
+        {
+          "tree": "wordpress",
+          "path": "wp-admin/site-editor.php",
+          "sha256": "52e337c1a1496388e8d37ca3efb9dc8fffbdee0f1468cab36ab550679b1f42e5"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "app/Services/ProjectMapService.php",
+          "sha256": "f10b84bf1f9ea25fdcfa0c296a653ec644215214df894f72f8c8674dd9510cfa",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "views/layouts/app.php",
+          "sha256": "e3fae215e9efdf34e583292b969c00b469209180f70a4025ae99c276d979f1d4",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "Core public pages are fixed templates; no reusable authored-page/block hierarchy. Implement safe native content sections, not theme/plugin installation.",
+      "existing_issue": null
+    },
+    {
+      "id": "P06",
+      "capability": "Taxonomies, tags and hierarchical catalog organization",
+      "state": "partial",
+      "reference": [
+        {
+          "tree": "wordpress",
+          "path": "wp-admin/menu.php",
+          "sha256": "10dfad8b7ccab04c0af2e269c203c0a0a76c30438ee7b695dd97fb0f74a4cb3b"
+        },
+        {
+          "tree": "woocommerce",
+          "path": "includes/admin/class-wc-admin-menus.php",
+          "sha256": "fcccb0471e244970f0acd159eefb790c67cb3b935cd2c73379409ae0ae118ce6"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "app/Services/CategoryService.php",
+          "sha256": "5f160b75f6eb3c84a68cbcb9cb2511dabf909f88d9249288438b29f22c0ad26d",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "app/Services/BlogService.php",
+          "sha256": "dc9d878e61851a4d79ed0dcd9e8a75073f76ec7d420e141d2a0aac140763f122",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "storage/schema/collections.php",
+          "sha256": "1b3aa522f825a6c63f59af112d1804d2d75acfc64495312d0ef31d7cb9688a50",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "Product categories/collections and blog categories exist; reusable attributes/tags/hierarchy/term-management parity is incomplete.",
+      "existing_issue": null
+    },
+    {
+      "id": "P07",
+      "capability": "Blog comments and product-review moderation",
+      "state": "partial",
+      "reference": [
+        {
+          "tree": "wordpress",
+          "path": "wp-admin/menu.php",
+          "sha256": "10dfad8b7ccab04c0af2e269c203c0a0a76c30438ee7b695dd97fb0f74a4cb3b"
+        },
+        {
+          "tree": "woocommerce",
+          "path": "includes/class-wc-comments.php",
+          "sha256": "999daa321cbfb1a6ca54473ead8857dbac226dcb91c918fc5bb5cdd5b91ea3f0"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "app/Services/ReviewService.php",
+          "sha256": "b8c3aa6a64e7db8d11cc9904cafc89523c5cece34ef5c3fa670e3b2d6928997a",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "app/Services/ProjectMapService.php",
+          "sha256": "f10b84bf1f9ea25fdcfa0c296a653ec644215214df894f72f8c8674dd9510cfa",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "Verified product-review submission exists; no unified comment moderation queue, spam/trash lifecycle or blog discussion settings.",
+      "existing_issue": null
+    },
+    {
+      "id": "P08",
+      "capability": "Media CRUD and protected deletion",
+      "state": "existing_base",
+      "reference": [
+        {
+          "tree": "wordpress",
+          "path": "wp-admin/menu.php",
+          "sha256": "10dfad8b7ccab04c0af2e269c203c0a0a76c30438ee7b695dd97fb0f74a4cb3b"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "app/Services/MediaService.php",
+          "sha256": "b7f9d5948e07c77e759b7896c4cf961feaff54efac36634bb4db5e8d72f7c962",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "views/admin/media.php",
+          "sha256": "7861c8643ed94e9307ac0da783a02a19e7d10b530a61eeb3f7f309e219bb90fa",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "Upload, reference-aware deletion, private metadata/served binaries and image reuse exist. Preserve safeguards.",
+      "existing_issue": 80
+    },
+    {
+      "id": "P09",
+      "capability": "Media pagination, alt/caption editing and image transforms",
+      "state": "partial",
+      "reference": [
+        {
+          "tree": "wordpress",
+          "path": "wp-admin/includes/class-wp-list-table.php",
+          "sha256": "3ecd133fcf8fa4f0dc0a0834ca4675ee8ee05b1616078530afd5044424f32676"
+        },
+        {
+          "tree": "wordpress",
+          "path": "wp-admin/includes/image-edit.php",
+          "sha256": "fa15826c86f1500f35fd925b68ae8f99454b0ce1d202c99a3af510948ef294e9"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "views/admin/media.php",
+          "sha256": "7861c8643ed94e9307ac0da783a02a19e7d10b530a61eeb3f7f309e219bb90fa",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "app/Services/MediaService.php",
+          "sha256": "b7f9d5948e07c77e759b7896c4cf961feaff54efac36634bb4db5e8d72f7c962",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "No complete server-paged media search, metadata editor, crop/rotate or bulk workflow.",
+      "existing_issue": 77
+    },
+    {
+      "id": "P10",
+      "capability": "Admin tables pagination, filters and safe bulk actions",
+      "state": "gap",
+      "reference": [
+        {
+          "tree": "wordpress",
+          "path": "wp-admin/includes/class-wp-list-table.php",
+          "sha256": "3ecd133fcf8fa4f0dc0a0834ca4675ee8ee05b1616078530afd5044424f32676"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "app/Services/ResourceService.php",
+          "sha256": "482b5d299de602a250d895a35dad46a1b957cc2e453f2913a0ff818d08359b7c",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "views/admin/resource.php",
+          "sha256": "e7407fd9170cdcfdb9982d796d9de7a3bfc61e7f1c0b88ffbc91cf136c54ee89",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "views/admin/list.php",
+          "sha256": "12e9e1d7e5fd1ea2d95079ea2e327841a0fc8d0814fb6b7c79575fb6442bca81",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "Generic admin reads/render all rows. Per-row checks alone are not safe bulk actions.",
+      "existing_issue": 77
+    },
+    {
+      "id": "P11",
+      "capability": "Customer profile/address/order access",
+      "state": "existing_base",
+      "reference": [
+        {
+          "tree": "woocommerce",
+          "path": "includes/class-wc-customer.php",
+          "sha256": "e3d0187fa5f8a1ad9eb9a75c149256672f5f0b69a372e587f180d4173f1631cc"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "app/Controllers/AccountController.php",
+          "sha256": "56ba962bc58be13a359b0c3acd679fd2f3cc47f6b13d5a8e200aa34294631d7d",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "app/Services/AddressService.php",
+          "sha256": "f61da84f26734bc7675fda4ea78e090a6b4e4004aab5fa9e2753af59683354e6",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "Existing own-account profile, saved addresses and order/invoice access. Do not rebuild features just because old issue titles say absent.",
+      "existing_issue": 75
+    },
+    {
+      "id": "P12",
+      "capability": "Fine-grained staff roles and delegated API identities",
+      "state": "partial",
+      "reference": [
+        {
+          "tree": "wordpress",
+          "path": "wp-includes/capabilities.php",
+          "sha256": "f5aaf3dd6a3c669f244fd6f01ad3a906556afd55941b443f1e9b34f65bb08573"
+        },
+        {
+          "tree": "wordpress",
+          "path": "wp-includes/class-wp-application-passwords.php",
+          "sha256": "266e15ec38652acaee5e3fd6103fc1275d2d6ea5c54f8926c1c4ddf688559658"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "app/Services/AuthService.php",
+          "sha256": "70adc76b4eb3440f882a5fe8dfcb68eebaafdbb34e779edba9550eb3388c8ec5",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "app/Services/AgentCapabilityPolicy.php",
+          "sha256": "dfd7a1cbecec0b93735736c812807324e3a1b852b6a563cc2183cf760cd235cd",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "Admin/customer and runtime-agent restrictions exist; editor/shop-manager capabilities and revocable integration identities are missing.",
+      "existing_issue": null
+    },
+    {
+      "id": "P13",
+      "capability": "Personal-data export/erasure and consent governance",
+      "state": "gap",
+      "reference": [
+        {
+          "tree": "wordpress",
+          "path": "wp-admin/includes/privacy-tools.php",
+          "sha256": "950cdf02239392ea6067cfb8cdcca033a51d64e882c99cb9cdd41ff4f28423cd"
+        },
+        {
+          "tree": "woocommerce",
+          "path": "includes/admin/settings/class-wc-settings-accounts.php",
+          "sha256": "19f17b5dbe61c7a25631fbc516bfc0b2262c1f48df671486074ac19e17629cf3"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "app/Services/ProjectMapService.php",
+          "sha256": "f10b84bf1f9ea25fdcfa0c296a653ec644215214df894f72f8c8674dd9510cfa",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "storage/schema/collections.php",
+          "sha256": "1b3aa522f825a6c63f59af112d1804d2d75acfc64495312d0ef31d7cb9688a50",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "No verified export/erasure request workflow. Must preserve statutory order/audit retention and ownership; never bulk-delete financial records.",
+      "existing_issue": null
+    },
+    {
+      "id": "P14",
+      "capability": "Site settings, branding and module controls",
+      "state": "existing_base",
+      "reference": [
+        {
+          "tree": "wordpress",
+          "path": "wp-admin/options-general.php",
+          "sha256": "0ac15c8b3bc66d1497b611324a5ed613cd3202dbb69001acb1ba79fe5f854377"
+        },
+        {
+          "tree": "woocommerce",
+          "path": "includes/admin/settings/class-wc-settings-general.php",
+          "sha256": "af94c9c9e3c63b0d4383e9e610d8beceb16997cf09729c24de7483ec2899f55c"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "app/Services/SettingsService.php",
+          "sha256": "e2c2f2d399d95b2f67c3ff883943d997bbc27287fbc199db5c87ff7b8cde6c16",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "views/admin/settings.php",
+          "sha256": "ff6d9988859a1d9075d345c0ca99db34b262dac9cc6ef0276ebc812997f6ad74",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "views/admin/appearance.php",
+          "sha256": "1f71ae11eb431fe2105f657c6afa91317c0d8f5faf28c42060de5298ece96b44",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "Site contacts, modules, palette/logo/favicon and commerce configuration exist. Native settings should reuse these services.",
+      "existing_issue": null
+    },
+    {
+      "id": "P15",
+      "capability": "Editable navigation, layout templates and global design controls",
+      "state": "partial",
+      "reference": [
+        {
+          "tree": "wordpress",
+          "path": "wp-admin/nav-menus.php",
+          "sha256": "0eaea073868305594d0e0378da73130b26236d31caf0383ad11a6afb10f11d02"
+        },
+        {
+          "tree": "wordpress",
+          "path": "wp-admin/site-editor.php",
+          "sha256": "52e337c1a1496388e8d37ca3efb9dc8fffbdee0f1468cab36ab550679b1f42e5"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "views/admin/appearance.php",
+          "sha256": "1f71ae11eb431fe2105f657c6afa91317c0d8f5faf28c42060de5298ece96b44",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "views/layouts/app.php",
+          "sha256": "e3fae215e9efdf34e583292b969c00b469209180f70a4025ae99c276d979f1d4",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "Palette/brand assets exist; native menu hierarchy, editable header/footer/section layouts and preview/rollback remain missing. No external theme loader.",
+      "existing_issue": null
+    },
+    {
+      "id": "P16",
+      "capability": "Canonical/permalink and redirect governance",
+      "state": "partial",
+      "reference": [
+        {
+          "tree": "wordpress",
+          "path": "wp-admin/options-permalink.php",
+          "sha256": "194e35380c9c404abdfed4e850a7492dfdb78ffe9698550e638cbcfe287d7945"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "app/Services/SeoService.php",
+          "sha256": "92015f4a72be99513ce5169e072bf0331ab65666ef105b031159317138daa2bf",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "app/Services/ProjectMapService.php",
+          "sha256": "f10b84bf1f9ea25fdcfa0c296a653ec644215214df894f72f8c8674dd9510cfa",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "Configured origin, metadata and sitemap fixed in #269; route redirects and editable URL policy are not a full permalink manager.",
+      "existing_issue": null
+    },
+    {
+      "id": "P17",
+      "capability": "Persistent job scheduling and operator job health",
+      "state": "gap",
+      "reference": [
+        {
+          "tree": "wordpress",
+          "path": "wp-includes/cron.php",
+          "sha256": "dc27910a1ad004eb2aaabc19352246cc0b9e601bf2da870e141646fd9dd95591"
+        },
+        {
+          "tree": "woocommerce",
+          "path": "includes/class-wc-emails.php",
+          "sha256": "743f4a18e526f15524c603589cd9a83175b3e702f1488074f62ca3be2391eaab"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "app/Services/MailQueueService.php",
+          "sha256": "21925d1b768fcc9b87bdbbc8794c921885f6c8f27a4ef0fb5e5c71a5c04161cb",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "cli/bapXphp",
+          "sha256": "04d6f65840ebb46ae82563428a23c8d72b5521f47d18b171ab9e86a080d50471",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "Mail has atomic claims and bounded due processing; no general scheduler, recurring task registry, job UI or schedule-linked publishing.",
+      "existing_issue": null
+    },
+    {
+      "id": "P18",
+      "capability": "Product variations, attributes, grouped/external types",
+      "state": "gap",
+      "reference": [
+        {
+          "tree": "woocommerce",
+          "path": "includes/class-wc-product-variable.php",
+          "sha256": "950e24d08e08a58a9b1416936c1de0ef8c9d44d159ee5d752423edf23c53e0a0"
+        },
+        {
+          "tree": "woocommerce",
+          "path": "includes/class-wc-product-variation.php",
+          "sha256": "44a9e5cbca92229816a605980378059a29ad69addc203a1611dfefebc525874f"
+        },
+        {
+          "tree": "woocommerce",
+          "path": "includes/class-wc-product-grouped.php",
+          "sha256": "84dca4db871ee0fa72f4ee5c071f9e573fda297c05ef874ca5945232be64a664"
+        },
+        {
+          "tree": "woocommerce",
+          "path": "includes/class-wc-product-external.php",
+          "sha256": "737c38f9013573ccaaab6add00679e6ef6c937846817a375a675986efb9e391f"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "app/Services/ProductService.php",
+          "sha256": "c9bd1217f7d696238594f9b9ec9e82b9cf8e1ca075f7e83db982ba4c1da2dd15",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "storage/schema/collections.php",
+          "sha256": "1b3aa522f825a6c63f59af112d1804d2d75acfc64495312d0ef31d7cb9688a50",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "Current product is simple physical record with price, offers, image and stock-state. No SKU variant entity/options matrix.",
+      "existing_issue": null
+    },
+    {
+      "id": "P19",
+      "capability": "Numeric inventory, reservations, low-stock/backorder policies",
+      "state": "gap",
+      "reference": [
+        {
+          "tree": "woocommerce",
+          "path": "src/Checkout/Helpers/ReserveStock.php",
+          "sha256": "edd6e6be2c8f482355e43f230689f3138bec764016e31395217f63ae4c4b5b20"
+        },
+        {
+          "tree": "woocommerce",
+          "path": "includes/admin/settings/class-wc-settings-products.php",
+          "sha256": "a48a626b4adca7e6b9210e726ee92498e80ddcb6daaefddc2c6268235c164a17"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "app/Services/ProductService.php",
+          "sha256": "c9bd1217f7d696238594f9b9ec9e82b9cf8e1ca075f7e83db982ba4c1da2dd15",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "app/Controllers/CommerceController.php",
+          "sha256": "ee255c5ab72dcd38dfee2e7f91f9934c88eb1828d9e5734340e57ab9c6639f49",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "storage/schema/collections.php",
+          "sha256": "1b3aa522f825a6c63f59af112d1804d2d75acfc64495312d0ef31d7cb9688a50",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "Stock-state and paid-order review guards exist; no quantity/reservation ledger or concurrent oversell/expiry rules.",
+      "existing_issue": null
+    },
+    {
+      "id": "P20",
+      "capability": "Virtual/downloadable products and download permissions",
+      "state": "gap",
+      "reference": [
+        {
+          "tree": "woocommerce",
+          "path": "includes/class-wc-product-download.php",
+          "sha256": "cc2bb2dca3bb6cfad92c91b71b5bed2fed5286a9b3595dae824e879f562b6c48"
+        },
+        {
+          "tree": "woocommerce",
+          "path": "includes/class-wc-download-handler.php",
+          "sha256": "2be981d42d1d91690fe38d03efa02af1818a9dda45ed7a4a1ae11f6a57c56006"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "storage/schema/collections.php",
+          "sha256": "1b3aa522f825a6c63f59af112d1804d2d75acfc64495312d0ef31d7cb9688a50",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "app/Services/ProjectMapService.php",
+          "sha256": "f10b84bf1f9ea25fdcfa0c296a653ec644215214df894f72f8c8674dd9510cfa",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "No signed customer download entitlement/expiry/limits or nonshipping digital product workflow.",
+      "existing_issue": null
+    },
+    {
+      "id": "P21",
+      "capability": "Catalog import/export with validation and resumable work",
+      "state": "gap",
+      "reference": [
+        {
+          "tree": "woocommerce",
+          "path": "includes/admin/class-wc-admin-importers.php",
+          "sha256": "59b682785b9dbe21ac36e3f05b9bd2daec137cd55ef37e827e36e9179a8e3d04"
+        },
+        {
+          "tree": "woocommerce",
+          "path": "includes/admin/class-wc-admin-exporters.php",
+          "sha256": "8661746024e0939aac32c9bed0fbb26e98f3e07d31a8f4833ec5b3a840f55eb9"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "app/Services/ProductService.php",
+          "sha256": "c9bd1217f7d696238594f9b9ec9e82b9cf8e1ca075f7e83db982ba4c1da2dd15",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "app/Services/ProjectMapService.php",
+          "sha256": "f10b84bf1f9ea25fdcfa0c296a653ec644215214df894f72f8c8674dd9510cfa",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "No product CSV mapping/preview/import/export. Require dry-run, formula-safety, row errors and bounded jobs.",
+      "existing_issue": 80
+    },
+    {
+      "id": "P22",
+      "capability": "Coupon rules and promotion precedence",
+      "state": "partial",
+      "reference": [
+        {
+          "tree": "woocommerce",
+          "path": "includes/class-wc-coupon.php",
+          "sha256": "a2d3c76b0251c3da75c1cc9f3e52a59fba4b033e173bc9f98dc987337cfa31c5"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "app/Services/CouponService.php",
+          "sha256": "3579d5e7113b7e1045ca0babaa0dc2fb5b5d338a3dc8577968d883a876180c71",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "storage/schema/collections.php",
+          "sha256": "1b3aa522f825a6c63f59af112d1804d2d75acfc64495312d0ef31d7cb9688a50",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "Dates, spend and usage limits exist; product/category/customer eligibility and stacking precedence remain incomplete.",
+      "existing_issue": null
+    },
+    {
+      "id": "P23",
+      "capability": "Shipping zones/classes/rate methods and packages",
+      "state": "gap",
+      "reference": [
+        {
+          "tree": "woocommerce",
+          "path": "includes/admin/settings/class-wc-settings-shipping.php",
+          "sha256": "a1cb43cd7db160def426ae8ed4e5fe8a7cb8a2b44d4d544bf3bd94db8617fb50"
+        },
+        {
+          "tree": "woocommerce",
+          "path": "includes/class-wc-shipping-zone.php",
+          "sha256": "2df31b48ca297396e7bda1e8fbcb7cec53a4efcde32a8a83d33ba2be0ced25d5"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "app/Controllers/CommerceController.php",
+          "sha256": "ee255c5ab72dcd38dfee2e7f91f9934c88eb1828d9e5734340e57ab9c6639f49",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "app/Services/SettingsService.php",
+          "sha256": "e2c2f2d399d95b2f67c3ff883943d997bbc27287fbc199db5c87ff7b8cde6c16",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "app/Services/OrderService.php",
+          "sha256": "6f9f46e0ef27fab7d8db67b8c3f6182915120ea7415dc618e80b9b0a9f7bf9e6",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "Basic shipping settings/tracking exist. No zone/postcode/class/rate-method data model or multi-package rates.",
+      "existing_issue": null
+    },
+    {
+      "id": "P24",
+      "capability": "GST invoices, verified refunds and reconciliation",
+      "state": "partial",
+      "reference": [
+        {
+          "tree": "woocommerce",
+          "path": "includes/class-wc-tax.php",
+          "sha256": "de18a75a96ac9045a9e3e52d3ebc5a110bbdf470fe9615a33b3fe090d1617a39"
+        },
+        {
+          "tree": "woocommerce",
+          "path": "includes/class-wc-order-refund.php",
+          "sha256": "e0a1a32fcef3c29d59a80ce8dade89694b087806f894af6d16f121bed569b0f5"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "app/Services/GstRegisterService.php",
+          "sha256": "68bcb4a168615dc77b97d84a198391a15754858c6422a415e478ebc8a46b322c",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "app/Services/TaxService.php",
+          "sha256": "49a4ab9cb870773679a3a8c528394d7bc21cfabf354025985cbe485abd43ffa1",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "app/Services/OrderService.php",
+          "sha256": "6f9f46e0ef27fab7d8db67b8c3f6182915120ea7415dc618e80b9b0a9f7bf9e6",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "Existing GST/supply-state checks and verified monetary refund import must remain authoritative. Filing-table verification is separate, not solved by Woo parity.",
+      "existing_issue": 230
+    },
+    {
+      "id": "P25",
+      "capability": "Verified payment and retry-safe paid orders",
+      "state": "existing_base",
+      "reference": [
+        {
+          "tree": "woocommerce",
+          "path": "includes/class-wc-order.php",
+          "sha256": "a0ecf898ed85e7260e75fd557c8db139a9a4da6c8f6aebbd154b03e4518f5e79"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "app/Controllers/CommerceController.php",
+          "sha256": "ee255c5ab72dcd38dfee2e7f91f9934c88eb1828d9e5734340e57ab9c6639f49",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "app/Services/OrderService.php",
+          "sha256": "6f9f46e0ef27fab7d8db67b8c3f6182915120ea7415dc618e80b9b0a9f7bf9e6",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "Gateway verification, insert-if-absent orders and paid-stock-change review exist. No new live charges or fake paid records for parity testing.",
+      "existing_issue": null
+    },
+    {
+      "id": "P26",
+      "capability": "Order notes, line-level operations and partial fulfilment",
+      "state": "partial",
+      "reference": [
+        {
+          "tree": "woocommerce",
+          "path": "includes/class-wc-order.php",
+          "sha256": "a0ecf898ed85e7260e75fd557c8db139a9a4da6c8f6aebbd154b03e4518f5e79"
+        },
+        {
+          "tree": "woocommerce",
+          "path": "includes/class-wc-order-refund.php",
+          "sha256": "e0a1a32fcef3c29d59a80ce8dade89694b087806f894af6d16f121bed569b0f5"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "app/Services/OrderService.php",
+          "sha256": "6f9f46e0ef27fab7d8db67b8c3f6182915120ea7415dc618e80b9b0a9f7bf9e6",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "views/admin/detail.php",
+          "sha256": "c5dcf92fd5ddc41a804e7a0d8799cba7d91ff65bf1238604cffd2a8a537f4775",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "Order status/tracking/refund evidence exist; private/customer notes, line-item quantities/partial fulfilment and returns workflow remain incomplete.",
+      "existing_issue": null
+    },
+    {
+      "id": "P27",
+      "capability": "Persistent carts, guest merge and recoverable checkout",
+      "state": "gap",
+      "reference": [
+        {
+          "tree": "woocommerce",
+          "path": "includes/class-wc-cart-session.php",
+          "sha256": "d9296a5bd9f62c73a2ac6585c8467b77d6a34b6a7fdd9ff8d0a74eba11c50639"
+        },
+        {
+          "tree": "woocommerce",
+          "path": "includes/class-wc-session-handler.php",
+          "sha256": "93020272fe06b6e24624c4288d915b00a3fbc3447e3a324b7d200840c47f059b"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "app/Services/CartService.php",
+          "sha256": "efb8142836a73e645039d98cf0916c7cc21fe9571577c19e5b2973b53199a33d",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "app/Controllers/CommerceController.php",
+          "sha256": "ee255c5ab72dcd38dfee2e7f91f9934c88eb1828d9e5734340e57ab9c6639f49",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "Cart is PHP session-only; no durable cart identity, login merge, versioned revalidation or attributable abandonment cohorts.",
+      "existing_issue": null
+    },
+    {
+      "id": "P28",
+      "capability": "Commerce reports and analytic comparison/drill-down",
+      "state": "partial",
+      "reference": [
+        {
+          "tree": "woocommerce",
+          "path": "src/Admin/API/Reports/Orders/Controller.php",
+          "sha256": "f6e922c0bb202af96a8b2c4796fc4e2a90ef017562a739272aeac8a3129b2fa7"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "app/Services/StoreStatsService.php",
+          "sha256": "d12ab071a77954841986c087151a7ebf93c0a0baf4b9d644d5a214b7662c58ce",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "app/Services/SiteInsightsService.php",
+          "sha256": "6e1cf67251cf47dce69e3126019d172599972efa0c7eeba3a210940de31cdaef",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "views/admin/tax-report.php",
+          "sha256": "5a05fad2cb61ad0eb3783edcb438831f8a2635dd810a17a2e61f8cee726f0a95",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "Sales/products/customers/coupons/GST reports and dashboard charts already exist. Indexed/paged drilldowns, comparable cohorts and exports need targeted extension.",
+      "existing_issue": 80
+    },
+    {
+      "id": "P29",
+      "capability": "Order attribution and trustworthy funnel denominators",
+      "state": "gap",
+      "reference": [
+        {
+          "tree": "woocommerce",
+          "path": "src/Internal/Orders/OrderAttributionController.php",
+          "sha256": "0d450d009d25042372fa8cf333d721696c3f945a73e9a99e3816f90b045bc44c"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "app/Services/SiteTelemetryService.php",
+          "sha256": "9804f06de978f160e408b448e8df46adb83b21dcfa8682464ade0057d30baaff",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "app/Services/AuditLogService.php",
+          "sha256": "d9f1c2a583afd96113010679593d7dc5c5a7f1734c28ac67cbe154fab195fc37",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "Instrumented action counts exist; not unique visitors, attributed sessions or full deduplicated payment/checkout funnel. No invented conversion rate.",
+      "existing_issue": null
+    },
+    {
+      "id": "P30",
+      "capability": "Transactional email controls and actual receipt evidence",
+      "state": "partial",
+      "reference": [
+        {
+          "tree": "woocommerce",
+          "path": "includes/admin/settings/class-wc-settings-emails.php",
+          "sha256": "5b8a5d1c028a0ba64dfbfe1a6ed47dcf8572e48d0322d56a93b802a00522c673"
+        },
+        {
+          "tree": "woocommerce",
+          "path": "includes/class-wc-emails.php",
+          "sha256": "743f4a18e526f15524c603589cd9a83175b3e702f1488074f62ca3be2391eaab"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "app/Services/MailQueueService.php",
+          "sha256": "21925d1b768fcc9b87bdbbc8794c921885f6c8f27a4ef0fb5e5c71a5c04161cb",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "app/Services/SmtpMailer.php",
+          "sha256": "4546da94a2369b0221d736dfd4639a3d4d50935fac85d58f7865e131982d4836",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "views/admin/mailbox.php",
+          "sha256": "4c3ca00688cc790a8f31f8c332427228400db3369d7b812c265abf3122f1657e",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "Atomic SMTP acceptance/unknown state exists. Actual paid-order customer/owner inbox receipt remains unverified; templates/events/consent need explicit settings.",
+      "existing_issue": 25
+    },
+    {
+      "id": "P31",
+      "capability": "Authenticated public REST integration API and revocable credentials",
+      "state": "gap",
+      "reference": [
+        {
+          "tree": "woocommerce",
+          "path": "includes/admin/class-wc-admin-api-keys.php",
+          "sha256": "dba47eedf0ad45d1537ef81afefe28ea7ab3cea338543b477d7b9e2e5c934fd1"
+        },
+        {
+          "tree": "wordpress",
+          "path": "wp-includes/class-wp-application-passwords.php",
+          "sha256": "266e15ec38652acaee5e3fd6103fc1275d2d6ea5c54f8926c1c4ddf688559658"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "app/Controllers/ApiController.php",
+          "sha256": "88e0daf8b8f6e229dfcaf361e78d7029237847f01bc3df18b01a1dca62a7b413",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "app/Services/SecretService.php",
+          "sha256": "80cf4db2076e3f662c220cffbe1762047f977472959523a65169860bf90b46c0",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "app/Services/ProjectMapService.php",
+          "sha256": "f10b84bf1f9ea25fdcfa0c296a653ec644215214df894f72f8c8674dd9510cfa",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "Read-only storefront API and privileged remotedb are not a delegated versioned integration API. Do not expose the DB bridge to MCP clients.",
+      "existing_issue": null
+    },
+    {
+      "id": "P32",
+      "capability": "Signed webhooks and retry-safe event delivery",
+      "state": "gap",
+      "reference": [
+        {
+          "tree": "woocommerce",
+          "path": "includes/class-wc-webhook.php",
+          "sha256": "69178a522d18147c04891d3a1185c6caeaaa2d9ad929ee66d448ff0cffe2f9d0"
+        },
+        {
+          "tree": "woocommerce",
+          "path": "includes/admin/class-wc-admin-webhooks.php",
+          "sha256": "45df15aa152347edd6eef09cf9fd8fda28d0694710bf0b527593275079df2986"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "app/Services/ProjectMapService.php",
+          "sha256": "f10b84bf1f9ea25fdcfa0c296a653ec644215214df894f72f8c8674dd9510cfa",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "app/Services/AuditLogService.php",
+          "sha256": "d9f1c2a583afd96113010679593d7dc5c5a7f1734c28ac67cbe154fab195fc37",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "No webhook subscription, HMAC validation, bounded retries/replay UI or event outbox contract.",
+      "existing_issue": null
+    },
+    {
+      "id": "P33",
+      "capability": "Typed capability catalogue with discovery and invocation authorization",
+      "state": "partial",
+      "reference": [
+        {
+          "tree": "wordpress",
+          "path": "wp-includes/abilities-api/class-wp-ability.php",
+          "sha256": "0c0aa1db27f284cb9942865e6fbed0610178439430e2ac9a9f6a7dd209df049e"
+        },
+        {
+          "tree": "woocommerce",
+          "path": "src/Internal/Abilities/AbilitiesLoader.php",
+          "sha256": "96915cbec525b27e887e97db2b84089a141f4fa89643773dd8de8e73a654186c"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "app/Services/AgentCapabilityPolicy.php",
+          "sha256": "dfd7a1cbecec0b93735736c812807324e3a1b852b6a563cc2183cf760cd235cd",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "app/Services/AgentToolRegistry.php",
+          "sha256": "334f46d4108643f2268d4b54981a9df35588741cff8df94672b1110f0c5df239",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "app/Services/SupportToolRegistry.php",
+          "sha256": "acfa75fc9f62b26be08fd5f2af0372d407849a203e171da264b89d38328543e8",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "app/Services/EnterpriseToolRegistry.php",
+          "sha256": "3251996675eca9ecb48e9cb2c5ff178a9400c3cd757d25200ebaccaf8e51317a",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "Existing scoped runtime tool registry is reusable. Needs provider-neutral input/output schema, operation annotations, delegated scopes and stable capability versioning.",
+      "existing_issue": null
+    },
+    {
+      "id": "P34",
+      "capability": "Native MCP transport and scoped client management",
+      "state": "gap",
+      "reference": [
+        {
+          "tree": "woocommerce",
+          "path": "src/Internal/MCP/McpEndpointRemoval.php",
+          "sha256": "3474ca541bcec9052f98b03ee1c0e086ec0da6c4ea61a94c728fa84aa33d85ab"
+        },
+        {
+          "tree": "woocommerce",
+          "path": "src/Internal/Abilities/Domain/ProductsQuery.php",
+          "sha256": "702abc9cfa2dec877cbf07032bf1f7dcfe2a3258aa3dd42fef67174977cd0657"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "app/Services/ProjectMapService.php",
+          "sha256": "f10b84bf1f9ea25fdcfa0c296a653ec644215214df894f72f8c8674dd9510cfa",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "app/Services/SecretService.php",
+          "sha256": "80cf4db2076e3f662c220cffbe1762047f977472959523a65169860bf90b46c0",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "cli/bapXphp",
+          "sha256": "04d6f65840ebb46ae82563428a23c8d72b5521f47d18b171ab9e86a080d50471",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "No native MCP endpoint/stdio transport/client credentials. WC11.3 removes old endpoint; core abilities need separate adapter there. Build native transport with protocol/permission tests; install no WP plugin.",
+      "existing_issue": null
+    },
+    {
+      "id": "P35",
+      "capability": "Support/Enterprise quality evidence and review workflow",
+      "state": "partial",
+      "reference": [
+        {
+          "tree": "wordpress",
+          "path": "wp-includes/abilities-api/class-wp-ability.php",
+          "sha256": "0c0aa1db27f284cb9942865e6fbed0610178439430e2ac9a9f6a7dd209df049e"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "app/Services/AgentConversationService.php",
+          "sha256": "dff3aa0ee045b60eba848724674b8eb22f7239f33394087e275687c6f194452d",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "app/Services/AgentEvaluationService.php",
+          "sha256": "b7e45e364cbc8bd4d9709f884152812bd1cb56c5f54d51bc9719dd22dd8914f0",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "views/admin/agent-monitoring.php",
+          "sha256": "0ccf9cacae6e23d2a38c3b58cddc758e6471806439bd00867373a010d9762b2d",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "27 fixtures, traces, per-chat JSON and feedback exist. Independent per-answer review is locally in progress under #251, not shipped baseline.",
+      "existing_issue": 251
+    },
+    {
+      "id": "P36",
+      "capability": "Safe multi-client provisioning and deployment separation",
+      "state": "partial",
+      "reference": [
+        {
+          "tree": "wordpress",
+          "path": "wp-admin/network/sites.php",
+          "sha256": "3cf00b8c1202275f47c1b0a1195f4145e6d4c9a864502b23ed3d5a3c3f846979"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "docs/client-runtime-adaptation.md",
+          "sha256": "f75a24a000ac71525dd425a4cdd157badcbf49715eedd397c3b020816d4d9fb6",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "docs/deployment-hostinger.md",
+          "sha256": "520bdd434f6f2a750c42235729344be5cb77bedde15d75a77c81ca5b5f72da9d",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        },
+        {
+          "path": "config/database.php",
+          "sha256": "1bf99ff4d12c701c72dc5c7221042b1482ed909588361b50d02bd1d1a3370425",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "Documented isolation and runtime rules exist, not multi-site tenant provisioning. Separate clients need deliberate DB/secrets/media/chat isolation, never cloned customer data.",
+      "existing_issue": null
+    },
+    {
+      "id": "X01",
+      "capability": "Install/update arbitrary themes and plugins",
+      "state": "excluded",
+      "reference": [
+        {
+          "tree": "wordpress",
+          "path": "wp-admin/menu.php",
+          "sha256": "10dfad8b7ccab04c0af2e269c203c0a0a76c30438ee7b695dd97fb0f74a4cb3b"
+        },
+        {
+          "tree": "woocommerce",
+          "path": "includes/admin/class-wc-admin-menus.php",
+          "sha256": "fcccb0471e244970f0acd159eefb790c67cb3b935cd2c73379409ae0ae118ce6"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "AGENTS.md",
+          "sha256": "04b14036fba3a772238cf740162f6017bd07e731bddf223b972e1bdb27ba338a",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "Explicitly excluded by owner. Native curated capabilities ship through tested repository PRs, not uploaded executable bundles.",
+      "existing_issue": null
+    },
+    {
+      "id": "X02",
+      "capability": "Execute arbitrary theme/plugin PHP in browser",
+      "state": "excluded",
+      "reference": [
+        {
+          "tree": "wordpress",
+          "path": "wp-admin/menu.php",
+          "sha256": "10dfad8b7ccab04c0af2e269c203c0a0a76c30438ee7b695dd97fb0f74a4cb3b"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "AGENTS.md",
+          "sha256": "04b14036fba3a772238cf740162f6017bd07e731bddf223b972e1bdb27ba338a",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "Do not add a PHP file editor, arbitrary SQL tool or code-execution surface to imitate WordPress menus.",
+      "existing_issue": null
+    },
+    {
+      "id": "X03",
+      "capability": "Paid extensions mistaken for core parity",
+      "state": "excluded",
+      "reference": [
+        {
+          "tree": "woocommerce",
+          "path": "includes/admin/class-wc-admin-menus.php",
+          "sha256": "fcccb0471e244970f0acd159eefb790c67cb3b935cd2c73379409ae0ae118ce6"
+        }
+      ],
+      "current_sources": [
+        {
+          "path": "AGENTS.md",
+          "sha256": "04b14036fba3a772238cf740162f6017bd07e731bddf223b972e1bdb27ba338a",
+          "commit": "c1a873f3895bed246529c31c096119278847cb34"
+        }
+      ],
+      "finding": "Marketplace entries do not establish bundled subscriptions/bookings/loyalty/wishlist features. Optional additions require their own scope; no paid dependency proposed.",
+      "existing_issue": null
+    }
+  ]
+}
