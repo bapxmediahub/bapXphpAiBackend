@@ -78,9 +78,9 @@
             "review_note": "Reviewed actual Woo core and Google plugin source, current Google v1 ProductInput and processed product contracts, offline projection and read-only country-specific diagnostics; browser and 47 checks pass."
         },
         "workflow": {
-            "source_sha256": "02c3dff134bf6ec7d18c2b97b57daa6d209dc635115bb3843df5a227f9d0f354",
-            "references_sha256": "ce296268f8e6ab4a20955480efe5431f31112561643d61298121d265ee480280",
-            "review_note": "Reviewed scoped editor recovery primary-key width correction, exact stored-key read-back, owner/token isolation and narrow/wide legacy handling. No unrelated runtime, payment, mail, auth, public route, MCP or agent contract change."
+            "source_sha256": "db0669c73a6b004effc7ad18248790104b62bd12a4a68fcccfb6746c6bcdc046",
+            "references_sha256": "5a27cde698babfc821a71a740e94a9ff3035f44912123bc1ea47f3a348dc7911",
+            "review_note": "Reconciled deployed #529 recovery identity width and source contracts. Reviewed owner-directed inference rehydration/checkpoint instructions, canonical issue/PR and exact source/deployment receipts, unknown outcome reconciliation; developer-only process unchanged by runtime repair."
         }
     }
 }
