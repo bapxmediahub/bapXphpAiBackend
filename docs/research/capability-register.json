@@ -155,8 +155,8 @@
             "finding": "Native browser fallback, owner-scoped server recovery, bounded three CAS versions, stale download and explicit canonical save exist. #527 deployed the bounded confirmed-deadlock rollback retry; both hosted database gates passed. Actual owner production acceptance found a saved acknowledgment with no readable draft. Read-only hosted evidence confirmed settings.id VARCHAR(36), original recovery IDs 63 characters and synthetic rows stored as exact 36-character prefixes. Candidate #528 uses a 36-character canonical ID, resolves existing full-width legacy rows without replacing history, rejects ambiguous dual IDs, and verifies stored identity before acknowledging insertion. Strict/permissive width regression and fresh production acceptance are required. WordPress timestamped edit presence lease remains incomplete.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed actual authenticated production acknowledgment/read discrepancy and read-only hosted schema evidence: settings primary key VARCHAR(36), exact truncated legacy prefixes, preserved owner/kind/target. New canonical width and existing full-width resolution preserve history; dual-key ambiguity refused; actual insert identity read-back. Portable fixture passed; hosted narrow/wide SQL and owner acceptance remain gates.",
-                "source_sha256": "d11dc15315b28799b45edba642faf8f72f5ecdd2c45141d22fb8169727d0f8f0"
+                "reason": "Reviewed shared DatabaseService diff: shipping-only revision comparison under the existing canonical settings transaction. Editor recovery CAS and key-width fix remain unchanged.",
+                "source_sha256": "296e10124e7b91be1cc19c70587bae096d20c6134d185d2dbdd8d01690b9b24f"
             },
             "production_evidence": []
         },
@@ -224,8 +224,8 @@
             "finding": "Existing categories and collection membership; hierarchical taxonomy, tags and generalized relations need scoped design.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed added optional product identity fields; category hierarchy and taxonomy remain unchanged.",
-                "source_sha256": "fb8d7de85f270ecc2797ed6178fe87322ebda1e396499a8fde2ff6802e66d868"
+                "reason": "Reviewed schema addition scoped to app_settings shipping_policy_draft; no product taxonomy or category field changes.",
+                "source_sha256": "43ea80e3ef503843c6462122b118cc21db37c41507d737561e30ba02e5f157bf"
             },
             "production_evidence": []
         },
@@ -257,8 +257,8 @@
             "finding": "Product reviews exist; blog-comment moderation lifecycle not established.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed shared owner controller diff; only authenticated no-store Merchant preview added, reviews and moderation unchanged.",
-                "source_sha256": "827cbdcab3ec58e6991ba13da5b6e392d816bbbf1a0d683e74718f614a04d4e8"
+                "reason": "Reviewed AdminController shipping route additions and optional settings object; blog and product moderation paths unchanged.",
+                "source_sha256": "602e2728dd3f8fe6d6e8c90a124f42e33ecbd63a824ae2af68b6022e8e3bbe98"
             },
             "production_evidence": []
         },
@@ -349,8 +349,8 @@
             "finding": "Native filters/pagination exist; verify consistent bulk-action safety across every owner list.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed owner Merchant data preview and route mapping; existing product lists, filters and bulk operations unchanged.",
-                "source_sha256": "90f699e4097f3cc6c2355fd8094a1621ffd51fe8aee6eb16e45ebbe73d730403"
+                "reason": "Reviewed shipping form save, preview and stale status; existing admin list pagination, filters and bulk operations unchanged.",
+                "source_sha256": "40ad4f0b25a6ae5a8d6efe44a1d6b56e0276fe567310f91a80445fc1d976ed34"
             },
             "production_evidence": []
         },
@@ -417,8 +417,8 @@
             "finding": "No verified native privacy export/erasure and consent-governance workflow; specify legal retention and role boundaries first.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed optional public product identity schema; no personal data export, erasure, retention or customer record changes.",
-                "source_sha256": "0785d5a15b5db6888e0c1729c27727af56057fc8c478af154ad20c5ed85a69b1"
+                "reason": "Reviewed new optional shipping proposal object containing region/rate rules only; no new personal data collection or erasure behavior.",
+                "source_sha256": "9c8622d0e22d40e17f43971f3159ad8474bc40d9803830608cd6f3dd30f337f0"
             },
             "production_evidence": []
         },
@@ -453,8 +453,8 @@
             "finding": "Branding and module controls exist; owner-approved studio credit restored without layout changes, exact rendered text/link tested at desktop/mobile and without JS; independent settings saves still require full production owner acceptance.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed settings loader exclusion of ed rows, public identity and footer credit untouched, no draft values exposed in public settings.",
-                "source_sha256": "263b8b3cc2c3a7f6631bfc5b91bd17112295605c5c9d5a91881e51ba9570880e"
+                "reason": "Reviewed canonical settings draft save and cache flush; preserve current public shipping settings, branding, modules and unrelated settings updates.",
+                "source_sha256": "7cc640bb1027c010ffa454aec39d893cbc25459dfb8cb06e170b1a9a48273c0c"
             },
             "production_evidence": []
         },
@@ -488,8 +488,8 @@
             "finding": "Editable navigation and appearance exist; reusable page templates/global layout governance incomplete.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed actual editor recovery panel and settings read boundary; menu and global layout controls unchanged.",
-                "source_sha256": "b9071f0483ba11413c07445e3f838bc507c5bf4025ae2beb9f2798f4e3c8ae2a"
+                "reason": "Reviewed SettingsService additions limited to shipping draft; existing header menu, global appearance and layout controls unchanged.",
+                "source_sha256": "4516f753cc38237c065034740845b78ae8e1d4f315c59799b73c2a477343da70"
             },
             "production_evidence": []
         },
@@ -583,8 +583,8 @@
             "finding": "Configurable identity and native persistence exist; isolated installer/provisioning deferred.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed database source changes: scoped private editor ID lookup and insert read-back only, no public header, appearance or settings schema mutation. Verified source boundaries and explicit ambiguity refusal.",
-                "source_sha256": "b39fcd0797006155d10d977053b80867d4841c066661984c418d8d2ebc3c5288"
+                "reason": "Reviewed reuse of existing app_settings transaction, schema and authenticated bridge; no new database, tenant store, installation or deployment dependency.",
+                "source_sha256": "4185f50926ffa70551c8ac31dfe9bde2eb4e2261c99409d25a0b2880cc26c9c7"
             },
             "production_evidence": []
         },
@@ -655,8 +655,8 @@
             "finding": "Variant-specific SKU/price/stock must flow through cart, order and refund; no complete variant model.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed optional brand, barcode, manufacturer number and condition fields; not product variations, SKU reservation or variant parity.",
-                "source_sha256": "c1c9855b65f206ea1a4d2ddda38dae72fee453c742197275ab59185b64b51f94"
+                "reason": "Reviewed optional shipping draft schema field only; no variation or product-type change.",
+                "source_sha256": "9a50e43c61ede18ccbc01d0394fc869fe67e0cb1e93391a2c567181a97387942"
             },
             "production_evidence": []
         },
@@ -689,8 +689,8 @@
             "finding": "Availability/on-hold guards exist; numeric reservations, expiry, release and backorders remain.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed verified-order and authoritative amount fixtures against current dependency; stock and reservation logic unchanged.",
-                "source_sha256": "dc58ff9430e83d80f3298852148c136502a87caf6628f210948aa39635fdd9c9"
+                "reason": "Reviewed shipping proposal schema only; numeric inventory, reservations and stock status unchanged.",
+                "source_sha256": "e45e82a47407fecdaea8363c8555fb6a1d5d847f1697493c72a709ba05cd0e02"
             },
             "production_evidence": []
         },
@@ -725,8 +725,8 @@
             "finding": "Campaign protected downloads exist; product-line virtual/downloadable entitlement workflow not complete.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed schema additions confined to merchant identity; no new product file entitlement or campaign download change.",
-                "source_sha256": "d23a087ffb42fde015fe3a98d2f2568cd12a079206b2b8c718b1cc55b8479b6c"
+                "reason": "Reviewed shipping draft optional settings schema only; existing protected download and entitlement behavior unchanged.",
+                "source_sha256": "736802c6636987939f106e1faabc5b88874e0ef3f28ba1df7298ecf3ebb1c5f1"
             },
             "production_evidence": []
         },
@@ -758,8 +758,8 @@
             "finding": "CSV parse/import exists; full validated resumable import/export and reconciliation remain.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed shared existing feed data and typed Merchant API projection; no import changes or claim of resumable API synchronization.",
-                "source_sha256": "0a4e3ec1079aded0719e66874d8206015b378f69af4e4e52eb82b2195fd358ad"
+                "reason": "Reviewed shared AdminController shipping methods; catalogue editor/import/export and Merchant product data unchanged.",
+                "source_sha256": "682bac654cf5be0df4d6ea4f54662c9c0fe378a7bbb7aa2b3ef7f9afd34a1593"
             },
             "production_evidence": []
         },
@@ -833,16 +833,25 @@
             "local_sources": [
                 "app/Services/ShippingService.php",
                 "views/admin/shipping.php",
-                "app/Services/RemoteCartService.php"
+                "app/Services/RemoteCartService.php",
+                "app/Controllers/AdminController.php",
+                "app/Controllers/RemoteDbController.php",
+                "app/Services/SettingsService.php",
+                "app/Services/DatabaseService.php",
+                "storage/schema/collections.php",
+                "app/Services/RemoteCheckoutService.php"
             ],
             "acceptance_evidence": [
-                "tests/shipping-preview-browser.cjs"
+                "tests/shipping-preview-browser.cjs",
+                "tests/shipping-policy.php",
+                "tests/shipping-policy-browser.cjs",
+                "docs/modules/orders.md"
             ],
-            "finding": "Ordered native state/PIN flat/free dry-run exists; remote checkout still sets shippingPaise=0. Pinned zone matching, cart totals, checkout and flat/free methods extracted. Persist revisioned rules and integrate authoritative address/cart quote, GST, payment and immutable order/refund before owner enables charges.",
+            "finding": "Existing native ordered state/PIN flat/free preview; candidate adds revisioned owner shipping draft in canonical app_settings transaction, save/reload, stale-write rejection and non-mutating preview. Actual WooCommerce 11.3 zone normalization/location order and flat/free method bodies inspected. Portable normalization and actual owner HTTP/Chromium against synthetic bridge passed; real MySQL/MariaDB revision and production acceptance pending. Remote checkout still sets shippingPaise=0. Activation requires authoritative cart/address quote, GST, verified payment/order and refund evidence across both checkout paths.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed pinned WooCommerce shipping zone, rate classes, cart totals and checkout REA extraction against native preview and actual zero shipping checkout. No charges enabled or completion claim.",
-                "source_sha256": "c6a3ba859e7ef8ad2643ca31c9973aec6953d73da5312b8f48509f34d6ca6cef"
+                "reason": "Read pinned WooCommerce normalized destination/zone and flat/free shipping method bodies. Native owner draft saves canonical rules with database-host expected revision, rejects stale/invalid values, preview remains nonmutating. Portable normalization and isolated HTTP/Chromium tests passed; hosted database and live acceptance pending. No activation or charging.",
+                "source_sha256": "6e5abef280a9dae42abfce48a7a5e1252f510bbe82ce099bd0e491709636c3e7"
             },
             "production_evidence": []
         },
@@ -945,8 +954,8 @@
             "finding": "Whole-order fulfilment/refund state exists; line-level partial shipment, notes and return allocation need end-to-end checks.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed merged order docs and checkout amount boundary; fulfilment and refund workflow unchanged.",
-                "source_sha256": "b0135c2d52ed1550bcf7a88c8715722ce73e087c7d3bc7cba64bfe507566fd0f"
+                "reason": "Reviewed shipping proposal storage and order guide; verified orders, fulfillment transitions, invoices and refunds unchanged.",
+                "source_sha256": "ceed84bd59a7b3b6a88b2ce58b6a854864afca93de29498241fe88d42c4e1eaf"
             },
             "production_evidence": []
         },
@@ -1142,8 +1151,8 @@
             "finding": "Inbound gateway webhook is not signed outgoing webhook subscription/delivery/replay.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed order and verified-payment boundary; no webhook behavior change.",
-                "source_sha256": "d3906d6053560951eb281d15f5344567d1a140677168adb9d3af302e07031e3d"
+                "reason": "Reviewed settings schema addition only; no webhook delivery or payment event changes.",
+                "source_sha256": "1aa1ad1562742a5bf356662affe7b573c09db14ff7e88c8a6dd62e4b177b7447"
             },
             "production_evidence": []
         },
@@ -2042,8 +2051,8 @@
             "finding": "Previous real Enterprise tool-to-answer and editorial draft passed. On deployed #518 Support trace 0a43c85083302228: one completed public_policy read, 429 continuation, one same-connection synthesis 503, final HTTP503 and no A2UI. Live recovery dispatch/no replay verified, successful both-agent answer acceptance remains partial.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed shared owner controller route for merchant data only; no model transport or live inference status changed.",
-                "source_sha256": "15333eb8feec98fc2973656ec0022291a8c7589ad8ec346b36d0b01037e24307"
+                "reason": "Reviewed shipping-only AdminController additions; provider/tool continuation paths and live inference evidence unchanged.",
+                "source_sha256": "2a4989b719554de8a6ae024c1ccff73d2c536a5609fe506ee3001f087023fb2d"
             },
             "production_evidence": [
                 {
@@ -2093,8 +2102,8 @@
             "finding": "Provider-only editorial generation and protected unpublished form implemented. Live authenticated Enterprise blog draft succeeded at deployed 17aa4c6 (trace 3fa837cf031c2d26; provider fallback, unpublished/create-only, no Save). Standalone editor and product generation live acceptance remain separate.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed authenticated catalogue preview and unchanged owner-only identity draft boundaries; no editorial generation changes.",
-                "source_sha256": "c7bea6195cea772a044fb4f09ed8aa5f7905b3819d941ec30a2139cfb3e55fd2"
+                "reason": "Reviewed shipping-only AdminController additions; model-backed draft generation and editorial recovery unchanged.",
+                "source_sha256": "3ef5185251b82914d5f54032b007661cdc74a30893ed4baacb17400de4d4521b"
             },
             "production_evidence": [
                 {
@@ -2610,8 +2619,8 @@
             "finding": "Deployed #523 at ffb6505: 43 distinct public offers retained, actual sampled price matched XML/JSON-LD/display, improved desktop/mobile purchase guidance. Candidate #524 adds native exact typed Merchant API v1 ProductInput preview and bounded read-only source/product YouTube destination diagnostics with authorized ephemeral token; optional explicit partner attributes offline only. WooCommerce core REST keys/public Store API are separate from Google extension registered WordPress.com/Jetpack partner proxy. Google developer registration, actual approved products, channel IDs/authorization, store-link acceptance and automatic synchronization remain unverified.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed actual WC ZIP REST/Store API classes, Google extension signed partner connection/Mapi classes, 47 native API fixture checks, actual owner browser download, guest denial and offline projection of 43 live feed items. Google authorization and links remain unverified.",
-                "source_sha256": "a9e0903b08d59c33f3dd8d0c66a8962d6bacd0fb5044816bec1f85ca893956dc"
+                "reason": "Reviewed settings proposal and owner shipping changes; Merchant feed and API adapter untouched, actual shipping policy activation and YouTube linking remain unverified.",
+                "source_sha256": "048a558b0ef8021b8336c226890b88c2739540159cfc3249383fae52f23aa913"
             },
             "production_evidence": [
                 {

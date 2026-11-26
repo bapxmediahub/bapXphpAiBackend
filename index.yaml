@@ -46,15 +46,15 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 542
-  relationships: 497
+  concepts: 543
+  relationships: 498
   by_type:
     blog: 16
     controller: 20
     doc: 57
     image: 89
     operator_guide: 12
-    route: 189
+    route: 190
     runtime_instruction: 6
     schema: 25
     service: 94
@@ -4968,6 +4968,26 @@ concepts:
     view: "admin/shipping"
     response: null
     provenance: "route_registry"
+  - id: "route:post__admin_shipping_save_draft"
+    type: "route"
+    title: "POST /admin/shipping/save-draft"
+    description: "admin.shipping.draft.save"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "POST"
+    path: "/admin/shipping/save-draft"
+    controller: "AdminController@saveShippingDraft"
+    services:
+      - "ShippingService"
+      - "SettingsService"
+      - "DatabaseService"
+      - "AuditLogService"
+      - "AuthService"
+    view: "admin/shipping"
+    response: null
+    provenance: "route_registry"
   - id: "route:post__admin_support_tickets_save"
     type: "route"
     title: "POST /admin/support-tickets/save"
@@ -7968,6 +7988,9 @@ relationships:
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:post__admin_shipping_preview"
+    to: "controller:AdminController"
+    relation: "handled_by"
+  - from: "route:post__admin_shipping_save_draft"
     to: "controller:AdminController"
     relation: "handled_by"
   - from: "route:post__admin_support_tickets_save"
