@@ -47,6 +47,8 @@ Existing test starting points (extend rather than claim these cover the entire n
 - `tests/model-driven-agents.php`
 - `tests/cli-lint.test.cjs`
 
+At the end of an audit or release cycle, proceed with the next clear authorized correction; do not stop at recommendations if implementation and acceptance are already defined. Keep blocked or genuinely uncertain work separate. #518 same-head CI retry passed, deployed recovery ran, but the live model answer failed; retain those distinct outcomes.
+
 ## Evidence handoff
 Record the upstream entrypoint/callee, authoritative state, permissions, normal/failure/concurrent transitions and the intentional native deviation in the linked GitHub issue. Record actual test commands and results, update affected REA rows, regenerate the report and run the existing CI gate. Distinguish static reading, synthetic fixture execution and live acceptance. Read unknown source bodies before implementing; no file count or test name proves parity.
 

@@ -1115,8 +1115,8 @@
             ],
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reconciled the independent main baseline; provider and DS03 recovery are still partial, and shipping remains preview only. Native task routing stays unchanged.",
-                "sha256": "fb7b7795a8c040c761ce6743700b2a7703e586e79d27da82f5316c62a6eacc4b"
+                "reason": "Reviewed actual deployed #518 failure and explicit next-cycle routing; advance independent work without narrating incomplete acceptance as success.",
+                "sha256": "2c985b27977a2f4580b00fdc5ef34f609361e3fe9e3e4705704151a488ad5c5f"
             }
         },
         {
@@ -1613,8 +1613,8 @@
             ],
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed main CC06 live tool-answer versus continuation failure; no deployed alternate synthesis claim, actual role and effect verification unchanged.",
-                "sha256": "f722f8a5ba31d3c68723bbe858720ad9af6e8eb0ef0f017507f97ef1d7ffbf4d"
+                "reason": "Reviewed real Support one-tool continuation 429 and alternate 503; distinguish dispatch evidence and actual accepted answer, no repeated execution.",
+                "sha256": "321a376da68003681677aa0b5c415b625454536171a342ebd295f96c8bae40ef"
             }
         },
         {
@@ -1740,8 +1740,8 @@
             ],
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed main CC04 retry holds and unverified live fallback; performance guide requires actual measurements, not the pending #518 candidate.",
-                "sha256": "8090cb969a9b2810f09b7fcff92de9e1fda66d3f6bdf73194dc3a723b8d52937"
+                "reason": "Reviewed real initial provider failures and single alternate synthesis failure; no arbitrary retry budget increase or new paid connection.",
+                "sha256": "f0216cab059909ee004e2ab59771bce93a4e7ed65c1e1366ce734792f67f601b"
             }
         },
         {
@@ -1897,8 +1897,8 @@
             ],
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed main versus pending #518, including actual editor concurrency fixture failure and unchanged live scope; preserve exact-head evidence and read-only audit.",
-                "sha256": "92e0bacfc589e836076086b806e7b2d3a5d39ca69f39f5c3dd1d9d8694efde53"
+                "reason": "Reviewed same-head CI retry, deployed revision, actual failed model answer and continuous execution rule; keep these evidence layers separate.",
+                "sha256": "0bbb4b892ea02335258d1a75872b961259fd8c5bc38d7c903e152ba94916c82f"
             }
         }
     ]

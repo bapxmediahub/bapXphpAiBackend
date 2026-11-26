@@ -267,7 +267,7 @@ readiness check can wait for a short hold of up to eight seconds within the
 existing budget and then reread it. A longer or extended hold stops locally with
 `provider_cooldown`. Earlier observed upstream responses remain in the attempt
 history. Explicit integration diagnostics bypass this gate, including their
-continuation requests. A held tool continuation stops on its original model. Successful transfers clear their
+continuation requests. A held tool continuation stops on its original model. One separate text-only synthesis request may use completed read evidence on an already configured alternate model of the same connection; it is recorded as `inference_phase=synthesis_recovery`, with a real model-attempt span and no repeated tool execution. Successful transfers clear their
 entry for the credential used by that transfer. Unversioned legacy holds are ignored
 because their originating credential cannot be determined. The old default file
 remains untouched, and workers using the former format cannot replace the versioned
@@ -354,7 +354,7 @@ References (patterns researched, not required installations):
 - Native chat budgets are 32 provider transfers, a 110-second inference deadline,
   115 seconds total traced execution and 16,000 observed total tokens. The browser
   request limit is 120 seconds. Two cycles of three attempts per eligible model
-  are permitted before a tool exchange; later tool rounds stay on the same model.
+  are permitted before a tool exchange; later tool rounds stay on the same model. The optional single read-evidence synthesis transfer consumes the same budgets and never repeats the tool exchange.
   Other trace callers retain their default six calls/30 seconds unless overridden. Missing usage
   is marked incomplete, not zero. Budget checks happen before further work and
   transport timeout is clamped to remaining time. No cost is invented.

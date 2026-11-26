@@ -358,6 +358,33 @@ Exercise the changed JavaScript controls with keyboard and pointer input, and co
   evidence. Never approve from a quota error, stale receipt or privileged
   workflow executing PR code. See `docs/engineering/ai-review-workflow.md`.
 
+## Continuous engineering execution (binding)
+
+A development request authorizes the scoped work and its existing release
+workflow, not merely a response to the latest prompt. Complete the full
+engineering cycle: recover intent and known-good behavior, read relevant
+source/REA/skills, reconcile the issue, implement, test, review the exact
+head, merge when authorized and eligible, verify deployment and the actual
+affected workflow, record evidence, and close only satisfied scope.
+
+After each completed cycle, inspect the live issue/PR state and select the
+next highest-priority actionable obligation. When its scope, dependencies,
+safety boundary and acceptance are clear, start that cycle immediately
+within the current session. Do not return a status-only response or ask
+for permission to continue ordinary already-authorized development after
+each commit, test, or PR. While CI, review or deployment is pending, advance
+independent work in a separate worktree, then return to the pending gate.
+Never weaken a test, bypass an approval, or count a queued check as complete.
+
+Give concise progress updates while executing. At a requested narration or
+the end of available execution, report actual completed loops, evidence,
+remaining open gates, and the next concrete action with acceptance criteria.
+If next steps are genuinely uncertain, present the relevant options, tradeoffs
+and the decision needed. Request approval only for a material unresolved
+product decision or action outside existing authority (e.g. irreversible
+production data changes, credentials, real charges, new paid infrastructure).
+Do not claim ongoing background work after the session ends.
+
 ## Issue closure and release order
 
 Work one independently testable issue per Ready-for-Review PR. Use `Refs #N` while

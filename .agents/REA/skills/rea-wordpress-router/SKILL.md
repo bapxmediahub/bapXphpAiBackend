@@ -51,6 +51,8 @@ One scoped issue with exact entrypoint, call chain, persistence, permission, nor
 Existing test starting points (extend rather than claim these cover the entire new capability):
 - `tests/project-map.php`
 
+After a release, review the actual live outcome and choose the next actionable obligation. A confirmed upstream outage can leave a feature acceptance open; continue independent implementation instead of repeating identical provider calls or ending at a status report.
+
 ## Evidence handoff
 Record the upstream entrypoint/callee, authoritative state, permissions, normal/failure/concurrent transitions and the intentional native deviation in the linked GitHub issue. Record actual test commands and results, update affected REA rows, regenerate the report and run the existing CI gate. Distinguish static reading, synthetic fixture execution and live acceptance. Read unknown source bodies before implementing; no file count or test name proves parity.
 

@@ -53,6 +53,8 @@ Existing test starting points (extend rather than claim these cover the entire n
 - `tests/remote-checkout-mysql.php`
 - `tests/model-driven-agents.php`
 
+Live #518 observed one completed policy tool, a failed 429 continuation and one alternate synthesis 503. A correctly dispatched recovery attempt is not a successful customer answer. Preserve exact tool count and failure evidence; do not fake the answer or replay a lookup to make acceptance pass.
+
 ## Evidence handoff
 Record the upstream entrypoint/callee, authoritative state, permissions, normal/failure/concurrent transitions and the intentional native deviation in the linked GitHub issue. Record actual test commands and results, update affected REA rows, regenerate the report and run the existing CI gate. Distinguish static reading, synthetic fixture execution and live acceptance. Read unknown source bodies before implementing; no file count or test name proves parity.
 

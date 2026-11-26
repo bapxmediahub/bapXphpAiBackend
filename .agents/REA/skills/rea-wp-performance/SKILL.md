@@ -55,6 +55,8 @@ Existing test starting points (extend rather than claim these cover the entire n
 - `tests/google-pagespeed-browser.cjs`
 - `tests/ai-provider-transport.php`
 
+Live #518 exhausted multiple initial provider attempts and then failed both continuation and alternate synthesis. Separate observed transport failure from application latency; do not expand retry budgets or add unconfigured/paid providers to force a success. Re-evaluate the actual working connection before a new real acceptance attempt.
+
 ## Evidence handoff
 Record the upstream entrypoint/callee, authoritative state, permissions, normal/failure/concurrent transitions and the intentional native deviation in the linked GitHub issue. Record actual test commands and results, update affected REA rows, regenerate the report and run the existing CI gate. Distinguish static reading, synthetic fixture execution and live acceptance. Read unknown source bodies before implementing; no file count or test name proves parity.
 

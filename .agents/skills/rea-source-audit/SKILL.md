@@ -83,3 +83,12 @@ Follow `docs/research/rea-engineering-workflow.md`. For every changed mapped
 capability, inspect actual local/upstream code and acceptance evidence, record
 the row with `php cli/rea-capabilities.php --record ID --reason ...`, and regenerate
 the report. Never promote on file existence, CI alone or an invented live result.
+
+## Repeated engineering cycles
+
+After source-derived acceptance, reconcile the current capability finding and
+its mapped native guides; select the next highest-priority clear obligation and
+execute its full loop without waiting for a new prompt. If a gate is pending,
+advance an independent obligation while preserving exact-head evidence. At
+narration, distinguish completed loops, unfinished validation and the next
+concrete acceptance target. Ask for a decision only when genuinely needed.

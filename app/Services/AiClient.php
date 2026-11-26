@@ -46,6 +46,14 @@ final class AiClient
     // Health identity needs the selected credential. Keep it out of transfer diagnostics.
     private array $activeHealthConnection = [];
     private bool $bypassProviderHolds = false;
+    // Request-local observations only. Never store raw tool data or send it to
+    // a different credential/endpoint as part of recovery.
+    private bool $captureReadEvidence = false;
+    private bool $readEvidenceEligible = true;
+    private bool $synthesisRecovery = false;
+    private array $readEvidence = [];
+    private ?string $exchangeModel = null;
+
 
     /** Bounded operational category; never includes provider messages or credentials. */
     public function failureCategory(): ?string { return $this->failureCategory; }
@@ -195,6 +203,13 @@ final class AiClient
         $this->failureCategory=null;$this->transferTimings=[];$this->toolCalls=0;$this->toolExchangeStarted=false;$this->activeConnection=[];$this->activeHealthConnection=[];
         $this->cycle=1;$this->modelAttempt=1;$this->inferenceRound=1;$this->quotaKind=null;$this->retryAfterMs=null;
         $this->bypassProviderHolds = $diagnostic || $override !== null;
+        $this->captureReadEvidence = !$this->bypassProviderHolds && $prompt instanceof AgentModelTurn
+            && $tools instanceof RuntimeAgentToolRegistry;
+        $this->readEvidenceEligible = true;
+        $this->synthesisRecovery = false;
+        $this->readEvidence = [];
+        $this->exchangeModel = null;
+
         $plan=$selectedPlan??$this->secrets->getProviderPlan();
         // A deliberate diagnostic model probe must not silently switch model or provider.
         if($override!==null){
@@ -203,6 +218,7 @@ final class AiClient
             if($plan){$plan[0]['models']=[$override];$plan[0]['model']=$override;}
         }
         if(!$plan){$this->failureCategory='not_configured';return 'No AI API key or enabled model is configured. Check Admin → Integrations.';}
+        $configuredPlan = $plan;
         if (!$this->bypassProviderHolds && $this->health !== null) {
             // Prefer ready models. If all are held, let the existing bounded
             // gate decide whether a short hold can expire during this turn.
@@ -211,10 +227,79 @@ final class AiClient
         if(!function_exists('curl_init')){$this->failureCategory='transport';return 'AI request failed: cURL is not available on this server.';}
         $deadline=hrtime(true)+self::GENERATION_TIMEOUT_NS;
         $chatPrompt = is_string($prompt) ? $this->withAnswerFence($prompt) : $prompt;
-        return $this->completeWithFallbacks($plan, $deadline, !$diagnostic && $override === null,
-            fn(array $config): string => $this->completeCompatible(
-                $config, $chatPrompt, $maxTokens, $override, $tools, $rounds, $deadline, temperature: $temperature
-            ));
+        try {
+            $answer = $this->completeWithFallbacks($plan, $deadline, !$diagnostic && $override === null,
+                fn(array $config): string => $this->completeCompatible(
+                    $config, $chatPrompt, $maxTokens, $override, $tools, $rounds, $deadline, temperature: $temperature
+                ));
+            if ($this->captureReadEvidence && $prompt instanceof AgentModelTurn) {
+                return $this->recoverReadSynthesis($answer,$configuredPlan,$prompt,$maxTokens,$temperature,$deadline);
+            }
+            return $answer;
+        } finally {
+            // Raw observations belong only to this request, not traces or the next turn.
+            $this->readEvidence = [];
+            $this->captureReadEvidence = false;
+        }
+    }
+
+    /** A new text-only request, not a resumed or replayed tool exchange.
+     * At most one alternate explicitly configured model on the original
+     * connection. The same provider hold and trace budgets still apply. */
+    private function recoverReadSynthesis(string $answer,array $plan,AgentModelTurn $prompt,
+        int $maxTokens,float $temperature,int $deadline): string {
+        if (!$this->toolExchangeStarted || !$this->readEvidenceEligible || $this->exchangeModel === null
+            || $this->readEvidence === [] || !in_array($this->failureCategory,
+                ['timeout','transport','provider_server','rate_limit','provider_cooldown'],true)
+            || in_array($this->quotaKind,['daily','zero'],true)
+            || self::remainingProviderMs($deadline)<self::MIN_ATTEMPT_MS
+            || count($this->transferTimings)>=self::MAX_TRANSFERS) return $answer;
+        $last=end($this->transferTimings)?:[];
+        if ($this->failureCategory!=='provider_cooldown'
+            && !self::canFailOver((int)($last['status']??0),(int)($last['curl_error']??0))) return $answer;
+        if (!array_filter($this->readEvidence,static fn(array $item):bool=>!in_array($item['name'],['tool_search','read_runtime_skill'],true))) return $answer;
+        foreach ($plan as $connection) {
+            if ($connection['provider']!==($this->activeHealthConnection['provider']??null)
+                || $connection['endpoint']!==($this->activeHealthConnection['endpoint']??null)
+                || !hash_equals($connection['apiKey'],(string)($this->activeHealthConnection['apiKey']??''))) continue;
+            foreach ($connection['models'] as $model) {
+                if ($model===$this->exchangeModel || $model===SecretService::OPENROUTER_MODEL
+                    || ($connection['provider']==='openrouter' && !str_ends_with($model,':free'))
+                    || ($this->health!==null && $this->health->providerHoldRemainingMs($connection,$model)>0)) continue;
+                $connection['models']=[$model];
+                $connection['model']=$model;
+                $this->synthesisRecovery=true;
+                $this->inferenceRound++;
+                $this->modelAttempt=1;
+                $span=AgentTraceService::startSpan('retrieval','read_evidence_synthesis');
+                try {
+                    $result=$this->completeCompatible($connection,$prompt->withReadEvidence($this->readEvidence),
+                        $maxTokens,null,null,0,$deadline,temperature:$temperature);
+                    AgentTraceService::endSpan($span,$this->failureCategory===null && !self::isError($result) && trim($result)!==''?'complete':'error');
+                    return $result;
+                } catch (\Throwable $error) {
+                    AgentTraceService::endSpan($span,'error');
+                    throw $error;
+                }
+            }
+            break;
+        }
+        return $answer;
+    }
+
+    private function captureCompletedRead(AgentToolRegistry|RuntimeAgentToolRegistry $tools,string $name,mixed $args,array $result): void {
+        if (!$this->captureReadEvidence || !$this->readEvidenceEligible) return;
+        if (!$tools instanceof RuntimeAgentToolRegistry || !$tools->permitsReadSynthesis($name)
+            || !is_array($args) || isset($result['error']) || count($this->readEvidence)>=16) {
+            $this->readEvidenceEligible=false;
+            $this->readEvidence=[];
+            return;
+        }
+        $this->readEvidence[]=['name'=>$name,'arguments'=>(object)$args,'result'=>$result];
+        if (strlen(json_encode($this->readEvidence,JSON_THROW_ON_ERROR))>131072) {
+            $this->readEvidenceEligible=false;
+            $this->readEvidence=[];
+        }
     }
 
     /** Direct synchronous fallback loop; no scheduled jobs or worker.
@@ -357,7 +442,7 @@ final class AiClient
             }
             $seenCalls=[];
             for ($round = 0; $round <= $maxRounds; $round++) {
-                $this->inferenceRound=$round+1;
+                if (!$this->synthesisRecovery) $this->inferenceRound=$round+1;
                 $declarations = $tools === null ? [] : array_map(
                     static fn(array $declaration): array => ['type' => 'function', 'function' => $declaration],
                     $tools->declarations()
@@ -462,6 +547,7 @@ final class AiClient
                     $assistant[$field]=$value;
                 }
 
+                $this->exchangeModel ??= $requestModel;
                 $this->toolExchangeStarted=true;
                 $responses = [];
                 foreach ($calls as $call) {
@@ -472,6 +558,7 @@ final class AiClient
                     // https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create
                     $args=str_starts_with(ltrim($arguments),'{')?json_decode($arguments,true,64):null;
                     $result=$this->executeDeclaredTool($tools,$advertised,$name,$args);
+                    $this->captureCompletedRead($tools,$name,$args,$result);
                     $assistant['tool_calls'][] = $call;
                     $responses[] = ['role' => 'tool', 'tool_call_id' => $id,
                         'content' => json_encode($result, JSON_THROW_ON_ERROR)];
@@ -601,11 +688,12 @@ final class AiClient
     private function postWithRetries(string $url,string $payload,array $headers,?int &$status,string $model,
         int $deadline,bool $hasAlternate,array $options=[]): string|false {
         $body=false;
-        for($attempt=1;$attempt<=self::ATTEMPTS_PER_MODEL;$attempt++){
+        $maxAttempts=$this->synthesisRecovery?1:self::ATTEMPTS_PER_MODEL;
+        for($attempt=1;$attempt<=$maxAttempts;$attempt++){
             $this->modelAttempt=$attempt;
             $body=$this->post($url,$payload,$headers,$status,$model,$deadline,$hasAlternate,$options);
             if($status===200&&$body!==false)return $body;
-            if($attempt===self::ATTEMPTS_PER_MODEL||!$this->retryableInferenceFailure($status))break;
+            if($attempt===$maxAttempts||!$this->retryableInferenceFailure($status))break;
             if(!$this->waitForRetry(self::backoffMs($attempt,$this->retryAfterMs),$deadline))break;
         }
         return $body;
@@ -744,7 +832,7 @@ final class AiClient
         }
         if($this->retryAfterMs!==null)$diagnosticFields['retry_after_ms']=$this->retryAfterMs;
         $diagnosticFields['inference_round']=$this->inferenceRound;
-        $diagnosticFields['inference_phase']=$this->toolExchangeStarted?'continuation':'initial';
+        $diagnosticFields['inference_phase']=$this->synthesisRecovery?'synthesis_recovery':($this->toolExchangeStarted?'continuation':'initial');
         $diagnosticFields+=self::responseMetadata($status,$body);
         $usage=AgentTraceService::usageFromResponse($body);
         $diagnosticFields['usage']=$usage;

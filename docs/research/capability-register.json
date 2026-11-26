@@ -1172,8 +1172,8 @@
             "finding": "Native typed role policies, public MCP and WebMCP projections exist; common cross-transport discovery and invocation parity remains. Direct model tool access tracked in CC05.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed #512 registry and role filters; direct native declarations fixed, cross-transport typed projection remains partial.",
-                "source_sha256": "c511cd6cdafc28deb44b53937e3be9bfe54cbe24535ae15095c02f5091877a9e"
+                "reason": "Reviewed explicit read-synthesis classification against unchanged role/module declaration and cross-transport authorization, no external capability added.",
+                "source_sha256": "4ba0b09b5413b141d5923990d98c6ed79ccdf275b7356469bf1e9769f5cde959"
             },
             "production_evidence": []
         },
@@ -1240,8 +1240,8 @@
             "finding": "Owner review revisions and explicit feedback are present; production review workflow, coverage and customer resolution remain unverified. Separate from DS08 model regression experiments.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
-                "source_sha256": "f8b8c85d3c99655c8361781380c614fe097b4625072f192a55388219902c0159"
+                "reason": "Reviewed observed synthesis phase and preserved existing owner review and support feedback boundaries; no claim of customer resolution.",
+                "source_sha256": "4cfef1c66c8cbad1e46d35c9c235c591cfa2ee6ea45e9aa0fb7b93e0f51bf34e"
             },
             "production_evidence": []
         },
@@ -1599,8 +1599,8 @@
             "finding": "Need authorized private prompts/resources with same execution permission; never expose .agents or private instructions publicly.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed updated runtime-agents contract; native declaration access does not grant external MCP private prompts or HTTP owner access.",
-                "source_sha256": "f784d1a1a0e9630e4731bdea3204981bd93085c1296510a142605bccdefa5664"
+                "reason": "Reviewed runtime docs and same-connection inference change; no new public or authenticated MCP grant or prompt projection.",
+                "source_sha256": "c23bec1978e902c62199e92c3863d9576e5b63b811c47d2bff8cc4326e14f62e"
             },
             "production_evidence": []
         },
@@ -1912,8 +1912,8 @@
             "finding": "Wire fixture covers tools, role=tool and call IDs; not support for Responses-only models.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed actual model-driven controller tests and Chat Completions text and tool message paths; existing wire contract intact.",
-                "source_sha256": "7dcd98d56c5fcfcce12f67146917c88e44b2558faf4bfa9f328df3ecc68ea0c7"
+                "reason": "Reviewed same-model Chat Completions correlation and new fresh text-only request without tool messages; original continuation contract and 120 controller cases pass.",
+                "source_sha256": "008f740ffaceeba353f70e8f506490c2217cb7759bfc4714d6312e7859211f6c"
             },
             "production_evidence": []
         },
@@ -1941,8 +1941,8 @@
             "finding": "Bounded Google signatures and OpenRouter reasoning continuity; validate selected live model, never leak internal metadata.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed unchanged provider-specific continuation and synthetic transfer tests; no provider metadata crossing.",
-                "source_sha256": "3e4012a8d70269e65b9176e2e425ec581cc9600e35959f969339468c05a47f3f"
+                "reason": "Reviewed provider-specific signatures kept on original continuation and verified absent from fresh synthesis request; loopback assertions passed.",
+                "source_sha256": "0380aec0cab96567210d4b961d9db2c0eafc424af9334e391f91798cebfb4e24"
             },
             "production_evidence": []
         },
@@ -1965,16 +1965,19 @@
             ],
             "local_sources": [
                 "app/Services/AiClient.php",
-                "app/Services/AiProviderHealthService.php"
+                "app/Services/AiProviderHealthService.php",
+                "app/Services/AgentModelTurn.php",
+                "app/Services/RuntimeAgentToolRegistry.php"
             ],
             "acceptance_evidence": [
-                "tests/ai-provider-transport.php"
+                "tests/ai-provider-transport.php",
+                "tests/model-driven-agents.php"
             ],
-            "finding": "Bounded retries and credential holds exist; #395 lengthened deadlines, live 503/429/401 and continuation starvation remain.",
+            "finding": "Merged and deployed #518: one bounded same-credential alternate synthesis after completed read-only evidence; live trace 0a43c85083302228 attempted recovery once, but alternate returned 503 after original 429. Provider reliability remains partial; do not add arbitrary retries.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed #512 AiClient diff; only invalid-call guidance changed; retry and hold policy and live provider failure remain unresolved.",
-                "source_sha256": "1acfce2f45434fc8a0fc3a1d75cf842aaa08202144597e175a4f9febd26bae5e"
+                "reason": "Reviewed actual live #518 rate-limit and alternate 503 sequence; one bounded recovery transfer, no additional retries or provider configuration changes.",
+                "source_sha256": "b79a570e8d3b73a6711dc36e9648b26967bd90beb298311f41d4bff292f2ffa3"
             },
             "production_evidence": []
         },
@@ -2003,8 +2006,8 @@
             "finding": "PR #512 removed forced lexical preselection and cumulative tool activation ceiling; all six hosted checks, direct multilingual controller fixtures and deployed SHA passed. Live model answer acceptance remains CC06.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed retained direct role/module-filtered schemas and multilingual model fixtures; no new fake free-form reply or activation gate.",
-                "source_sha256": "a8c710fba81a1feebf4001a607e2a85989daea523d594e2e26bdfa0a344735af"
+                "reason": "Reviewed explicit read-only recovery classification, unchanged direct tool permissions and module/actor filters, no arbitrary activation or new tool execution.",
+                "source_sha256": "bbc55c7142857d10d30b8e940c46e4a115638ad35b8132c0c8648a4003891ade"
             },
             "production_evidence": []
         },
@@ -2031,11 +2034,11 @@
             "acceptance_evidence": [
                 "tests/model-driven-agents.php"
             ],
-            "finding": "Live Chromium at deployed 00ad614: Enterprise /help blog-publishing completed operator_guide and real model answer/A2UI (trace 9e1f92fba3349f0c); Support completed public_policy then rate-limited continuation (trace 4f2cb1a30a412b56). Whole both-agent scope remains partial.",
+            "finding": "Previous real Enterprise tool-to-answer and editorial draft passed. On deployed #518 Support trace 0a43c85083302228: one completed public_policy read, 429 continuation, one same-connection synthesis 503, final HTTP503 and no A2UI. Live recovery dispatch/no replay verified, successful both-agent answer acceptance remains partial.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed shared AdminController recovery cleanup; previous real Enterprise and Support traces retained, no provider or tool loop change.",
-                "source_sha256": "5f9f3918a9a66b27d5b8d4bcd8bc99c278f295dc7a2140e65a39e49c112b39ce"
+                "reason": "Reviewed live trace 0a43c85083302228 and exact deployed SHA, retained actual partial evidence and no accepted model answer claim.",
+                "source_sha256": "8e27bf8a5680834c637c3fd2b9bc7390a2e644d342e1d59783e6499e25ae8a21"
             },
             "production_evidence": [
                 {
@@ -2044,6 +2047,13 @@
                     "url": "https://github.com/bapxmediahub/bapXphpAiBackend/issues/496#issuecomment-7196002143",
                     "scope": "Enterprise real tool-to-answer pass, Support real tool then failed final continuation; partial only",
                     "source_sha256": "073d6c85fa36b4cc3864d75d3f8969d4fc9b575d36c6f0020ba50da8715dcf74"
+                },
+                {
+                    "deployed_sha": "167b01702d6b00ec7bdb2a10b1e5da5ba3201d95",
+                    "date": "2026-11-26",
+                    "url": "https://github.com/bapxmediahub/bapXphpAiBackend/issues/176#issuecomment-7197115171",
+                    "scope": "Live Support policy read executed once; original continuation 429 and single alternate synthesis 503; no accepted answer or A2UI",
+                    "source_sha256": "8e27bf8a5680834c637c3fd2b9bc7390a2e644d342e1d59783e6499e25ae8a21"
                 }
             ]
         },
@@ -2078,8 +2088,8 @@
             "finding": "Provider-only editorial generation and protected unpublished form implemented. Live authenticated Enterprise blog draft succeeded at deployed 17aa4c6 (trace 3fa837cf031c2d26; provider fallback, unpublished/create-only, no Save). Standalone editor and product generation live acceptance remain separate.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed unchanged editorial model generation and save semantics; only added developer skill discovery and knowledge-index assertions in tests/run.php.",
-                "source_sha256": "8a9daf3111ea323c41612ce1e843b19f4a3fa2f0ff84dc9a078c5ce10efb6c85"
+                "reason": "Reconciled merged #518 inference changes with developer skill discovery tests; prior actual provider draft and unpublished review evidence retained.",
+                "source_sha256": "dd81d36adcd2c1deea838e256a5d6ce11be10c1804d3d68762660307810a806b"
             },
             "production_evidence": [
                 {
@@ -2116,8 +2126,8 @@
             "finding": "Synchronous native requests; browser timeout is not provider cancellation or event stream.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed #512 runtime docs and AiClient error guidance; no new model streaming or cancellation mechanism.",
-                "source_sha256": "7d9de705af0d1273de6484a2776b99db22859ecb94becd1df9c9d220cf3e609c"
+                "reason": "Reviewed new synthesis phase within existing synchronous budgets; no claim of provider cancellation or streaming.",
+                "source_sha256": "692255fb79b201c4212159badf67e6b279596087e81ac30ce0dafb0ff495bd3c"
             },
             "production_evidence": []
         },
@@ -2150,8 +2160,8 @@
             "finding": "One private JSON per chat, ownership before inference and accepted multi-turn history; live acceptance remains.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed model-driven conversation tests; actor-owned history and isolation unchanged by draft response provenance.",
-                "source_sha256": "f82a7864d45f657e7f999d0658f1589dcbd21934fa48af2a0b7515a161a02a0a"
+                "reason": "Reviewed original actor-scoped dialogue and reference data retained for fresh synthesis, no cross-actor conversation or persistence change.",
+                "source_sha256": "b0468acf1126a86d1ad5effd3ad716817a8dfbf68696f2f84ca85409f9ce5c79"
             },
             "production_evidence": []
         },
@@ -2183,8 +2193,8 @@
             "finding": "Pending turn and observed spans checkpointed; not a general durable event-sourced runtime.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
-                "source_sha256": "5c74e058066c1001a45d521fb1af4c21db11b903276324a469e49698c55c941b"
+                "reason": "Reviewed observed model attempt and synthesis spans; actual result and phase recorded, no invented tool events.",
+                "source_sha256": "2cce55ebf0bcef48ca84b7516877f687b12c10cea1f512495772a3efad612b0b"
             },
             "production_evidence": []
         },
@@ -2205,16 +2215,20 @@
             ],
             "local_sources": [
                 "app/Services/AgentConversationService.php",
-                "app/Services/AiClient.php"
+                "app/Services/AiClient.php",
+                "app/Services/AgentModelTurn.php",
+                "app/Services/RuntimeAgentToolRegistry.php"
             ],
             "acceptance_evidence": [
-                "tests/agent-interruption.php"
+                "tests/agent-interruption.php",
+                "tests/ai-provider-transport.php",
+                "tests/model-driven-agents.php"
             ],
-            "finding": "Interruption visible; no general safe resumption of incomplete tool exchanges. Preserve unknown outcomes and avoid replay.",
+            "finding": "Request-local same-connection read-evidence synthesis deployed in #518; live trace confirms one recovery transfer and no duplicated tool, although alternate failed. General cross-request durable resumption and unknown-outcome repair remain partial.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed AiClient #512 tool guidance change; interruption handling remains, no new durable replay/resumption mechanism.",
-                "source_sha256": "a71d286cd71c534b034cb8a8a3c68ec72dfbfa3b28ff208e3dca38da3e90eb87"
+                "reason": "Reviewed live observed single tool and separate synthesis phase; no replay, cross-request recovery remains incomplete.",
+                "source_sha256": "0c32c030253a6d48a41ed7a98ee232729ed32af85e552cc2deab8c99c7d6ac92"
             },
             "production_evidence": []
         },
@@ -2277,8 +2291,8 @@
             "finding": "Sanitized observed metadata, durations, usage and safe evidence; no exported private telemetry.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed updated developer knowledge index assertions; no telemetry, evidence sanitization or agent trace runtime changes.",
-                "source_sha256": "6a5e8826a50719e8a23e546a17558b89c6247186fff3ffc5451f4d033124686b"
+                "reason": "Reviewed merged #518 observed inference recovery phase and native skill index assertions; no new raw evidence persistence or projection.",
+                "source_sha256": "00e3abdadb649a75260703bfe07a6b8fe273354358f026016bc162d96db45aff"
             },
             "production_evidence": []
         },
@@ -2311,8 +2325,8 @@
             "finding": "Bounded execution and checkpoints exist, no confirmed transport cancellation/real streaming.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed #512 AiClient diff and observability contract; native streaming and actual cancellation remain incomplete.",
-                "source_sha256": "d855871862e652f6465c5f283f0d1ad3ddd7fa54f2e88b31eee29b975e3e355c"
+                "reason": "Reviewed shared provider deadline/trace budgets consumed by one synthesis transfer; no background jobs, true cancellation or streaming.",
+                "source_sha256": "d0d5669983504aa6c0de84a8918901e2f9c301f854ce3bcf15793aec16c79a62"
             },
             "production_evidence": []
         },
@@ -2383,8 +2397,8 @@
             "finding": "Golden and loopback results do not prove model quality; retain prompt/model/source hashes and real multilingual outcomes.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed real loopback requests and actual live traces; synthetic provider results are transport regression evidence only.",
-                "source_sha256": "f9b0eaae1d9b08061993c172325b9853cbbb495f58f4c76708c2fba062028f7e"
+                "reason": "Reviewed real HTTP transport and both controller loopback tests, distinct phase and outcomes; no promotion of actual model quality from fixtures.",
+                "source_sha256": "e3847e02856fe6f7390ca408f3f7be42833c7800c3b19d422edc722fcb671812"
             },
             "production_evidence": []
         },
