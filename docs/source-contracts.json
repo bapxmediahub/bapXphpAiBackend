@@ -13,9 +13,9 @@
             "review_note": "Reviewed actor-owned registry and credential-scoped recovery, no alternate connection or change to authentication or account scopes."
         },
         "commerce": {
-            "source_sha256": "81b1644c7e6216baa5ba42a9f5a78a484a354d21d01c387ab86816e13d513239",
-            "references_sha256": "d9f73e2c07e32909b155b7fe136216e0aca5094a5e58eeec7d7b83ef99f99319",
-            "review_note": "Reviewed read-only report and catalogue tools; no commerce writes, tax or stock logic altered, actual report scope preserved."
+            "source_sha256": "56c2354c15a4b4af4a9698bc2a65f237fdebccff02d9e6b80183b30ec9559d2a",
+            "references_sha256": "67fca72b585808055dbd5bdcbeb5a027176f126d79591e47f879a14da68edf0d",
+            "review_note": "Actual browser controller fixture reproduces zero-discount fallback and verifies authoritative paise, minimum and recovery preservation."
         },
         "content": {
             "source_sha256": "2642ef5e51f740f766884a84365cb1b6848758c82ba383901bd842a69f822543",
@@ -38,9 +38,9 @@
             "review_note": "Reviewed recovery only for recoverable transport, quota and hold failures; failed alternate remains explicit error, malformed/denied responses are not replayed."
         },
         "interface": {
-            "source_sha256": "cbed539110a97d0d50288e1abf4272f7d98fa2ea8818ae1f99d9bf620b8ea92c",
+            "source_sha256": "25eff325638d0f555f168acd7004979280a82deb1d1451f79bfbd0b9d751b82a",
             "references_sha256": "4d63f27c7ea8ae671839efae05e3702ef9ba7f29b908490cd257d85029720882",
-            "review_note": "Reviewed actual desktop and 375px recovery controls for both editors, stale/competing edits, downloads and explicit restoration confirmation; four tests passed."
+            "review_note": "Checkout browser no longer posts an amount; gateway UI uses exact server response and existing recovery states."
         },
         "mail": {
             "source_sha256": "3e515e62031c1609b7cbe61f269e97900ceb6a5d3db5d5f4b90d64d2eb240ef8",
@@ -58,9 +58,9 @@
             "review_note": "Reviewed the owner UI skill changes against authenticated media navigation, route declarations, and Media Library behavior. Reconciled on da0981d; retained the existing source changes and regenerated exact route artifacts."
         },
         "operator-help": {
-            "source_sha256": "125f9739dc68b84838c450bb442f0a9b30dcbdda3a290982b9bd5ddda8302588",
+            "source_sha256": "a8fdfc0d2c7511d25d3fa289251830cc784e6ff9adb6f47e188e01e0a4b043f3",
             "references_sha256": "4e2591fafd1e772fb73b53865320e18914867c5d36d31f01f3406f58dcc80b4f",
-            "review_note": "Reviewed native owner and Support guidance; one bounded read synthesis preserves actual tool results and existing scope; no new editor or admin action."
+            "review_note": "Reviewed exact server-derived checkout amount and unchanged owner/customer help scope."
         },
         "public-mcp": {
             "source_sha256": "16885ac8b5f31d7e7f4734b227e46c4dcce33001b2d019e251fd2891730ae4c7",
@@ -68,9 +68,9 @@
             "review_note": "Reviewed same-model continuation and alternate text-only synthesis; no new public MCP schemas or grants, private tool evidence stays on original configured connection."
         },
         "remote-commerce": {
-            "source_sha256": "36453f48ddac7bd4ca99650d9fc9e666ef154f793405ca890c5eeb51205b5e51",
-            "references_sha256": "2b86f582c6a2dcf874fc8cc5b24650fe91ee1a08df3d37a318f69331d9c96b2f",
-            "review_note": "Reviewed existing tool declarations and recovery allowlist; no cart/checkout mutation or new provider credential boundary, proposal tools excluded."
+            "source_sha256": "367e990628793e62773a6d8f4b3700e2926113be3af4a52f403427a03fbf1eed",
+            "references_sha256": "354f001560c57802c742c357279837222d166d67e10b3a4c5c026434fad6c52e",
+            "review_note": "Removed browser client-supplied amount; existing remote quote and signed payment contracts unchanged."
         },
         "sales-channels": {
             "source_sha256": "9ab05dee5b52c721721e1aa2028472c7c41ee0e2a3b030bacc6a567dbd58e6eb",

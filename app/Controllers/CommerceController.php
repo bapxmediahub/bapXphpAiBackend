@@ -277,10 +277,11 @@ final class CommerceController extends BaseController {
                 $this->jsonResponse(['error' => $e->getMessage()], 422);
             }
         }
-        $cartAmount = (int)round(max(0, $this->cartTotal($items) - $discount) * 100);
-        $amount = $cartAmount > 0 ? $cartAmount : (int)($_POST['amount'] ?? 0);
+        // Only the current server-resolved cart and validated coupon may set a charge.
+        // A zero-payable cart has no supported payment flow; never substitute POST data.
+        $amount = (int)round(max(0, $this->cartTotal($items) - $discount) * 100);
         if ($amount < 100) {
-            $this->jsonResponse(['error' => 'Amount must be at least 100 paise.'], 400);
+            $this->jsonResponse(['error' => 'The payable cart total must be at least ₹1 to start payment.'], 400);
         }
         $receipt = 'order_' . bin2hex(random_bytes(5));
         try {

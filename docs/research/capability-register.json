@@ -687,8 +687,8 @@
             "finding": "Availability/on-hold guards exist; numeric reservations, expiry, release and backorders remain.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed settings-only schema addition; existing stock and paid-order handling untouched.",
-                "source_sha256": "2204e518926ae14110373fe84d9ded16e2057da5c23bf2a3fcc7dcfc5cff2983"
+                "reason": "Reviewed extended shared verified-order test: authoritative checkout amount correction does not change inventory or reservations.",
+                "source_sha256": "6e1c42836897cf11084ecb5314cf4a1e0187a14339504cba3bd84db9805aed84"
             },
             "production_evidence": []
         },
@@ -855,8 +855,8 @@
             "finding": "Frozen issued invoice/tax state evidence exists; authenticated register and statutory reconciliation remain.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
-                "source_sha256": "709016bccc9c1270369060a62f41f4873e2e5667eb744008a0fcdfa25b3b95d3"
+                "reason": "Reviewed verified-order regression and order documentation; no GST classification or frozen invoice calculation changed.",
+                "source_sha256": "e6a6ce285a5ef13bc2a2b6b90d8322770fe2efab856675032f2affc36525258c"
             },
             "production_evidence": []
         },
@@ -867,7 +867,8 @@
             "status": "implemented",
             "issues": [
                 356,
-                335
+                335,
+                520
             ],
             "references": [
                 {
@@ -878,17 +879,19 @@
             "local_sources": [
                 "app/Services/VerifiedOrderService.php",
                 "app/Services/PaymentService.php",
-                "app/Services/OrderService.php"
+                "app/Services/OrderService.php",
+                "app/Controllers/CommerceController.php"
             ],
             "acceptance_evidence": [
                 "tests/verified-order.php",
-                "tests/remote-checkout-mysql.php"
+                "tests/remote-checkout-mysql.php",
+                "tests/fixtures/browser-checkout-amount.php"
             ],
-            "finding": "Verified payment and idempotent order fixtures exist; no real production payment acceptance claimed.",
+            "finding": "Verified payment and idempotent order fixtures exist. Browser Razorpay charge is derived from server cart and validated coupon only; zero and subminimum amounts are rejected without replacing existing recovery. Actual controller tested against recording gateway; no real production payment acceptance claimed.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
-                "source_sha256": "4c1b4742a06139563aab7c26fc61508c7bf23869aaa8b887c32997d2d558d8b4"
+                "reason": "Reproduced client-supplied zero-total fallback in real controller fixture, removed it and verified eight checkout amount cases plus existing persistence and recovery contracts.",
+                "source_sha256": "591a60d2717f3b52b9f6be63b486c3b572c08c0abbd331dea2c0304d02ff4220"
             },
             "production_evidence": []
         },
@@ -920,8 +923,8 @@
             "finding": "Whole-order fulfilment/refund state exists; line-level partial shipment, notes and return allocation need end-to-end checks.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed settings-only schema addition; order line, fulfilment and return behavior unchanged.",
-                "source_sha256": "10b63cd6a72c289df6f581d73dac3d236834cdc52ade516f93a99f626b2723a3"
+                "reason": "Reviewed order guide and unchanged fulfilment lifecycle; checkout amount validation only.",
+                "source_sha256": "8ea242712648bb056829251f7ccf1720403383ca191be30d9628915095f6c4e7"
             },
             "production_evidence": []
         },
@@ -955,8 +958,8 @@
             "finding": "Persistent capability-bound remote cart exists; general customer cart merge/abandonment lifecycle remains.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Initial reconciliation of historical findings against current main; named fixture/contract evidence, no unobserved production promotion.",
-                "source_sha256": "223ac8df4c22c19b6c8f6ebe54c6c719ba4a03c535cf3b339996124e30149531"
+                "reason": "Reviewed native cart fractional display and browser use of authoritative returned gateway amount; preserved remote-cart CAS and checkout claim contracts.",
+                "source_sha256": "55815ba9f312ef8f242586c3bf2e46c3a11c16f04c03d146499b596bcd8860b7"
             },
             "production_evidence": []
         },
@@ -1117,8 +1120,8 @@
             "finding": "Inbound gateway webhook is not signed outgoing webhook subscription/delivery/replay.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed settings-only schema addition; no new signed webhook subscription or gateway action.",
-                "source_sha256": "1c54e9f6f673869d76387e9397daa4db406703c9eeb0a48d004887763f357435"
+                "reason": "Reviewed order documentation and verified payment boundary; no webhook delivery behavior changed.",
+                "source_sha256": "d485798fbdbaa25b6f5995399f6f75fe44197e0d76268a4241d1910f4fab2747"
             },
             "production_evidence": []
         },
@@ -2335,8 +2338,8 @@
             "finding": "Explicit form actions and payment idempotency exist; generic approval/unknown-outcome recovery missing.",
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed draft owner-only fields, create-only unpublished form and explicit Save; no automatic publication or payment, generic approval recovery still partial.",
-                "source_sha256": "4653a66a0298fc473f1548d52d760c9f906b647cd096afa35630e420267c9a06"
+                "reason": "Reviewed rejection preserving existing cart and pending recovery, and exact server charge projection; no new write capability.",
+                "source_sha256": "bc525cef2b150a9dc249da632542cab41907187ebacd404c9c490511aa679045"
             },
             "production_evidence": []
         },

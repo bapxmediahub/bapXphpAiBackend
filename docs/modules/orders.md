@@ -41,3 +41,8 @@ The preview neither saves rules nor changes existing shipping settings, taxes,
 customer checkout, quote digests, orders or payments. It is not a customer
 delivery promise. Production use requires persisted rules and authoritative cart,
 GST, invoice and gateway integration with revalidation across both checkout paths.
+
+Browser Razorpay order creation uses only the server-computed cart less the
+validated coupon. A non-payable cart or total below the gateway minimum is
+rejected before payment setup; client-posted amounts never substitute for the
+server total. Free-order fulfillment is a separate unsupported workflow.

@@ -229,7 +229,6 @@
                                     _csrf: csrf,
                                     payment_method: paymentMethod,
                                     coupon_code: document.getElementById('coupon-code').value,
-                                    amount: '<?= (int)round($total * 100) ?>',
                                     name: form.querySelector('[name="name"]').value,
                                     email: form.querySelector('[name="email"]').value,
                                     phone: form.querySelector('[name="phone"]').value,
