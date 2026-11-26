@@ -31,6 +31,11 @@ Do not replay an ambient transaction, transport error, payment or unrelated
 mutation. Use strict insert with duplicate conflict, never an upsert or ignored
 storage failure. Keep the real MySQL/MariaDB worker outcome and safe SQLSTATE
 diagnostics; a passing fixture must still prove exactly one winner.
+Verify actual deployed primary-key widths, not merely the wider fixture schema.
+Editor recovery uses a 36-character canonical key, supports existing full-width
+legacy keys, refuses dual-key ambiguity, and verifies the persisted identity
+before acknowledging an insert. Test permissive and strict SQL modes with
+connection-local fixture tables; never alter a live schema merely for QA.
 
 ## Testing
 

@@ -1280,8 +1280,8 @@
             ],
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed pinned WordPress autosave identity versus native CAS; actual MariaDB deadlock receipt, strict duplicate insert conflict, bounded rollback retry and explicit publication boundary retained.",
-                "sha256": "d8cae415549962d1e5679a2b79c8e1ebf8f2425b4b0b1e4a424e17cb95ae258b"
+                "reason": "Reviewed exact hosted settings key width and native legacy compatibility, explicit ambiguity failure, insert read-back; preserves owner and token CAS; no edit-presence lease claim.",
+                "sha256": "62f005c7661cbb43ab186603fc04a37f56e5c3ade66ed02846966e3384667342"
             }
         },
         {
@@ -1389,8 +1389,8 @@
             ],
             "review": {
                 "date": "2026-11-26",
-                "reason": "Reviewed server recovery error/conflict semantics and browser fallback; confirmed rollback-only retry does not replay unknown results or replace concurrent user input.",
-                "sha256": "7f7c04623770ed1d95ba4ee2843dc2f89d4ac1fa4dd61d229ace46032f036bf0"
+                "reason": "Reviewed private recovery key width against actual database and strict/permissive tests; no change to browser/publication actions.",
+                "sha256": "d740fe04117008e21366530507585d085ea75e4c7dc521366256f023aaf26870"
             }
         },
         {

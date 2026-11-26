@@ -19,7 +19,15 @@ final class EditorDraftService
         return hash('sha256', $id);
     }
 
+    /** The hosted settings primary key is VARCHAR(36). Keep the original
+     * truncated prefix so existing narrow-schema recovery rows stay readable. */
     public static function identity(string $owner,string $kind,string $target): string
+    {
+        return substr(self::legacyIdentity($owner,$kind,$target),0,36);
+    }
+
+    /** Previous full-width key, retained only to resolve existing recovery rows. */
+    public static function legacyIdentity(string $owner,string $kind,string $target): string
     {
         if (!preg_match('/^[a-f0-9]{64}$/D',$owner) || !in_array($kind,['blog','page'],true)
             || ($target !== '' && ($kind === 'page' ? !AuthoredPageService::validSlug($target)
@@ -72,7 +80,7 @@ final class EditorDraftService
     public static function assertRecord(array $row,string $owner,string $kind,string $target): array
     {
         $record = $row['editor_recovery'] ?? null;
-        if (($row['id'] ?? null) !== self::identity($owner,$kind,$target) || !is_array($record)
+        if (!in_array($row['id'] ?? null,[self::identity($owner,$kind,$target),self::legacyIdentity($owner,$kind,$target)],true) || !is_array($record)
             || ($record['owner'] ?? null) !== $owner || ($record['kind'] ?? null) !== $kind || ($record['target'] ?? null) !== $target
             || !is_string($record['token'] ?? null) || !preg_match('/^[a-f0-9]{32}$/D',$record['token'])
             || !is_array($record['versions'] ?? null) || !array_is_list($record['versions'])
