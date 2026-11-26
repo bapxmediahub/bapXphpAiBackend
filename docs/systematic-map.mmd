@@ -14,11 +14,11 @@ flowchart LR
     legend_limits["No execution, autoload or dynamic reachability proof; gaps are inspection candidates"]:::arch
   end
 
-  subgraph ARCH["Architecture Overview — 188 routes, 19 controllers, 92 services, 76 views, 0 data files, 31 tools"]
-    arch_routes["> Routes: 188 (Public + Auth + Payment + Admin + Support)"]:::arch
-    arch_ctrl["> Controllers: 19"]:::arch
-    arch_svc["> Services: 92"]:::arch
-    arch_views["> Views: 76"]:::arch
+  subgraph ARCH["Architecture Overview — 189 routes, 20 controllers, 93 services, 77 views, 0 data files, 31 tools"]
+    arch_routes["> Routes: 189 (Public + Auth + Payment + Admin + Support)"]:::arch
+    arch_ctrl["> Controllers: 20"]:::arch
+    arch_svc["> Services: 93"]:::arch
+    arch_views["> Views: 77"]:::arch
     arch_data["> Collections: 25 schema | 0 files"]:::arch
     arch_tools["> Tools: 31"]:::arch
     arch_gaps["> Gaps: 7"]:::arch
@@ -214,6 +214,7 @@ flowchart LR
     route_post_admin_integrations_test_email["POST /admin/integrations/test-email"]:::route
     route_post_admin_integrations_test_ai["POST /admin/integrations/test-ai"]:::route
     route_post_admin_integrations_save["POST /admin/integrations/save — Admin — save integration secrets"]:::route
+    route_post_admin_editor_draft["POST /admin/editor-draft"]:::route
     route_get_admin_pages["GET /admin/pages"]:::route
     route_post_admin_pages_delete["POST /admin/pages/delete"]:::route
     route_post_admin_pages_save["POST /admin/pages/save"]:::route
@@ -240,6 +241,7 @@ flowchart LR
   subgraph CONTROLLERS["Controllers"]
     controller_accountcontroller["AccountController"]:::code
     controller_admincontroller["AdminController"]:::code
+    controller_admineditordraftcontroller["AdminEditorDraftController"]:::code
     controller_admingooglereportingcontroller["AdminGoogleReportingController"]:::code
     controller_adminmcpclientcontroller["AdminMcpClientController"]:::code
     controller_adminpagespeedcontroller["AdminPageSpeedController"]:::code
@@ -298,6 +300,7 @@ flowchart LR
     service_databaseservice["DatabaseService"]:::code
     service_deploymentrevisionservice["DeploymentRevisionService"]:::code
     service_docsmapservice["DocsMapService"]:::code
+    service_editordraftservice["EditorDraftService"]:::code
     service_enterprisetoolregistry["EnterpriseToolRegistry"]:::code
     service_envservice["EnvService"]:::code
     service_githubdocservice["GitHubDocService"]:::code
@@ -373,6 +376,7 @@ flowchart LR
     view_admin_consultation_analytics["admin/consultation-analytics"]:::code
     view_admin_dashboard["admin/dashboard"]:::code
     view_admin_detail["admin/detail"]:::code
+    view_admin_editor_server_draft["admin/editor-server-draft"]:::code
     view_admin_email_templates["admin/email-templates"]:::code
     view_admin_google_merchant["admin/google-merchant"]:::code
     view_admin_google_pagespeed["admin/google-pagespeed"]:::code
@@ -1323,6 +1327,13 @@ flowchart LR
   controller_blogcontroller -. declared service .-> service_blogservice
   controller_blogcontroller -. declared service .-> service_markdownrenderer
   controller_blogcontroller -. declared related view .-> view_public_blog
+  route_post_admin_editor_draft -- registered handler --> controller_admineditordraftcontroller
+  controller_admineditordraftcontroller -. declared service .-> service_editordraftservice
+  controller_admineditordraftcontroller -. declared service .-> service_databaseservice
+  controller_admineditordraftcontroller -. declared service .-> service_authoredpageservice
+  controller_admineditordraftcontroller -. declared service .-> service_blogservice
+  controller_admineditordraftcontroller -. declared service .-> service_auditlogservice
+  controller_admineditordraftcontroller -. declared service .-> service_authservice
   route_get_admin_pages -- registered handler --> controller_admincontroller
   controller_admincontroller -. declared service .-> service_authoredpageservice
   controller_admincontroller -. declared service .-> service_mediaservice
@@ -1391,6 +1402,8 @@ flowchart LR
   controller_admincontroller -. declared related view .-> view_admin_blog
   view_admin_list -. declared include .-> view_admin_list_controls
   view_admin_media -. declared include .-> view_admin_list_controls
+  view_admin_blog -. declared include .-> view_admin_editor_server_draft
+  view_admin_pages -. declared include .-> view_admin_editor_server_draft
   nav_contact -- registered destination --> route_get_contact
   nav_account_dashboard -- registered destination --> route_get_account_dashboard
   nav_account_dashboard_orders -- registered destination --> route_get_account_dashboard_orders
@@ -1456,6 +1469,7 @@ flowchart LR
   controller_admincontroller -. static reference .-> service_campaigndownloadservice
   controller_admincontroller -. static reference .-> service_campaignleadservice
   controller_admincontroller -. static reference .-> service_campaignpaymentservice
+  controller_admincontroller -. static reference .-> service_editordraftservice
   controller_admincontroller -. static reference .-> service_enterprisetoolregistry
   controller_admincontroller -. static reference .-> service_gstregisterservice
   controller_admincontroller -. static reference .-> service_mailtemplateservice
@@ -1471,6 +1485,13 @@ flowchart LR
   controller_admincontroller -. static reference .-> service_taxservice
   controller_admincontroller -. static reference .-> service_templeservice
   controller_admincontroller -. static reference .-> service_userorderhistoryservice
+  controller_admineditordraftcontroller -. source new .-> service_auditlogservice
+  controller_admineditordraftcontroller -. source new .-> service_authoredpageservice
+  controller_admineditordraftcontroller -. source new .-> service_blogservice
+  controller_admineditordraftcontroller -. source new .-> service_databaseservice
+  controller_admineditordraftcontroller -. source new .-> service_settingsservice
+  controller_admineditordraftcontroller -- extends --> controller_basecontroller
+  controller_admineditordraftcontroller -. static reference .-> service_editordraftservice
   controller_admingooglereportingcontroller -. source new .-> integration_googlereportingclient
   controller_admingooglereportingcontroller -. source new .-> service_auditlogservice
   controller_admingooglereportingcontroller -. source new .-> service_authservice
@@ -1690,6 +1711,7 @@ flowchart LR
   service_databaseservice -. static reference .-> service_campaignleadservice
   service_databaseservice -. static reference .-> service_campaignpaymentservice
   service_databaseservice -. static reference .-> service_contactservice
+  service_databaseservice -. static reference .-> service_editordraftservice
   service_databaseservice -. static reference .-> service_mailqueueservice
   service_databaseservice -. static reference .-> service_mediaservice
   service_databaseservice -. static reference .-> service_orderservice
@@ -1701,6 +1723,9 @@ flowchart LR
   service_databaseservice -. static reference .-> service_sitetelemetryservice
   service_databaseservice -. static reference .-> service_supportticketservice
   service_docsmapservice -. static reference .-> service_projectmapservice
+  service_editordraftservice -. static reference .-> service_authoredpageservice
+  service_editordraftservice -. static reference .-> service_campaigndownloadservice
+  service_editordraftservice -. static reference .-> service_campaignleadservice
   service_enterprisetoolregistry -- extends --> service_agenttoolregistry
   service_enterprisetoolregistry -. static reference .-> service_agentcapabilitypolicy
   service_envservice -. source new .-> service_settingsservice
@@ -1892,6 +1917,7 @@ flowchart LR
   service_resourceservice -. collection reference .-> collection_appointments
   service_resourceservice -. collection reference .-> collection_categories
   service_resourceservice -. collection reference .-> collection_orders
+  service_databaseservice -. collection reference .-> collection_settings
   service_databaseservice -. collection reference .-> collection_users
   service_databaseservice -. collection reference .-> collection_addresses
   service_databaseservice -. collection reference .-> collection_products

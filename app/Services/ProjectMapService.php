@@ -10,7 +10,7 @@ final class ProjectMapService {
         'SeoService', 'SmtpMailer', 'ImageOptimizerService', 'DocsMapService', 'GitHubDocService', 'RateLimiter', 'KnowledgeGraphService',
         'RequestFailureService', // Registered in app/bootstrap.php before controller dispatch.
     ];
-    public const SHARED_VIEWS = ['account/_nav', 'layouts/admin', 'layouts/app', 'public/404', 'admin/environment', 'public/home-collections', 'public/home-product-card', 'public/home-rail-controls', 'admin/_commerce-overview', 'admin/list-controls'];
+    public const SHARED_VIEWS = ['account/_nav', 'layouts/admin', 'layouts/app', 'public/404', 'admin/environment', 'public/home-collections', 'public/home-product-card', 'public/home-rail-controls', 'admin/_commerce-overview', 'admin/list-controls', 'admin/editor-server-draft'];
     public const KNOWN_UNWIRED_COLLECTIONS = ['wallet_transactions'];
 
     public static function registry(): array {
@@ -192,6 +192,7 @@ final class ProjectMapService {
             ['method'=>'GET','path'=>'/blog','name'=>'blog.index','module'=>'blog','page'=>'public/blog','controller'=>'BlogController@index','services'=>['BlogService','MarkdownRenderer']],
             ['method'=>'GET','path'=>'/blog/{slug}','name'=>'blog.show','module'=>'blog','page'=>'public/blog-post','controller'=>'BlogController@show','services'=>['BlogService','MarkdownRenderer']],
             ['method'=>'GET','path'=>'/blog/category/{slug}','name'=>'blog.category','module'=>'blog','page'=>'public/blog','controller'=>'BlogController@category','services'=>['BlogService','MarkdownRenderer']],
+            ['method'=>'POST','path'=>'/admin/editor-draft','name'=>'admin.editor-draft','response'=>'json','controller'=>'AdminEditorDraftController@handle','services'=>['EditorDraftService','DatabaseService','AuthoredPageService','BlogService','AuditLogService']],
             ['method'=>'GET','path'=>'/admin/pages','name'=>'admin.pages','page'=>'admin/pages','controller'=>'AdminController@pages','services'=>['AuthoredPageService','MediaService']],
             ['method'=>'POST','path'=>'/admin/pages/delete','name'=>'admin.pages.delete','page'=>'admin/pages','controller'=>'AdminController@deleteAuthoredPage','services'=>['AuthoredPageService','AuditLogService']],
             ['method'=>'POST','path'=>'/admin/pages/save','name'=>'admin.pages.save','page'=>'admin/pages','controller'=>'AdminController@saveAuthoredPage','services'=>['AuthoredPageService','CampaignLeadService','CampaignDownloadService','MediaService','AuditLogService']],
@@ -688,6 +689,9 @@ final class ProjectMapService {
         foreach (['admin/list','admin/media'] as $parentView) {
             $lines[] = '  '.self::viewId($parentView).' -. declared include .-> '.self::viewId('admin/list-controls');
         }
+        foreach (['admin/blog','admin/pages'] as $parentView) {
+            $lines[] = '  '.self::viewId($parentView).' -. declared include .-> '.self::viewId('admin/editor-server-draft');
+        }
 
         $routeByGetPath = [];
         foreach ($scan['routes'] as $route) {
@@ -854,7 +858,7 @@ final class ProjectMapService {
     private static function applyManualOverrides(array &$mapping): void {
         $overrides = [
             'AgentContextService' => ['users', 'orders', 'appointments', 'support_tickets'],
-            'DatabaseService' => ['users', 'addresses', 'products', 'orders', 'appointments', 'consultation_messages', 'consultation_signals', 'secrets', 'mail_inbox', 'mail_outbox', 'contact_submissions', 'agent_carts', 'checkout_attempts', 'campaign_bookings'],
+            'DatabaseService' => ['settings', 'users', 'addresses', 'products', 'orders', 'appointments', 'consultation_messages', 'consultation_signals', 'secrets', 'mail_inbox', 'mail_outbox', 'contact_submissions', 'agent_carts', 'checkout_attempts', 'campaign_bookings'],
             // Fixed atomic database protocols are not recognized by the generic CRUD scan.
             'RemoteCartService' => ['agent_carts'],
             'RemoteCheckoutService' => ['agent_carts', 'checkout_attempts'],

@@ -9,7 +9,7 @@ $path=(string)getenv('BAPX_MEDIA_FIXTURE_STATE');
 $data=json_decode((string)file_get_contents($path),true)?:[];
 if (isset($payload['query'])) {
     $query=(string)$payload['query'];
-    if ($query === "SELECT id, _data FROM settings WHERE id NOT LIKE 'pg:%'") {
+    if ($query === "SELECT id, _data FROM settings WHERE id NOT LIKE 'pg:%' AND id NOT LIKE 'ed:%'") {
         $records=array_filter($data['collections']['settings']??[], static fn($r)=>!str_starts_with($r['id'],'pg:'));
     } elseif (str_starts_with($query, 'SELECT SUBSTRING(id, 4) AS slug, ')
         && str_contains($query, " FROM settings WHERE id LIKE 'pg:%'")

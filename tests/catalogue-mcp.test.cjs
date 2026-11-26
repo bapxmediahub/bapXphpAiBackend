@@ -25,7 +25,7 @@ test('local catalogue MCP checks the current shop settings and publishes only vi
         for await (const chunk of request) body += chunk;
         const { query } = JSON.parse(body);
         reads.add(query);
-        const rows = query === "SELECT id, _data FROM settings WHERE id NOT LIKE 'pg:%'"
+        const rows = query === "SELECT id, _data FROM settings WHERE id NOT LIKE 'pg:%' AND id NOT LIKE 'ed:%'"
             ? [{ id: 'app_settings', module_shop: enabled ? '1' : '0' }]
             : records;
         response.writeHead(online ? 200 : 503, { 'Content-Type': 'application/json' });
@@ -160,7 +160,7 @@ test('local catalogue MCP checks the current shop settings and publishes only vi
         await assert.rejects(cli(['mcp:tools']), { code: 1 });
         assert.deepEqual((await policy({ key: 'tracking' })).result.structuredContent, await cli(['mcp:policy', 'tracking']));
         assert.equal((await call({})).error.code, -32603);
-        assert.deepEqual([...reads].sort(), ['SELECT * FROM products', "SELECT id, _data FROM settings WHERE id NOT LIKE 'pg:%'"]);
+        assert.deepEqual([...reads].sort(), ['SELECT * FROM products', "SELECT id, _data FROM settings WHERE id NOT LIKE 'pg:%' AND id NOT LIKE 'ed:%'"]);
     } finally {
         child.stdin.end();
         const [code] = await once(child, 'exit');

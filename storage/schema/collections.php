@@ -498,6 +498,8 @@
                 'campaign_form' => ['type' => 'array', 'items' => 'object', 'description' => 'Optional bounded authored-page lead form'],
                 'campaign_downloads' => ['type' => 'object', 'description' => 'Authored-page download visibility and ordered immutable file metadata'],
                 'status' => ['type' => 'enum', 'values' => ['draft', 'published']], 'revision' => ['type' => 'string'],
+                // ed:<digest> rows are private owner-scoped recovery snapshots, not public settings or published content.
+                'editor_recovery' => ['type'=>'object', 'description'=>'Private editor CAS token and bounded recovery versions'],
                 // The dedicated header_menu row uses the same JSON-backed settings table.
                 'header_menu' => ['type' => 'array', 'items' => 'string'],
                 'menu_revision' => ['type' => 'integer'],

@@ -37,8 +37,9 @@ publication remain explicit owner actions. Images remain manually uploaded or
 selected from existing media. The article image picker sets the cover and inserts the chosen image into the body. The editor requests a JSON receipt from the shared Media Library upload route and uses its returned URL. The Media Library form redirects after an upload. The editor keeps an unsaved browser copy of
 editorial fields for the same owner and article. Reopen the editor and choose
 Restore draft to recover it. When the saved revision has changed, download the
-browser copy for comparison. Save confirms persistence in the app. Browser
-recovery never selects publication or subscriber email on the owner's behalf.
+browser copy for comparison. Save confirms persistence in the app. Browser and server
+recovery never select publication or subscriber email on the owner's behalf.
+See the shared editorial recovery contract below.
 
 The interactive `./bapXphp write blog [slug]` command uses the same article revision check as the editor. New articles start as drafts. Existing slugs, publication state and unedited metadata survive an edit. The command exits when another author has saved a newer version.
 
@@ -268,13 +269,43 @@ compares the current revision and removes only the corresponding page row.
 Recreating the same address generates a new revision so a stale form cannot
 edit or delete the replacement.
 
-The authored-page editor also saves unsent title, address, Markdown and header
-selection locally in the current browser, scoped to the signed-in owner and original page address.
-It offers explicit restore/discard for the same revision and Markdown download
-rather than restore when the saved revision changed. Publication status is
-never autosaved or restored. Browser drafts are not server-side drafts or a
-distributed edit lock. A competing tab can prevent a local snapshot replacement;
-the existing MySQL revision check remains the authoritative save guard.
+Both article and authored-page editors keep a browser-local fallback and use
+the owner-only `POST /admin/editor-draft` endpoint for server recovery. The
+record identity is scoped to the signed-in owner, editor kind and original
+address (or new-item editor). Each acknowledged snapshot is bound to the
+canonical revision opened by the editor, with a separate random CAS token.
+The existing MySQL settings table stores private `ed:<digest>` records with
+up to three versions and a 2.5 MB encoded recovery-history bound. Ordinary
+configuration reads exclude that namespace. Canonical articles remain
+Markdown; pages remain revision-checked `pg:<slug>` rows.
+
+The endpoint accepts only allowlisted editable text/settings fields, never
+publication status, subscriber mail, upload bytes or arbitrary metadata.
+It checks owner identity, CSRF, input bounds and the canonical revision.
+After a short edit debounce, server writes/discards compare the recovery
+token, so two browsers cannot silently overwrite one another. A changed
+canonical revision disables restore but leaves the recovery downloadable.
+Current unsaved fields and prior server versions can be downloaded separately;
+restoring over a changed editor requires explicit confirmation. Failed server
+reads/writes keep the browser copy. Only the normal explicit save route
+publishes or modifies canonical content; a successful save clears its matching
+acknowledged recovery token, never a newer snapshot.
+
+Source-derived contract: WordPress 7.1.4's
+`wp_create_post_autosave` and `wp_get_post_autosave` isolate autosaves by
+post and author; `wp_autosave` verifies nonce and edit permission before choosing
+the save route; `wp_check_post_lock` / `wp_set_post_lock` manage a timestamped
+editing-presence window. bapX adopts per-editor recovery, role checks and
+conflict safety without WordPress post/revision tables. Unlike WordPress's
+same-author unlocked draft overwrite, bapX never autosaves into the canonical
+record, even when unpublished. Optimistic CAS guards conflicts; an active
+cross-user heartbeat/presence lease is not implemented or claimed.
+
+Acceptance uses the real owner HTTP controller and isolated bridge
+(`tests/campaign-form-http.php`), input/history and disposable MySQL concurrent
+writers (`tests/editor-draft.php`), and actual PHP editor markup with Chromium
+at 1280px and 375px (`tests/editor-server-recovery-browser.cjs`).
+These fixtures do not establish authorized production recovery.
 
 Editing and publishing stay with the existing owner role. The workflows do
 not delegate drafts to a separate editor or require a second publisher. Add

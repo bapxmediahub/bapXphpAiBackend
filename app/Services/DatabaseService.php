@@ -646,7 +646,7 @@ final class DatabaseService {
             if ($ensure->rowCount() === 1) {
                 // Only the request that created the canonical row can seed its legacy defaults.
                 $seed = $pdo->prepare("SELECT _data FROM settings
-                    WHERE id NOT IN (?, ?) AND id NOT LIKE 'pg:%' ORDER BY id LIMIT 1");
+                    WHERE id NOT IN (?, ?) AND id NOT LIKE 'pg:%' AND id NOT LIKE 'ed:%' ORDER BY id LIMIT 1");
                 $seed->execute([$id, SettingsService::HEADER_MENU_ID]);
                 $legacy = json_decode($seed->fetchColumn() ?: '{}', true, flags: JSON_THROW_ON_ERROR);
                 if (password_get_info((string)($legacy['admin_password'] ?? ''))['algo'] === null) {
@@ -740,6 +740,50 @@ final class DatabaseService {
                 throw $error;
             }
         });
+    }
+
+    /** The recovery row is independent of canonical saves and never writes publication fields. */
+    public function editorDraftOperation(string $owner,string $kind,string $target,string $operation,
+        string $expected = '',string $revision = '',array $values = []): array {
+        $id = EditorDraftService::identity($owner,$kind,$target);
+        if (!in_array($operation,['read','write','discard'],true)
+            || ($expected !== '' && !preg_match('/^[a-f0-9]{32}$/D',$expected))) throw new \InvalidArgumentException('Invalid editor operation.');
+        if ($operation === 'write') {
+            EditorDraftService::revision($kind,$target,$revision);
+            $values = EditorDraftService::values($kind,$values);
+        }
+        if ($this->isTestMode()) throw new \LogicException('Editor recovery requires an isolated database.');
+        if ($this->isRemote()) return $this->remoteMutation('editor_draft_operation','settings',
+            compact('owner','kind','target','operation','expected','revision','values'))['result'];
+        $row = $this->find('settings',$id);
+        $current = $row === null ? null : EditorDraftService::assertRecord($row,$owner,$kind,$target);
+        if ($operation === 'read') return ['outcome'=>'read','draft'=>$current];
+        if (($current['token'] ?? '') !== $expected) return ['outcome'=>'conflict','draft'=>$current];
+        if ($operation === 'discard') {
+            if ($current === null) return ['outcome'=>'discarded','draft'=>null];
+            $stmt = $this->db()->prepare("DELETE FROM settings WHERE id=? AND JSON_UNQUOTE(JSON_EXTRACT(_data,'$.editor_recovery.token'))=?");
+            $stmt->execute([$id,$expected]);
+            if ($stmt->rowCount()===1) return ['outcome'=>'discarded','draft'=>null];
+        } else {
+            $next = EditorDraftService::next($owner,$kind,$target,$revision,$values,$current,time());
+            if ($next === $current) {
+                // An identical snapshot still needs CAS: do not acknowledge a
+                // stale writer after another device has replaced/discarded it.
+                $latest = $this->find('settings',$id);
+                if ($latest !== null && EditorDraftService::assertRecord($latest,$owner,$kind,$target)['token']===$expected) return ['outcome'=>'saved','draft'=>$current];
+            } else {
+                $record = ['id'=>$id,'editor_recovery'=>$next];
+                if ($current===null) {
+                    if ($this->insertIfAbsent('settings',$record)['inserted']) return ['outcome'=>'saved','draft'=>$next];
+                } else {
+                    $stmt = $this->db()->prepare("UPDATE settings SET _data=?, _updated_at=CURRENT_TIMESTAMP WHERE id=? AND JSON_UNQUOTE(JSON_EXTRACT(_data,'$.editor_recovery.token'))=?");
+                    $stmt->execute([json_encode($record,JSON_THROW_ON_ERROR),$id,$expected]);
+                    if ($stmt->rowCount()===1) return ['outcome'=>'saved','draft'=>$next];
+                }
+            }
+        }
+        $row = $this->find('settings',$id);
+        return ['outcome'=>'conflict','draft'=>$row === null ? null : EditorDraftService::assertRecord($row,$owner,$kind,$target)];
     }
 
     public function deleteAuthoredPage(string $slug, string $expected): bool {

@@ -137,3 +137,16 @@ the original booking row. Legacy standalone records require no migration;
 they acquire the new metadata only when used. A signed paid notice remains
 recorded until capture is verified. Terminal proof is generation-bound and
 short-lived; no customer or provider payment body is stored for this check.
+
+## Private editor recovery records
+
+The existing hosted MySQL settings table reserves `ed:<digest>` for owner-scoped
+article/page recovery, separate from public settings and the `pg:` page namespace.
+The digest binds owner identity, editor kind and original target. Recovery history
+is limited to three versions and bounded encoded size. Compare-and-swap uses a
+separate opaque token; stale writes/discards cannot replace newer versions. Only
+explicit canonical saves affect the Markdown article or page record. The
+acknowledged recovery token can be discarded after a successful save without
+deleting a concurrent newer draft. No upload bytes, publication flags, secrets
+or customer records belong in recovery values. See the editorial contract in
+[Content and SEO](modules/content-and-seo.md).

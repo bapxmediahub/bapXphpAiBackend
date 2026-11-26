@@ -47,6 +47,7 @@ $bookingAmount = $form['campaign_booking_amount'] ?? ($savedBookingAmount !== nu
             </div>
         </section>
         <p role="status" id="page-draft-status"></p>
+        <?php require app_path('views/admin/editor-server-draft.php'); ?>
         <input type="hidden" name="browser_draft_token" value="">
         <div id="page-draft-fields">
         <input type="hidden" name="_csrf" value="<?= e($csrf) ?>">
@@ -203,4 +204,5 @@ $bookingAmount = $form['campaign_booking_amount'] ?? ($savedBookingAmount !== nu
     </section>
 <?php endif; ?>
 
+<script src="/assets/editor-server-draft.js?v=<?= filemtime(app_path('assets/editor-server-draft.js')) ?>" defer></script>
 <script src="/assets/page-draft.js?v=<?= filemtime(app_path('assets/page-draft.js')) ?>" defer></script>

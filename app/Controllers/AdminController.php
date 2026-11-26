@@ -1353,6 +1353,7 @@ final class AdminController extends BaseController {
             } else {
                 $stored = $downloads->store($form['slug'], $uploads);
                 $service->save($candidate);
+                $this->discardSavedEditorDraft('page', $form['original_slug']);
                 $draftToken = $_POST['browser_draft_token'] ?? '';
                 if (is_string($draftToken) && preg_match('/^[a-f0-9]{32}$/D', $draftToken)) {
                     $_SESSION['page_saved_draft_token'] = $draftToken;
@@ -1393,6 +1394,20 @@ final class AdminController extends BaseController {
         ]);
     }
     /** The signed-in admin's own name, falling back to a generic byline. */
+    /** Clear only the acknowledged copy after a successful authoritative save. */
+    private function discardSavedEditorDraft(string $kind,string $target): void {
+        $token = $_POST['server_draft_token'] ?? '';
+        if (!is_string($token) || !preg_match('/^[a-f0-9]{32}$/D',$token)) return;
+        try {
+            $owner = \App\Services\EditorDraftService::owner($_SESSION['user'] ?? []);
+            (new \App\Services\DatabaseService())->editorDraftOperation($owner,$kind,$target,'discard',$token);
+        } catch (\Throwable) {
+            // Publication has already succeeded. A retained recovery copy is
+            // preferable to an untruthful save failure or destructive retry.
+            error_log('Editor recovery cleanup not confirmed.');
+        }
+    }
+
     private function currentAuthorName(): string {
         $user = $_SESSION['user'] ?? [];
         foreach (['name', 'username'] as $key) {
@@ -1436,6 +1451,7 @@ final class AdminController extends BaseController {
             $this->flash('Article save could not be confirmed. Your text is retained; download it before reloading.','error');
             $this->redirect('/admin/blog');
         }
+        $this->discardSavedEditorDraft('blog', (string)($post['original_slug'] ?? ''));
         (new AuditLogService())->record('save','blog',$saved['slug'],['revision'=>$saved['_revision']]);
         $sent = 0;
         if ($isNew && $blog->isPublic($saved) && ($_POST['notify_subscribers'] ?? '') === '1') {

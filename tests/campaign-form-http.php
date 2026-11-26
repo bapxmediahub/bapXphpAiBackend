@@ -29,6 +29,25 @@ if (PHP_SAPI === 'cli-server') {
         echo json_encode(['success'=>true, 'data'=>$rows], JSON_THROW_ON_ERROR);
         exit;
     }
+    if (($input['action'] ?? null) === 'editor_draft_operation' && ($input['collection'] ?? null) === 'settings') {
+        spl_autoload_register(static function(string $class):void {
+            if (str_starts_with($class,'App\\Services\\')) require_once __DIR__.'/../app/Services/'.substr($class,strlen('App\\Services\\')).'.php';
+        });
+        $service=\App\Services\EditorDraftService::class;
+        $id=$service::identity($input['owner'],$input['kind'],$input['target']);
+        $draft=$fixture['editor_drafts'][$id]??null;
+        if ($input['operation']==='read') $outcome='read';
+        elseif (($draft['token']??'')!==$input['expected']) $outcome='conflict';
+        elseif ($input['operation']==='discard') {
+            unset($fixture['editor_drafts'][$id]);$draft=null;$outcome='discarded';
+        } elseif ($input['operation']==='write') {
+            $draft=$service::next($input['owner'],$input['kind'],$input['target'],$input['revision'],$input['values'],$draft,time());
+            $fixture['editor_drafts'][$id]=$draft;$outcome='saved';
+        } else {http_response_code(400);exit;}
+        file_put_contents($state,json_encode($fixture,JSON_THROW_ON_ERROR),LOCK_EX);
+        echo json_encode(['success'=>true,'result'=>compact('outcome','draft')],JSON_THROW_ON_ERROR);
+        exit;
+    }
     if (($input['action'] ?? null) === 'save_authored_page' && ($input['collection'] ?? null) === 'settings') {
         $record = $input['record'];
         $stored = $fixture['pages'][$record['id']]['revision'] ?? '0';
@@ -448,6 +467,74 @@ try {
     $check($status === 200 && $bytes === 'Notes' && str_contains($headers, 'Content-Disposition: attachment')
         && str_contains($headers, 'Cache-Control: private, no-store'),
         'Captured booking streams the frozen bytes as a private attachment');
+    // The real owner-only editor endpoint is exercised independently of the
+    // synthetic remote bridge. No published record or article is autosaved.
+    $editorBrowser=static function(string $letter,string $actor,string $role) use($root):CurlHandle {
+        $id=str_repeat($letter,32);
+        file_put_contents($root.'/sessions/sess_'.$id,'user|'.serialize(['sub'=>$actor,'role'=>$role,
+            'email'=>'editor@example.invalid']).'csrf_token|'.serialize('editor-csrf'));
+        $handle=curl_init();
+        curl_setopt_array($handle,[CURLOPT_COOKIE=>'PHPSESSID='.$id,CURLOPT_RETURNTRANSFER=>true,CURLOPT_HEADER=>true,
+            CURLOPT_HTTPHEADER=>['Host: localhost'],CURLOPT_TIMEOUT=>5]);
+        return $handle;
+    };
+    $editorA=$editorBrowser('5','editor-a','admin');
+    $editorA2=$editorBrowser('6','editor-a','admin');
+    $editorB=$editorBrowser('7','editor-b','admin');
+    $editorCustomer=$editorBrowser('8','editor-a','customer');
+    $editor=static function(CurlHandle $handle,array $patch=[]) use($request,$published):array {
+        $body=array_replace(['_csrf'=>'editor-csrf','kind'=>'page','target'=>'campaign','revision'=>str_repeat('a',32),
+            'operation'=>'read','expected'=>''],$patch);
+        [$status,$raw]=$request('/admin/editor-draft',$body,$handle);
+        return [$status,json_decode($raw,true,flags:JSON_THROW_ON_ERROR)];
+    };
+    // The lead test may have updated the original campaign revision. Use a
+    // new-page identity for the first recovery and publish explicitly below.
+    $new=['target'=>'','revision'=>'0'];
+    $values=['slug'=>'editor-recovery-fixture','title'=>'Unpublished recovery','content'=>'Private unsaved text'];
+    $check($editor($editorCustomer,$new)[0]===403,'Customer cannot read owner recovery');
+    $check($editor($editorA,['_csrf'=>['forged']]+$new)[0]===419,'Malformed editor CSRF refused');
+    $check($editor($editorA,$new)[1]['draft']===null,'New recovery begins empty');
+    [$status,$saved]=$editor($editorA,['operation'=>'write','values'=>json_encode($values)]+$new);
+    $check($status===200 && preg_match('/^[a-f0-9]{32}$/D',$saved['token']),'Server draft acknowledged');
+    $token=$saved['token'];
+    $check($editor($editorA2,$new)[1]['draft']['versions'][0]['values']===$values,'Same owner second browser restores snapshot');
+    $check($editor($editorB,$new)[1]['draft']===null,'Other owner has no access');
+    $check($editor($editorA2,['operation'=>'write','values'=>json_encode($values)]+$new)[0]===409,'Stale browser token cannot overwrite');
+    $values['content']='Second private version';
+    [$status,$saved2]=$editor($editorA2,['operation'=>'write','expected'=>$token,'values'=>json_encode($values)]+$new);
+    $check($status===200 && $saved2['token']!==$token && count($editor($editorA,$new)[1]['draft']['versions'])===2,'Versioned CAS succeeds');
+    $check($editor($editorA,['operation'=>'discard','expected'=>$token]+$new)[0]===409,'Stale discard preserves current copy');
+    $check($editor($editorA,['operation'=>'write','expected'=>$saved2['token'],'values'=>json_encode($values+['status'=>'published'])]+$new)[0]===422,'Publication field refused');
+    $check($request('/pages/editor-recovery-fixture')[0]===404,'Autosave does not create public page');
+    // An explicit page save clears only the acknowledged actor-owned recovery.
+    [$savedPageStatus]=$request('/admin/pages/save',['_csrf'=>'editor-csrf','slug'=>$values['slug'],
+        'title'=>$values['title'],'content'=>$values['content'],'status'=>'draft','action'=>'save',
+        'original_slug'=>'','expected_revision'=>'0','server_draft_token'=>$saved2['token']],$editorA2);
+    $check($savedPageStatus===302 && $editor($editorA,$new)[1]['draft']===null,'Explicit page save clears matching server recovery');
+    $storedPage=$read()['pages']['pg:editor-recovery-fixture'];
+    $check($storedPage['status']==='draft' && $storedPage['content']===$values['content'],'Only explicit save changes canonical page');
+    $existing=['target'=>$storedPage['slug'],'revision'=>$storedPage['revision']];
+    [$status,$editSaved]=$editor($editorA,['operation'=>'write','values'=>json_encode($values)]+$existing);
+    $check($status===200,'Existing page recovery stored');
+    $changed=$read();$changed['pages'][$storedPage['id']]['revision']=str_repeat('d',32);
+    $write($changed);
+    $check($editor($editorA,['operation'=>'write','expected'=>$editSaved['token'],'values'=>json_encode($values)]+$existing)[0]===409,
+        'Changed canonical page revision rejects autosave');
+    $check($editor($editorA,$existing)[1]['currentRevision']===str_repeat('d',32),'Stale copy remains readable for download');
+
+    if (!is_dir($root.'/content/blog/posts')) mkdir($root.'/content/blog/posts',0700,true);
+    $article="---\ntitle: Original\npublished: false\npublished_at: 2099-01-01\n---\n\nOriginal Markdown";
+    $articlePath=$root.'/content/blog/posts/editor-fixture.md';
+    file_put_contents($articlePath,$article);
+    $blog=['kind'=>'blog','target'=>'editor-fixture','revision'=>hash('sha256',$article)];
+    $blogValues=['slug'=>'editor-fixture','title'=>'Recovered article','content'=>'Unsaved Markdown','published_at'=>'2099-01-01'];
+    [$status,$blogSaved]=$editor($editorA,['operation'=>'write','values'=>json_encode($blogValues)]+$blog);
+    $check($status===200 && file_get_contents($articlePath)===$article,'Article autosave does not alter canonical Markdown');
+    $check($editor($editorA2,$blog)[1]['draft']['versions'][0]['values']===$blogValues,'Blog recovery survives a second browser');
+    $check($editor($editorA,['operation'=>'discard','expected'=>$blogSaved['token']]+$blog)[0]===200 && file_get_contents($articlePath)===$article,
+        'Blog discard does not change publication or source');
+    echo "PASS private editor HTTP recovery, CAS, role/CSRF, stale revision, independent publication and explicit save cleanup.\n";
     echo "PASS paid booking HTTP routing, exact server paise, replay, independent publication and protected bytes.\n";
     echo "PASS protected download upload bounds, staging and rollback, exact revision, entitlement, cache-safe attachment and private path denial.\n";
     echo "PASS campaign HTTP routing, draft and owner isolation, CSRF, validation, receipt, replay, throttling and withdrawal.\n";

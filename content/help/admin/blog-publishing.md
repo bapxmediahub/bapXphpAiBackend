@@ -64,7 +64,7 @@ when it is ready. Use **Open published page**
 to check it. Select **Draft** and save to withdraw the page from its address,
 search, and the sitemap. The address stays fixed across edits. If another
 editor saved first, download the browser draft before reopening the current version.
-Unsaved page title, address, Markdown, header choice, enquiry settings and saved download positions are saved in this browser when storage is available. Reopen the same page as the same owner to restore or discard the draft. If the saved page changed, download the browser copy instead; review visibility before using Save page. Autosave does not publish or send content to the server.
+Unsaved page title, address, Markdown, header choice, enquiry settings and saved download positions are saved in this browser when storage is available. Reopen the same page as the same owner to restore or discard the draft. If the saved page changed, download the browser copy instead; review visibility before using Save page. Browser recovery is local; the Server draft recovery panel separately saves an owner-only recovery copy on the server. Neither publishes or sends subscriber email. If the saved revision changed, download the old server copy instead of restoring it. Download the current edit before replacing unsaved fields. Explicit Save page or Save in Blog is still required.
 Review submitted enquiries in **Contact Submissions** or **Email → Inbox**.
 Inbox shows the campaign address and revision alongside each enquiry. The
 visitor sees a receipt on the page.

@@ -46,18 +46,18 @@ query_examples:
   - "rg -n -F -B4 -A12 'filename: \"<name>\"' index.yaml"
   - "rg -n -A12 '^  - id: \"skill:docs\"$' index.yaml"
 summary:
-  concepts: 516
-  relationships: 483
+  concepts: 519
+  relationships: 492
   by_type:
     blog: 16
-    controller: 19
+    controller: 20
     doc: 57
     image: 89
     operator_guide: 12
-    route: 188
+    route: 189
     runtime_instruction: 6
     schema: 25
-    service: 92
+    service: 93
     skill: 12
 concepts:
   - id: "blog:benefits-of-rudraksha"
@@ -217,6 +217,14 @@ concepts:
     title: "AdminController"
     description: "Controller: AdminController"
     resource: "app/Controllers/AdminController.php"
+    tags:
+      - "code"
+      - "controller"
+  - id: "controller:AdminEditorDraftController"
+    type: "controller"
+    title: "AdminEditorDraftController"
+    description: "Controller: AdminEditorDraftController"
+    resource: "app/Controllers/AdminEditorDraftController.php"
     tags:
       - "code"
       - "controller"
@@ -4482,6 +4490,27 @@ concepts:
     view: "admin/resource"
     response: null
     provenance: "route_registry"
+  - id: "route:post__admin_editor_draft"
+    type: "route"
+    title: "POST /admin/editor-draft"
+    description: "admin.editor-draft"
+    resource: "app/routes.php"
+    tags:
+      - "code"
+      - "route"
+    method: "POST"
+    path: "/admin/editor-draft"
+    controller: "AdminEditorDraftController@handle"
+    services:
+      - "EditorDraftService"
+      - "DatabaseService"
+      - "AuthoredPageService"
+      - "BlogService"
+      - "AuditLogService"
+      - "AuthService"
+    view: ""
+    response: "json"
+    provenance: "route_registry"
   - id: "route:post__admin_email_templates_test"
     type: "route"
     title: "POST /admin/email-templates/test"
@@ -6026,6 +6055,14 @@ concepts:
     tags:
       - "code"
       - "service"
+  - id: "service:EditorDraftService"
+    type: "service"
+    title: "EditorDraftService"
+    description: "Service: EditorDraftService"
+    resource: "app/Services/EditorDraftService.php"
+    tags:
+      - "code"
+      - "service"
   - id: "service:EnterpriseToolRegistry"
     type: "service"
     title: "EnterpriseToolRegistry"
@@ -6732,6 +6769,24 @@ relationships:
   - from: "controller:AdminController"
     to: "service:UserOrderHistoryService"
     relation: "declared_service"
+  - from: "controller:AdminEditorDraftController"
+    to: "service:AuditLogService"
+    relation: "declared_service"
+  - from: "controller:AdminEditorDraftController"
+    to: "service:AuthService"
+    relation: "declared_service"
+  - from: "controller:AdminEditorDraftController"
+    to: "service:AuthoredPageService"
+    relation: "declared_service"
+  - from: "controller:AdminEditorDraftController"
+    to: "service:BlogService"
+    relation: "declared_service"
+  - from: "controller:AdminEditorDraftController"
+    to: "service:DatabaseService"
+    relation: "declared_service"
+  - from: "controller:AdminEditorDraftController"
+    to: "service:EditorDraftService"
+    relation: "declared_service"
   - from: "controller:AdminGoogleReportingController"
     to: "service:AuditLogService"
     relation: "declared_service"
@@ -7058,6 +7113,9 @@ relationships:
     relation: "references"
   - from: "doc:rea-engineering-workflow"
     to: "doc:capability-progress"
+    relation: "references"
+  - from: "doc:rea-engineering-workflow"
+    to: "doc:content-and-seo"
     relation: "references"
   - from: "doc:remote-commerce"
     to: "doc:gst-commerce"
@@ -7662,6 +7720,9 @@ relationships:
   - from: "route:post__admin_coupons_save"
     to: "controller:AdminController"
     relation: "handled_by"
+  - from: "route:post__admin_editor_draft"
+    to: "controller:AdminEditorDraftController"
+    relation: "handled_by"
   - from: "route:post__admin_email_templates_test"
     to: "controller:AdminController"
     relation: "handled_by"
@@ -7910,6 +7971,9 @@ relationships:
     relation: "collection_reference"
   - from: "service:DatabaseService"
     to: "schema:secrets"
+    relation: "collection_reference"
+  - from: "service:DatabaseService"
+    to: "schema:settings"
     relation: "collection_reference"
   - from: "service:DatabaseService"
     to: "schema:users"

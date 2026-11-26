@@ -279,7 +279,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1531
+            "line": 1547
         },
         {
             "from": "controller:AdminController",
@@ -463,7 +463,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1592
+            "line": 1608
         },
         {
             "from": "controller:AdminController",
@@ -491,6 +491,14 @@
         },
         {
             "from": "controller:AdminController",
+            "to": "service:EditorDraftService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminController.php",
+            "line": 1402
+        },
+        {
+            "from": "controller:AdminController",
             "to": "service:EnterpriseToolRegistry",
             "relation": "static_reference",
             "provenance": "source_token",
@@ -503,7 +511,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1617
+            "line": 1633
         },
         {
             "from": "controller:AdminController",
@@ -535,7 +543,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
-            "line": 1732
+            "line": 1748
         },
         {
             "from": "controller:AdminController",
@@ -608,6 +616,62 @@
             "provenance": "source_token",
             "source": "app/Controllers/AdminController.php",
             "line": 246
+        },
+        {
+            "from": "controller:AdminEditorDraftController",
+            "to": "service:AuditLogService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminEditorDraftController.php",
+            "line": 50
+        },
+        {
+            "from": "controller:AdminEditorDraftController",
+            "to": "service:AuthoredPageService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminEditorDraftController.php",
+            "line": 36
+        },
+        {
+            "from": "controller:AdminEditorDraftController",
+            "to": "service:BlogService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminEditorDraftController.php",
+            "line": 37
+        },
+        {
+            "from": "controller:AdminEditorDraftController",
+            "to": "service:DatabaseService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminEditorDraftController.php",
+            "line": 48
+        },
+        {
+            "from": "controller:AdminEditorDraftController",
+            "to": "service:SettingsService",
+            "relation": "constructs",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminEditorDraftController.php",
+            "line": 32
+        },
+        {
+            "from": "controller:AdminEditorDraftController",
+            "to": "controller:BaseController",
+            "relation": "extends",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminEditorDraftController.php",
+            "line": 7
+        },
+        {
+            "from": "controller:AdminEditorDraftController",
+            "to": "service:EditorDraftService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Controllers/AdminEditorDraftController.php",
+            "line": 14
         },
         {
             "from": "controller:AdminGoogleReportingController",
@@ -1399,7 +1463,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Controllers/RemoteDbController.php",
-            "line": 206
+            "line": 216
         },
         {
             "from": "controller:RemoteDbController",
@@ -1415,7 +1479,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Controllers/RemoteDbController.php",
-            "line": 192
+            "line": 202
         },
         {
             "from": "controller:ReviewController",
@@ -2295,7 +2359,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 827
+            "line": 871
         },
         {
             "from": "service:DatabaseService",
@@ -2303,7 +2367,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 844
+            "line": 888
         },
         {
             "from": "service:DatabaseService",
@@ -2311,7 +2375,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 770
+            "line": 814
         },
         {
             "from": "service:DatabaseService",
@@ -2343,7 +2407,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 819
+            "line": 863
         },
         {
             "from": "service:DatabaseService",
@@ -2351,7 +2415,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 858
+            "line": 902
         },
         {
             "from": "service:DatabaseService",
@@ -2359,7 +2423,15 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 839
+            "line": 883
+        },
+        {
+            "from": "service:DatabaseService",
+            "to": "service:EditorDraftService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/DatabaseService.php",
+            "line": 748
         },
         {
             "from": "service:DatabaseService",
@@ -2431,7 +2503,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/DatabaseService.php",
-            "line": 1139
+            "line": 1183
         },
         {
             "from": "service:DatabaseService",
@@ -2448,6 +2520,30 @@
             "provenance": "source_token",
             "source": "app/Services/DocsMapService.php",
             "line": 152
+        },
+        {
+            "from": "service:EditorDraftService",
+            "to": "service:AuthoredPageService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/EditorDraftService.php",
+            "line": 25
+        },
+        {
+            "from": "service:EditorDraftService",
+            "to": "service:CampaignDownloadService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/EditorDraftService.php",
+            "line": 59
+        },
+        {
+            "from": "service:EditorDraftService",
+            "to": "service:CampaignLeadService",
+            "relation": "static_reference",
+            "provenance": "source_token",
+            "source": "app/Services/EditorDraftService.php",
+            "line": 55
         },
         {
             "from": "service:EnterpriseToolRegistry",
@@ -3295,7 +3391,7 @@
             "relation": "constructs",
             "provenance": "source_token",
             "source": "app/Services/SettingsService.php",
-            "line": 80
+            "line": 81
         },
         {
             "from": "service:SettingsService",
@@ -3311,7 +3407,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/SettingsService.php",
-            "line": 115
+            "line": 116
         },
         {
             "from": "service:SettingsService",
@@ -3319,7 +3415,7 @@
             "relation": "static_reference",
             "provenance": "source_token",
             "source": "app/Services/SettingsService.php",
-            "line": 168
+            "line": 169
         },
         {
             "from": "service:ShippingService",
@@ -3651,10 +3747,10 @@
         }
     ],
     "summary": {
-        "routes": 188,
-        "controllers": 19,
-        "services": 92,
-        "views": 76,
+        "routes": 189,
+        "controllers": 20,
+        "services": 93,
+        "views": 77,
         "collections": 25
     },
     "routes": [
@@ -4462,6 +4558,23 @@
             "services": [
                 "AdminHelpService",
                 "MarkdownRenderer",
+                "AuthService"
+            ]
+        },
+        {
+            "method": "POST",
+            "path": "/admin/editor-draft",
+            "name": "admin.editor-draft",
+            "controller": "AdminEditorDraftController@handle",
+            "view": "",
+            "response": "json",
+            "provenance": "route_registry",
+            "services": [
+                "EditorDraftService",
+                "DatabaseService",
+                "AuthoredPageService",
+                "BlogService",
+                "AuditLogService",
                 "AuthService"
             ]
         },
@@ -6217,6 +6330,7 @@
     "controllers": [
         "AccountController",
         "AdminController",
+        "AdminEditorDraftController",
         "AdminGoogleReportingController",
         "AdminMcpClientController",
         "AdminPageSpeedController",
@@ -6274,6 +6388,7 @@
         "DatabaseService",
         "DeploymentRevisionService",
         "DocsMapService",
+        "EditorDraftService",
         "EnterpriseToolRegistry",
         "EnvService",
         "GitHubDocService",
@@ -6348,6 +6463,7 @@
         "admin/consultation-analytics",
         "admin/dashboard",
         "admin/detail",
+        "admin/editor-server-draft",
         "admin/email-templates",
         "admin/google-merchant",
         "admin/google-pagespeed",
