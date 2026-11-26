@@ -217,6 +217,8 @@ The client sends bounded successful history as chronological `user` and
 report scope, site identity
 and owner-resolved attachments stay in data fields. Referents help resolve a
 follow-up and require an authorized current lookup for current business facts.
+An accepted multi-scope owner report clears the reusable report referent and
+sets `previous_report_ambiguous` in the next request's reference data.
 Earlier tool calls and internal reasoning are absent from saved dialogue.
 Tool-call correlation and provider continuation fields apply within the
 current request only. Text-only and synthetic diagnostic calls continue to

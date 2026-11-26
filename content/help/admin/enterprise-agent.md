@@ -35,7 +35,7 @@ Use the paperclip to upload an image to Media and attach it to the message you a
 
 ## Continue or start fresh
 
-The current chat reopens when you return in the same tab and owner session. Use **History** to pick an earlier conversation or **New chat** to start a separate thread. If a saved chat cannot be reopened or its last request is unfinished, use **Reload saved chat** to check for its saved reply. Report follow-ups can reuse the last successful report period. Include explicit dates when you want a different period.
+The current chat reopens when you return in the same tab and owner session. Use **History** to pick an earlier conversation or **New chat** to start a separate thread. If a saved chat cannot be reopened or its last request is unfinished, use **Reload saved chat** to check for its saved reply. Report follow-ups can reuse the last successful single-scope report period. After comparing multiple report scopes, specify which period or report you mean instead of relying on an older period. Include explicit dates when you want a different period.
 
 History keeps the figures recorded with that answer. Ask a new question to obtain current figures. If a card cannot be displayed, the complete saved answer remains readable as text.
 

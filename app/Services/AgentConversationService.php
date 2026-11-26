@@ -95,7 +95,8 @@ final class AgentConversationService
         string $surface, array $actor, ?string $conversationId,
         string $question, string $answer, string $traceId,
         string $outcome, array $tools = [], ?string $ticketId = null,
-        ?array $reportContext = null, array $attempts = [], array $retrieval = [], array $knowledge = []
+        ?array $reportContext = null, array $attempts = [], array $retrieval = [], array $knowledge = [],
+        bool $reportContextChanged = false
     ): array {
         if (!in_array($surface, ['admin', 'support'], true)) {
             throw new \InvalidArgumentException('Invalid agent surface');
@@ -129,6 +130,9 @@ final class AgentConversationService
         $turn['trace'] = AgentTraceService::build($traceId,$outcome,$tools,$attempts,$evaluation,$answer,$retrieval);
         if ($ticketId !== null) $turn['ticket_id'] = $ticketId;
         if ($reportContext !== null) $turn['report_context'] = $reportContext;
+        if ($surface === 'admin' && $reportContextChanged && $reportContext === null) {
+            $turn['report_context_ambiguous'] = true;
+        }
         $turn['knowledge']=['public_product_slugs'=>self::safeSlugs($knowledge['public_product_slugs']??[])];
 
         $document = $this->append($id, $surface, $actor, $turn);
@@ -394,22 +398,45 @@ final class AgentConversationService
 
     public function previousReportForActor(?string $id, array $actor): ?array
     {
-        if (!is_string($id) || !preg_match(self::ID_PATTERN, $id)) return null;
-        return self::previousReportFromDocument($this->getForAdmin($id), $actor);
+        return $this->previousReportStateForActor($id, $actor)['context'];
+    }
+
+    public function previousReportStateForActor(?string $id, array $actor): array
+    {
+        if (!is_string($id) || !preg_match(self::ID_PATTERN, $id)) return ['context'=>null,'ambiguous'=>false];
+        return self::previousReportStateFromDocument($this->getForAdmin($id), $actor);
     }
 
     public static function previousReportFromDocument(?array $document, array $actor): ?array
     {
-        if ($document === null) return null;
+        return self::previousReportStateFromDocument($document, $actor)['context'];
+    }
+
+    public static function previousReportStateFromDocument(?array $document, array $actor): array
+    {
+        if ($document === null) return ['context'=>null,'ambiguous'=>false];
         if (!self::ownedBy($document, 'admin', $actor)) {
             throw new \RuntimeException('Conversation not accessible to this actor');
         }
         foreach (array_reverse($document['turns'] ?? []) as $turn) {
             if (($turn['outcome'] ?? '') !== 'model') continue;
+            if (($turn['report_context_ambiguous'] ?? false) === true) {
+                return ['context'=>null,'ambiguous'=>true];
+            }
             $context = $turn['report_context'] ?? null;
-            if (is_array($context) && $context !== []) return $context;
+            if (is_array($context) && $context !== []) return ['context'=>$context,'ambiguous'=>false];
+            // Older multi-scope turns omitted the context. A completed dated
+            // report without a saved unique scope must not resurrect a stale one.
+            foreach ($turn['tools'] ?? [] as $tool) {
+                if (($tool['status'] ?? '') !== 'complete'
+                    || !in_array($tool['name'] ?? '', ['support_enquiries','gst_register_summary','sales_summary','commerce_report','order_count'], true)) continue;
+                $filters = $tool['evidence']['filters'] ?? [];
+                if (is_string($filters['from'] ?? null) && is_string($filters['to'] ?? null)) {
+                    return ['context'=>null,'ambiguous'=>true];
+                }
+            }
         }
-        return null;
+        return ['context'=>null,'ambiguous'=>false];
     }
 
     /** Controller route already enforces admin authentication. Never expose this folder directly. */

@@ -319,7 +319,10 @@ References (patterns researched, not required installations):
   Fixed runtime guidance uses the provider's separate instruction field.
   Product slugs come from
   turns inside the selected dialogue budget, and current details require a live
-  scoped lookup. Enterprise can reuse the last accepted model report scope.
+  scoped lookup. Enterprise can reuse the last accepted single-scope model report. A successful
+  multi-scope report records an ambiguity boundary; later follow-ups receive no
+  older scope and an explicit ambiguity indicator. Older dated report evidence
+  without a saved unique scope is also treated as ambiguous.
   History and traces also display recorded errors and earlier local notices.
 - Enterprise uses a session-scoped active chat reference to re-read its actor-owned
   history. A missing or foreign chat returns the same 404 response, while a

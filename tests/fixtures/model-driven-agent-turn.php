@@ -81,8 +81,10 @@ namespace {
     spl_autoload_register(static function(string $class):void{
         if(str_starts_with($class,'App\\')){ $path=app_path('app/'.str_replace('\\','/',substr($class,4)).'.php');if(is_file($path))require $path; }
     });
-    $directory=sys_get_temp_dir().'/bapx-model-turn-'.bin2hex(random_bytes(8));
-    mkdir($directory,0700);mkdir($directory.'/logs',0700);
+    $shared = getenv('BAPX_FIXTURE_SCOPE_CHAIN_DIR') ?: '';
+    $directory=$shared !== '' ? $shared : sys_get_temp_dir().'/bapx-model-turn-'.bin2hex(random_bytes(8));
+    if ($shared === '') { mkdir($directory,0700);mkdir($directory.'/logs',0700); }
+    elseif (!is_dir($directory.'/logs')) throw new \RuntimeException('Missing isolated scope-chain directory');
     $scenario=$argv[1];$surface=$argv[2];$role=$argv[3];
     $_SERVER['REQUEST_METHOD']='POST';$_SERVER['REMOTE_ADDR']='127.0.0.1';
     $_SERVER['REQUEST_URI']=$surface==='admin'?'/admin/agent/ask':'/support/ask';
@@ -93,7 +95,18 @@ namespace {
     $followup = $followupReport || str_starts_with($scenario, 'catalogue_');
     $foreign = in_array($scenario, ['foreign_support','foreign_owner'], true);
     $seedAnswer = null;
-    if ($followup) {
+    if ($scenario === 'owner_multi_scope') {
+        $conversations = new \App\Services\AgentConversationService();
+        $actor = $conversations::actor($surface, $_SESSION['user']);
+        $previous = $conversations->record($surface, $actor, null, 'Show the first order report.',
+            'The last delivered order report covered 3 to 7 January.', bin2hex(random_bytes(8)), 'model',
+            reportContext:['tool'=>'order_count','from'=>'2024-01-03','to'=>'2024-01-07']);
+        $_POST['conversation_id'] = $previous['conversation_id'];
+    } elseif ($scenario === 'owner_ambiguous_followup') {
+        $files = glob($directory.'/agent-conversations/*.json') ?: [];
+        if (count($files) !== 1) throw new \RuntimeException('Expected exactly one saved scope-chain conversation');
+        $_POST['conversation_id'] = basename($files[0], '.json');
+    } elseif ($followup) {
         $conversations = new \App\Services\AgentConversationService();
         $actor = $conversations::actor($surface, $_SESSION['user'] ?? null);
         $seedAnswer = $followupReport
@@ -122,7 +135,7 @@ namespace {
         $_POST['conversation_id'] = $previous['conversation_id'];
     }
     ob_start();
-    register_shutdown_function(static function()use($directory,$seedAnswer):void{
+    register_shutdown_function(static function()use($directory,$seedAnswer,$shared):void{
         $response=json_decode(ob_get_clean(),true);
         $files=glob($directory.'/agent-conversations/*.json')?:[];
         $turns=$files?(json_decode(file_get_contents($files[0]),true)['turns']??[]):[];
@@ -134,6 +147,7 @@ namespace {
                 && array_column(array_slice($turns, 2, 4), 'outcome') === array_fill(0, 4, 'error');
         }
         echo json_encode($result,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR);
+        if ($shared !== '') return;
         foreach(new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directory,\FilesystemIterator::SKIP_DOTS),\RecursiveIteratorIterator::CHILD_FIRST) as $entry){
             if($entry->isDir())rmdir($entry->getPathname());else unlink($entry->getPathname());
         }

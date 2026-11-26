@@ -761,10 +761,10 @@ final class AdminController extends BaseController {
             }
             // Previous report scope comes from this actor's persisted chat, never browser input.
             $previousReport = (new \App\Services\AgentConversationService())
-                ->previousReportForActor($conversationId, $actor);
+                ->previousReportStateForActor($conversationId, $actor);
             $tools = new \App\Services\EnterpriseToolRegistry(
                 ownerQuestion: $message,
-                previousReport: $previousReport
+                previousReport: $previousReport['context']
             );
             $secrets = new SecretService();
             $modelConfig = $secrets->getModelConfig();
@@ -777,6 +777,7 @@ final class AdminController extends BaseController {
                     'site_display_name'=>\App\Services\SiteProfileService::current()->name(),
                     'attachments'=>$attachments['context'],
                     'previous_report'=>$tools->validatedPreviousReport(),
+                    'previous_report_ambiguous'=>$previousReport['ambiguous'],
                 ];
                 $answer = $this->callAiApi($message, $context, $history['messages'], $reason, $tools, $attempts);
             } else {
@@ -787,7 +788,7 @@ final class AdminController extends BaseController {
             $outcome = $failed ? 'error' : 'model';
             (new AuditLogService())->agentRun('admin', $outcome, $startedAt, $reason, $attempts, $tools->activity(), $traceId);
             $record = $this->agentConversationRecord($actor, $conversationId, $message,
-                $answer, $traceId, $outcome, $tools->activity(), $tools->reportContext(), $attempts);
+                $answer, $traceId, $outcome, $tools->activity(), $tools->reportContext(), $attempts, $tools->hasReportContext());
             $this->jsonResponse([
                 ($outcome === 'error' ? 'error' : 'answer') => $answer,
                 'missing' => $attachments['missing'],
@@ -824,10 +825,11 @@ final class AdminController extends BaseController {
 
     private function agentConversationRecord(
         array $actor, ?string $conversationId, string $question, string $answer,
-        string $traceId, string $outcome, array $tools = [], ?array $reportContext = null, array $attempts = []
+        string $traceId, string $outcome, array $tools = [], ?array $reportContext = null, array $attempts = [], bool $reportContextChanged = false
     ): array {
         return (new \App\Services\AgentConversationService())->record(
-            'admin', $actor, $conversationId, $question, $answer, $traceId, $outcome, $tools, null, $reportContext, $attempts
+            'admin', $actor, $conversationId, $question, $answer, $traceId, $outcome, $tools, null, $reportContext, $attempts,
+            reportContextChanged: $reportContextChanged
         );
     }
 
