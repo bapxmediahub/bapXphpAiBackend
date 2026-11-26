@@ -753,10 +753,16 @@ final class AdminController extends BaseController {
                     $attachments['context']
                 );
                 $draft['missing'] = $attachments['missing'];
-                (new AuditLogService())->agentRun('admin', 'draft', $startedAt, traceId: $traceId);
+                $outcome = $draft['outcome'];
+                $attempts = $draft['attempts'];
+                $reason = $draft['reason'];
+                unset($draft['attempts'], $draft['reason'], $draft['outcome']);
+                (new AuditLogService())->agentRun('admin', $outcome, $startedAt, $reason, $attempts, traceId: $traceId);
                 $record = $this->agentConversationRecord($actor, $conversationId, $message,
-                    (string)($draft['note'] ?? 'Draft form prepared.'), $traceId, 'draft');
-                $this->jsonResponse(['draft' => $draft, 'run' => $this->agentRunMeta($traceId, 'draft', $startedAt)] + $record);
+                    $draft['note'], $traceId, $outcome, attempts: $attempts);
+                $payload = $outcome === 'error' ? ['error'=>$draft['note']] : ['draft'=>$draft];
+                $this->jsonResponse($payload + ['run'=>$this->agentRunMeta($traceId,$outcome,$startedAt,attempts:$attempts)] + $record,
+                    $outcome === 'error' ? 503 : 200);
                 return;
             }
             // Previous report scope comes from this actor's persisted chat, never browser input.
@@ -1544,11 +1550,21 @@ final class AdminController extends BaseController {
         ]);
     }
     public function aiDraftBlog(): void{
-        $template = $_POST['template'] ?? 'editorial';
-        $title = $_POST['title'] ?? 'Article';
-        $sourceUrl = $_POST['source_url'] ?? '/';
-        $draft = (new BlogDraftService())->draft($template, $title, $sourceUrl);
-        $this->jsonResponse(['content' => $draft]);
+        $this->requireModule('blog');
+        $title = $_POST['title'] ?? null;
+        if (!is_string($title) || trim($title)==='' || mb_strlen($title)>200) {
+            $this->jsonResponse(['error'=>'Enter an article title of up to 200 characters.'],422);
+        }
+        if (isset($_POST['content']) && (!is_string($_POST['content']) || trim($_POST['content'])!=='')) {
+            $this->jsonResponse(['error'=>'Use Enhance content for an existing article body.'],409);
+        }
+        session_write_close();
+        $draft = (new \App\Services\AgentDraftService())->draft('create-blog',$title);
+        if ($draft['outcome'] !== 'draft' || $draft['source'] !== 'provider') {
+            $this->jsonResponse(['error'=>$draft['note']],503);
+        }
+        $fields = array_column($draft['fields'],'value','name');
+        $this->jsonResponse(['content'=>$fields['content'],'source'=>'provider']);
     }
     /**
      * Enhance one field at a time. The single AI Draft button rewrote the whole body
@@ -1567,7 +1583,7 @@ final class AdminController extends BaseController {
             $this->jsonResponse(['error' => 'This text exceeds the article size limit.'], 413);
         }
         $prompt = $field === 'title'
-            ? "Rewrite this blog headline for a Tamil spiritual products site. Preserve its language and meaning. Return one plain-text headline of at most 70 characters.\n\nHeadline: "
+            ? "Rewrite this blog headline for the configured business. Preserve its language and meaning. Return one plain-text headline of at most 70 characters.\n\nHeadline: "
             : "Improve the clarity and flow of this article. Preserve its meaning, language, Tamil text, links and each existing image. Return the revised Markdown only. Do not introduce images, HTML, commentary or a code fence around the article.\n\nArticle:\n";
         $client = new \App\Services\AiClient();
         $budget = $field === 'title' ? 1024 : min(4096, max(1024, mb_strlen($value) + 512));

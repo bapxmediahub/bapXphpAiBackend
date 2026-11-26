@@ -139,7 +139,7 @@ namespace {
         $response=json_decode(ob_get_clean(),true);
         $files=glob($directory.'/agent-conversations/*.json')?:[];
         $turns=$files?(json_decode(file_get_contents($files[0]),true)['turns']??[]):[];
-        $result=['status'=>http_response_code(),'response'=>$response,'turn'=>$turns[array_key_last($turns)]??[]];
+        $result=['status'=>http_response_code(),'response'=>$response,'turn'=>($turns===[]?[]:$turns[array_key_last($turns)])];
         if ($seedAnswer !== null) {
             $result['history_preserved'] = count($files) === 1 && count($turns) === 7
                 && ($response['conversation_id'] ?? null) === $_POST['conversation_id']
@@ -153,6 +153,10 @@ namespace {
         }
         rmdir($directory);
     });
-    if($surface==='admin')(new \App\Controllers\AdminController())->agentAsk();
+    if (str_starts_with($scenario,'draft_editor')) {
+        $_SERVER['REQUEST_URI']='/admin/blog/ai-draft';
+        $_POST=['_csrf'=>'fixture','title'=>$argv[4],'content'=>$scenario==='draft_editor_existing'?'Existing body':''];
+        (new \App\Controllers\AdminController())->aiDraftBlog();
+    } elseif($surface==='admin')(new \App\Controllers\AdminController())->agentAsk();
     else (new \App\Controllers\SupportController())->ask();
 }

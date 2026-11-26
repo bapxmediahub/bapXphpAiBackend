@@ -570,6 +570,14 @@
         csrf.type = 'hidden'; csrf.name = '_csrf';
         csrf.value = document.querySelector('#agent-form input[name="_csrf"]')?.value || '';
         form.appendChild(csrf);
+        if (draft.kind === 'blog') {
+            // Chat proposes text; a separate reviewed publishing operation is
+            // required. The normal editor uses its existing create-only CAS.
+            for (const [name,value] of Object.entries({published:'0',expected_revision:'new',original_slug:''})) {
+                const hidden=document.createElement('input');
+                hidden.type='hidden';hidden.name=name;hidden.value=value;form.appendChild(hidden);
+            }
+        }
 
         (draft.fields || []).forEach(function (field) {
             const row = document.createElement('label');
@@ -602,7 +610,7 @@
         const save = document.createElement('button');
         save.type = 'submit';
         save.className = 'btn btn-primary btn-sm';
-        save.textContent = draft.kind === 'blog' ? 'Save blog post' : 'Save product';
+        save.textContent = draft.kind === 'blog' ? 'Save unpublished draft' : 'Save product';
         actions.appendChild(save);
         form.appendChild(actions);
 

@@ -17,23 +17,23 @@ GitHub article index or database-backed blog body.
 
 ## Drafts and enhancement
 
-`BlogDraftService` builds a deterministic scaffold from template/title/source
-URL. It is not itself a model client. `AdminController::aiDraftBlog` returns
-that scaffold for review. `enhanceBlogTitle` and `enhanceBlogContent` separately
-call the configured model and return a suggestion for only the requested field.
-The owner reviews and applies it before saving. The model supplies plain text
-or Markdown. PHP validates the returned field, compares article image URLs
-against the original and builds the JSON response. Schema-constrained output
-depends on provider/model support. This editing flow uses the site's configured
-text interface across both providers. [Google structured outputs](https://ai.google.dev/gemini-api/docs/structured-output)
-and [OpenAI structured outputs](https://developers.openai.com/api/docs/guides/structured-outputs).
+The editor's empty-body generation route, `AdminController::aiDraftBlog`, calls
+the configured Chat Completions provider through `AgentDraftService`. It no
+longer returns deterministic article scaffolding. The Enterprise commands
+`/create-blog` and `/add-product` with a subject require a successful model
+transfer and usable structured fields; an empty command is explicitly a
+manual form, not inference. Provider failures and invalid drafts are recorded
+as failed requests, not successful generated drafts. The owner must supply
+actual price, tax, stock and image choices. A blog proposal saves as unpublished
+with the normal create-only revision contract.
 
-A provider failure leaves the original text available for editing. If the
-browser can simplify headline spacing/capitalization or separate the sentences
-of a plain paragraph, it shows a separately labelled local formatting preview.
-Applying a suggestion checks the original field and open article again. Neither endpoint
-proves the content was saved or published. The owner must review, explicitly
-Save, and select the publication state. Images remain manually uploaded or
+`enhanceBlogTitle` and `enhanceBlogContent` call the configured provider and
+return a reviewable suggestion for one field. PHP validates the returned field
+and preserves existing article images. The empty-body generation action is
+separate from rewriting existing content. On failure, no local AI substitute
+or automatic edit is offered. Applying a suggestion checks the original
+field, open article, and (for new body generation) its title. Save and
+publication remain explicit owner actions. Images remain manually uploaded or
 selected from existing media. The article image picker sets the cover and inserts the chosen image into the body. The editor requests a JSON receipt from the shared Media Library upload route and uses its returned URL. The Media Library form redirects after an upload. The editor keeps an unsaved browser copy of
 editorial fields for the same owner and article. Reopen the editor and choose
 Restore draft to recover it. When the saved revision has changed, download the

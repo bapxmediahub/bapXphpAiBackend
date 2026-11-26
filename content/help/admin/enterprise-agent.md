@@ -41,6 +41,6 @@ History keeps the figures recorded with that answer. Ask a new question to obtai
 
 ## Review before acting
 
-Inspect source links, filters and reported amounts against the corresponding business screen. A draft or suggestion is not a completed website edit. Review it and use the normal authorized form to save a change. Never put passwords, payment secrets or another customer's private data into a question.
+Inspect source links, filters and reported amounts against the corresponding business screen. Use /create-blog followed by your topic for a model-generated proposal. An empty /create-blog opens a manual form without inference. A failed provider request does not create a generated draft. Save unpublished draft uses the existing blog form; review and publish separately in Blog. A draft or suggestion is not a completed website edit. Review it and use the normal authorized form to save a change. Never put passwords, payment secrets or another customer's private data into a question.
 
 If an answer is uncertain, use Agent Monitoring to inspect evidence. Do not repeat an uncertain ticket/action until its recorded outcome is checked.

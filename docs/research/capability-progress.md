@@ -18,9 +18,9 @@ This measures selected native acceptance obligations, not a percentage of all up
 | Google Site Kit reporting | 8 | 1 | 3 | 4 | 0 | 12.5% | 0.0% |
 | WordPress MCP / Abilities adaptation | 7 | 2 | 4 | 1 | 0 | 28.6% | 0.0% |
 | A2UI 1.0 | 8 | 4 | 3 | 1 | 1 | 50.0% | 12.5% |
-| OpenAI-compatible Chat Completions | 8 | 4 | 3 | 1 | 0 | 50.0% | 0.0% |
+| OpenAI-compatible Chat Completions | 8 | 5 | 2 | 1 | 0 | 62.5% | 0.0% |
 | DeepSeek Harness agent engineering | 9 | 4 | 5 | 0 | 0 | 44.4% | 0.0% |
-| **Total** | 72 | 20 | 42 | 10 | 1 | 27.8% | 1.4% |
+| **Total** | 72 | 21 | 41 | 10 | 1 | 29.2% | 1.4% |
 
 3 explicit exclusions. No percentage is a claim of live inference quality or external protocol conformance.
 
@@ -116,8 +116,8 @@ This measures selected native acceptance obligations, not a percentage of all up
 | CC03 | Provider-specific continuation metadata | implemented | Bounded Google signatures and OpenRouter reasoning continuity; validate selected live model, never leak internal metadata. | [#496](https://github.com/bapxmediahub/bapXphpAiBackend/issues/496) |
 | CC04 | Provider retries, holds, time budgets and latency | partial | Bounded retries and credential holds exist; #395 lengthened deadlines, live 503/429/401 and continuation starvation remain. | [#176](https://github.com/bapxmediahub/bapXphpAiBackend/issues/176), [#449](https://github.com/bapxmediahub/bapXphpAiBackend/issues/449), [#459](https://github.com/bapxmediahub/bapXphpAiBackend/issues/459), [#461](https://github.com/bapxmediahub/bapXphpAiBackend/issues/461) |
 | CC05 | All role-authorized tools directly reachable without false answers | implemented | PR #512 removed forced lexical preselection and cumulative tool activation ceiling; all six hosted checks, direct multilingual controller fixtures and deployed SHA passed. Live model answer acceptance remains CC06. | [#375](https://github.com/bapxmediahub/bapXphpAiBackend/issues/375), [#251](https://github.com/bapxmediahub/bapXphpAiBackend/issues/251) |
-| CC06 | Real provider text and tool-result-final-answer acceptance | partial | Current direct native and compatible probes returned 503. Both real agent paths require complete live answer, not synthetic probe success. | [#496](https://github.com/bapxmediahub/bapXphpAiBackend/issues/496), [#176](https://github.com/bapxmediahub/bapXphpAiBackend/issues/176) |
-| CC07 | Model-backed editorial draft generation and truthful failure | partial | Legacy AI draft scaffold is non-inference; draft failure reporting and safe review require candidate validation. | [#251](https://github.com/bapxmediahub/bapXphpAiBackend/issues/251), [#47](https://github.com/bapxmediahub/bapXphpAiBackend/issues/47) |
+| CC06 | Real provider text and tool-result-final-answer acceptance | partial | Live Chromium at deployed 00ad614: Enterprise /help blog-publishing completed operator_guide and real model answer/A2UI (trace 9e1f92fba3349f0c); Support completed public_policy then rate-limited continuation (trace 4f2cb1a30a412b56). Whole both-agent scope remains partial. | [#496](https://github.com/bapxmediahub/bapXphpAiBackend/issues/496), [#176](https://github.com/bapxmediahub/bapXphpAiBackend/issues/176) |
+| CC07 | Model-backed editorial draft generation and truthful failure | implemented | Editor empty-body and Enterprise draft commands require actual configured provider output. Manual empty command labelled manual, failed/invalid inference is error, protected owner-only fields and explicit create-only unpublished save. Real controller loopback and desktop/mobile browser regression pass; live draft generation unverified. | [#251](https://github.com/bapxmediahub/bapXphpAiBackend/issues/251), [#47](https://github.com/bapxmediahub/bapXphpAiBackend/issues/47) |
 | CC08 | Validated streaming and cancellation | missing | Synchronous native requests; browser timeout is not provider cancellation or event stream. | [#311](https://github.com/bapxmediahub/bapXphpAiBackend/issues/311), [#176](https://github.com/bapxmediahub/bapXphpAiBackend/issues/176) |
 
 ## DeepSeek Harness agent engineering
