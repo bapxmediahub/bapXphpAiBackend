@@ -385,6 +385,34 @@ product decision or action outside existing authority (e.g. irreversible
 production data changes, credentials, real charges, new paid infrastructure).
 Do not claim ongoing background work after the session ends.
 
+## Engineering continuity across inference boundaries (binding)
+
+A new inference, context compaction, narration, session resumption or tool
+handoff is not a new project. Treat the previous summary as a navigation hint,
+not authoritative state. Reconstruct a bounded context from the current
+repository, GitHub issues/PRs, actual checks, deployed revision and the relevant
+REA findings. Confirm the exact repository remote before any action; never
+resume a different client repository from a similar folder or previous chat.
+
+Recover the active issue and acceptance criteria, worktree/branch/head and
+uncommitted state, PR/base/exact-head checks, last verified release, unresolved
+tool outcomes, and the next concrete action. If a side effect was initiated but
+its result is unknown, observe the existing action or underlying resource before
+retrying; never recreate a PR, replay a payment or overwrite another worktree
+merely because its acknowledgment was lost. Reconcile later changes by other
+workers with the current main and issue state.
+
+Checkpoint material transitions on the existing GitHub issue or PR using
+safe, concise evidence and exact identifiers, not another task file. Include
+the observed outcome, remaining gate and the next action/acceptance. Update
+the source-derived capability register and mapped skills when the finding
+changes. At a context boundary resume from these receipts, preserving all
+authorization and validation gates. A narration is a view of this state, not
+a new instruction or an artificial stopping condition. Continue the next
+clear authorized cycle while execution is available. Use the re-entry recipe
+in docs/development-workflow.md; no background worker, new runtime prompt,
+duplicate backlog or secret-bearing checkpoint is implied.
+
 ## Issue closure and release order
 
 Work one independently testable issue per Ready-for-Review PR. Use `Refs #N` while

@@ -78,9 +78,9 @@
             "review_note": "Reviewed actual Woo core and Google plugin source, current Google v1 ProductInput and processed product contracts, offline projection and read-only country-specific diagnostics; browser and 47 checks pass."
         },
         "workflow": {
-            "source_sha256": "e448093ee3d6979ea5d70db440c9b7225ee9a864e6c3a4bd577d5253708c3348",
-            "references_sha256": "ce296268f8e6ab4a20955480efe5431f31112561643d61298121d265ee480280",
-            "review_note": "Reviewed actual database rollback evidence, preserved fixture stderr diagnostics, twelve repeated initial-race tests, mapped guides and generated architecture contracts."
+            "source_sha256": "28b633517373ddb1e29a6f7e4c523d8f16328f25ac5c80fee2464577ecacb3dd",
+            "references_sha256": "5a27cde698babfc821a71a740e94a9ff3035f44912123bc1ea47f3a348dc7911",
+            "review_note": "Owner-directed continuity contract: reconstruct bounded context from canonical Git/GitHub, exact-head checks and deployed evidence at each inference boundary; material transitions recorded on existing issues/PRs, no duplicate ledger, no runtime change or automatic background execution."
         }
     }
 }

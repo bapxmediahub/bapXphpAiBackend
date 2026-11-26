@@ -274,6 +274,68 @@ required. Report remaining work honestly when the session ends. Never promise
 background execution, invent an approval or undertake an unapproved production
 mutation to force a pass.
 
+## Reconstruct context rather than restart the job
+
+The engineering loop is stateful even when each model invocation is independent.
+Git/GitHub and verified deployment evidence are the durable state; conversation
+summaries and temporary logs are hints. This is a developer workflow, not a
+change to live Support or Enterprise model prompts. Do not store a second
+task tracker, copy credentials, or persist an entire conversation.
+
+At re-entry on the authorized developer machine, run ordinary read-only
+Git/GitHub inspection first. Fetch the canonical main reference only after
+checking the remote. Do not reset, prune or switch a dirty worktree:
+
+```bash
+git remote get-url origin
+git fetch origin main
+git status --short --branch
+git rev-parse HEAD origin/main
+git worktree list --porcelain
+gh pr list --state open --limit 30
+gh issue view ISSUE --comments
+gh pr view PR --json state,headRefOid,baseRefName,mergeStateStatus,statusCheckRollup
+gh pr checks PR
+```
+
+Use the actual linked issue and PR, not literal placeholders or invented
+identifiers. Inspect the relevant worktree's current head/status and
+existing review receipts. Check the configured reference deployment via
+the exact SHA verifier. Read the relevant capability row, matching
+native/REA skills and actual source rather than reloading every document.
+
+For each active issue or PR, reconstruct only this bounded context from the
+current evidence:
+
+| State field | Evidence to recover |
+| --- | --- |
+| Scope | Canonical repository, issue, acceptance criteria and authorized boundaries |
+| Source | Main SHA, worktree path, branch, exact head, clean/dirty state |
+| Release | PR/base, exact-head check/run IDs, review result, merge/deployed SHA |
+| Observation | Last actual action and result, reproducible test evidence, unresolved errors |
+| Pending action | Already-started operation/receipt identifier if available; reconcile unknown result first |
+| Next action | Concrete authorized action, its prerequisite and measurable acceptance |
+| Stop reason | Material decision, missing access, external dependency or unavailable execution; never an invented success |
+
+A checkpoint is a concise update to the existing GitHub issue/PR after a
+material transition: implementation ready, test failure, new finding, merge,
+deployment or actual acceptance. For an uncertain side effect, record the
+intent/identity where possible and reconcile the existing outcome before
+repeating it. Preserve source and evidence fingerprints. Do not treat a
+queued check, stale review, old summary, missing tool result or successful
+commit as evidence of a verified release.
+
+At a fresh inference, refresh only changed facts and continue from the
+next actionable phase: **reconstruct → decide → execute → verify →
+checkpoint → reconstruct**. Use independent worktrees for unrelated clear
+work while a gate runs. If dependencies or authorization block the next
+step, record the blocker and choose an independent authorized issue;
+if no action is possible, present the specific decision/evidence needed.
+No loop may replay a mutation with unknown outcome or relax a release gate.
+Stop at the real execution/authorization boundary, not simply because
+one inference or narration completed. This recipe is a handoff contract,
+not a claim that a chat can execute indefinitely or run in the background.
+
 ## Ready PR → merge → live test → close
 
 Open a Ready for Review PR using `Refs #ISSUE`, not a draft. Include exact test

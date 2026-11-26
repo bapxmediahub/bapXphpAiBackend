@@ -92,3 +92,14 @@ execute its full loop without waiting for a new prompt. If a gate is pending,
 advance an independent obligation while preserving exact-head evidence. At
 narration, distinguish completed loops, unfinished validation and the next
 concrete acceptance target. Ask for a decision only when genuinely needed.
+
+## Preserve source-derived continuity
+
+On a new inference, recover the issue, exact source and deployed revisions,
+last observed test/release receipts, unresolved outcomes, relevant capability
+finding and mapped guides. Re-read only relevant authoritative evidence,
+not the entire conversation or generated index. If the source or finding
+changed, reconcile the register and adapted guides before making a new
+completion claim. Record the next concrete acceptance target in the existing
+GitHub issue/PR, and continue from that target rather than starting a new
+analysis of already-verified work. See AGENTS.md and docs/development-workflow.md.

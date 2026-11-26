@@ -94,3 +94,13 @@ work on an independent scope and return to the checks. At reporting time include
 completed loops, remaining gates, and the next concrete action; offer options
 only for a genuinely unresolved decision. Keep all existing release and
 authorization safeguards. See AGENTS.md and docs/development-workflow.md.
+
+## Rehydrate the current engineering state
+
+At a new inference, first verify the canonical remote, current main and
+deployed SHA. Recover the existing issue/PR, branch, worktree and exact-head
+checks; preserve dirty work and reconcile unknown action outcomes before
+retrying. A prior summary is a hint, not a release receipt. Use the read-only
+re-entry recipe in docs/development-workflow.md. Record material transitions
+on the existing GitHub issue/PR and continue the next clear authorized cycle.
+Do not add a local task ledger or treat a narration as a completed release.
