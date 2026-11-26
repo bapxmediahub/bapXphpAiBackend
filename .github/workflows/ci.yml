@@ -190,6 +190,37 @@ jobs:
       - name: Verify concurrent mail claims against isolated MySQL
         run: php tests/mail-delivery-concurrency.php
 
+  webmcp-native-forward:
+    if: github.actor != 'ci-ai-bot' && endsWith(github.repository, 'bapXphpAiBackend')
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: curl, json, mbstring, pdo_mysql
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify Chrome 160 Tool identity and output schemas
+        shell: bash
+        run: |
+          set -euo pipefail
+          chrome="$(command -v google-chrome)"
+          version="$("$chrome" --version | awk '{print $NF}')"
+          if ! node -e 'const v=process.argv[1].split(".").map(Number); process.exit(v.length===4 && v.every(Number.isInteger) && (v[0]>160 || (v[0]===160 && v[2]>=8173)) ? 0 : 1)' "$version"; then
+            version=160.0.8184.0
+            curl --fail --silent --show-error --location --retry 2 --max-time 120 "https://storage.googleapis.com/chrome-for-testing-public/$version/linux64/chrome-linux64.zip" -o "$RUNNER_TEMP/webmcp-chrome.zip"
+            unzip -q "$RUNNER_TEMP/webmcp-chrome.zip" -d "$RUNNER_TEMP/webmcp-forward"
+            chrome="$RUNNER_TEMP/webmcp-forward/chrome-linux64/chrome"
+            test "$("$chrome" --version | awk '{print $NF}')" = "$version"
+          fi
+          "$chrome" --version
+          npm install --prefix "$RUNNER_TEMP/w3c-webmcp-forward" --no-audit --no-fund --ignore-scripts @w3c/webmcp-polyfill@0.1.1 playwright@1.62.1
+          CHROMIUM_PATH="$chrome" WEBMCP_REQUIRE_TOOL_INTERFACE=1 xvfb-run -a node tests/webmcp-official-browser.cjs "$RUNNER_TEMP/w3c-webmcp-forward" --native
+          CHROMIUM_PATH="$chrome" xvfb-run -a node tests/public-commerce-webmcp-browser.cjs "$RUNNER_TEMP/w3c-webmcp-forward" --native
+
   php-compatibility:
     if: github.actor != 'ci-ai-bot' && endsWith(github.repository, 'bapXphpAiBackend')
     runs-on: ubuntu-latest
